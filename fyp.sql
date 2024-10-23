@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 23, 2024 at 07:31 PM
+-- Generation Time: Oct 23, 2024 at 09:01 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -53,13 +53,11 @@ CREATE TABLE `category` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `contact us`
+-- Table structure for table `contact_us`
 --
 
-CREATE TABLE `contact us` (
-  `contact_us ID` int(10) NOT NULL,
-  `user_name` varchar(100) NOT NULL,
-  `user_email` varchar(100) NOT NULL,
+CREATE TABLE `contact_us` (
+  `contact_us_id` int(10) NOT NULL,
   `message` text NOT NULL,
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -73,7 +71,7 @@ CREATE TABLE `contact us` (
 CREATE TABLE `feedback` (
   `feedback_id` int(11) NOT NULL,
   `rating` int(5) NOT NULL,
-  `comment` varchar(100) NOT NULL,
+  `comment` text NOT NULL,
   `user_name` varchar(100) NOT NULL,
   `user_image` text NOT NULL,
   `product_id` int(11) NOT NULL,
@@ -96,7 +94,6 @@ CREATE TABLE `orders` (
   `discount_amount` decimal(10,2) DEFAULT 0.00,
   `final_amount` decimal(10,2) NOT NULL,
   `order_status` enum('Processing','Shipping','Complete') NOT NULL,
-  `payment_id` int(11) NOT NULL,
   `shipping_address` varchar(255) NOT NULL,
   `shipping_method` varchar(50) NOT NULL,
   `user_message` text DEFAULT NULL,
@@ -130,6 +127,7 @@ CREATE TABLE `payment` (
   `user_id` int(11) NOT NULL,
   `order_id` int(11) NOT NULL,
   `payment_method` enum('credit card','debit card') NOT NULL,
+  `payment_amount` decimal(10,2) NOT NULL,
   `payment_date` datetime NOT NULL DEFAULT current_timestamp(),
   `payment_status` enum('Pending','Completed','Failed') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -145,9 +143,10 @@ CREATE TABLE `product` (
   `category_id` int(11) NOT NULL,
   `product_status` int(11) NOT NULL,
   `product_name` varchar(100) NOT NULL,
+  `brand` varchar(100) NOT NULL,
   `product_des` varchar(150) NOT NULL,
   `product_image` text NOT NULL,
-  `product_price` double NOT NULL,
+  `product_price` decimal(10,2) NOT NULL,
   `product_stock` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -231,7 +230,7 @@ CREATE TABLE `user` (
   `user_contact_number` varchar(50) NOT NULL,
   `user_gender` varchar(50) NOT NULL,
   `user_status` varchar(100) NOT NULL,
-  `user_date_of_birth` varchar(100) NOT NULL
+  `user_date_of_birth` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -251,12 +250,11 @@ ALTER TABLE `category`
   ADD PRIMARY KEY (`category_id`);
 
 --
--- Indexes for table `contact us`
+-- Indexes for table `contact_us`
 --
-ALTER TABLE `contact us`
-  ADD PRIMARY KEY (`contact_us ID`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `user_name` (`user_name`);
+ALTER TABLE `contact_us`
+  ADD PRIMARY KEY (`contact_us_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `feedback`
@@ -272,7 +270,6 @@ ALTER TABLE `feedback`
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`order_id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `payment_id` (`payment_id`),
   ADD KEY `promo_code_id` (`promo_code_id`);
 
 --
@@ -349,10 +346,10 @@ ALTER TABLE `category`
   MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `contact us`
+-- AUTO_INCREMENT for table `contact_us`
 --
-ALTER TABLE `contact us`
-  MODIFY `contact_us ID` int(10) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `contact_us`
+  MODIFY `contact_us_id` int(10) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `feedback`
@@ -419,10 +416,10 @@ ALTER TABLE `user`
 --
 
 --
--- Constraints for table `contact us`
+-- Constraints for table `contact_us`
 --
-ALTER TABLE `contact us`
-  ADD CONSTRAINT `contact us_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
+ALTER TABLE `contact_us`
+  ADD CONSTRAINT `contact_us_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 
 --
 -- Constraints for table `feedback`
@@ -436,8 +433,7 @@ ALTER TABLE `feedback`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`promo_code_id`) REFERENCES `promo_code` (`promo_code_id`),
-  ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`payment_id`);
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`promo_code_id`) REFERENCES `promo_code` (`promo_code_id`);
 
 --
 -- Constraints for table `order_details`
