@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- 主机： 127.0.0.1
--- 生成日期： 2024-10-23 15:19:29
--- 服务器版本： 10.4.32-MariaDB
--- PHP 版本： 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Oct 23, 2024 at 07:31 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 数据库： `e-com`
+-- Database: `fyp`
 --
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `admin`
+-- Table structure for table `admin`
 --
 
 CREATE TABLE `admin` (
@@ -42,7 +42,7 @@ CREATE TABLE `admin` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `category`
+-- Table structure for table `category`
 --
 
 CREATE TABLE `category` (
@@ -53,7 +53,7 @@ CREATE TABLE `category` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `contact us`
+-- Table structure for table `contact us`
 --
 
 CREATE TABLE `contact us` (
@@ -67,7 +67,7 @@ CREATE TABLE `contact us` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `feedback`
+-- Table structure for table `feedback`
 --
 
 CREATE TABLE `feedback` (
@@ -84,7 +84,7 @@ CREATE TABLE `feedback` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `orders`
+-- Table structure for table `orders`
 --
 
 CREATE TABLE `orders` (
@@ -106,7 +106,7 @@ CREATE TABLE `orders` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `order_details`
+-- Table structure for table `order_details`
 --
 
 CREATE TABLE `order_details` (
@@ -122,7 +122,7 @@ CREATE TABLE `order_details` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `payment`
+-- Table structure for table `payment`
 --
 
 CREATE TABLE `payment` (
@@ -137,7 +137,7 @@ CREATE TABLE `payment` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `product`
+-- Table structure for table `product`
 --
 
 CREATE TABLE `product` (
@@ -154,7 +154,7 @@ CREATE TABLE `product` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `promo_code`
+-- Table structure for table `promo_code`
 --
 
 CREATE TABLE `promo_code` (
@@ -174,7 +174,7 @@ CREATE TABLE `promo_code` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `receipt`
+-- Table structure for table `receipt`
 --
 
 CREATE TABLE `receipt` (
@@ -187,7 +187,7 @@ CREATE TABLE `receipt` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `shopping_cart`
+-- Table structure for table `shopping_cart`
 --
 
 CREATE TABLE `shopping_cart` (
@@ -203,7 +203,7 @@ CREATE TABLE `shopping_cart` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `superadmin`
+-- Table structure for table `superadmin`
 --
 
 CREATE TABLE `superadmin` (
@@ -218,7 +218,7 @@ CREATE TABLE `superadmin` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user`
+-- Table structure for table `user`
 --
 
 CREATE TABLE `user` (
@@ -235,23 +235,23 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转储表的索引
+-- Indexes for dumped tables
 --
 
 --
--- 表的索引 `admin`
+-- Indexes for table `admin`
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`admin_id`);
 
 --
--- 表的索引 `category`
+-- Indexes for table `category`
 --
 ALTER TABLE `category`
   ADD PRIMARY KEY (`category_id`);
 
 --
--- 表的索引 `contact us`
+-- Indexes for table `contact us`
 --
 ALTER TABLE `contact us`
   ADD PRIMARY KEY (`contact_us ID`),
@@ -259,7 +259,7 @@ ALTER TABLE `contact us`
   ADD KEY `user_name` (`user_name`);
 
 --
--- 表的索引 `feedback`
+-- Indexes for table `feedback`
 --
 ALTER TABLE `feedback`
   ADD PRIMARY KEY (`feedback_id`),
@@ -267,7 +267,7 @@ ALTER TABLE `feedback`
   ADD KEY `order_id` (`order_id`);
 
 --
--- 表的索引 `orders`
+-- Indexes for table `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`order_id`),
@@ -276,7 +276,7 @@ ALTER TABLE `orders`
   ADD KEY `promo_code_id` (`promo_code_id`);
 
 --
--- 表的索引 `order_details`
+-- Indexes for table `order_details`
 --
 ALTER TABLE `order_details`
   ADD PRIMARY KEY (`detail_id`),
@@ -284,7 +284,7 @@ ALTER TABLE `order_details`
   ADD KEY `product_id` (`product_id`);
 
 --
--- 表的索引 `payment`
+-- Indexes for table `payment`
 --
 ALTER TABLE `payment`
   ADD PRIMARY KEY (`payment_id`),
@@ -292,20 +292,20 @@ ALTER TABLE `payment`
   ADD KEY `order_id` (`order_id`);
 
 --
--- 表的索引 `product`
+-- Indexes for table `product`
 --
 ALTER TABLE `product`
   ADD PRIMARY KEY (`product_id`),
   ADD KEY `category_id` (`category_id`);
 
 --
--- 表的索引 `promo_code`
+-- Indexes for table `promo_code`
 --
 ALTER TABLE `promo_code`
   ADD PRIMARY KEY (`promo_code_id`);
 
 --
--- 表的索引 `receipt`
+-- Indexes for table `receipt`
 --
 ALTER TABLE `receipt`
   ADD PRIMARY KEY (`receipt_id`),
@@ -313,7 +313,7 @@ ALTER TABLE `receipt`
   ADD KEY `payment_id` (`payment_id`);
 
 --
--- 表的索引 `shopping_cart`
+-- Indexes for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
   ADD PRIMARY KEY (`cart_id`),
@@ -321,124 +321,118 @@ ALTER TABLE `shopping_cart`
   ADD KEY `product_id` (`product_id`);
 
 --
--- 表的索引 `superadmin`
+-- Indexes for table `superadmin`
 --
 ALTER TABLE `superadmin`
   ADD PRIMARY KEY (`superadmin_id`);
 
 --
--- 表的索引 `user`
+-- Indexes for table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`user_id`);
 
 --
--- 在导出的表使用AUTO_INCREMENT
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- 使用表AUTO_INCREMENT `admin`
+-- AUTO_INCREMENT for table `admin`
 --
 ALTER TABLE `admin`
   MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `category`
+-- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
   MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `contact us`
+-- AUTO_INCREMENT for table `contact us`
 --
 ALTER TABLE `contact us`
   MODIFY `contact_us ID` int(10) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `feedback`
+-- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
   MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `orders`
+-- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
   MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `order_details`
+-- AUTO_INCREMENT for table `order_details`
 --
 ALTER TABLE `order_details`
   MODIFY `detail_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `payment`
+-- AUTO_INCREMENT for table `payment`
 --
 ALTER TABLE `payment`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `product`
+-- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
   MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `promo_code`
+-- AUTO_INCREMENT for table `promo_code`
 --
 ALTER TABLE `promo_code`
   MODIFY `promo_code_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `receipt`
+-- AUTO_INCREMENT for table `receipt`
 --
 ALTER TABLE `receipt`
   MODIFY `receipt_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `shopping_cart`
+-- AUTO_INCREMENT for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
   MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `superadmin`
+-- AUTO_INCREMENT for table `superadmin`
 --
 ALTER TABLE `superadmin`
   MODIFY `superadmin_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `user`
+-- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 限制导出的表
+-- Constraints for dumped tables
 --
 
 --
--- 限制表 `category`
---
-ALTER TABLE `category`
-  ADD CONSTRAINT `category_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `admin` (`Admin_id`);
-
---
--- 限制表 `contact us`
+-- Constraints for table `contact us`
 --
 ALTER TABLE `contact us`
   ADD CONSTRAINT `contact us_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 
 --
--- 限制表 `feedback`
+-- Constraints for table `feedback`
 --
 ALTER TABLE `feedback`
   ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
 
 --
--- 限制表 `orders`
+-- Constraints for table `orders`
 --
 ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
@@ -446,34 +440,34 @@ ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`payment_id`);
 
 --
--- 限制表 `order_details`
+-- Constraints for table `order_details`
 --
 ALTER TABLE `order_details`
   ADD CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
 
 --
--- 限制表 `payment`
+-- Constraints for table `payment`
 --
 ALTER TABLE `payment`
   ADD CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
   ADD CONSTRAINT `payment_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`);
 
 --
--- 限制表 `product`
+-- Constraints for table `product`
 --
 ALTER TABLE `product`
   ADD CONSTRAINT `product_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`);
 
 --
--- 限制表 `receipt`
+-- Constraints for table `receipt`
 --
 ALTER TABLE `receipt`
   ADD CONSTRAINT `receipt_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `receipt_ibfk_2` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`payment_id`);
 
 --
--- 限制表 `shopping_cart`
+-- Constraints for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
   ADD CONSTRAINT `shopping_cart_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
