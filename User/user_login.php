@@ -73,3 +73,48 @@
     </script>
 </body>
 </html>
+
+<?php
+session_start(); // Start session for storing user details
+
+// Check if the form is submitted
+if (isset($_POST['loginbtn'])) {
+    // Connect to the database
+    $con = mysqli_connect('localhost', 'root', '', 'fyp', 3306);
+
+    if (!$con) {
+        die("Database connection failed: " . mysqli_connect_error());
+    }
+
+    // Retrieve and sanitize user inputs
+    $email = mysqli_real_escape_string($con, $_POST['email']);
+    $password = $_POST['password']; // Password is entered in raw form
+
+    // Check for the user in the database
+    $query = "SELECT * FROM user_information WHERE email = ?";
+    $stmt = mysqli_prepare($con, $query);
+    mysqli_stmt_bind_param($stmt, 's', $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    // Check if the user exists and verify the password
+    if ($row = mysqli_fetch_assoc($result)) {
+        if (password_verify($password, $row['password'])) {
+            // Password matches
+            $_SESSION['user_name'] = $row['user_name'];
+            $_SESSION['ID'] = $row['ID'];
+            echo "<script>window.location.href='main_page.php';</script>";
+        } else {
+            // Incorrect password
+            echo '<script>alert("Invalid Password or Username");</script>';
+        }
+    } else {
+        // User not found
+        echo '<script>alert("User not found");</script>';
+    }
+
+    // Close connection
+    mysqli_close($con);
+}
+?>
+
