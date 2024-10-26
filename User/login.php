@@ -36,7 +36,7 @@ if (isset($_POST["loginbtn"])) {
         $_SESSION['ID'] = $row['ID'];
 
         // Redirect to a new page
-        echo "<script>alert('Login successful!'); window.location.href='register.php';</script>";
+        echo "<script>alert('Login successful!'); window.location.href='edit_profile.php';</script>";
     } else {
         echo '<script>alert("Invalid Email or Password");</script>';
     }
