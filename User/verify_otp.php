@@ -1,7 +1,8 @@
 <?php
 session_start(); // Start the session
 
-if (isset($_POST["verifyOtpBtn"])) {
+if (isset($_POST["verifyOtpBtn"])) 
+{
     // Check if the OTP matches
     if ($_POST['otp'] == $_SESSION['otp']) {
         echo "<script>alert('OTP verified. You can now reset your password.'); window.location.href='new_password.php';</script>";
