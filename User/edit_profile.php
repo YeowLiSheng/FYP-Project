@@ -651,11 +651,11 @@ body {
 
 		<!-- Button to Add New Address -->
 		<a href="add_address.php?id=<?php echo $user_id; ?>" class="edit-button">
-			<button type="button">Add New Address</button>
+			<button type="button">Add Address</button>
 		</a>
 
 		<a href="change_address.php?id=<?php echo $user_id; ?>" class="edit-button">
-			<button type="button">Edit / View Address</button>
+			<button type="button">Edit Address</button>
 		</a>
 	</div>
 
