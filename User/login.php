@@ -1,3 +1,4 @@
+
 <?php
 session_start(); // Start the session for using session variables
 
@@ -30,22 +31,28 @@ if (isset($_POST["loginbtn"])) {
     $row = $result->fetch_assoc();
 
     // Check if user exists and verify password
-    if ($row && password_verify($password, $row['user_password'])) {
-        // Successful login
-        $_SESSION['user_name'] = $row['user_name'];
-        $_SESSION['ID'] = $row['ID'];
-
-        // Redirect to a new page
-        echo "<script>alert('Login successful!'); window.location.href='edit_profile.php';</script>";
-    } else {
-        echo '<script>alert("Invalid Email or Password");</script>';
-    }
+	if ($row && password_verify($password, $row['user_password'])) {
+		// Successful login
+		$_SESSION['user_name'] = $row['user_name'];
+		$_SESSION['id'] = $row['user_id']; // Ensure 'user_id' is correct
+	
+		// Display success message and then redirect using JavaScript
+		echo "<script>
+				alert('Login successful!');
+				window.location.href = 'dashboard.php';
+			  </script>";
+		exit(); // Stop further script execution after redirection
+	} else {
+		echo '<script>alert("Invalid Email or Password");</script>';
+	}
+	
 
     // Close the statement and connection
     $stmt->close();
     $con->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -191,14 +198,7 @@ if (isset($_POST["loginbtn"])) {
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
-						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
 
-						<!-- Dropdown Menu -->
-						<div id="accountDropdown" class="dropdown" style="display: none;">
-							<a href="login.html" class="dropdown-item">Login</a>
-							<a href="register.html" class="dropdown-item">Register</a>
-						</div>
-						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -207,6 +207,12 @@ if (isset($_POST["loginbtn"])) {
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
+
+
+
+						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
+
+
 					</div>
 				</div>
 			</div>
@@ -313,9 +319,6 @@ if (isset($_POST["loginbtn"])) {
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							EN
@@ -324,6 +327,16 @@ if (isset($_POST["loginbtn"])) {
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
 						</a>
+
+
+
+
+						
+						<a href="#" class="flex-c-m p-lr-10 trans-04">
+							My Account
+						</a>
+
+
 					</div>
 				</li>
 			</ul>
