@@ -34,9 +34,23 @@
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+
+
+
+
+
+
+
+
+
 </head>
 <body class="animsition">
 	
+
+
+
+
+
 	<!-- Header -->
 	<header>
 		<!-- Header desktop -->
@@ -52,10 +66,14 @@
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
+						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
-						</a>
+						<!-- Dropdown Menu -->
+						<div id="accountDropdown" class="dropdown" style="display: none;">
+							<a href="login.html" class="dropdown-item">Login</a>
+							<a href="register.html" class="dropdown-item">Register</a>
+						</div>
+						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -81,7 +99,7 @@
 						<ul class="main-menu">
 							<li class="active-menu">
 								<a href="homepage.html">Home</a>
-					
+								
 							</li>
 
 							<li>
@@ -128,7 +146,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
+				<a href="homepage.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
 			</div>
 
 			<!-- Icon header -->
@@ -189,6 +207,9 @@
 				<li>
 					<a href="homepage.html">Home</a>
 					
+					<span class="arrow-main-menu-m">
+						<i class="fa fa-angle-right" aria-hidden="true"></i>
+					</span>
 				</li>
 
 				<li>
@@ -212,6 +233,12 @@
 				</li>
 			</ul>
 		</div>
+
+
+
+
+
+
 
 		<!-- Modal Search -->
 		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
