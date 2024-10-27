@@ -32,7 +32,6 @@ if (isset($_POST['submitbtn'])) {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $contact = $_POST['contact'];
-    $address = $_POST['address'];
     $dob = $_POST['dob'];
 
     // Use the new password if provided; otherwise, keep the old password
@@ -54,7 +53,7 @@ if (isset($_POST['submitbtn'])) {
     }
 
     // Update the user data in the database (including the new or existing password)
-    $update_query = "UPDATE user SET user_name='$name', user_email='$email', user_password='$password', user_contact_number='$contact', user_address='$address', user_date_of_birth='$dob', user_image='$image' WHERE user_id='$user_id'";
+    $update_query = "UPDATE user SET user_name='$name', user_email='$email', user_password='$password', user_contact_number='$contact', user_date_of_birth='$dob', user_image='$image' WHERE user_id='$user_id'";
     
     if (mysqli_query($connect, $update_query)) {
         echo 
@@ -232,6 +231,29 @@ body {
     outline-color: red; /* Red outline when focusing on an invalid input */
 }
 
+
+
+
+
+/*edit address button*/
+.edit-button {
+    text-decoration: none; /* Remove underline from the link */
+}
+
+.edit-button button {
+    background-color: #28a745; /* Bootstrap green color */
+    color: white; /* Text color */
+    border: none; /* No border */
+    padding: 5px 10px; /* Smaller padding for a smaller button */
+    cursor: pointer; /* Pointer cursor */
+    border-radius: 3px; /* Rounded corners */
+    transition: background-color 0.3s; /* Smooth transition */
+    font-size: 14px; /* Smaller font size */
+}
+
+.edit-button button:hover {
+    background-color: #218838; /* Darker shade of green on hover */
+}
 </style>
 
 
@@ -598,11 +620,53 @@ body {
         </select>
     </div>
 
-    <!-- Address -->
-    <div class="form-group">
-        <label for="address">Address</label>
-        <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($row['user_address']); ?>" >
-    </div>
+
+
+
+
+
+
+   <!-- Address -->
+	<div class="form-group">
+		<label for="address">Address</label>
+
+		<?php
+		// Retrieve the user ID from the session
+		$user_id = $_SESSION['id'];
+
+		// Check if the user already has an address
+		$address_result = mysqli_query($connect, "SELECT * FROM user_address WHERE user_id ='$user_id'");
+
+		// Initialize variables
+		$user_address = '';
+
+		if ($address_result && mysqli_num_rows($address_result) > 0) {
+			// Fetch the address data
+			$address_data = mysqli_fetch_assoc($address_result);
+			$user_address = htmlspecialchars($address_data['address'] . ", " . $address_data['city'] . ", " . $address_data['state'] . " ," . $address_data['postcode']);
+		}
+		?>
+		
+		<input type="text" id="address" name="contaddressa" value="<?php echo $user_address; ?>">
+
+		<!-- Button to Add New Address -->
+		<a href="add_address.php?id=<?php echo $user_id; ?>" class="edit-button">
+			<button type="button">Add New Address</button>
+		</a>
+
+		<a href="change_address.php?id=<?php echo $user_id; ?>" class="edit-button">
+			<button type="button">Edit / View Address</button>
+		</a>
+	</div>
+
+
+
+
+
+
+
+
+
 
     <!-- Date of Birth -->
     <div class="form-group">
