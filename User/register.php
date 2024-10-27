@@ -1134,15 +1134,14 @@ include 'dataconnection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-if (isset($_POST["signupbtn"])) 
-{
+if (isset($_POST["signupbtn"])) {
     // Retrieve form data
     $email = mysqli_real_escape_string($connect, $_POST["email"]); 
     $name = mysqli_real_escape_string($connect, $_POST["name"]); 
     $contact = mysqli_real_escape_string($connect, $_POST["contact"]);
     $gender = mysqli_real_escape_string($connect, $_POST["gender"]);  
     $dob = mysqli_real_escape_string($connect, $_POST["dob"]); 
-    $password = $_POST["password"]; 
+    $password = $_POST["password"];  // Plain text password
     $confirmPassword = $_POST["confirmPassword"];
 
     $now = new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur'));
@@ -1152,17 +1151,12 @@ if (isset($_POST["signupbtn"]))
     $verify_query = mysqli_query($connect, "SELECT * FROM user WHERE user_email='$email'");
     if (mysqli_num_rows($verify_query) > 0) {
         echo "<script>alert('The email has already been used. Please choose another email.');window.location.href='register.php';</script>";
-    } 
-    else if ($password != $confirmPassword) {
+    } else if ($password != $confirmPassword) {
         echo "<script>alert('The password and confirm password must match.');window.location.href='register.php';</script>";
-    } 
-    else {
-        // Hash the password before storing it
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        
-        // Insert data into the database
+    } else {
+        // Insert data into the database without encryption
         $insert_query = mysqli_query($connect, "INSERT INTO user (user_email, user_name, user_contact_number, user_gender, user_date_of_birth, user_password, user_join_time) 
-        VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$hashedPassword', '$currentDateTime')");
+        VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$password', '$currentDateTime')");
         
         if ($insert_query) {
             echo "<script>alert('Registration successful.');window.location.href='login.php';</script>";
@@ -1173,3 +1167,4 @@ if (isset($_POST["signupbtn"]))
     }
 }
 ?>
+

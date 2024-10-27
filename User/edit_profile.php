@@ -35,8 +35,8 @@ if (isset($_POST['submitbtn'])) {
     $address = $_POST['address'];
     $dob = $_POST['dob'];
 
-    // Check if a new password is provided; if not, keep the old password
-    $password = !empty($_POST['password']) ? password_hash($_POST['password'], PASSWORD_DEFAULT) : $row['user_password'];
+    // Use the new password if provided; otherwise, keep the old password
+    $password = !empty($_POST['password']) ? $_POST['password'] : $row['user_password'];
 
     // Handle profile image upload
     if (!empty($_FILES['profile_image']['name'])) {
@@ -59,8 +59,8 @@ if (isset($_POST['submitbtn'])) {
     if (mysqli_query($connect, $update_query)) {
         echo 
             "<script type='text/javascript'>
-				alert('Record has been saved sucessfully.');
-				window.location.href='dashboard.php';
+				alert('Record has been saved successfully.');
+				window.location.href='edit_profile.php';
 			</script>";
     } else {
         echo "Error updating profile: " . mysqli_error($connect);
@@ -206,6 +206,31 @@ body {
     background-color: #0056b3; /* Darker color on hover */
 }
 
+
+
+
+/*ERROR MESSAGE*/
+.error-message {
+    color: red; /* Makes the error message text red */
+    font-size: 0.9em; /* Adjusts the font size */
+    display: none; /* Initially hidden */
+    margin-top: 5px;
+}
+
+/* Additional styling for a better error appearance */
+.error-message::before {
+    content: "⚠️ "; /* Adds a warning icon before the message */
+}
+
+.form-group input:invalid,
+.form-group select:invalid {
+    border-color: red; /* Red border for invalid fields */
+}
+
+.form-group input:focus:invalid,
+.form-group select:focus:invalid {
+    outline-color: red; /* Red outline when focusing on an invalid input */
+}
 
 </style>
 
@@ -523,7 +548,7 @@ body {
 
 
 
-    <form class="edit-profile-form" action="" method="POST" enctype="multipart/form-data">
+    <form class="edit-profile-form" action="" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
     <h2>Edit Profile</h2>
 
     <!-- Profile Picture -->
@@ -537,32 +562,46 @@ body {
     <!-- Name -->
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($row['user_name']); ?>" required>
+        <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($row['user_name']); ?>" required oninput="validateName()">
+        <small class="error-message" id="nameError" style="display: none;">Name must be at least 6 characters long.</small>
     </div>
 
     <!-- Email -->
     <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($row['user_email']); ?>" required>
+        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($row['user_email']); ?>" required oninput="validateEmail()">
+        <small class="error-message" id="emailError" style="display: none;">Please enter a valid email (must include '@' and '.').</small>
     </div>
 
-    <!-- Password with Eye Icon -->
+    <!-- Password -->
     <div class="form-group">
-        <label for="password">Password (leave blank to keep current password)</label>
-        <input type="password" id="password" name="password" placeholder="Enter new password (if changing)">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
         <span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
+        <small class="error-message" id="passwordError" style="display: none;">Password must include 1 uppercase letter, 1 number, 1 special character, and be 15 characters long.</small>
     </div>
 
     <!-- Contact Number -->
     <div class="form-group">
         <label for="contact">Contact Number</label>
-        <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($row['user_contact_number']); ?>" required>
+        <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($row['user_contact_number']); ?>" required oninput="validateContact()">
+        <small class="error-message" id="contactError" style="display: none;">Format must be xxx-xxxxxxx.</small>
+    </div>
+
+    <!-- Gender -->
+    <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" required>
+            <option value="male" <?php if ($row['user_gender'] === 'male') echo 'selected'; ?>>Male</option>
+            <option value="female" <?php if ($row['user_gender'] === 'female') echo 'selected'; ?>>Female</option>
+            <option value="other" <?php if ($row['user_gender'] === 'other') echo 'selected'; ?>>Other</option>
+        </select>
     </div>
 
     <!-- Address -->
     <div class="form-group">
         <label for="address">Address</label>
-        <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($row['user_address']); ?>" required>
+        <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($row['user_address']); ?>" >
     </div>
 
     <!-- Date of Birth -->
@@ -575,26 +614,107 @@ body {
     <input type="submit" name="submitbtn" value="Save Changes" class="submit-btn">
 </form>
 
-
 <script>
-function previewImage(event) {
-    const reader = new FileReader();
-    reader.onload = function() {
-        const preview = document.getElementById('profilePreview');
-        preview.src = reader.result; // Set the image source to the uploaded file
-    };
-    reader.readAsDataURL(event.target.files[0]); // Read the uploaded file
-}
+    function togglePasswordVisibility() {
+        const passwordField = document.getElementById('password');
+        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
 
-function togglePasswordVisibility() {
-    const passwordInput = document.getElementById('password');
-    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordInput.setAttribute('type', type);
-}
+    function validatePassword() {
+        const passwordField = document.getElementById('password');
+        const passwordError = document.getElementById('passwordError');
+        const password = passwordField.value;
+
+        // Regex to check password criteria
+        const hasUppercase = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        const isValidLength = password.length >= 15;
+
+        // Show or hide error based on criteria
+        if (hasUppercase && hasNumber && hasSpecialChar && isValidLength) {
+            passwordError.style.display = 'none'; // Hide error
+            return true; // Password is valid
+        } else {
+            passwordError.style.display = 'block'; // Show error
+            passwordField.focus(); // Set focus to password field
+            return false; // Password is invalid
+        }
+    }
+
+    function validateName() {
+        const nameField = document.getElementById('name');
+        const nameError = document.getElementById('nameError');
+        if (nameField.value.length < 6) {
+            nameError.style.display = 'block';
+            return false;
+        } else {
+            nameError.style.display = 'none';
+            return true;
+        }
+    }
+
+    function validateEmail() {
+        const emailField = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(emailField.value)) {
+            emailError.style.display = 'block';
+            return false;
+        } else {
+            emailError.style.display = 'none';
+            return true;
+        }
+    }
+
+    function validateContact() {
+        const contactField = document.getElementById('contact');
+        const contactError = document.getElementById('contactError');
+        const contactPattern = /^\d{3}-\d{7}$/;
+        if (!contactPattern.test(contactField.value)) {
+            contactError.style.display = 'block';
+            return false;
+        } else {
+            contactError.style.display = 'none';
+            return true;
+        }
+    }
+
+    function validateForm() {
+        // Validate each field and store errors
+        const isNameValid = validateName();
+        const isEmailValid = validateEmail();
+        const isPasswordValid = validatePassword();
+        const isContactValid = validateContact();
+
+        // Check if all validations passed
+        if (!isNameValid) {
+            document.getElementById('name').focus();
+            return false;
+        } else if (!isEmailValid) {
+            document.getElementById('email').focus();
+            return false;
+        } else if (!isPasswordValid) {
+            // Focus on password field if invalid
+            return false;
+        } else if (!isContactValid) {
+            document.getElementById('contact').focus();
+            return false;
+        }
+        
+        // If all fields are valid, allow form submission
+        return true;
+    }
+
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const preview = document.getElementById('profilePreview');
+            preview.src = reader.result; // Set the image source to the uploaded file
+        };
+        reader.readAsDataURL(event.target.files[0]); // Read the uploaded file
+    }
 </script>
-
-
-
 
 
 

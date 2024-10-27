@@ -31,7 +31,8 @@ if (isset($_POST["loginbtn"])) {
     $row = $result->fetch_assoc();
 
     // Check if user exists and verify password
-	if ($row && password_verify($password, $row['user_password'])) {
+	if ($row && $password === $row['user_password']) {
+
 		// Successful login
 		$_SESSION['user_name'] = $row['user_name'];
 		$_SESSION['id'] = $row['user_id']; // Ensure 'user_id' is correct
