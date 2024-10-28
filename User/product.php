@@ -9,7 +9,8 @@ $dbname = "fyp";
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
 } else {
-    die("User not logged in.");
+    header("Location: login.php"); 
+	exit;
 }
 
 $conn = new mysqli($servername, $username, $password, $dbname);
