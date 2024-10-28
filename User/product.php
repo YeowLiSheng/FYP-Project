@@ -10,6 +10,8 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+$_SESSION['user_id'] = $user['id']; // Assuming $user['id'] contains the logged-in user's ID
+$_SESSION['logged_in'] = true;
 if (!isset($_SESSION['user_id'])) {
     echo "User is not logged in.";
     // Redirect to login page or handle the error as needed
