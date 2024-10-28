@@ -45,9 +45,10 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
+    $user_id = $_SESSION['id']; // Get the logged-in user ID
 
-    // Insert data into shopping_cart table
-    $cart_query = "INSERT INTO shopping_cart (product_id, qty, total_price) VALUES ($product_id, $qty, $total_price)";
+    // Insert data into shopping_cart table, including the user_id
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
     if ($conn->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
