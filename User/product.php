@@ -1,25 +1,31 @@
 <?php
 session_start(); // Start the session
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fyp";
 
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-// Include the database connection file
-include("dataconnection.php"); 
-
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-    // User is not logged in, redirect to login page
-    header("Location: login.php");
-    exit();
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
 
-// Check if the database connection exists
-if (!isset($connect) || !$connect) {
-    die("Database connection failed.");
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+} else {
+    echo "User not found.";
+    exit;
 }
-
-// Now you can access the session variables
-$userName = $_SESSION['user_name'];
-$userId = $_SESSION['id'];
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -39,18 +45,13 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-    $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
-    if ($user_id) {
-        // Insert data into shopping_cart table
-        $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-        if ($conn->query($cart_query) === TRUE) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => $conn->error]);
-        }
+    // Insert data into shopping_cart table
+    $cart_query = "INSERT INTO shopping_cart (product_id, qty, total_price) VALUES ($product_id, $qty, $total_price)";
+    if ($conn->query($cart_query) === TRUE) {
+        echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'error' => 'User not logged in.']);
+        echo json_encode(['success' => false, 'error' => $conn->error]);
     }
     exit;
 }
@@ -1024,7 +1025,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     $(document).on('click', '.js-addcart-detail', function(event) {
     event.preventDefault();
-
+    
     const productId = $('.js-show-modal1').data('id');
     const productName = $('.js-name-detail').text();
     const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
@@ -1044,11 +1045,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         success: function(response) {
             if (response.success) {
                 alert(`${productName} has been added to your cart!`);
-                updateCart();
-                $('.js-modal1').removeClass('show-modal1');
             } else {
                 alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
             }
+            updateCart();
+            $('.js-modal1').removeClass('show-modal1');
         },
         error: function() {
             alert('An error occurred while adding to the cart.');
