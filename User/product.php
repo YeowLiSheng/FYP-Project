@@ -1,27 +1,26 @@
 <?php
-session_start(); // Make sure this is at the top of the file
+session_start(); // Start the session at the top
+
+// Check if user is logged in
+if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+    header('Location: login.php'); // Redirect to login if not logged in
+    exit();
+}
+
+// Retrieve user ID from session
+$user_id = $_SESSION['user_id'];
+
+// Database connection
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
-// After successful login
-$_SESSION['user_id'] = $user['id']; // Assuming $user['id'] contains the logged-in user's ID
-$_SESSION['logged_in'] = true;
-
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
-    echo "You are not logged in!";
-    // Optionally, redirect to the login page
-    header('Location: login.php');
-    exit();
-} else {
-    $user_id = $_SESSION['user_id']; // Retrieve the user's ID
-}
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);

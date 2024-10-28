@@ -152,7 +152,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="product-detail.php">Features</a>
 							</li>
 
 							<li>
