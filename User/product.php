@@ -1,14 +1,15 @@
 <?php
-session_start(); // Start the session at the top
+session_start(); // Start the session to access session variables
 
-// Check if user is logged in
-if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
-    header('Location: login.php'); // Redirect to login if not logged in
+// Check if the user is logged in by verifying if session variables are set
+if (!isset($_SESSION['id']) || !isset($_SESSION['user_name'])) {
+    // Redirect to login page if the user is not logged in
+    echo "<script>
+            alert('Please log in to access this page.');
+            window.location.href = 'login.php';
+          </script>";
     exit();
 }
-
-// Retrieve user ID from session
-$user_id = $_SESSION['user_id'];
 
 // Database connection
 $servername = "localhost";
@@ -20,7 +21,19 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+// Retrieve the user ID and name from the session
+$userId = $_SESSION['id'];
+$userName = $_SESSION['user_name'];
 
+// Example: Retrieve user-specific products or display user-specific content
+// Prepare a SQL query to get products specific to this user if needed
+$query = "SELECT * FROM products WHERE user_id = ?";
+$stmt = $con->prepare($query);
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+
+// Get the result of the query
+$result = $stmt->get_result();
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
