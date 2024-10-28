@@ -1,4 +1,15 @@
 <?php
+session_start();
+
+// Assuming `user_id` is saved in the session during login
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login if `user_id` is not set
+    header('Location: login.php');
+    exit();
+}
+
+$user_id = $_SESSION['user_id'];
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -8,11 +19,6 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
-}
-$user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
-
-if (!$user_id) {
-    die("User not logged in.");
 }
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
@@ -28,14 +34,14 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-// Handle AJAX request to add product to shopping cart
+// Handle AJAX request to add product to shopping cart with user_id
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
 
-    // Insert data into shopping_cart table
-    $cart_query = "INSERT INTO shopping_cart (product_id, qty, total_price) VALUES ($product_id, $qty, $total_price)";
+    // Use the `user_id` from session to associate with the shopping cart
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
     if ($conn->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
@@ -1021,14 +1027,13 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     const totalPrice = productPrice * productQuantity;
 
     $.ajax({
-        url: '', // Use the same PHP file
+        url: '', // Same PHP file
         type: 'POST',
         data: {
             add_to_cart: true,
             product_id: productId,
             qty: productQuantity,
-            total_price: totalPrice,
-            user_id: <?php echo json_encode($user_id); ?> // Passing user_id from PHP
+            total_price: totalPrice
         },
         dataType: 'json',
         success: function(response) {
