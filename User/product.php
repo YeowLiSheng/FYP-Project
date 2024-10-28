@@ -1,38 +1,30 @@
 <?php
-session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
+session_start(); // Start the session
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Include the database connection file
+include("dataconnection.php"); 
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
-$_SESSION['user_id'] = $user['id']; // Assuming $user['id'] contains the logged-in user's ID
-$_SESSION['logged_in'] = true;
-if (!isset($_SESSION['user_id'])) {
-    echo "User is not logged in.";
-    // Redirect to login page or handle the error as needed
-    header("Location: login.php");
-    exit();
+
+// Check if the database connection exists
+if (!isset($connect) || !$connect) {
+    die("Database connection failed.");
+}
+
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
 } else {
-    // If user is logged in, retrieve their ID from the session
-    $user_id = $_SESSION['user_id'];
-
-    // Assuming you have a database connection already set up as $conn
-    // Retrieve user details from the database
-    $query = "SELECT * FROM users WHERE id = $user_id"; // Replace 'users' and 'id' with your table and column names
-    $result = $conn->query($query);
-
-    if ($result && $result->num_rows > 0) {
-        // Fetch user details into an associative array
-        $user = $result->fetch_assoc();
-    } else {
-        echo "User details not found in the database.";
-        // Optionally, log the user out or handle the error as appropriate
-    }
+    echo "User not found.";
+    exit;
 }
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
