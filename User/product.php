@@ -1,15 +1,7 @@
 <?php
-session_start();
+session_start(); // Start the session
 
-// Get the user ID from the session
-$user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
-// Check if the user is logged in
-if (!$user_id) {
-    // Redirect to the login page if the user is not logged in
-    header("Location: login.php");
-    exit;
-}
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -17,9 +9,20 @@ $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    // User is not logged in, redirect to login page
+    header("Location: login.php");
+    exit();
+}
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+// Now you can access the session variables
+$userName = $_SESSION['user_name'];
+$userId = $_SESSION['id'];
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -35,18 +38,22 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     exit; // Stop further script execution
 }
 // Handle AJAX request to add product to shopping cart
-if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price']) && isset($_POST['user_id'])) {
+if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-    $user_id = intval($_POST['user_id']); // Get the user ID
+    $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
-    // Insert data into shopping_cart table
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-    if ($conn->query($cart_query) === TRUE) {
-        echo json_encode(['success' => true]);
+    if ($user_id) {
+        // Insert data into shopping_cart table
+        $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+        if ($conn->query($cart_query) === TRUE) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => $conn->error]);
+        }
     } else {
-        echo json_encode(['success' => false, 'error' => $conn->error]);
+        echo json_encode(['success' => false, 'error' => 'User not logged in.']);
     }
     exit;
 }
@@ -1020,13 +1027,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     $(document).on('click', '.js-addcart-detail', function(event) {
     event.preventDefault();
-    
+
     const productId = $('.js-show-modal1').data('id');
     const productName = $('.js-name-detail').text();
     const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
     const productQuantity = parseInt($('.num-product').val());
     const totalPrice = productPrice * productQuantity;
-    const userId = <?php echo json_encode($user_id); ?>; // Get the user ID from PHP
 
     $.ajax({
         url: '', // Use the same PHP file
@@ -1035,18 +1041,17 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             add_to_cart: true,
             product_id: productId,
             qty: productQuantity,
-            total_price: totalPrice,
-            user_id: userId // Include user ID in the request
+            total_price: totalPrice
         },
         dataType: 'json',
         success: function(response) {
             if (response.success) {
                 alert(`${productName} has been added to your cart!`);
+                updateCart();
+                $('.js-modal1').removeClass('show-modal1');
             } else {
                 alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
             }
-            updateCart();
-            $('.js-modal1').removeClass('show-modal1');
         },
         error: function() {
             alert('An error occurred while adding to the cart.');

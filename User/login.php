@@ -46,7 +46,7 @@ if (isset($_POST["loginbtn"])) {
 	} else {
 		echo '<script>alert("Invalid Email or Password");</script>';
 	}
-	$_SESSION['user_id'] = $user_id;
+	
 
     // Close the statement and connection
     $stmt->close();
