@@ -1,39 +1,25 @@
 <?php
-session_start(); // Start the session to access session variables
+session_start();
 
-// Check if the user is logged in by verifying if session variables are set
-if (!isset($_SESSION['id']) || !isset($_SESSION['user_name'])) {
-    // Redirect to login page if the user is not logged in
-    echo "<script>
-            alert('Please log in to access this page.');
-            window.location.href = 'login.php';
-          </script>";
-    exit();
+// Get the user ID from the session
+$user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+
+// Check if the user is logged in
+if (!$user_id) {
+    // Redirect to the login page if the user is not logged in
+    header("Location: login.php");
+    exit;
 }
-
-// Database connection
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
+
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-// Retrieve the user ID and name from the session
-$userId = $_SESSION['id'];
-$userName = $_SESSION['user_name'];
-
-// Example: Retrieve user-specific products or display user-specific content
-// Prepare a SQL query to get products specific to this user if needed
-$query = "SELECT * FROM products WHERE user_id = ?";
-$stmt = $con->prepare($query);
-$stmt->bind_param("i", $userId);
-$stmt->execute();
-
-// Get the result of the query
-$result = $stmt->get_result();
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -48,21 +34,19 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
+// Handle AJAX request to add product to shopping cart
+if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price']) && isset($_POST['user_id'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-    $user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 0; // Ensure user ID is retrieved from session
+    $user_id = intval($_POST['user_id']); // Get the user ID
 
-    if ($user_id > 0) {
-        $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-        if ($conn->query($cart_query) === TRUE) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => $conn->error]);
-        }
+    // Insert data into shopping_cart table
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+    if ($conn->query($cart_query) === TRUE) {
+        echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'error' => 'User not logged in']);
+        echo json_encode(['success' => false, 'error' => $conn->error]);
     }
     exit;
 }
@@ -188,7 +172,9 @@ $product_result = $conn->query($product_query);
 							Help & FAQs
 						</a>
 
-						
+						<a href="#" class="flex-c-m trans-04 p-lr-25">
+							My Account
+						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -197,23 +183,6 @@ $product_result = $conn->query($product_query);
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
-
-
-
-
-                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
-                            <?php
-                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
-                            ?>
-                        </a>
-
-
-                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
-							LOG OUT
-						</a>
-
-
-
 					</div>
 				</div>
 			</div>
@@ -1051,12 +1020,13 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     $(document).on('click', '.js-addcart-detail', function(event) {
     event.preventDefault();
-
+    
     const productId = $('.js-show-modal1').data('id');
     const productName = $('.js-name-detail').text();
     const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
     const productQuantity = parseInt($('.num-product').val());
     const totalPrice = productPrice * productQuantity;
+    const userId = <?php echo json_encode($user_id); ?>; // Get the user ID from PHP
 
     $.ajax({
         url: '', // Use the same PHP file
@@ -1065,7 +1035,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             add_to_cart: true,
             product_id: productId,
             qty: productQuantity,
-            total_price: totalPrice
+            total_price: totalPrice,
+            user_id: userId // Include user ID in the request
         },
         dataType: 'json',
         success: function(response) {
