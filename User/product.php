@@ -8,7 +8,7 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+
 
 $servername = "localhost";
 $username = "root";
