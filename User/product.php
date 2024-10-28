@@ -9,6 +9,11 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+$user_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
+
+if (!$user_id) {
+    die("User not logged in.");
+}
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -1022,7 +1027,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             add_to_cart: true,
             product_id: productId,
             qty: productQuantity,
-            total_price: totalPrice
+            total_price: totalPrice,
+            user_id: <?php echo json_encode($user_id); ?> // Passing user_id from PHP
         },
         dataType: 'json',
         success: function(response) {
