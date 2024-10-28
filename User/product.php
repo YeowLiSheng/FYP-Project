@@ -17,7 +17,7 @@ if (!isset($_SESSION['id'])) {
 }
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
+$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
 
 // Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
