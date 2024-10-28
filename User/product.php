@@ -2,12 +2,8 @@
 session_start(); // Start the session
 
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Include the database connection file
+include("dataconnection.php"); 
 
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
@@ -16,8 +12,9 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check if the database connection exists
+if (!isset($connect) || !$connect) {
+    die("Database connection failed.");
 }
 
 // Now you can access the session variables
