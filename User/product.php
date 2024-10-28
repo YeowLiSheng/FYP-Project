@@ -5,19 +5,16 @@ $username = "root";
 $password = "";
 $dbname = "fyp";
 
-// Check if user is logged in and retrieve the user ID from the session
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-} else {
-    header("Location: login.php"); 
-	exit;
-}
-
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    die("User not logged in"); // Redirect or handle the case when user isn't logged in
+}
+$user_id = $_SESSION['user_id']; // Store the user ID for use in this page
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
