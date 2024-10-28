@@ -1,6 +1,5 @@
 <?php
-session_start(); // Start the session
-
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -8,28 +7,16 @@ $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check if the user is logged in
-if (!isset($_SESSION['id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
-    exit;
-}
-
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-// Retrieve the user information
-$user_id = $_SESSION['id'];
-$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
-
-// Check if the query was successful and fetch user data
-if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
-} else {
-    echo "User not found.";
-    exit;
+// Ensure the user is logged in and has a user ID
+if (!isset($_SESSION['user_id'])) {
+    // Redirect to login page or show an error
+    die("User not logged in.");
 }
 
+$user_id = $_SESSION['user_id']; // Retrieve the user ID from the session
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -44,14 +31,15 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-// Handle AJAX request to add product to shopping cart with user_id
+// Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-
-    // Use the `user_id` from session to associate with the shopping cart
+    
+    // Insert data into shopping_cart table with user_id
     $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+    
     if ($conn->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
@@ -181,8 +169,15 @@ $product_result = $conn->query($product_query);
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
+						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
@@ -1029,7 +1024,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     $(document).on('click', '.js-addcart-detail', function(event) {
     event.preventDefault();
-    
+
     const productId = $('.js-show-modal1').data('id');
     const productName = $('.js-name-detail').text();
     const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
@@ -1037,7 +1032,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     const totalPrice = productPrice * productQuantity;
 
     $.ajax({
-        url: '', // Same PHP file
+        url: '', // Use the same PHP file
         type: 'POST',
         data: {
             add_to_cart: true,
@@ -1049,11 +1044,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         success: function(response) {
             if (response.success) {
                 alert(`${productName} has been added to your cart!`);
+                updateCart();
+                $('.js-modal1').removeClass('show-modal1');
             } else {
                 alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
             }
-            updateCart();
-            $('.js-modal1').removeClass('show-modal1');
         },
         error: function() {
             alert('An error occurred while adding to the cart.');
