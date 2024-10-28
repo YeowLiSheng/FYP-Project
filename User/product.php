@@ -26,6 +26,16 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+// Fetch and combine cart items for the logged-in user where the product_id is the same
+$cart_items_query = "
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
+           SUM(sc.qty) AS total_qty, 
+           SUM(sc.total_price) AS total_price 
+    FROM shopping_cart sc 
+    JOIN product p ON sc.product_id = p.product_id 
+    WHERE sc.user_id = $user_id 
+    GROUP BY sc.product_id";
+$cart_items_result = $conn->query($cart_items_query);
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -398,12 +408,36 @@ $product_result = $conn->query($product_query);
         
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
-                <!-- Cart items will be dynamically added here -->
+                <?php
+                // Display combined cart items
+                $total_price = 0;
+                if ($cart_items_result->num_rows > 0) {
+                    while($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $cart_item['product_name'] . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+                            </div>
+                        </li>';
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
             </ul>
             
             <div class="w-full">
                 <div class="header-cart-total w-full p-tb-40">
-                    Total: $<span id="cart-total">0.00</span>
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
                 </div>
 
                 <div class="header-cart-buttons flex-w w-full">
