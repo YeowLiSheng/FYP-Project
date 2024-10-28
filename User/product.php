@@ -175,9 +175,17 @@ $product_result = $conn->query($product_query);
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
+						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
 						</a>
+
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
