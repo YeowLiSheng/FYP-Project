@@ -175,7 +175,20 @@ $product_result = $conn->query($product_query);
 							Help & FAQs
 						</a>
 
-						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+						
+
+						<a href="#" class="flex-c-m trans-04 p-lr-25">
+							EN
+						</a>
+
+						<a href="#" class="flex-c-m trans-04 p-lr-25">
+							USD
+						</a>
+
+
+
+
+                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
                             <?php
                                 echo "HI '" . htmlspecialchars($row["user_name"]) ;
                             ?>
@@ -187,13 +200,7 @@ $product_result = $conn->query($product_query);
 						</a>
 
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							EN
-						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
-						</a>
 					</div>
 				</div>
 			</div>
