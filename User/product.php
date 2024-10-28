@@ -11,7 +11,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 // After successful login
-$_SESSION['user_id'] = $user['id']; // Assuming $user['id'] contains the logged-in user's ID
+$_SESSION['user_id'] = $user['user_id']; 
 $_SESSION['logged_in'] = true;
 
 if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
