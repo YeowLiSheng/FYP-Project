@@ -10,17 +10,27 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-// After successful login
-$_SESSION['user_id'] = $user['user_id']; 
-$_SESSION['logged_in'] = true;
-
-if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
-    echo "You are not logged in!";
-    // Optionally, redirect to the login page
-    header('Location: login.php');
+if (!isset($_SESSION['user_id'])) {
+    echo "User is not logged in.";
+    // Redirect to login page or handle the error as needed
+    header("Location: login.php");
     exit();
 } else {
-    $user_id = $_SESSION['user_id']; // Retrieve the user's ID
+    // If user is logged in, retrieve their ID from the session
+    $user_id = $_SESSION['user_id'];
+
+    // Assuming you have a database connection already set up as $conn
+    // Retrieve user details from the database
+    $query = "SELECT * FROM users WHERE id = $user_id"; // Replace 'users' and 'id' with your table and column names
+    $result = $conn->query($query);
+
+    if ($result && $result->num_rows > 0) {
+        // Fetch user details into an associative array
+        $user = $result->fetch_assoc();
+    } else {
+        echo "User details not found in the database.";
+        // Optionally, log the user out or handle the error as appropriate
+    }
 }
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
