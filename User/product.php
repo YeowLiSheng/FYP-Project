@@ -10,13 +10,22 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-// Ensure the user is logged in and has a user ID
-if (!isset($_SESSION['user_id'])) {
-    // Redirect to login page or show an error
-    die("User not logged in.");
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
 
-$user_id = $_SESSION['user_id']; // Retrieve the user ID from the session
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+} else {
+    echo "User not found.";
+    exit;
+}
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
