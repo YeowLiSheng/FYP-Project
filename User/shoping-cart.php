@@ -36,22 +36,6 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
-// Handle AJAX request to add product to shopping cart
-if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
-    $product_id = intval($_POST['product_id']);
-    $qty = intval($_POST['qty']);
-    $total_price = doubleval($_POST['total_price']);
-    $user_id = $_SESSION['id']; // Get the logged-in user ID
-
-    // Insert data into shopping_cart table, including the user_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-    if ($conn->query($cart_query) === TRUE) {
-        echo json_encode(['success' => true]);
-    } else {
-        echo json_encode(['success' => false, 'error' => $conn->error]);
-    }
-    exit;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
