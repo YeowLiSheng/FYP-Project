@@ -148,11 +148,11 @@ if ($result && mysqli_num_rows($result) > 0) {
 							</li>
 
 							<li>
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="product-detail.php">Features</a>
 							</li>
 
 							<li>
