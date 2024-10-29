@@ -136,9 +136,7 @@ $conn->close();
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
-						</a>
+						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -147,6 +145,23 @@ $conn->close();
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
+
+
+
+
+                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
+						</a>
+
+
+
 					</div>
 				</div>
 			</div>
@@ -163,7 +178,7 @@ $conn->close();
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li>
-								<a href="index.html">Home</a>
+								<a href="dashboard.php">Home</a>
 								<ul class="sub-menu">
 									<li><a href="index.html">Homepage 1</a></li>
 									<li><a href="home-02.html">Homepage 2</a></li>
@@ -172,7 +187,7 @@ $conn->close();
 							</li>
 
 							<li>
-								<a href="product.html">Shop</a>
+								<a href="product.pho">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
