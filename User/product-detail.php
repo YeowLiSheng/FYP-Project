@@ -1,4 +1,5 @@
 <?php
+session_start(); 
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -8,6 +9,62 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
+}
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
+}
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+} else {
+    echo "User not found.";
+    exit;
+}
+// Fetch and combine cart items for the logged-in user where the product_id is the same
+$cart_items_query = "
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
+           SUM(sc.qty) AS total_qty, 
+           SUM(sc.total_price) AS total_price 
+    FROM shopping_cart sc 
+    JOIN product p ON sc.product_id = p.product_id 
+    WHERE sc.user_id = $user_id 
+    GROUP BY sc.product_id";
+$cart_items_result = $conn->query($cart_items_query);
+// Handle AJAX request to fetch product details
+if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
+    $product_id = intval($_GET['id']);
+    $query = "SELECT * FROM product WHERE product_id = $product_id";
+    $result = $conn->query($query);
+
+    if ($result->num_rows > 0) {
+        $product = $result->fetch_assoc();
+        echo json_encode($product);
+    } else {
+        echo json_encode(null);
+    }
+    exit; // Stop further script execution
+}
+// Handle AJAX request to add product to shopping cart
+if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
+    $product_id = intval($_POST['product_id']);
+    $qty = intval($_POST['qty']);
+    $total_price = doubleval($_POST['total_price']);
+    $user_id = $_SESSION['id']; // Get the logged-in user ID
+
+    // Insert data into shopping_cart table, including the user_id
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+    if ($conn->query($cart_query) === TRUE) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'error' => $conn->error]);
+    }
+    exit;
 }
 $product_id = $_GET['id']; // Get the product ID from the URL
 
@@ -268,90 +325,67 @@ $conn->close();
 	</header>
 
 	<!-- Cart -->
-	<div class="wrap-header-cart js-panel-cart">
-		<div class="s-full js-hide-cart"></div>
+<div class="wrap-header-cart js-panel-cart">
+    <div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+    <div class="header-cart flex-col-l p-l-65 p-r-25">
+        <div class="header-cart-title flex-w flex-sb-m p-b-8">
+            <span class="mtext-103 cl2">
+                Your Cart
+            </span>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-					<i class="zmdi zmdi-close"></i>
-				</div>
-			</div>
-			
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full">
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-01.jpg" alt="IMG">
-						</div>
+            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                <i class="zmdi zmdi-close"></i>
+            </div>
+        </div>
+        
+        <div class="header-cart-content flex-w js-pscroll">
+            <ul class="header-cart-wrapitem w-full" id="cart-items">
+                <?php
+                // Display combined cart items
+                $total_price = 0;
+                if ($cart_items_result->num_rows > 0) {
+                    while($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $cart_item['product_name'] . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+                            </div>
+                        </li>';
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
+            </ul>
+            
+            <div class="w-full">
+                <div class="header-cart-total w-full p-tb-40">
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                </div>
 
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								White Shirt Pleat
-							</a>
+                <div class="header-cart-buttons flex-w w-full">
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        View Cart
+                    </a>
 
-							<span class="header-cart-item-info">
-								1 x $19.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-02.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Converse All Star
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $39.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-03.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Nixon Porter Leather
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $17.00
-							</span>
-						</div>
-					</li>
-				</ul>
-				
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
-					</div>
-
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
-
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                        Check Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 	<!-- breadcrumb -->
 	<div class="container">
