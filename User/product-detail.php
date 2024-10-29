@@ -187,7 +187,7 @@ $conn->close();
 							</li>
 
 							<li>
-								<a href="product.pho">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
