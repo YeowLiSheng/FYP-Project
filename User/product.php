@@ -1043,69 +1043,80 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 <script>
-    let cart = [];
+    $(document).on('click', '.js-show-modal1', function(event) {
+        event.preventDefault();
+        var productId = $(this).data('id');
+        
+        // Make an AJAX call to fetch product details
+        $.ajax({
+            url: '', // The same PHP file
+            type: 'GET',
+            data: { fetch_product: true, id: productId },
+            dataType: 'json',
+            success: function(response) {
+                if (response) {
+                    // Populate the modal with product data
+                    $('.js-name-detail').text(response.product_name);
+                    $('.mtext-106').text('$' + response.product_price);
+                    $('.stext-102').text(response.product_des);
 
-    function updateCart() {
-        const cartItemsContainer = $('#cart-items');
-        const cartTotalElement = $('#cart-total');
-        let total = 0;
-        cartItemsContainer.empty();
+                    // Store the product ID for later access
+                    $('.js-addcart-detail').data('id', productId);
+                    
+                    // Update Quick View images
+                    $('.gallery-lb .item-slick3').each(function(index) {
+                        var imagePath = 'images/' + response['Quick_View' + (index + 1)];
+                        $(this).find('.wrap-pic-w img').attr('src', imagePath);
+                        $(this).find('.wrap-pic-w a').attr('href', imagePath);
+                        $(this).attr('data-thumb', imagePath);
+                    });
 
-        cart.forEach(item => {
-            total += item.price * item.quantity;
-            cartItemsContainer.append(`
-                <li class="header-cart-item flex-w flex-t m-b-12">
-                    <div class="header-cart-item-img">
-                        <img src="images/${item.image}" alt="IMG">
-                    </div>
-                    <div class="header-cart-item-txt p-t-8">
-                        <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                            ${item.name} (ID: ${item.id})
-                        </a>
-                        <span class="header-cart-item-info">
-                            ${item.quantity} x $${item.price.toFixed(2)}
-                        </span>
-                    </div>
-                </li>
-            `);
-        });
-
-        cartTotalElement.text(total.toFixed(2));
-    }
-
-    $(document).on('click', '.js-addcart-detail', function(event) {
-    event.preventDefault();
-    
-    const productId = $('.js-show-modal1').data('id');
-    const productName = $('.js-name-detail').text();
-    const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
-    const productQuantity = parseInt($('.num-product').val());
-    const totalPrice = productPrice * productQuantity;
-
-    $.ajax({
-        url: '', // Use the same PHP file
-        type: 'POST',
-        data: {
-            add_to_cart: true,
-            product_id: productId,
-            qty: productQuantity,
-            total_price: totalPrice
-        },
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                alert(`${productName} has been added to your cart!`);
-            } else {
-                alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                    // Show the modal
+                    $('.js-modal1').addClass('show-modal1');
+                } else {
+                    alert('Product details not found.');
+                }
+            },
+            error: function() {
+                alert('An error occurred while fetching product details.');
             }
-            updateCart();
-            $('.js-modal1').removeClass('show-modal1');
-        },
-        error: function() {
-            alert('An error occurred while adding to the cart.');
-        }
+        });
     });
-});
+
+    // Update the 'Add to Cart' functionality to use the correct product ID
+    $(document).on('click', '.js-addcart-detail', function(event) {
+        event.preventDefault();
+        
+        const productId = $(this).data('id'); // Get product ID from the modal button data
+        const productName = $('.js-name-detail').text();
+        const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
+        const productQuantity = parseInt($('.num-product').val());
+        const totalPrice = productPrice * productQuantity;
+
+        $.ajax({
+            url: '', // Use the same PHP file
+            type: 'POST',
+            data: {
+                add_to_cart: true,
+                product_id: productId,
+                qty: productQuantity,
+                total_price: totalPrice
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert(`${productName} has been added to your cart!`);
+                } else {
+                    alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                }
+                updateCart();
+                $('.js-modal1').removeClass('show-modal1');
+            },
+            error: function() {
+                alert('An error occurred while adding to the cart.');
+            }
+        });
+    });
 </script>
 <script src="js/main.js"></script>
 
