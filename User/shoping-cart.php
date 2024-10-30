@@ -31,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['product_qty'] as $product_id => $qty) {
         $qty = intval($qty);
         if ($qty > 0) {
-            // Update the quantity and total price in the database
             $update_query = "
                 UPDATE shopping_cart 
                 SET qty = $qty, 
@@ -40,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
             $conn->query($update_query);
         }
     }
-    // Reload the page to show the updated cart
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -373,55 +371,71 @@ $cart_items_result = $conn->query($cart_items_query);
 		
 
 	<!-- Shopping Cart Form -->
-    <form class="bg0 p-t-75 p-b-85" method="POST" action="">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
-                    <div class="m-l-25 m-r--38 m-lr-0-xl">
-                        <div class="wrap-table-shopping-cart">
-                            <table class="table-shopping-cart">
-                                <tr class="table_head">
-                                    <th class="column-1">Product</th>
-                                    <th class="column-2"></th>
-                                    <th class="column-3">Price</th>
-                                    <th class="column-4">Quantity</th>
-                                    <th class="column-5">Total</th>
-                                </tr>
-                                <?php
-                                $cart_items_result = $conn->query($cart_items_query);
-                                if ($cart_items_result->num_rows > 0) {
-                                    while ($cart_item = $cart_items_result->fetch_assoc()) {
-                                        echo '
-                                        <tr class="table_row">
-                                            <td class="column-1">
-                                                <div class="how-itemcart1">
-                                                    <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+<form class="bg0 p-t-75 p-b-85" method="POST" action="">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
+                <div class="m-l-25 m-r--38 m-lr-0-xl">
+                    <div class="wrap-table-shopping-cart">
+                        <table class="table-shopping-cart">
+                            <tr class="table_head">
+                                <th class="column-1">Product</th>
+                                <th class="column-2"></th>
+                                <th class="column-3">Price</th>
+                                <th class="column-4">Quantity</th>
+                                <th class="column-5">Total</th>
+                            </tr>
+                            <?php
+                            if ($cart_items_result->num_rows > 0) {
+                                while ($cart_item = $cart_items_result->fetch_assoc()) {
+                                    echo '
+                                    <tr class="table_row">
+                                        <td class="column-1">
+                                            <div class="how-itemcart1">
+                                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                            </div>
+                                        </td>
+                                        <td class="column-2">' . $cart_item['product_name'] . '</td>
+                                        <td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
+                                        <td class="column-4">
+                                            <div class="wrap-num-product flex-w m-l-auto m-r-0">
+                                                <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                                                    <i class="fs-16 zmdi zmdi-minus"></i>
                                                 </div>
-                                            </td>
-                                            <td class="column-2">' . $cart_item['product_name'] . '</td>
-                                            <td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
-                                            <td class="column-4">
-                                                <div class="wrap-num-product flex-w m-l-auto m-r-0">
-                                                    <input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[' . $cart_item['product_id'] . ']" value="' . $cart_item['total_qty'] . '" min="1">
+                                                <input type="hidden" name="product_id[]" value="' . $cart_item['product_id'] . '">
+                                                <input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[' . $cart_item['product_id'] . ']" value="' . $cart_item['total_qty'] . '" readonly>
+                                                <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                                                    <i class="fs-16 zmdi zmdi-plus"></i>
                                                 </div>
-                                            </td>
-                                            <td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
-                                        </tr>';
-                                    }
-                                } else {
-                                    echo '<tr><td colspan="5">Your cart is empty.</td></tr>';
+                                            </div>
+                                        </td>
+                                        <td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
+                                    </tr>';
                                 }
-                                ?>
-                            </table>
+                            } else {
+                                echo '<tr><td colspan="5">Your cart is empty.</td></tr>';
+                            }
+                            ?>
+                        </table>
+                    </div>
+
+                    <!-- Apply Coupon and Update Cart Buttons -->
+                    <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
+                        <div class="flex-w flex-m m-r-20 m-tb-5">
+                            <input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Coupon Code">
+                            <div class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+                                Apply coupon
+                            </div>
                         </div>
-                        <div class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
-                            <button type="submit" name="update_cart" class="btn">Update Cart</button>
-                        </div>
+                        <button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
+                            Update Cart
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
+    </div>
+</form>
 
 
 				<div class="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
@@ -697,6 +711,23 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			})
 		});
 	</script>
+	<script>
+$(document).ready(function() {
+    $('.btn-num-product-down').click(function() {
+        let input = $(this).siblings('.num-product');
+        let currentValue = parseInt(input.val());
+        if (currentValue > 1) {
+            input.val(currentValue - 1);
+        }
+    });
+
+    $('.btn-num-product-up').click(function() {
+        let input = $(this).siblings('.num-product');
+        let currentValue = parseInt(input.val());
+        input.val(currentValue + 1);
+    });
+});
+</script>
 	<script src="js/main.js"></script>
 
 </body>
