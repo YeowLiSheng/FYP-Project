@@ -385,6 +385,7 @@ $cart_items_result = $conn->query($cart_items_query);
                                 <th class="column-5">Total</th>
                             </tr>
                             <?php
+                            // Check if there are items in the cart
                             if ($cart_items_result->num_rows > 0) {
                                 while ($cart_item = $cart_items_result->fetch_assoc()) {
                                     echo '
@@ -710,7 +711,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			})
 		});
 	</script>
-	<script>
+<script>
 $(document).ready(function() {
     $('.btn-num-product-down').click(function() {
         let input = $(this).siblings('.num-product');
