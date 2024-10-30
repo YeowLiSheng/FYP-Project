@@ -66,9 +66,14 @@ if ($cart_items_result->num_rows > 0) {
 // Apply discount after verifying voucher code, if applicable
 $discount_amount = 0; // Initialize discount amount
 $error_message = ""; // Initialize error message
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !empty($_POST['coupon'])) {
     $voucher_code = mysqli_real_escape_string($conn, $_POST['coupon']);
-    $voucher_query = "SELECT discount_rate, voucher_status, minimum_amount FROM voucher WHERE voucher_code = '$voucher_code' AND voucher_status = 'active' LIMIT 1";
+    $voucher_query = "
+        SELECT discount_rate, voucher_status, minimum_amount, usage_limit, voucher_id 
+        FROM voucher 
+        WHERE voucher_code = '$voucher_code' AND voucher_status = 'active' 
+        LIMIT 1";
     $voucher_result = $conn->query($voucher_query);
 
     if ($voucher_result && $voucher_result->num_rows > 0) {
@@ -86,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
         $error_message = "Invalid or inactive voucher code.";
     }
 }
+
 
 // Check if the voucher code has been used and track usage
 if ($discount_amount > 0) { // Only proceed if discount is applied
@@ -115,8 +121,20 @@ if ($discount_amount > 0) { // Only proceed if discount is applied
     }
 }
 
-// Calculate final subtotal
+// Calculate final total price after applying discount
 $final_total_price = $total_price - $discount_amount;
+
+// Update the shopping_cart table with the new final total price
+$update_final_total_query = "UPDATE shopping_cart SET final_total_price = $final_total_price WHERE user_id = $user_id";
+$conn->query($update_final_total_query);
+
+// Fetch the latest final total price from the shopping_cart table
+$final_price_query = "SELECT final_total_price FROM shopping_cart WHERE user_id = $user_id LIMIT 1";
+$final_price_result = $conn->query($final_price_query);
+if ($final_price_result && $final_price_result->num_rows > 0) {
+    $final_price_row = $final_price_result->fetch_assoc();
+    $final_total_price = $final_price_row['final_total_price']; // Use the stored final total price value
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
