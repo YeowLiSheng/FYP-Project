@@ -87,6 +87,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
     }
 }
 
+// Check if the voucher code has been used and track usage
+if ($discount_amount > 0) { // Only proceed if discount is applied
+    $usage_limit = $voucher['usage_limit'];
+    
+    // Check current usage for this user and voucher
+    $usage_query = "SELECT usage_num FROM voucher_usage WHERE user_id = $user_id AND voucher_id = " . $voucher['voucher_id'] . " LIMIT 1";
+    $usage_result = $conn->query($usage_query);
+    
+    if ($usage_result && $usage_result->num_rows > 0) {
+        $usage = $usage_result->fetch_assoc();
+        $current_usage = $usage['usage_num'];
+        
+        if ($current_usage >= $usage_limit) {
+            $error_message = "You have reached the maximum usage limit for this voucher.";
+            $discount_amount = 0; // Reset discount if limit is reached
+        } else {
+            // Update usage count
+            $new_usage = $current_usage + 1;
+            $update_usage_query = "UPDATE voucher_usage SET usage_num = $new_usage WHERE user_id = $user_id AND voucher_id = " . $voucher['voucher_id'];
+            $conn->query($update_usage_query);
+        }
+    } else {
+        // Insert new record if it's the user's first time using this voucher
+        $insert_usage_query = "INSERT INTO voucher_usage (user_id, voucher_id, usage_num) VALUES ($user_id, " . $voucher['voucher_id'] . ", 1)";
+        $conn->query($insert_usage_query);
+    }
+}
+
 // Calculate final subtotal
 $final_total_price = $total_price - $discount_amount;
 ?>
