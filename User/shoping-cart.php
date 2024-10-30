@@ -44,13 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
 }
 
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
-           SUM(sc.qty) AS total_qty, 
-           SUM(sc.total_price) AS total_price 
+    SELECT sc.cart_id, sc.product_id, sc.qty AS total_qty, 
+           p.product_name, p.product_image, p.product_price, 
+           (sc.qty * p.product_price) AS total_price 
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
-    WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
+    WHERE sc.user_id = $user_id";
 $cart_items_result = $conn->query($cart_items_query);
 ?>
 <!DOCTYPE html>
