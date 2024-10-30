@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
            SUM(sc.qty) AS total_qty, 
@@ -51,7 +51,6 @@ $cart_items_query = "
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
-$cart_items_result = $conn->query($cart_items_query);
 $cart_items_result = $conn->query($cart_items_query);
 ?>
 <!DOCTYPE html>
