@@ -84,28 +84,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
     $voucher_result = $conn->query($voucher_query);
 
     if ($voucher_result && $voucher_result->num_rows > 0) {
-        $voucher = $voucher_result->fetch_assoc();
-        $discount_rate = $voucher['discount_rate'];
-        $minimum_amount = $voucher['minimum_amount'];
-
-        // Check if total price meets the minimum amount required
-        if ($total_price >= $minimum_amount) {
-            $discount_amount = $total_price * ($discount_rate / 100); // Calculate discount amount
-            $final_total_price = $total_price - $discount_amount;
-
-            // Update the shopping_cart table with final total and set voucher_applied flag
-            $update_final_total_query = "
-                UPDATE shopping_cart 
-                SET final_total_price = $final_total_price, voucher_applied = 1 
-                WHERE user_id = $user_id";
-            $conn->query($update_final_total_query);
-
-        } else {
-            $error_message = "Your cart total must be at least $" . number_format($minimum_amount, 2) . " to use this voucher.";
-        }
-    } else {
-        $error_message = "Invalid or inactive voucher code.";
-    }
+		$voucher = $voucher_result->fetch_assoc();
+		$discount_rate = $voucher['discount_rate'];
+		$minimum_amount = $voucher['minimum_amount'];
+		$voucher_id = $voucher['voucher_id'];
+		$usage_limit = $voucher['usage_limit'];
+	
+		// Check the user's current usage of this voucher
+		$usage_query = "
+			SELECT usage_num 
+			FROM voucher_usage 
+			WHERE user_id = $user_id AND voucher_id = $voucher_id";
+		$usage_result = $conn->query($usage_query);
+	
+		if ($usage_result && $usage_row = $usage_result->fetch_assoc()) {
+			$current_usage = $usage_row['usage_num'];
+		} else {
+			$current_usage = 0; // No usage record found
+		}
+	
+		// Check if usage limit is reached
+		if ($current_usage < $usage_limit) {
+			// Check if total price meets the minimum amount required
+			if ($total_price >= $minimum_amount) {
+				$discount_amount = $total_price * ($discount_rate / 100);
+				$final_total_price = $total_price - $discount_amount;
+	
+				// Update shopping_cart with the final total and voucher_applied
+				$update_final_total_query = "
+					UPDATE shopping_cart 
+					SET final_total_price = $final_total_price, voucher_applied = 1 
+					WHERE user_id = $user_id";
+				$conn->query($update_final_total_query);
+	
+				// Update or insert the voucher usage record
+				if ($current_usage > 0) {
+					$conn->query("
+						UPDATE voucher_usage 
+						SET usage_num = usage_num + 1 
+						WHERE user_id = $user_id AND voucher_id = $voucher_id
+					");
+				} else {
+					$conn->query("
+						INSERT INTO voucher_usage (user_id, voucher_id, usage_num) 
+						VALUES ($user_id, $voucher_id, 1)
+					");
+				}
+			} else {
+				$error_message = "Your cart total must be at least $" . number_format($minimum_amount, 2) . " to use this voucher.";
+			}
+		} else {
+			$error_message = "You have reached the usage limit for this voucher.";
+		}
+	} else {
+		$error_message = "Invalid or inactive voucher code.";
+	}
 }
 
 // Retrieve final_total_price from database if voucher was previously applied
