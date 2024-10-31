@@ -29,11 +29,12 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
-// Handle the "Update Cart" form submission
+// Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['product_qty'] as $product_id => $qty) {
         $qty = intval($qty);
         if ($qty > 0) {
+            // Update quantity and total price for each product in the shopping cart
             $update_query = "
                 UPDATE shopping_cart 
                 SET qty = $qty, 
@@ -42,8 +43,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
             $conn->query($update_query);
         }
     }
+
+    // Check if a voucher was previously applied
+    $voucher_applied_check_query = "SELECT MAX(voucher_applied) AS voucher_applied FROM shopping_cart WHERE user_id = $user_id";
+    $voucher_applied_check_result = $conn->query($voucher_applied_check_query);
+    $voucher_applied_row = $voucher_applied_check_result->fetch_assoc();
+    if ($voucher_applied_row['voucher_applied'] == 1) {
+        // Reapply the voucher to recalculate final total
+        reapplyVoucher($conn, $user_id, $total_price);
+    }
+
+    // Reload the page to reflect changes
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
+}
+
+// Reapply the voucher if previously applied
+function reapplyVoucher($conn, $user_id, &$final_total_price) {
+    // Retrieve the applied voucher
+    $voucher_usage_query = "
+        SELECT v.discount_rate, v.minimum_amount, v.voucher_id 
+        FROM voucher_usage vu
+        JOIN voucher v ON vu.voucher_id = v.voucher_id
+        WHERE vu.user_id = $user_id AND vu.usage_num > 0";
+    $voucher_usage_result = $conn->query($voucher_usage_query);
+
+    if ($voucher_usage_result && $voucher = $voucher_usage_result->fetch_assoc()) {
+        $discount_rate = $voucher['discount_rate'];
+        $minimum_amount = $voucher['minimum_amount'];
+
+        // Recalculate the total price of the cart
+        $recalc_query = "
+            SELECT SUM(sc.qty * p.product_price) AS total_price 
+            FROM shopping_cart sc 
+            JOIN product p ON sc.product_id = p.product_id 
+            WHERE sc.user_id = $user_id";
+        $recalc_result = $conn->query($recalc_query);
+        $recalc_row = $recalc_result->fetch_assoc();
+        $total_price = $recalc_row['total_price'];
+
+        // Check if total meets minimum amount for voucher
+        if ($total_price >= $minimum_amount) {
+            $discount_amount = $total_price * ($discount_rate / 100);
+            $final_total_price = $total_price - $discount_amount;
+
+            // Update final total price in the shopping cart for each item
+            $update_final_total_query = "
+                UPDATE shopping_cart 
+                SET final_total_price = $final_total_price, voucher_applied = 1 
+                WHERE user_id = $user_id";
+            $conn->query($update_final_total_query);
+        } else {
+            // Remove voucher if conditions no longer met
+            $update_remove_voucher_query = "
+                UPDATE shopping_cart 
+                SET final_total_price = total_price, voucher_applied = 0 
+                WHERE user_id = $user_id";
+            $conn->query($update_remove_voucher_query);
+        }
+    }
 }
 
 // Initialize total_price before fetching cart items
@@ -528,9 +586,9 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
             					Apply Voucher
         					</button>
     					</div>
-						<a href="payment.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        	Check Out
-                    	</a>
+    						<button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
+       					 		Update Cart
+    						</button>
 					</div>
 
 					<?php if (!empty($error_message)): ?>
@@ -547,9 +605,9 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
     					</div>
-						<button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
-       					 		Update Cart
-    						</button>
+						<a href="payment.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        	Check Out
+                    	</a>
 					</div>
                 </div>
             </div>
