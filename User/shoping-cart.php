@@ -528,9 +528,9 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
             					Apply Voucher
         					</button>
     					</div>
-    						<button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
-       					 		Update Cart
-    						</button>
+						<a href="payment.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        	Check Out
+                    	</a>
 					</div>
 
 					<?php if (!empty($error_message)): ?>
@@ -547,6 +547,9 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
     					</div>
+						<button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
+       					 		Update Cart
+    						</button>
 					</div>
                 </div>
             </div>
