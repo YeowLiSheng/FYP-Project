@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -10,11 +10,13 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -25,6 +27,23 @@ if ($result && mysqli_num_rows($result) > 0) {
 } else {
     echo "User not found.";
     exit;
+}
+// Check if reset is requested (when leaving the page without checkout)
+if (isset($_POST['reset_voucher']) && $user_id) {
+    // Reset final total price and remove the applied voucher from shopping cart
+    $reset_cart_query = "
+        UPDATE shopping_cart 
+        SET final_total_price = total_price, voucher_applied = 0 
+        WHERE user_id = $user_id";
+    $conn->query($reset_cart_query);
+
+    // Remove voucher usage if any (optional if tracking)
+    $reset_voucher_query = "
+        DELETE FROM voucher_usage 
+        WHERE user_id = $user_id AND used_in_session = 'temporary_session'";
+    $conn->query($reset_voucher_query);
+
+    exit; // Stop further processing to handle only the reset request
 }
 // Handle the "Update Cart" form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
@@ -42,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
+
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
@@ -49,23 +69,26 @@ $total_price = 0;
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
            SUM(sc.qty) AS total_qty, 
-           SUM(sc.qty * p.product_price) AS total_price 
+           SUM(sc.qty * p.product_price) AS total_price, 
+           MAX(sc.final_total_price) AS final_total_price, 
+           MAX(sc.voucher_applied) AS voucher_applied
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
 
-// Calculate total price from cart items
-if ($cart_items_result->num_rows > 0) {
-    while($cart_item = $cart_items_result->fetch_assoc()) {
-        $total_price += $cart_item['total_price']; // Sum up the total price for each cart item
+// Calculate total price and final total price
+if ($cart_items_result && $cart_items_result->num_rows > 0) {
+    while ($cart_item = $cart_items_result->fetch_assoc()) {
+        $total_price += $cart_item['total_price'];
     }
 }
 
 // Apply discount after verifying voucher code, if applicable
 $discount_amount = 0; // Initialize discount amount
 $error_message = ""; // Initialize error message
+$final_total_price = $total_price;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !empty($_POST['coupon'])) {
     $voucher_code = mysqli_real_escape_string($conn, $_POST['coupon']);
@@ -80,10 +103,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
         $voucher = $voucher_result->fetch_assoc();
         $discount_rate = $voucher['discount_rate'];
         $minimum_amount = $voucher['minimum_amount'];
-        
+
         // Check if total price meets the minimum amount required
         if ($total_price >= $minimum_amount) {
             $discount_amount = $total_price * ($discount_rate / 100); // Calculate discount amount
+            $final_total_price = $total_price - $discount_amount;
+
+            // Update the shopping_cart table with final total and set voucher_applied flag
+            $update_final_total_query = "
+                UPDATE shopping_cart 
+                SET final_total_price = $final_total_price, voucher_applied = 1 
+                WHERE user_id = $user_id";
+            $conn->query($update_final_total_query);
+
         } else {
             $error_message = "Your cart total must be at least $" . number_format($minimum_amount, 2) . " to use this voucher.";
         }
@@ -92,48 +124,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
     }
 }
 
-
-// Check if the voucher code has been used and track usage
-if ($discount_amount > 0) { // Only proceed if discount is applied
-    $usage_limit = $voucher['usage_limit'];
-    
-    // Check current usage for this user and voucher
-    $usage_query = "SELECT usage_num FROM voucher_usage WHERE user_id = $user_id AND voucher_id = " . $voucher['voucher_id'] . " LIMIT 1";
-    $usage_result = $conn->query($usage_query);
-    
-    if ($usage_result && $usage_result->num_rows > 0) {
-        $usage = $usage_result->fetch_assoc();
-        $current_usage = $usage['usage_num'];
-        
-        if ($current_usage >= $usage_limit) {
-            $error_message = "You have reached the maximum usage limit for this voucher.";
-            $discount_amount = 0; // Reset discount if limit is reached
-        } else {
-            // Update usage count
-            $new_usage = $current_usage + 1;
-            $update_usage_query = "UPDATE voucher_usage SET usage_num = $new_usage WHERE user_id = $user_id AND voucher_id = " . $voucher['voucher_id'];
-            $conn->query($update_usage_query);
-        }
-    } else {
-        // Insert new record if it's the user's first time using this voucher
-        $insert_usage_query = "INSERT INTO voucher_usage (user_id, voucher_id, usage_num) VALUES ($user_id, " . $voucher['voucher_id'] . ", 1)";
-        $conn->query($insert_usage_query);
+// Retrieve final_total_price from database if voucher was previously applied
+$cart_total_query = "
+    SELECT MAX(final_total_price) AS final_total_price, MAX(voucher_applied) AS voucher_applied 
+    FROM shopping_cart 
+    WHERE user_id = $user_id";
+$cart_total_result = $conn->query($cart_total_query);
+if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
+    if ($cart_total_row['voucher_applied'] == 1) {
+        $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
-}
-
-// Calculate final total price after applying discount
-$final_total_price = $total_price - $discount_amount;
-
-// Update the shopping_cart table with the new final total price
-$update_final_total_query = "UPDATE shopping_cart SET final_total_price = $final_total_price WHERE user_id = $user_id";
-$conn->query($update_final_total_query);
-
-// Fetch the latest final total price from the shopping_cart table
-$final_price_query = "SELECT final_total_price FROM shopping_cart WHERE user_id = $user_id LIMIT 1";
-$final_price_result = $conn->query($final_price_query);
-if ($final_price_result && $final_price_result->num_rows > 0) {
-    $final_price_row = $final_price_result->fetch_assoc();
-    $final_total_price = $final_price_row['final_total_price']; // Use the stored final total price value
 }
 ?>
 <!DOCTYPE html>
@@ -221,7 +221,7 @@ if ($final_price_result && $final_price_result->num_rows > 0) {
 							</li>
 
 							<li>
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -521,15 +521,16 @@ if ($final_price_result && $final_price_result->num_rows > 0) {
 					<?php endif; ?>
 
 					<!-- Subtotal Section with Discount -->
-					<div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-    					<div class="size-208">
-        					<span class="stext-110 cl2">Subtotal:</span>
-    					</div>
+					<div class="flex-w flex-t p-t-15 p-b-20 p-lr-20 p-lr-15-sm">
     					<div class="size-209">
-        					<span class="mtext-110 cl2">
-            					$<?php echo number_format($final_total_price, 2); ?>
-        					</span>
+        					<span class="mtext-101 cl2">Subtotal:</span>
     					</div>
+    					<div class="size-209 p-r-20">
+        					<span class="mtext-110 cl2">$<?php echo number_format($final_total_price, 2); ?></span>
+    					</div>
+    					<button type="button" class="btn btn-primary" onclick="onCheckoutClick(); window.location.href='payment.php';">
+        					Checkout
+    					</button>
 					</div>
                 </div>
             </div>
@@ -739,6 +740,19 @@ $(document).ready(function() {
         input.val(currentValue + 1);
     });
 });
+</script>
+<script>
+    window.addEventListener("beforeunload", function (event) {
+        if (!sessionStorage.getItem("checkoutClicked")) {
+            // Send AJAX request to reset the cart if checkout isn't completed
+            navigator.sendBeacon(window.location.href, new URLSearchParams({ reset_voucher: "1" }));
+        }
+        sessionStorage.removeItem("checkoutClicked");
+    });
+
+    function onCheckoutClick() {
+        sessionStorage.setItem("checkoutClicked", "true");
+    }
 </script>
 	<script src="js/main.js"></script>
 
