@@ -391,6 +391,7 @@ if ($final_price_result && $final_price_result->num_rows > 0) {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
+				$cart_items_result = $conn->query($cart_items_query);
                 // Display combined cart items
                 $total_price = 0;
                 if ($cart_items_result->num_rows > 0) {
