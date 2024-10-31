@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Payment Gateway Form Design using HTML and CSS | Codehal</title>
+    <title>Checkout Page</title>
     <link rel="stylesheet" href="css/checkout.css">
 </head>
 
@@ -14,6 +14,7 @@
     <div class="container">
         <form action="">
             <div class="row">
+                <!-- Billing Address Section -->
                 <div class="column">
                     <h3 class="title">Billing Address</h3>
                     <div class="input-box">
@@ -45,14 +46,12 @@
                     </div>
                 </div>
 
+                <!-- Payment Section -->
                 <div class="column">
                     <h3 class="title">Payment</h3>
                     <div class="input-box">
                         <span>Cards Accepted :</span>
-                        
-                            <img src="images/payment card.png" alt="ICON-PAY">
-                        
-    
+                        <img src="images/payment card.png" alt="Cards Accepted">
                     </div>
                     <div class="input-box">
                         <span>Name On Card :</span>
@@ -63,14 +62,14 @@
                         <input type="number" placeholder="1111 2222 3333 4444">
                     </div>
                     <div class="input-box">
-                        <span>Exp. Month :</span>
-                        <input type="text" placeholder="August">
+                        <span>Message for Seller :</span>
+                        <input type="text" placeholder="leave a message">
                     </div>
                 
                     <div class="flex">
                         <div class="input-box">
-                            <span>Exp. Year :</span>
-                            <input type="number" placeholder="2025">
+                            <span>Valid Thru(MM/YY) :</span>
+                            <input type="number" placeholder="11/25">
                         </div>
                         <div class="input-box">
                             <span>CVV :</span>
@@ -78,9 +77,37 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <button type="submit" class="btn">Submit</button>
+                <!-- Order Summary Section -->
+                <div class="column order-summary">
+                    <h3 class="title">Your Order</h3>
+                    <!-- Product List -->
+                    <div class="order-item">
+                        <img src="images/product-01.jpg" alt="Product 1">
+                        <div>
+                            <p>Product 1 Name</p>
+                            <span>$50</span>
+                        </div>
+                    </div>
+                    <div class="order-item">
+                        <img src="images/product-02.jpg" alt="Product 2">
+                        <div>
+                            <p>Product 2 Name</p>
+                            <span>$30</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Totals -->
+                    <div class="order-totals">
+                        <p>Subtotal: <span>$80</span></p>
+                        <p>Discount: <span>-$5</span></p>
+                        <p class="total">Total Payment: <span>$75</span></p>
+                    </div>
+
+                    <!-- Confirm Payment Button -->
+                    <button type="submit" class="btn">Confirm Payment</button>
+                </div>
+            </div>
         </form>
     </div>
 
