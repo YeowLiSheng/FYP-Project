@@ -300,11 +300,11 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 							</li>
 
 							<li>
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="voucher_page.php">Features</a>
 							</li>
 
 							<li>

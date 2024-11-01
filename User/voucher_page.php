@@ -264,11 +264,11 @@ $voucher_result = $conn->query($voucher_query);
 				</li>
 
 				<li>
-					<a href="product.html">Shop</a>
+					<a href="product.php">Shop</a>
 				</li>
 
 				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
+					<a href="vouvher_page.html" class="label1 rs1" data-label1="hot">Features</a>
 				</li>
 
 				<li>

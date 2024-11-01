@@ -243,7 +243,7 @@ $product_result = $conn->query($product_query);
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.php">Features</a>
+								<a href="voucher_page.php">Features</a>
 							</li>
 
 							<li>
