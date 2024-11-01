@@ -39,7 +39,8 @@
     min-width: 280px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start; 
+    height: 100%;
 }
 
 
@@ -88,6 +89,7 @@
 .checkout-order-summary {
     font-size: 16px;
     color: #333;
+    margin-left: 20px;
 }
 
 .checkout-order-item {
