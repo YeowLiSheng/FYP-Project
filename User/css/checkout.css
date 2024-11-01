@@ -32,6 +32,7 @@
     display: flex;
     flex-wrap: wrap; /* Allows responsiveness on smaller screens */
     gap: 20px;
+    align-items: stretch;
 }
 
 .checkout-column {
@@ -40,7 +41,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
-    height: 100%;
+    
 }
 
 
