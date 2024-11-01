@@ -34,13 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['product_qty'] as $product_id => $qty) {
         $qty = intval($qty);
         if ($qty > 0) {
-            // Update quantity and total price for each product in the shopping cart
+            // Update quantity and total price for the product in the shopping cart
             $update_query = "
                 UPDATE shopping_cart 
                 SET qty = $qty, 
-                    total_price = qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
+                    total_price = $qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
                 WHERE user_id = $user_id AND product_id = $product_id";
             $conn->query($update_query);
+        } else {
+            // Remove product from the shopping cart if quantity is zero
+            $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
+            $conn->query($delete_query);
         }
     }
 
@@ -296,11 +300,11 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 							</li>
 
 							<li>
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="voucher_page.php">Voucher/a>
 							</li>
 
 							<li>
@@ -808,6 +812,8 @@ $(document).ready(function() {
         let currentValue = parseInt(input.val());
         if (currentValue > 1) {
             input.val(currentValue - 1);
+        } else {
+            input.val(0); // Set to 0 if quantity becomes 0
         }
     });
 

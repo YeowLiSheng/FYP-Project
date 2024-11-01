@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -10,11 +10,13 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -26,19 +28,50 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+
+// Initialize total_price before fetching cart items
+$total_price = 0;
+
+// Fetch and combine cart items for the logged-in user where the product_id is the same
+$cart_items_query = "
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
+           SUM(sc.qty) AS total_qty, 
+           SUM(sc.qty * p.product_price) AS total_price, 
+           MAX(sc.final_total_price) AS final_total_price, 
+           MAX(sc.voucher_applied) AS voucher_applied
+    FROM shopping_cart sc 
+    JOIN product p ON sc.product_id = p.product_id 
+    WHERE sc.user_id = $user_id 
+    GROUP BY sc.product_id";
+$cart_items_result = $conn->query($cart_items_query);
+
+// Calculate total price and final total price
+if ($cart_items_result && $cart_items_result->num_rows > 0) {
+    while ($cart_item = $cart_items_result->fetch_assoc()) {
+        $total_price += $cart_item['total_price'];
+    }
+}
+
+// Fetch vouchers and their usage details for the logged-in user
+$voucher_query = "
+    SELECT v.voucher_id, v.voucher_code, v.discount_rate, v.voucher_status, v.usage_limit, 
+           v.minimum_amount, v.voucher_des, v.voucher_pic,
+           IFNULL(vu.usage_num, 0) AS usage_num,
+           (v.usage_limit - IFNULL(vu.usage_num, 0)) AS remaining_usage
+    FROM voucher v
+    LEFT JOIN voucher_usage vu ON v.voucher_id = vu.voucher_id AND vu.user_id = $user_id
+    WHERE v.voucher_status = 'active'
+";
+$voucher_result = $conn->query($voucher_query);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="styles.css">
-
-
-
-
-        <!--===============================================================================================-->	
+	<title>Shoping Cart</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
 	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
@@ -56,108 +89,17 @@ if ($result && mysqli_num_rows($result) > 0) {
 	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/slick/slick.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/MagnificPopup/magnific-popup.css">
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
-
-
-
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-
-        #loginForm {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 20px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #333333;
-        }
-
-        .field {
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input[type="text"],
-        input[type="password"],
-        input[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        input[type="submit"] {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #218838;
-        }
-
-        .error {
-            color: red;
-            font-size: 0.9em;
-            display: none; /* Initially hide error messages */
-        }
-
-        .eye-icon {
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 35%;
-            user-select: none;
-        }
-
-        .forgot-password {
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .forgot-password a {
-            color: #28a745;
-            text-decoration: none;
-        }
-    </style>
 </head>
 <body class="animsition">
-
-
-
+	
 	<!-- Header -->
-	<header>
+	<header class="header-v4">
 		<!-- Header desktop -->
 		<div class="container-menu-desktop">
 			<!-- Topbar -->
@@ -172,6 +114,9 @@ if ($result && mysqli_num_rows($result) > 0) {
 							Help & FAQs
 						</a>
 
+						<a href="#" class="flex-c-m trans-04 p-lr-25">
+							My Account
+						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -180,17 +125,11 @@ if ($result && mysqli_num_rows($result) > 0) {
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
-
-
-
-						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
-
-
 					</div>
 				</div>
 			</div>
 
-			<div class="wrap-menu-desktop">
+			<div class="wrap-menu-desktop how-shadow1">
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
@@ -201,9 +140,13 @@ if ($result && mysqli_num_rows($result) > 0) {
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
-							<li class="active-menu">
-								<a href="homepage.html">Home</a>
-								
+							<li>
+								<a href="index.html">Home</a>
+								<ul class="sub-menu">
+									<li><a href="index.html">Homepage 1</a></li>
+									<li><a href="home-02.html">Homepage 2</a></li>
+									<li><a href="home-03.html">Homepage 3</a></li>
+								</ul>
 							</li>
 
 							<li>
@@ -211,7 +154,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
@@ -238,7 +181,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
 					</div>
@@ -250,7 +193,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="homepage.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
+				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
 			</div>
 
 			<!-- Icon header -->
@@ -292,6 +235,9 @@ if ($result && mysqli_num_rows($result) > 0) {
 							Help & FAQs
 						</a>
 
+						<a href="#" class="flex-c-m p-lr-10 trans-04">
+							My Account
+						</a>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							EN
@@ -300,35 +246,29 @@ if ($result && mysqli_num_rows($result) > 0) {
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
 						</a>
-
-
-
-
-						
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-
 					</div>
 				</li>
 			</ul>
 
 			<ul class="main-menu-m">
 				<li>
-					<a href="homepage.html">Home</a>
-					
+					<a href="index.html">Home</a>
+					<ul class="sub-menu-m">
+						<li><a href="index.html">Homepage 1</a></li>
+						<li><a href="home-02.html">Homepage 2</a></li>
+						<li><a href="home-03.html">Homepage 3</a></li>
+					</ul>
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
 				</li>
 
 				<li>
-					<a href="product.html">Shop</a>
+					<a href="product.php">Shop</a>
 				</li>
 
 				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
+					<a href="voucher_page.php" class="label1 rs1" data-label1="hot">Voucher</a>
 				</li>
 
 				<li>
@@ -344,12 +284,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 				</li>
 			</ul>
 		</div>
-
-
-
-
-
-
 
 		<!-- Modal Search -->
 		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
@@ -368,169 +302,113 @@ if ($result && mysqli_num_rows($result) > 0) {
 		</div>
 	</header>
 
-
-
-
 	<!-- Cart -->
-	<div class="wrap-header-cart js-panel-cart">
-		<div class="s-full js-hide-cart"></div>
+<div class="wrap-header-cart js-panel-cart">
+    <div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+    <div class="header-cart flex-col-l p-l-65 p-r-25">
+        <div class="header-cart-title flex-w flex-sb-m p-b-8">
+            <span class="mtext-103 cl2">
+                Your Cart
+            </span>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-					<i class="zmdi zmdi-close"></i>
-				</div>
-			</div>
-			
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full">
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-01.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								White Shirt Pleat
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $19.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-02.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Converse All Star
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $39.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-03.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Nixon Porter Leather
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $17.00
-							</span>
-						</div>
-					</li>
-				</ul>
-				
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
-					</div>
-
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
-
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-
-    <form id="loginForm" method="POST" action="">
-        <h2>Login</h2>
-        <p style="text-align: center; margin-top: 20px;">
-            Don't have an account? <a href="register.php" style="color: #28a745; text-decoration: none;">Resgister</a>
-        </p>
-
-        <div class="field">
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" required oninput="checkEmail()">
-            <span id="emailError" class="error">Please enter a valid email (must include '@' AND '.')</span>
+            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                <i class="zmdi zmdi-close"></i>
+            </div>
         </div>
+        
+        <div class="header-cart-content flex-w js-pscroll">
+            <ul class="header-cart-wrapitem w-full" id="cart-items">
+                <?php
+				$cart_items_result = $conn->query($cart_items_query);
+                // Display combined cart items
+                $total_price = 0;
+                if ($cart_items_result->num_rows > 0) {
+                    while($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $cart_item['product_name'] . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+                            </div>
+                        </li>';
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
+            </ul>
+            
+            <div class="w-full">
+                <div class="header-cart-total w-full p-tb-40">
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                </div>
 
-        <div class="field">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">👁️</span>
-            <span id="passwordError" class="error">Please enter the correct password.</span>
+                <div class="header-cart-buttons flex-w w-full">
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        View Cart
+                    </a>
+
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                        Check Out
+                    </a>
+                </div>
+            </div>
         </div>
+    </div>
+</div>	
 
-        <p>
-            <input type="submit" name="loginbtn" value="Log In">
-        </p>
-
-        <div class="forgot-password">
-            <p><a href="reset_password.php">Forgot Password?</a></p>
+		<!-- Voucher Table -->
+<form class="bg0 p-t-75 p-b-85" method="POST" action="">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
+                <div class="m-l-25 m-r--38 m-lr-0-xl">
+                    <div class="wrap-table-shopping-cart">
+                        <table class="table-shopping-cart">
+                            <tr class="table_head">
+                                <th class="column-1">Voucher</th>
+                                <th class="column-2">Voucher Code</th>
+                                <th class="column-3">Remaining Usage</th>
+                                <th class="column-4">Voucher Description</th>
+                                <th class="column-5">Discount Rate</th>
+                            </tr>
+                            <?php
+                            if ($voucher_result && $voucher_result->num_rows > 0) {
+                                while ($voucher = $voucher_result->fetch_assoc()) {
+                                    echo '
+                                    <tr class="table_row">
+                                        <td class="column-1">
+                                            <div class="how-itemcart1">
+                                                <img src="images/' . $voucher['voucher_pic'] . '" alt="Voucher Image">
+                                            </div>
+                                        </td>
+                                        <td class="column-2">' . $voucher['voucher_code'] . '</td>
+                                        <td class="column-3">' . $voucher['remaining_usage'] . '</td>
+                                        <td class="column-4">' . $voucher['voucher_des'] . '</td>
+                                        <td class="column-5">' . number_format($voucher['discount_rate'], 2) . '%</td>
+                                    </tr>';
+                                }
+                            } else {
+                                echo '<tr><td colspan="5">No vouchers available.</td></tr>';
+                            }
+                            ?>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
+</form>
 
-    <script>
-        function checkEmail() {
-            const email = document.getElementById("email").value;
-            const emailError = document.getElementById("emailError");
-            const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            emailError.style.display = validEmail.test(email) ? "none" : "block";
-        }
-
-        function togglePassword(inputId, toggleIcon) {
-            const passwordInput = document.getElementById(inputId);
-            const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', inputType);
-        }
-
-        function validateForm() {
-            let hasError = false;
-
-            // Check email validity
-            const emailInput = document.getElementById("email");
-            const emailError = document.getElementById("emailError");
-            if (!emailInput.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
-                emailError.style.display = "block";
-                hasError = true;
-            } else {
-                emailError.style.display = "none"; // Hide error if valid
-            }
-
-            return !hasError;
-        }
-
-        // Ensure form validation before submission
-        document.getElementById("loginForm").onsubmit = function() {
-            return validateForm();
-        };
-    </script>
-
-
-
-
-
-
-
-
-                 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
@@ -666,7 +544,12 @@ if ($result && mysqli_num_rows($result) > 0) {
 					</a>
 				</div>
 
-				
+				<p class="stext-107 cl6 txt-center">
+					<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> &amp; distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+
+				</p>
 			</div>
 		</div>
 	</footer>
@@ -679,168 +562,10 @@ if ($result && mysqli_num_rows($result) > 0) {
 		</span>
 	</div>
 
-	<!-- Modal1 -->
-	<div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
-		<div class="overlay-modal1 js-hide-modal1"></div>
-
-		<div class="container">
-			<div class="bg0 p-t-60 p-b-30 p-lr-15-lg how-pos3-parent">
-				<button class="how-pos3 hov3 trans-04 js-hide-modal1">
-					<img src="images/icons/icon-close.png" alt="CLOSE">
-				</button>
-
-				<div class="row">
-					<div class="col-md-6 col-lg-7 p-b-30">
-						<div class="p-l-25 p-r-30 p-lr-0-lg">
-							<div class="wrap-slick3 flex-sb flex-w">
-								<div class="wrap-slick3-dots"></div>
-								<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
-
-								<div class="slick3 gallery-lb">
-									<div class="item-slick3" data-thumb="images/product-detail-01.jpg">
-										<div class="wrap-pic-w pos-relative">
-											<img src="images/product-detail-01.jpg" alt="IMG-PRODUCT">
-
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/product-detail-01.jpg">
-												<i class="fa fa-expand"></i>
-											</a>
-										</div>
-									</div>
-
-									<div class="item-slick3" data-thumb="images/product-detail-02.jpg">
-										<div class="wrap-pic-w pos-relative">
-											<img src="images/product-detail-02.jpg" alt="IMG-PRODUCT">
-
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/product-detail-02.jpg">
-												<i class="fa fa-expand"></i>
-											</a>
-										</div>
-									</div>
-
-									<div class="item-slick3" data-thumb="images/product-detail-03.jpg">
-										<div class="wrap-pic-w pos-relative">
-											<img src="images/product-detail-03.jpg" alt="IMG-PRODUCT">
-
-											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/product-detail-03.jpg">
-												<i class="fa fa-expand"></i>
-											</a>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					
-					<div class="col-md-6 col-lg-5 p-b-30">
-						<div class="p-r-50 p-t-5 p-lr-0-lg">
-							<h4 class="mtext-105 cl2 js-name-detail p-b-14">
-								Lightweight Jacket
-							</h4>
-
-							<span class="mtext-106 cl2">
-								$58.79
-							</span>
-
-							<p class="stext-102 cl3 p-t-23">
-								Nulla eget sem vitae eros pharetra viverra. Nam vitae luctus ligula. Mauris consequat ornare feugiat.
-							</p>
-							
-							<!--  -->
-							<div class="p-t-33">
-								<div class="flex-w flex-r-m p-b-10">
-									<div class="size-203 flex-c-m respon6">
-										Size
-									</div>
-
-									<div class="size-204 respon6-next">
-										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="time">
-												<option>Choose an option</option>
-												<option>Size S</option>
-												<option>Size M</option>
-												<option>Size L</option>
-												<option>Size XL</option>
-											</select>
-											<div class="dropDownSelect2"></div>
-										</div>
-									</div>
-								</div>
-
-								<div class="flex-w flex-r-m p-b-10">
-									<div class="size-203 flex-c-m respon6">
-										Color
-									</div>
-
-									<div class="size-204 respon6-next">
-										<div class="rs1-select2 bor8 bg0">
-											<select class="js-select2" name="time">
-												<option>Choose an option</option>
-												<option>Red</option>
-												<option>Blue</option>
-												<option>White</option>
-												<option>Grey</option>
-											</select>
-											<div class="dropDownSelect2"></div>
-										</div>
-									</div>
-								</div>
-
-								<div class="flex-w flex-r-m p-b-10">
-									<div class="size-204 flex-w flex-m respon6-next">
-										<div class="wrap-num-product flex-w m-r-20 m-tb-10">
-											<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-												<i class="fs-16 zmdi zmdi-minus"></i>
-											</div>
-
-											<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
-
-											<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-												<i class="fs-16 zmdi zmdi-plus"></i>
-											</div>
-										</div>
-
-										<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-											Add to cart
-										</button>
-									</div>
-								</div>	
-							</div>
-
-							<!--  -->
-							<div class="flex-w flex-m p-l-100 p-t-40 respon7">
-								<div class="flex-m bor9 p-r-10 m-r-11">
-									<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100" data-tooltip="Add to Wishlist">
-										<i class="zmdi zmdi-favorite"></i>
-									</a>
-								</div>
-
-								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Facebook">
-									<i class="fa fa-facebook"></i>
-								</a>
-
-								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Twitter">
-									<i class="fa fa-twitter"></i>
-								</a>
-
-								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
-									<i class="fa fa-google-plus"></i>
-								</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-<!--===============================================================================================-->	
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
 	<script src="vendor/animsition/js/animsition.min.js"></script>
-<!--===============================================================================================-->
 	<script src="vendor/bootstrap/js/popper.js"></script>
 	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
 	<script src="vendor/select2/select2.min.js"></script>
 	<script>
 		$(".js-select2").each(function(){
@@ -850,72 +575,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 			});
 		})
 	</script>
-<!--===============================================================================================-->
-	<script src="vendor/daterangepicker/moment.min.js"></script>
-	<script src="vendor/daterangepicker/daterangepicker.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/slick/slick.min.js"></script>
-	<script src="js/slick-custom.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/parallax100/parallax100.js"></script>
-	<script>
-        $('.parallax100').parallax100();
-	</script>
-<!--===============================================================================================-->
 	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
-	<script>
-		$('.gallery-lb').each(function() { // the containers for all your galleries
-			$(this).magnificPopup({
-		        delegate: 'a', // the selector for gallery item
-		        type: 'image',
-		        gallery: {
-		        	enabled:true
-		        },
-		        mainClass: 'mfp-fade'
-		    });
-		});
-	</script>
-<!--===============================================================================================-->
-	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/sweetalert/sweetalert.min.js"></script>
-	<script>
-		$('.js-addwish-b2').on('click', function(e){
-			e.preventDefault();
-		});
-
-		$('.js-addwish-b2').each(function(){
-			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-b2');
-				$(this).off('click');
-			});
-		});
-
-		$('.js-addwish-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
-
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-detail');
-				$(this).off('click');
-			});
-		});
-
-		/*---------------------------------------------*/
-
-		$('.js-addcart-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to cart !", "success");
-			});
-		});
-	
-	</script>
-<!--===============================================================================================-->
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 	<script>
 		$('.js-pscroll').each(function(){
@@ -932,7 +592,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 			})
 		});
 	</script>
-<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+
 </body>
 </html>
