@@ -268,7 +268,7 @@ $voucher_result = $conn->query($voucher_query);
 				</li>
 
 				<li>
-					<a href="vouvher_page.html" class="label1 rs1" data-label1="hot">Features</a>
+					<a href="voucher_page.php" class="label1 rs1" data-label1="hot">Voucher</a>
 				</li>
 
 				<li>
