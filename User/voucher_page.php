@@ -154,7 +154,7 @@ $voucher_result = $conn->query($voucher_query);
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
