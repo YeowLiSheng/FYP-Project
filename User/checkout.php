@@ -27,17 +27,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
-//get the user information
-$query = "SELECT u.full_name, u.email, a.address, a.city, a.state, a.postcode 
-          FROM users u
-          JOIN user_address a ON u.user_id = a.user_id
-          WHERE u.user_id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$userData = $result->fetch_assoc();
-
+d
 
 ?>
 
@@ -387,33 +377,29 @@ $userData = $result->fetch_assoc();
                         <span class="required">Full Name :</span>
                         <input type="text" placeholder="Cheong Wei Kit" required>
                     </div>
-                    
-<div class="checkout-input-box">
-    <span class="required">Full Name :</span>
-    <input type="text" value="<?php echo htmlspecialchars($userData['full_name']); ?>" required>
-</div>
-<div class="checkout-input-box">
-    <span class="required">Email :</span>
-    <input type="email" value="<?php echo htmlspecialchars($userData['email']); ?>" required>
-</div>
-<div class="checkout-input-box">
-    <span class="required">Address :</span>
-    <input type="text" value="<?php echo htmlspecialchars($userData['address']); ?>" required>
-</div>
-<div class="checkout-input-box">
-    <span class="required">City :</span>
-    <input type="text" value="<?php echo htmlspecialchars($userData['city']); ?>" required>
-</div>
-<div class="checkout-flex">
-    <div class="checkout-input-box">
-        <span class="required">State :</span>
-        <input type="text" value="<?php echo htmlspecialchars($userData['state']); ?>" required>
-    </div>
-    <div class="checkout-input-box">
-        <span class="required">Postcode :</span>
-        <input type="number" value="<?php echo htmlspecialchars($userData['postcode']); ?>" required>
-    </div>
-</div>
+                    <div class="checkout-input-box">
+                        <span class="required">Email :</span>
+                        <input type="email" placeholder="example@example.com" required>
+                    </div>
+                    <div class="checkout-input-box">
+                        <span class="required">Address :</span>
+                        <input type="text" placeholder="Room - Street - Locality" required>
+                    </div>
+                    <div class="checkout-input-box">
+                        <span class="required">City :</span>
+                        <input type="text" placeholder="Johor Bahru" required>
+                    </div>
+                    <div class="checkout-flex">
+                        <div class="checkout-input-box">
+                            <span class="required">State :</span>
+                            <input type="text" placeholder="Johor" required>
+                        </div>
+                        <div class="checkout-input-box">
+                            <span class="required">Postcode :</span>
+                            <input type="number" placeholder="81100" required>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Payment Section -->
                 <div class="checkout-column">
