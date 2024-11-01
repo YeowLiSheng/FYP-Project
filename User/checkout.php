@@ -361,7 +361,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     </div>
 </div>
 
-d
+
 	
 	<body class="checkout-root checkout-reset">
 
