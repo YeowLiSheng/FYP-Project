@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Page</title>
+    <link rel="stylesheet" href="css/checkout.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <form action="">
+            <div class="row">
+                <!-- Billing Address Section -->
+                <div class="column">
+                    <h3 class="title">Billing Address</h3>
+                    <div class="input-box">
+                        <span>Full Name :</span>
+                        <input type="text" placeholder="Cheong Wei Kit">
+                    </div>
+                    <div class="input-box">
+                        <span>Email :</span>
+                        <input type="email" placeholder="example@example.com">
+                    </div>
+                    <div class="input-box">
+                        <span>Address :</span>
+                        <input type="text" placeholder="Room - Street - Locality">
+                    </div>
+                    <div class="input-box">
+                        <span>City :</span>
+                        <input type="text" placeholder="Johor Bahru">
+                    </div>
+
+                    <div class="flex">
+                        <div class="input-box">
+                            <span>State :</span>
+                            <input type="text" placeholder="Johor">
+                        </div>
+                        <div class="input-box">
+                            <span>Postcode :</span>
+                            <input type="number" placeholder="81100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="column">
+                    <h3 class="title">Payment</h3>
+                    <div class="input-box">
+                        <span>Cards Accepted :</span>
+                        <img src="images/payment card.png" alt="Cards Accepted">
+                    </div>
+                    <div class="input-box">
+                        <span>Name On Card :</span>
+                        <input type="text" placeholder="Cheong Wei Kit">
+                    </div>
+                    <div class="input-box">
+                        <span>Credit Card Number :</span>
+                        <input type="number" placeholder="1111 2222 3333 4444">
+                    </div>
+                    <div class="input-box">
+                        <span>Message for Seller :</span>
+                        <input type="text" placeholder="leave a message">
+                    </div>
+                
+                    <div class="flex">
+                        <div class="input-box">
+                            <span>Valid Thru(MM/YY) :</span>
+                            <input type="number" placeholder="11/25">
+                        </div>
+                        <div class="input-box">
+                            <span>CVV :</span>
+                            <input type="number" placeholder="123">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Section -->
+                <div class="column order-summary">
+                    <h3 class="title">Your Order</h3>
+                    <!-- Product List -->
+                    <div class="order-item">
+                        <img src="images/product-01.jpg" alt="Product 1">
+                        <div>
+                            <p>Product 1 Name</p>
+                            <span>$50</span>
+                        </div>
+                    </div>
+                    <div class="order-item">
+                        <img src="images/product-02.jpg" alt="Product 2">
+                        <div>
+                            <p>Product 2 Name</p>
+                            <span>$30</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Totals -->
+                    <div class="order-totals">
+                        <p>Subtotal: <span>$80</span></p>
+                        <p>Discount: <span>-$5</span></p>
+                        <p class="total">Total Payment: <span>$75</span></p>
+                    </div>
+
+                    <!-- Confirm Payment Button -->
+                    <button type="submit" class="btn">Confirm Payment</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</body>
+
+</html>
