@@ -1,3 +1,36 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fyp";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
+}
+
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+} else {
+    echo "User not found.";
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,10 +68,6 @@
 	<link rel="stylesheet" href="css/checkout.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
-
-
-
-
 
 
 
@@ -358,32 +387,31 @@
             <div class="checkout-row">
                 <!-- Billing Address Section -->
                 <div class="checkout-column">
-                    <h3 class="checkout-title">Billing Address</h3>
+                    <h3 class="checkout-title">Delivery Address</h3>
                     <div class="checkout-input-box">
-                        <span>Full Name :</span>
-                        <input type="text" placeholder="Cheong Wei Kit">
+                        <span class="required">Full Name :</span>
+                        <input type="text" placeholder="Cheong Wei Kit" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>Email :</span>
-                        <input type="email" placeholder="example@example.com">
+                        <span class="required">Email :</span>
+                        <input type="email" placeholder="example@example.com" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>Address :</span>
-                        <input type="text" placeholder="Room - Street - Locality">
+                        <span class="required">Address :</span>
+                        <input type="text" placeholder="Room - Street - Locality" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>City :</span>
-                        <input type="text" placeholder="Johor Bahru">
+                        <span class="required">City :</span>
+                        <input type="text" placeholder="Johor Bahru" required>
                     </div>
-
                     <div class="checkout-flex">
                         <div class="checkout-input-box">
-                            <span>State :</span>
-                            <input type="text" placeholder="Johor">
+                            <span class="required">State :</span>
+                            <input type="text" placeholder="Johor" required>
                         </div>
                         <div class="checkout-input-box">
-                            <span>Postcode :</span>
-                            <input type="number" placeholder="81100">
+                            <span class="required">Postcode :</span>
+                            <input type="number" placeholder="81100" required>
                         </div>
                     </div>
                 </div>
@@ -397,11 +425,11 @@
                     </div>
                     <div class="checkout-input-box">
                         <span>Name On Card :</span>
-                        <input type="text" placeholder="Cheong Wei Kit">
+                        <input type="text" placeholder="Cheong Wei Kit" required>
                     </div>
                     <div class="checkout-input-box">
                         <span>Credit Card Number :</span>
-                        <input type="number" placeholder="1111 2222 3333 4444">
+                        <input type="number" placeholder="1111 2222 3333 4444" required>
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
@@ -410,12 +438,13 @@
                 
                     <div class="checkout-flex">
                         <div class="checkout-input-box">
-                            <span>Valid Thru(MM/YY) :</span>
-                            <input type="number" placeholder="11/25">
+                            <span>Valid Thru (MM/YY) :</span>
+                            <input type="text" id="expiry-date" placeholder="MM/YY" required>
+                            <small id="expiry-error" style="color: red; display: none;">Please enter a valid, non-expired date.</small>
                         </div>
                         <div class="checkout-input-box">
                             <span>CVV :</span>
-                            <input type="number" placeholder="123">
+                            <input type="number" placeholder="123" required>
                         </div>
                     </div>
                 </div>
@@ -864,5 +893,33 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 
+<script>
+    document.getElementById('expiry-date').addEventListener('input', function() {
+    const input = this.value;
+    const error = document.getElementById('expiry-error');
+    
+    // Check if the input matches MM/YY format using regex
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(input)) {
+        error.style.display = 'none';
+        return;
+    }
+
+    // Parse month and year from input
+    const [month, year] = input.split('/').map(Number);
+    const currentYear = new Date().getFullYear() % 100; // last two digits of current year
+    const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+
+    // Check if the entered date is valid (current month/year or later)
+    if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+        error.style.display = 'none'; // hide error message if valid
+    } else {
+        error.style.display = 'block'; // show error message if expired
+        this.value = ''; // clear input field
+    }
+});
+
+
+</script>   
 </body>
 </html>
