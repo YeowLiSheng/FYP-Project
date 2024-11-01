@@ -394,7 +394,7 @@ $voucher_result = $conn->query($voucher_query);
                                         <td class="column-2">' . $voucher['voucher_code'] . '</td>
                                         <td class="column-3">' . $voucher['remaining_usage'] . '</td>
                                         <td class="column-4">' . $voucher['voucher_des'] . '</td>
-                                        <td class="column-5">' . number_format($voucher['discount_rate'] / 100, 2) . '%</td>
+                                        <td class="column-5">' . number_format($voucher['discount_rate'], 2) . '%</td>
                                     </tr>';
                                 }
                             } else {
