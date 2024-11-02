@@ -488,7 +488,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
             <p><?php echo htmlspecialchars($product_name); ?></p>
             <span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
             <span>Quantity: <?php echo $total_qty; ?></span><br>
-            <span>Total: RM<?php echo number_format($item_total_price, 2); ?></span>
+            <span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
         </div>
     </div>
     <?php endwhile; ?>
@@ -500,7 +500,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         $discount = 5; // Placeholder for discount
         $total_payment = $subtotal - $discount;
         ?>
-        <p>Subtotal: <span>RM<?php echo number_format($subtotal, 2); ?></span></p>
+        <p>Grand total: <span>RM<?php echo number_format($subtotal, 2); ?></span></p>
         <p>Discount: <span>-RM<?php echo number_format($discount, 2); ?></span></p>
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
