@@ -441,7 +441,9 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                         </div>
                         <div class="checkout-input-box">
                             <span>CVV :</span>
-							<input type="number" placeholder="123" maxlength="3" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" required>
+							<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()" required>
+							<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV code.</small>
+
                         </div>
                     </div>
                 </div>
@@ -943,6 +945,26 @@ document.getElementById("expiry-date").addEventListener("input", function(e) {
 
     input.value = value;
 });
+
+function validateCVV() {
+    const cvvInput = document.getElementById("cvv");
+    const cvvError = document.getElementById("cvv-error");
+
+    
+    if (cvvInput.value.length > 3) {
+        cvvInput.value = cvvInput.value.slice(0, 3);
+    }
+
+   
+    if (cvvInput.value.length < 3) {
+        cvvInput.setCustomValidity("Please enter a 3-digit CVV code."); 
+        cvvError.style.display = "inline"; 
+    } else {
+        cvvInput.setCustomValidity(""); 
+        cvvError.style.display = "none"; 
+    }
+}
+
 
 </script>   
 </body>
