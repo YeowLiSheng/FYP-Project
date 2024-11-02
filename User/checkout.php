@@ -122,7 +122,7 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
 
                         <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
                             <?php
-                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+                                echo "HI '" . htmlspecialchars($user["user_name"]) ;
                             ?>
                         </a>
 
