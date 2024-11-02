@@ -123,7 +123,7 @@ $voucher_result = $conn->query($voucher_query);
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
+							MYR
 						</a>
 					</div>
 				</div>
