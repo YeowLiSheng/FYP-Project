@@ -420,11 +420,11 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                     </div>
                     <div class="checkout-input-box">
                         <span>Card Holder Name :</span>
-                        <input type="text" placeholder="Cheong Wei Kit" required>
+                        <input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
-                        <input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="16" pattern="\d{16}" title="Please enter exactly 16 digits" required>
+                        <input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="16" pattern="\d{16}" title="Please enter exactly 16 digits" autocomplete="off" required>
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
