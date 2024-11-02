@@ -441,7 +441,7 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                         </div>
                         <div class="checkout-input-box">
                             <span>CVV :</span>
-                            <input type="number" placeholder="123" required>
+							<input type="number" placeholder="123" maxlength="3" oninput="if(this.value.length > 3) this.value = this.value.slice(0, 3);" required>
                         </div>
                     </div>
                 </div>
