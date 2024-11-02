@@ -29,23 +29,16 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
-
 // Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['product_qty'] as $product_id => $qty) {
         $qty = intval($qty);
         if ($qty > 0) {
-            // Calculate the individual total price for the product
-            $product_price_query = "SELECT product_price FROM product WHERE product_id = $product_id";
-            $product_price_result = $conn->query($product_price_query);
-            $product_price = $product_price_result->fetch_assoc()['product_price'];
-            $total_price = $qty * $product_price;
-            
-            // Update quantity and store total price in shopping cart
+            // Update quantity and total price for the product in the shopping cart
             $update_query = "
                 UPDATE shopping_cart 
                 SET qty = $qty, 
-                    total_price = $total_price
+                    total_price = $qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
                 WHERE user_id = $user_id AND product_id = $product_id";
             $conn->query($update_query);
         } else {
@@ -53,6 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
             $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
             $conn->query($delete_query);
         }
+    }
+
+    // Check if a voucher was previously applied
+    $voucher_applied_check_query = "SELECT MAX(voucher_applied) AS voucher_applied FROM shopping_cart WHERE user_id = $user_id";
+    $voucher_applied_check_result = $conn->query($voucher_applied_check_query);
+    $voucher_applied_row = $voucher_applied_check_result->fetch_assoc();
+    if ($voucher_applied_row['voucher_applied'] == 1) {
+        // Reapply the voucher to recalculate final total
+        reapplyVoucher($conn, $user_id, $total_price);
     }
 
     // Reload the page to reflect changes
@@ -106,15 +108,6 @@ function reapplyVoucher($conn, $user_id, &$final_total_price) {
     }
 }
 
-// Function to store the final total price in the cart, regardless of voucher application
-function storeFinalTotal($conn, $user_id, $final_total_price) {
-    $update_final_total_query = "
-        UPDATE shopping_cart 
-        SET final_total_price = $final_total_price, voucher_applied = 0 
-        WHERE user_id = $user_id";
-    $conn->query($update_final_total_query);
-}
-
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
@@ -138,12 +131,10 @@ if ($cart_items_result && $cart_items_result->num_rows > 0) {
     }
 }
 
-// Default final total price without discount
-$final_total_price = $total_price;
-
 // Apply discount after verifying voucher code, if applicable
 $discount_amount = 0; // Initialize discount amount
 $error_message = ""; // Initialize error message
+$final_total_price = $total_price;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !empty($_POST['coupon'])) {
     $voucher_code = mysqli_real_escape_string($conn, $_POST['coupon']);
@@ -155,64 +146,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
     $voucher_result = $conn->query($voucher_query);
 
     if ($voucher_result && $voucher_result->num_rows > 0) {
-        $voucher = $voucher_result->fetch_assoc();
-        $discount_rate = $voucher['discount_rate'];
-        $minimum_amount = $voucher['minimum_amount'];
-        $voucher_id = $voucher['voucher_id'];
-        $usage_limit = $voucher['usage_limit'];
+		$voucher = $voucher_result->fetch_assoc();
+		$discount_rate = $voucher['discount_rate'];
+		$minimum_amount = $voucher['minimum_amount'];
+		$voucher_id = $voucher['voucher_id'];
+		$usage_limit = $voucher['usage_limit'];
+	
+		// Check the user's current usage of this voucher
+		$usage_query = "
+			SELECT usage_num 
+			FROM voucher_usage 
+			WHERE user_id = $user_id AND voucher_id = $voucher_id";
+		$usage_result = $conn->query($usage_query);
+	
+		if ($usage_result && $usage_row = $usage_result->fetch_assoc()) {
+			$current_usage = $usage_row['usage_num'];
+		} else {
+			$current_usage = 0; // No usage record found
+		}
+	
+		// Check if usage limit is reached
+		if ($current_usage < $usage_limit) {
+			// Check if total price meets the minimum amount required
+			if ($total_price >= $minimum_amount) {
+				$discount_amount = $total_price * ($discount_rate / 100);
+				$final_total_price = $total_price - $discount_amount;
+	
+				// Update shopping_cart with the final total and voucher_applied
+				$update_final_total_query = "
+					UPDATE shopping_cart 
+					SET final_total_price = $final_total_price, voucher_applied = 1 
+					WHERE user_id = $user_id";
+				$conn->query($update_final_total_query);
+	
+				// Update or insert the voucher usage record
+				if ($current_usage > 0) {
+					$conn->query("
+						UPDATE voucher_usage 
+						SET usage_num = usage_num + 1 
+						WHERE user_id = $user_id AND voucher_id = $voucher_id
+					");
+				} else {
+					$conn->query("
+						INSERT INTO voucher_usage (user_id, voucher_id, usage_num) 
+						VALUES ($user_id, $voucher_id, 1)
+					");
+				}
+			} else {
+				$error_message = "Your cart total must be at least $" . number_format($minimum_amount, 2) . " to use this voucher.";
+			}
+		} else {
+			$error_message = "You have reached the usage limit for this voucher.";
+		}
+	} else {
+		$error_message = "Invalid or inactive voucher code.";
+	}
+}
 
-        // Check the user's current usage of this voucher
-        $usage_query = "
-            SELECT usage_num 
-            FROM voucher_usage 
-            WHERE user_id = $user_id AND voucher_id = $voucher_id";
-        $usage_result = $conn->query($usage_query);
-
-        if ($usage_result && $usage_row = $usage_result->fetch_assoc()) {
-            $current_usage = $usage_row['usage_num'];
-        } else {
-            $current_usage = 0; // No usage record found
-        }
-
-        // Check if usage limit is reached
-        if ($current_usage < $usage_limit) {
-            // Check if total price meets the minimum amount required
-            if ($total_price >= $minimum_amount) {
-                $discount_amount = $total_price * ($discount_rate / 100);
-                $final_total_price = $total_price - $discount_amount;
-
-                // Update shopping_cart with the final total and voucher_applied
-                $update_final_total_query = "
-                    UPDATE shopping_cart 
-                    SET final_total_price = $final_total_price, voucher_applied = 1 
-                    WHERE user_id = $user_id";
-                $conn->query($update_final_total_query);
-
-                // Update or insert the voucher usage record
-                if ($current_usage > 0) {
-                    $conn->query("
-                        UPDATE voucher_usage 
-                        SET usage_num = usage_num + 1 
-                        WHERE user_id = $user_id AND voucher_id = $voucher_id
-                    ");
-                } else {
-                    $conn->query("
-                        INSERT INTO voucher_usage (user_id, voucher_id, usage_num) 
-                        VALUES ($user_id, $voucher_id, 1)
-                    ");
-                }
-            } else {
-                $error_message = "Your cart total must be at least $" . number_format($minimum_amount, 2) . " to use this voucher.";
-            }
-        } else {
-            $error_message = "You have reached the usage limit for this voucher.";
-        }
-    } else {
-        $error_message = "Invalid or inactive voucher code.";
+// Retrieve final_total_price from database if voucher was previously applied
+$cart_total_query = "
+    SELECT MAX(final_total_price) AS final_total_price, MAX(voucher_applied) AS voucher_applied 
+    FROM shopping_cart 
+    WHERE user_id = $user_id";
+$cart_total_result = $conn->query($cart_total_query);
+if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
+    if ($cart_total_row['voucher_applied'] == 1) {
+        $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
-} else {
-    // Store final total price in the database if no voucher is applied
-    storeFinalTotal($conn, $user_id, $final_total_price);
 }
 ?>
 <!DOCTYPE html>
@@ -609,22 +609,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
     					</div>
-						<form method="POST" action="checkout.php">
-    <button type="submit" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-        Check Out
-    </button>
-    
-    <?php while ($cart_item = $cart_items_result->fetch_assoc()): ?>
-        <input type="hidden" name="product_id[]" value="<?php echo $cart_item['product_id']; ?>">
-        <input type="hidden" name="product_name[]" value="<?php echo $cart_item['product_name']; ?>">
-        <input type="hidden" name="product_image[]" value="<?php echo $cart_item['product_image']; ?>">
-        <input type="hidden" name="product_price[]" value="<?php echo $cart_item['product_price']; ?>">
-        <input type="hidden" name="product_qty[]" value="<?php echo $cart_item['total_qty']; ?>">
-    <?php endwhile; ?>
-    <input type="hidden" name="subtotal" value="<?php echo $total_price; ?>">
-    <input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
-    <input type="hidden" name="final_total_price" value="<?php echo $final_total_price; ?>">
-</form>
+						<a href="payment.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        	Check Out
+                    	</a>
 					</div>
                 </div>
             </div>

@@ -35,27 +35,8 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['product_id'])) {
-    header("Location: cart.php"); // Redirect if accessed directly without POST data
-    exit;
-}
 
-// Check if POST data exists
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['product_id'])) {
-    // Retrieve product data
-    $product_ids = $_POST['product_id'];
-    $product_names = $_POST['product_name'];
-    $product_images = $_POST['product_image'];
-    $product_prices = $_POST['product_price'];
-    $product_quantities = $_POST['product_qty'];
-    $subtotal = $_POST['subtotal'];
-    $discount_amount = $_POST['discount_amount'];
-    $final_total_price = $_POST['final_total_price'];
-} else {
-    // Redirect back to cart if no data received
-    header("Location: cart.php");
-    exit;
-}
+
 
 
 ?>
@@ -472,25 +453,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['product_id'])) {
                     <h3 class="checkout-title">Your Order</h3>
                     <!-- Product List -->
                     <div class="checkout-order-item">
-					<?php for ($i = 0; $i < count($product_ids); $i++): ?>
-        <div class="checkout-order-item">
-            <img src="images/<?php echo htmlspecialchars($product_images[$i]); ?>" alt="<?php echo htmlspecialchars($product_names[$i]); ?>">
-            <div>
-                <p><?php echo htmlspecialchars($product_names[$i]); ?></p>
-                <span>Unit Price: $<?php echo number_format($product_prices[$i], 2); ?></span>
-                <span>Quantity: <?php echo $product_quantities[$i]; ?></span>
-                <span>Total: $<?php echo number_format($product_prices[$i] * $product_quantities[$i], 2); ?></span>
-            </div>
-        </div>
-    <?php endfor; ?>
+                        <img src="images/product-01.jpg" alt="Product 1">
+                        <div>
+                            <p>Product 1 Name</p>
+                            <span>$50</span>
+                        </div>
+                    </div>
+                    <div class="checkout-order-item">
+                        <img src="images/product-02.jpg" alt="Product 2">
+                        <div>
+                            <p>Product 2 Name</p>
+                            <span>$30</span>
                         </div>
                     </div>
                     
                     <!-- Order Totals -->
                     <div class="checkout-order-totals">
-					<p>Subtotal: <span>$<?php echo number_format($subtotal, 2); ?></span></p>
-        <p>Discount: <span>-$<?php echo number_format($discount_amount, 2); ?></span></p>
-        <p class="checkout-total">Total Payment: <span>$<?php echo number_format($final_total_price, 2); ?></span></p>
+                        <p>Subtotal: <span>$80</span></p>
+                        <p>Discount: <span>-$5</span></p>
+                        <p class="checkout-total">Total Payment: <span>$75</span></p>
                     </div>
 
                     <!-- Confirm Payment Button -->
