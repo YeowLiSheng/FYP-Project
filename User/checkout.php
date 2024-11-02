@@ -419,12 +419,12 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                         <img src="images/payment card.png" alt="Cards Accepted">
                     </div>
                     <div class="checkout-input-box">
-                        <span>Name On Card :</span>
+                        <span>Card Holder Name :</span>
                         <input type="text" placeholder="Cheong Wei Kit" required>
                     </div>
                     <div class="checkout-input-box">
                         <span>Credit Card Number :</span>
-                        <input type="number" placeholder="1111 2222 3333 4444" required>
+                        <input type="text" placeholder="1111 2222 3333 4444" minlength="16" maxlength="16" pattern="\d{16}" title="Please enter exactly 16 digits" required>
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
