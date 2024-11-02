@@ -424,7 +424,16 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
-                        <input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="16" pattern="\d{16}" title="Please enter exactly 16 digits" autocomplete="off" required>
+                        <input   type="text" 
+    name="cardNum" 
+    placeholder="1111 2222 3333 4444" 
+    minlength="16" 
+    maxlength="19" 
+    pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" 
+    title="Please enter exactly 16 digits" 
+    autocomplete="off" 
+    required 
+    oninput="formatCardNumber(this)">
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
@@ -914,7 +923,18 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     }
 });
 
-
+function formatCardNumber(input) {
+    // Remove all spaces and get only digits
+    let cardNum = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    // Split into groups of 4 digits
+    let formattedCardNum = cardNum.match(/.{1,4}/g);
+    
+    // Join groups with a space
+    if (formattedCardNum) {
+        input.value = formattedCardNum.join(' ');
+    }
+}
 
 </script>   
 </body>
