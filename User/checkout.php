@@ -15,17 +15,27 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$user_result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id ='$user_id'");
 
 // Check if the query was successful and fetch user data
-if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
+if ($user_result && mysqli_num_rows($user_result) > 0) {
+    $user = mysqli_fetch_assoc($user_result);
 } else {
     echo "User not found.";
     exit;
 }
+
+// Fetch the address information if available
+$address = null;
+if ($address_result && mysqli_num_rows($address_result) > 0) {
+    $address = mysqli_fetch_assoc($address_result);
+}
+
+
 
 
 
@@ -375,28 +385,28 @@ if ($result && mysqli_num_rows($result) > 0) {
                     <h3 class="checkout-title">Delivery Address</h3>
                     <div class="checkout-input-box">
                         <span class="required">Full Name :</span>
-                        <input type="text" placeholder="Cheong Wei Kit" required>
+                        <input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
                     </div>
                     <div class="checkout-input-box">
                         <span class="required">Email :</span>
-                        <input type="email" placeholder="example@example.com" required>
+                        <input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
                     </div>
                     <div class="checkout-input-box">
                         <span class="required">Address :</span>
-                        <input type="text" placeholder="Room - Street - Locality" required>
+                        <input type="text" value="<?php echo htmlspecialchars($address['address'] ?? ''); ?>" required>
                     </div>
                     <div class="checkout-input-box">
                         <span class="required">City :</span>
-                        <input type="text" placeholder="Johor Bahru" required>
+                        <input type="text" value="<?php echo htmlspecialchars($address['city'] ?? ''); ?>" required>
                     </div>
                     <div class="checkout-flex">
                         <div class="checkout-input-box">
                             <span class="required">State :</span>
-                            <input type="text" placeholder="Johor" required>
+                            <input type="text" value="<?php echo htmlspecialchars($address['state'] ?? ''); ?>" required>
                         </div>
                         <div class="checkout-input-box">
                             <span class="required">Postcode :</span>
-                            <input type="number" placeholder="81100" required>
+                            <input type="number" value="<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>" required>
                         </div>
                     </div>
                 </div>
@@ -903,6 +913,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         this.value = ''; // clear input field
     }
 });
+
 
 
 </script>   
