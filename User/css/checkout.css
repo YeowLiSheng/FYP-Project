@@ -95,17 +95,27 @@
 
 .checkout-order-item {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 15px;
     margin-bottom: 15px;
 }
 
 .checkout-order-item img {
-    width: 6000000px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     border-radius: 5px;
     border: 1px solid #ccc;
     object-fit: cover;
+}
+
+.checkout-order-item div {
+    padding-top: 5px;
+}
+
+.checkout-order-item div span, 
+.checkout-order-item div p {
+    line-height: 1.5;
+    font-size: 15px;
 }
 
 /* Total summary section */
