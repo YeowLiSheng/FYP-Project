@@ -32,6 +32,7 @@
     display: flex;
     flex-wrap: wrap; /* Allows responsiveness on smaller screens */
     gap: 20px;
+    align-items: stretch;
 }
 
 .checkout-column {
@@ -39,8 +40,10 @@
     min-width: 280px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start; 
+    
 }
+
 
 /* Section titles */
 .checkout-title {
@@ -87,6 +90,7 @@
 .checkout-order-summary {
     font-size: 16px;
     color: #333;
+    margin-left: 20px;
 }
 
 .checkout-order-item {

@@ -1,3 +1,46 @@
+<?php
+session_start(); 
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fyp";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
+}
+
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$user_result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($user_result && mysqli_num_rows($user_result) > 0) {
+    $user = mysqli_fetch_assoc($user_result);
+} else {
+    echo "User not found.";
+    exit;
+}
+
+// Fetch the address information if available
+$address = null;
+if ($address_result && mysqli_num_rows($address_result) > 0) {
+    $address = mysqli_fetch_assoc($address_result);
+}
+
+
+
+
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,10 +83,6 @@
 
 
 
-
-
-
-
 </head>
 <body class="animsition">
 	
@@ -53,7 +92,7 @@
 
 
 	<!-- Header -->
-	<header>
+	<header class="header-v4">
 		<!-- Header desktop -->
 		<div class="container-menu-desktop">
 			<!-- Topbar -->
@@ -68,7 +107,6 @@
 							Help & FAQs
 						</a>
 
-
 						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
@@ -81,13 +119,25 @@
 
 
 
-						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
+
+                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+                                echo "HI '" . htmlspecialchars($user["user_name"]) ;
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
+						</a>
+
+
 
 					</div>
 				</div>
 			</div>
 
-			<div class="wrap-menu-desktop">
+			<div class="wrap-menu-desktop how-shadow1">
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
@@ -98,17 +148,21 @@
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
-							<li class="active-menu">
-								<a href="homepage.html">Home</a>
-								
+							<li>
+								<a href="dashboard.php">Home</a>
+								<ul class="sub-menu">
+									<li><a href="index.html">Homepage 1</a></li>
+									<li><a href="home-02.html">Homepage 2</a></li>
+									<li><a href="home-03.html">Homepage 3</a></li>
+								</ul>
 							</li>
 
-							<li>
+							<li class="active-menu">
 								<a href="product.html">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
@@ -135,7 +189,7 @@
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
 					</div>
@@ -147,7 +201,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="homepage.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
+				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
 			</div>
 
 			<!-- Icon header -->
@@ -189,7 +243,9 @@
 							Help & FAQs
 						</a>
 
-
+						<a href="#" class="flex-c-m p-lr-10 trans-04">
+							My Account
+						</a>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							EN
@@ -198,32 +254,29 @@
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
 						</a>
-
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-						
 					</div>
 				</li>
 			</ul>
 
 			<ul class="main-menu-m">
 				<li>
-					<a href="homepage.html">Home</a>
-					
+					<a href="dashboard.php">Home</a>
+					<ul class="sub-menu-m">
+						<li><a href="index.html">Homepage 1</a></li>
+						<li><a href="home-02.html">Homepage 2</a></li>
+						<li><a href="home-03.html">Homepage 3</a></li>
+					</ul>
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
 				</li>
 
 				<li>
-					<a href="product.html">Shop</a>
+					<a href="product.php">Shop</a>
 				</li>
 
 				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
+					<a href="shoping-cart.php" class="label1 rs1" data-label1="hot">Features</a>
 				</li>
 
 				<li>
@@ -239,12 +292,6 @@
 				</li>
 			</ul>
 		</div>
-
-
-
-
-
-
 
 		<!-- Modal Search -->
 		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
@@ -264,92 +311,69 @@
 	</header>
 
 	<!-- Cart -->
-	<div class="wrap-header-cart js-panel-cart">
-		<div class="s-full js-hide-cart"></div>
+<div class="wrap-header-cart js-panel-cart">
+    <div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+    <div class="header-cart flex-col-l p-l-65 p-r-25">
+        <div class="header-cart-title flex-w flex-sb-m p-b-8">
+            <span class="mtext-103 cl2">
+                Your Cart
+            </span>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-					<i class="zmdi zmdi-close"></i>
-				</div>
-			</div>
-			
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full">
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-01.jpg" alt="IMG">
-						</div>
+            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                <i class="zmdi zmdi-close"></i>
+            </div>
+        </div>
+        
+        <div class="header-cart-content flex-w js-pscroll">
+            <ul class="header-cart-wrapitem w-full" id="cart-items">
+                <?php
+                // Display combined cart items
+                $total_price = 0;
+                if ($cart_items_result->num_rows > 0) {
+                    while($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $cart_item['product_name'] . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+                            </div>
+                        </li>';
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
+            </ul>
+            
+            <div class="w-full">
+                <div class="header-cart-total w-full p-tb-40">
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                </div>
 
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								White Shirt Pleat
-							</a>
+                <div class="header-cart-buttons flex-w w-full">
+                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        View Cart
+                    </a>
 
-							<span class="header-cart-item-info">
-								1 x $19.00
-							</span>
-						</div>
-					</li>
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                        Check Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-02.jpg" alt="IMG">
-						</div>
 
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Converse All Star
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $39.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-03.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Nixon Porter Leather
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $17.00
-							</span>
-						</div>
-					</li>
-				</ul>
-				
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
-					</div>
-
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
-
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<br>
-	<br>
-	<br>
 	
 	<body class="checkout-root checkout-reset">
 
@@ -358,32 +382,31 @@
             <div class="checkout-row">
                 <!-- Billing Address Section -->
                 <div class="checkout-column">
-                    <h3 class="checkout-title">Billing Address</h3>
+                    <h3 class="checkout-title">Delivery Address</h3>
                     <div class="checkout-input-box">
-                        <span>Full Name :</span>
-                        <input type="text" placeholder="Cheong Wei Kit">
+                        <span class="required">Full Name :</span>
+                        <input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>Email :</span>
-                        <input type="email" placeholder="example@example.com">
+                        <span class="required">Email :</span>
+                        <input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>Address :</span>
-                        <input type="text" placeholder="Room - Street - Locality">
+                        <span class="required">Address :</span>
+                        <input type="text" value="<?php echo htmlspecialchars($address['address'] ?? ''); ?>" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>City :</span>
-                        <input type="text" placeholder="Johor Bahru">
+                        <span class="required">City :</span>
+                        <input type="text" value="<?php echo htmlspecialchars($address['city'] ?? ''); ?>" required>
                     </div>
-
                     <div class="checkout-flex">
                         <div class="checkout-input-box">
-                            <span>State :</span>
-                            <input type="text" placeholder="Johor">
+                            <span class="required">State :</span>
+                            <input type="text" value="<?php echo htmlspecialchars($address['state'] ?? ''); ?>" required>
                         </div>
                         <div class="checkout-input-box">
-                            <span>Postcode :</span>
-                            <input type="number" placeholder="81100">
+                            <span class="required">Postcode :</span>
+                            <input type="number" value="<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>" required>
                         </div>
                     </div>
                 </div>
@@ -396,26 +419,31 @@
                         <img src="images/payment card.png" alt="Cards Accepted">
                     </div>
                     <div class="checkout-input-box">
-                        <span>Name On Card :</span>
-                        <input type="text" placeholder="Cheong Wei Kit">
+                        <span>Card Holder Name :</span>
+                        <input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
                     </div>
                     <div class="checkout-input-box">
-                        <span>Credit Card Number :</span>
-                        <input type="number" placeholder="1111 2222 3333 4444">
+                        <span> Card Number :</span>
+                        <input   type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
+    					pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" title="Please enter exactly 16 digits" autocomplete="off" required 
+    					oninput="formatCardNumber(this)">
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
-                        <input type="text" placeholder="leave a message">
+                        <input type="text" placeholder="leave a message (optional)">
                     </div>
                 
                     <div class="checkout-flex">
                         <div class="checkout-input-box">
-                            <span>Valid Thru(MM/YY) :</span>
-                            <input type="number" placeholder="11/25">
+                            <span>Valid Thru (MM/YY) :</span>
+                            <input type="text" id="expiry-date" placeholder="MM/YY" required>
+                            <small id="expiry-error" style="color: red; display: none;">Please enter a valid, non-expired date.</small>
                         </div>
                         <div class="checkout-input-box">
                             <span>CVV :</span>
-                            <input type="number" placeholder="123">
+							<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()" required>
+							<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV code.</small>
+
                         </div>
                     </div>
                 </div>
@@ -864,5 +892,80 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 
+<script>
+    document.getElementById('expiry-date').addEventListener('input', function() {
+    const input = this.value;
+    const error = document.getElementById('expiry-error');
+    
+    // Check if the input matches MM/YY format using regex
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(input)) {
+        error.style.display = 'none';
+        return;
+    }
+
+    // Parse month and year from input
+    const [month, year] = input.split('/').map(Number);
+    const currentYear = new Date().getFullYear() % 100; // last two digits of current year
+    const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+
+    // Check if the entered date is valid (current month/year or later)
+    if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+        error.style.display = 'none'; // hide error message if valid
+    } else {
+        error.style.display = 'block'; // show error message if expired
+        this.value = ''; // clear input field
+    }
+});
+
+function formatCardNumber(input) {
+    // Remove all spaces and get only digits
+    let cardNum = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    
+    // Split into groups of 4 digits
+    let formattedCardNum = cardNum.match(/.{1,4}/g);
+    
+    // Join groups with a space
+    if (formattedCardNum) {
+        input.value = formattedCardNum.join(' ');
+    }
+}
+
+document.getElementById("expiry-date").addEventListener("input", function(e) {
+    const input = e.target;
+    let value = input.value.replace(/\D/g, ""); 
+
+    if (value.length >= 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2);
+    }
+
+    if (value.length > 5) {
+        value = value.slice(0, 5); 
+    }
+
+    input.value = value;
+});
+
+function validateCVV() {
+    const cvvInput = document.getElementById("cvv");
+    const cvvError = document.getElementById("cvv-error");
+
+    
+    if (cvvInput.value.length > 3) {
+        cvvInput.value = cvvInput.value.slice(0, 3);
+    }
+
+   
+    if (cvvInput.value.length < 3) {
+        cvvInput.setCustomValidity("Please enter a 3-digit CVV code."); 
+        cvvError.style.display = "inline"; 
+    } else {
+        cvvInput.setCustomValidity(""); 
+        cvvError.style.display = "none"; 
+    }
+}
+
+
+</script>   
 </body>
 </html>
