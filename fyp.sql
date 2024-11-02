@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- 主机： 127.0.0.1
--- 生成日期： 2024-10-29 06:34:29
--- 服务器版本： 10.4.32-MariaDB
--- PHP 版本： 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Nov 02, 2024 at 12:55 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 数据库： `fyp`
+-- Database: `fyp 1`
 --
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `admin`
+-- Table structure for table `admin`
 --
 
 CREATE TABLE `admin` (
@@ -42,7 +42,7 @@ CREATE TABLE `admin` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `category`
+-- Table structure for table `category`
 --
 
 CREATE TABLE `category` (
@@ -51,7 +51,7 @@ CREATE TABLE `category` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转存表中的数据 `category`
+-- Dumping data for table `category`
 --
 
 INSERT INTO `category` (`category_id`, `category_name`) VALUES
@@ -60,7 +60,7 @@ INSERT INTO `category` (`category_id`, `category_name`) VALUES
 -- --------------------------------------------------------
 
 --
--- 表的结构 `contact_us`
+-- Table structure for table `contact_us`
 --
 
 CREATE TABLE `contact_us` (
@@ -72,7 +72,7 @@ CREATE TABLE `contact_us` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `feedback`
+-- Table structure for table `feedback`
 --
 
 CREATE TABLE `feedback` (
@@ -89,7 +89,7 @@ CREATE TABLE `feedback` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `orders`
+-- Table structure for table `orders`
 --
 
 CREATE TABLE `orders` (
@@ -110,7 +110,7 @@ CREATE TABLE `orders` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `order_details`
+-- Table structure for table `order_details`
 --
 
 CREATE TABLE `order_details` (
@@ -126,7 +126,7 @@ CREATE TABLE `order_details` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `payment`
+-- Table structure for table `payment`
 --
 
 CREATE TABLE `payment` (
@@ -142,7 +142,7 @@ CREATE TABLE `payment` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `product`
+-- Table structure for table `product`
 --
 
 CREATE TABLE `product` (
@@ -156,40 +156,25 @@ CREATE TABLE `product` (
   `Quick_View2` text NOT NULL,
   `Quick_View3` text NOT NULL,
   `product_price` decimal(10,2) NOT NULL,
-  `product_stock` int(11) NOT NULL
+  `product_stock` int(11) NOT NULL,
+  `color1` int(11) NOT NULL,
+  `color2` int(11) NOT NULL,
+  `size1` int(11) NOT NULL,
+  `size2` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转存表中的数据 `product`
+-- Dumping data for table `product`
 --
 
-INSERT INTO `product` (`product_id`, `category_id`, `product_status`, `product_name`, `product_des`, `product_image`, `Quick_View1`, `Quick_View2`, `Quick_View3`, `product_price`, `product_stock`) VALUES
-(1, 1, 1, 'LV ICON', '666', 'about-02.jpg', 'about-02.jpg', 'about-02.jpg', 'about-02.jpg', 1000.00, 10);
+INSERT INTO `product` (`product_id`, `category_id`, `product_status`, `product_name`, `product_des`, `product_image`, `Quick_View1`, `Quick_View2`, `Quick_View3`, `product_price`, `product_stock`, `color1`, `color2`, `size1`, `size2`) VALUES
+(1, 1, 1, 'LV ICON', '666', 'about-02.jpg', 'about-02.jpg', 'about-02.jpg', 'about-02.jpg', 1000.00, 10, 0, 0, 0, 0),
+(3, 1, 1, 'fgh', 'dasdsdsdda', 'gallery-07.jpg', 'gallery-07.jpg', 'gallery-07.jpg', 'gallery-07.jpg', 300.00, 10, 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `promo_code`
---
-
-CREATE TABLE `promo_code` (
-  `promo_code_id` int(11) NOT NULL,
-  `code` varchar(50) NOT NULL,
-  `discount_rate` decimal(5,2) NOT NULL,
-  `start_date` datetime NOT NULL,
-  `end_date` datetime NOT NULL,
-  `usage_limit` int(11) DEFAULT 0,
-  `minimum_order_amount` decimal(10,2) DEFAULT 0.00,
-  `active` tinyint(1) DEFAULT 1,
-  `user_qualified` tinyint(1) DEFAULT 0,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `receipt`
+-- Table structure for table `receipt`
 --
 
 CREATE TABLE `receipt` (
@@ -202,7 +187,7 @@ CREATE TABLE `receipt` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `shopping_cart`
+-- Table structure for table `shopping_cart`
 --
 
 CREATE TABLE `shopping_cart` (
@@ -210,21 +195,24 @@ CREATE TABLE `shopping_cart` (
   `product_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `qty` int(11) NOT NULL,
-  `total_price` double NOT NULL
+  `total_price` double NOT NULL,
+  `final_total_price` decimal(10,2) NOT NULL,
+  `voucher_applied` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转存表中的数据 `shopping_cart`
+-- Dumping data for table `shopping_cart`
 --
 
-INSERT INTO `shopping_cart` (`cart_id`, `product_id`, `user_id`, `qty`, `total_price`) VALUES
-(3, 1, 37, 1, 1000),
-(4, 1, 37, 2, 2000);
+INSERT INTO `shopping_cart` (`cart_id`, `product_id`, `user_id`, `qty`, `total_price`, `final_total_price`, `voucher_applied`) VALUES
+(14, 1, 37, 3, 3000, 2970.33, 1),
+(23, 3, 37, 1, 300, 2970.33, 1),
+(25, 3, 36, 20, 6000, 5700.00, 1);
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `superadmin`
+-- Table structure for table `superadmin`
 --
 
 CREATE TABLE `superadmin` (
@@ -239,7 +227,7 @@ CREATE TABLE `superadmin` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user`
+-- Table structure for table `user`
 --
 
 CREATE TABLE `user` (
@@ -256,7 +244,7 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转存表中的数据 `user`
+-- Dumping data for table `user`
 --
 
 INSERT INTO `user` (`user_id`, `user_name`, `user_image`, `user_password`, `user_email`, `user_contact_number`, `user_gender`, `user_status`, `user_date_of_birth`, `user_join_time`) VALUES
@@ -266,7 +254,7 @@ INSERT INTO `user` (`user_id`, `user_name`, `user_image`, `user_password`, `user
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user_address`
+-- Table structure for table `user_address`
 --
 
 CREATE TABLE `user_address` (
@@ -279,37 +267,84 @@ CREATE TABLE `user_address` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转存表中的数据 `user_address`
+-- Dumping data for table `user_address`
 --
 
 INSERT INTO `user_address` (`address_id`, `user_id`, `address`, `state`, `city`, `postcode`) VALUES
 (9, 36, 'yongpeng', 'JOHOR', 'yongpeng', '83711');
 
+-- --------------------------------------------------------
+
 --
--- 转储表的索引
+-- Table structure for table `voucher`
+--
+
+CREATE TABLE `voucher` (
+  `voucher_id` int(11) NOT NULL,
+  `voucher_code` varchar(30) NOT NULL,
+  `discount_rate` decimal(4,2) NOT NULL,
+  `voucher_status` varchar(10) NOT NULL,
+  `usage_limit` int(11) NOT NULL,
+  `minimum_amount` decimal(10,2) NOT NULL,
+  `voucher_des` varchar(100) NOT NULL,
+  `voucher_pic` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `voucher`
+--
+
+INSERT INTO `voucher` (`voucher_id`, `voucher_code`, `discount_rate`, `voucher_status`, `usage_limit`, `minimum_amount`, `voucher_des`, `voucher_pic`) VALUES
+(1, 'NEWUSER01', 10.00, 'Active', 1, 0.00, '10% discount for all new user with no minimum spend!!!', 'New-user-discount.png'),
+(2, 'DIS4FIVET', 5.00, 'Active', 3, 5000.00, '5% discount for all purchasement above $5000', '5-discount.png'),
+(3, 'DIS4THREET', 3.00, 'Active', 2, 3000.00, '3% discount for all purchasement above $3000', '3-dis.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `voucher_usage`
+--
+
+CREATE TABLE `voucher_usage` (
+  `usage_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `voucher_id` int(11) NOT NULL,
+  `usage_num` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `voucher_usage`
+--
+
+INSERT INTO `voucher_usage` (`usage_id`, `user_id`, `voucher_id`, `usage_num`) VALUES
+(12, 37, 1, 1),
+(14, 36, 2, 1);
+
+--
+-- Indexes for dumped tables
 --
 
 --
--- 表的索引 `admin`
+-- Indexes for table `admin`
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`admin_id`);
 
 --
--- 表的索引 `category`
+-- Indexes for table `category`
 --
 ALTER TABLE `category`
   ADD PRIMARY KEY (`category_id`);
 
 --
--- 表的索引 `contact_us`
+-- Indexes for table `contact_us`
 --
 ALTER TABLE `contact_us`
   ADD PRIMARY KEY (`contact_us_id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- 表的索引 `feedback`
+-- Indexes for table `feedback`
 --
 ALTER TABLE `feedback`
   ADD PRIMARY KEY (`feedback_id`),
@@ -317,7 +352,7 @@ ALTER TABLE `feedback`
   ADD KEY `order_id` (`order_id`);
 
 --
--- 表的索引 `orders`
+-- Indexes for table `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`order_id`),
@@ -325,7 +360,7 @@ ALTER TABLE `orders`
   ADD KEY `promo_code_id` (`promo_code_id`);
 
 --
--- 表的索引 `order_details`
+-- Indexes for table `order_details`
 --
 ALTER TABLE `order_details`
   ADD PRIMARY KEY (`detail_id`),
@@ -333,7 +368,7 @@ ALTER TABLE `order_details`
   ADD KEY `product_id` (`product_id`);
 
 --
--- 表的索引 `payment`
+-- Indexes for table `payment`
 --
 ALTER TABLE `payment`
   ADD PRIMARY KEY (`payment_id`),
@@ -341,20 +376,14 @@ ALTER TABLE `payment`
   ADD KEY `order_id` (`order_id`);
 
 --
--- 表的索引 `product`
+-- Indexes for table `product`
 --
 ALTER TABLE `product`
   ADD PRIMARY KEY (`product_id`),
   ADD KEY `category_id` (`category_id`);
 
 --
--- 表的索引 `promo_code`
---
-ALTER TABLE `promo_code`
-  ADD PRIMARY KEY (`promo_code_id`);
-
---
--- 表的索引 `receipt`
+-- Indexes for table `receipt`
 --
 ALTER TABLE `receipt`
   ADD PRIMARY KEY (`receipt_id`),
@@ -362,7 +391,7 @@ ALTER TABLE `receipt`
   ADD KEY `payment_id` (`payment_id`);
 
 --
--- 表的索引 `shopping_cart`
+-- Indexes for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
   ADD PRIMARY KEY (`cart_id`),
@@ -370,168 +399,192 @@ ALTER TABLE `shopping_cart`
   ADD KEY `product_id` (`product_id`);
 
 --
--- 表的索引 `superadmin`
+-- Indexes for table `superadmin`
 --
 ALTER TABLE `superadmin`
   ADD PRIMARY KEY (`superadmin_id`);
 
 --
--- 表的索引 `user`
+-- Indexes for table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`user_id`);
 
 --
--- 表的索引 `user_address`
+-- Indexes for table `user_address`
 --
 ALTER TABLE `user_address`
-  ADD PRIMARY KEY (`address_id`);
+  ADD PRIMARY KEY (`address_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
--- 在导出的表使用AUTO_INCREMENT
+-- Indexes for table `voucher`
+--
+ALTER TABLE `voucher`
+  ADD PRIMARY KEY (`voucher_id`);
+
+--
+-- Indexes for table `voucher_usage`
+--
+ALTER TABLE `voucher_usage`
+  ADD PRIMARY KEY (`usage_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- 使用表AUTO_INCREMENT `admin`
+-- AUTO_INCREMENT for table `admin`
 --
 ALTER TABLE `admin`
   MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `category`
+-- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
   MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- 使用表AUTO_INCREMENT `contact_us`
+-- AUTO_INCREMENT for table `contact_us`
 --
 ALTER TABLE `contact_us`
   MODIFY `contact_us_id` int(10) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `feedback`
+-- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
   MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `orders`
+-- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
   MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `order_details`
+-- AUTO_INCREMENT for table `order_details`
 --
 ALTER TABLE `order_details`
   MODIFY `detail_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `payment`
+-- AUTO_INCREMENT for table `payment`
 --
 ALTER TABLE `payment`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `product`
+-- AUTO_INCREMENT for table `product`
 --
 ALTER TABLE `product`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- 使用表AUTO_INCREMENT `promo_code`
---
-ALTER TABLE `promo_code`
-  MODIFY `promo_code_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- 使用表AUTO_INCREMENT `receipt`
+-- AUTO_INCREMENT for table `receipt`
 --
 ALTER TABLE `receipt`
   MODIFY `receipt_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `shopping_cart`
+-- AUTO_INCREMENT for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
--- 使用表AUTO_INCREMENT `superadmin`
+-- AUTO_INCREMENT for table `superadmin`
 --
 ALTER TABLE `superadmin`
   MODIFY `superadmin_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- 使用表AUTO_INCREMENT `user`
+-- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
--- 使用表AUTO_INCREMENT `user_address`
+-- AUTO_INCREMENT for table `user_address`
 --
 ALTER TABLE `user_address`
   MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- 限制导出的表
+-- AUTO_INCREMENT for table `voucher`
+--
+ALTER TABLE `voucher`
+  MODIFY `voucher_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `voucher_usage`
+--
+ALTER TABLE `voucher_usage`
+  MODIFY `usage_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- Constraints for dumped tables
 --
 
 --
--- 限制表 `contact_us`
+-- Constraints for table `contact_us`
 --
 ALTER TABLE `contact_us`
   ADD CONSTRAINT `contact_us_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 
 --
--- 限制表 `feedback`
+-- Constraints for table `feedback`
 --
 ALTER TABLE `feedback`
   ADD CONSTRAINT `feedback_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `feedback_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
 
 --
--- 限制表 `orders`
+-- Constraints for table `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
-  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`promo_code_id`) REFERENCES `promo_code` (`promo_code_id`);
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 
 --
--- 限制表 `order_details`
+-- Constraints for table `order_details`
 --
 ALTER TABLE `order_details`
   ADD CONSTRAINT `order_details_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `order_details_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
 
 --
--- 限制表 `payment`
+-- Constraints for table `payment`
 --
 ALTER TABLE `payment`
   ADD CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
   ADD CONSTRAINT `payment_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`);
 
 --
--- 限制表 `product`
+-- Constraints for table `product`
 --
 ALTER TABLE `product`
   ADD CONSTRAINT `product_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`);
 
 --
--- 限制表 `receipt`
+-- Constraints for table `receipt`
 --
 ALTER TABLE `receipt`
   ADD CONSTRAINT `receipt_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   ADD CONSTRAINT `receipt_ibfk_2` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`payment_id`);
 
 --
--- 限制表 `shopping_cart`
+-- Constraints for table `shopping_cart`
 --
 ALTER TABLE `shopping_cart`
   ADD CONSTRAINT `shopping_cart_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
   ADD CONSTRAINT `shopping_cart_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`);
+
+--
+-- Constraints for table `user_address`
+--
+ALTER TABLE `user_address`
+  ADD CONSTRAINT `user_address_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
