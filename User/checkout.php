@@ -424,16 +424,9 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
-                        <input   type="text" 
-    name="cardNum" 
-    placeholder="1111 2222 3333 4444" 
-    minlength="16" 
-    maxlength="19" 
-    pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" 
-    title="Please enter exactly 16 digits" 
-    autocomplete="off" 
-    required 
-    oninput="formatCardNumber(this)">
+                        <input   type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
+    					pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" title="Please enter exactly 16 digits" autocomplete="off" required 
+    					oninput="formatCardNumber(this)">
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
@@ -935,6 +928,21 @@ function formatCardNumber(input) {
         input.value = formattedCardNum.join(' ');
     }
 }
+
+document.getElementById("expiry-date").addEventListener("input", function(e) {
+    const input = e.target;
+    let value = input.value.replace(/\D/g, ""); 
+
+    if (value.length >= 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2);
+    }
+
+    if (value.length > 5) {
+        value = value.slice(0, 5); 
+    }
+
+    input.value = value;
+});
 
 </script>   
 </body>
