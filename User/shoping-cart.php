@@ -609,9 +609,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
     					</div>
-						<a href="payment.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        	Check Out
-                    	</a>
+						<form method="POST" action="checkout.php">
+    <button type="submit" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+        Check Out
+    </button>
+    
+    <?php while ($cart_item = $cart_items_result->fetch_assoc()): ?>
+        <input type="hidden" name="product_id[]" value="<?php echo $cart_item['product_id']; ?>">
+        <input type="hidden" name="product_name[]" value="<?php echo $cart_item['product_name']; ?>">
+        <input type="hidden" name="product_image[]" value="<?php echo $cart_item['product_image']; ?>">
+        <input type="hidden" name="product_price[]" value="<?php echo $cart_item['product_price']; ?>">
+        <input type="hidden" name="product_qty[]" value="<?php echo $cart_item['total_qty']; ?>">
+    <?php endwhile; ?>
+    <input type="hidden" name="subtotal" value="<?php echo $total_price; ?>">
+    <input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
+    <input type="hidden" name="final_total_price" value="<?php echo $final_total_price; ?>">
+</form>
 					</div>
                 </div>
             </div>
