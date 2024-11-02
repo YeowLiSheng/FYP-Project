@@ -35,21 +35,25 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
 }
 
-// Retrieve shopping cart items for the logged-in user
+// Retrieve unique products with total quantity and price in the cart for the logged-in user
 $cart_query = "
     SELECT 
-        sc.qty, 
-        sc.final_total_price, 
+        p.product_id,
         p.product_name, 
         p.product_price, 
-        p.product_image
+        p.product_image,
+        SUM(sc.qty) AS total_qty, 
+        (p.product_price * SUM(sc.qty)) AS item_total_price
     FROM 
         shopping_cart AS sc
     JOIN 
         product AS p ON sc.product_id = p.product_id
     WHERE 
         sc.user_id = '$user_id'
+    GROUP BY 
+        p.product_id
 ";
+
 $cart_result = mysqli_query($conn, $cart_query);
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
@@ -474,8 +478,8 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         			$product_name = $row['product_name'];
         			$product_price = $row['product_price'];
         			$product_image = $row['product_image'];
-        			$qty = $row['qty'];
-        			$item_total_price = $product_price * $qty;
+        			$total_qty = $row['total_qty'];
+        			$item_total_price = $row['item_total_price'];
         			$subtotal += $item_total_price;
     				?> 
                    <div class="checkout-order-item">
@@ -483,7 +487,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         <div>
             <p><?php echo htmlspecialchars($product_name); ?></p>
             <span>Price: $<?php echo number_format($product_price, 2); ?></span><br>
-            <span>Quantity: <?php echo $qty; ?></span><br>
+            <span>Quantity: <?php echo $total_qty; ?></span><br>
             <span>Total: $<?php echo number_format($item_total_price, 2); ?></span>
         </div>
     </div>
