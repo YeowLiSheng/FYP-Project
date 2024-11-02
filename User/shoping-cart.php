@@ -207,7 +207,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
         } else {
             $error_message = "You have reached the usage limit for this voucher.";
         }
-    } 
+    } else {
+        $error_message = "Invalid or inactive voucher code.";
+    }
 } else {
     // Store final total price in the database if no voucher is applied
     storeFinalTotal($conn, $user_id, $final_total_price);
