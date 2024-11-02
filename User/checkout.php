@@ -430,7 +430,7 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
                     </div>
                     <div class="checkout-input-box">
                         <span>Message for Seller :</span>
-                        <input type="text" placeholder="leave a message">
+                        <input type="text" placeholder="leave a message (optional)">
                     </div>
                 
                     <div class="checkout-flex">
