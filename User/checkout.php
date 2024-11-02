@@ -35,6 +35,10 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['product_id'])) {
+    header("Location: cart.php"); // Redirect if accessed directly without POST data
+    exit;
+}
 
 // Check if POST data exists
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['product_id'])) {
