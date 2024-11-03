@@ -620,9 +620,13 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
     					</div>
-						<a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        	Check Out
-                    	</a>
+						 <!-- Hidden field to pass discount amount to checkout.php -->
+    					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
+    
+    					<!-- Check Out Button with form action to checkout.php -->
+    					<button type="submit" formaction="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+        					Check Out
+    					</button>
 					</div>
                 </div>
             </div>
