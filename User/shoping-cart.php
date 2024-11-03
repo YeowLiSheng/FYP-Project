@@ -273,7 +273,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
+							US
 						</a>
 					</div>
 				</div>
