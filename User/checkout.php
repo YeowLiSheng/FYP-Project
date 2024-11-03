@@ -520,11 +520,11 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
         <?php
         // Assuming $discount is calculated elsewhere or based on some logic
 		$delivery_charge=10;				
-        $total_payment = $grand_total - $discount_amount-$delivery_charge;
+        $total_payment = $grand_total - $discount_amount+$delivery_charge;
         ?>
         <p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
         <p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
-		<p>Delivery Charge: <span>-RM<?php echo number_format($delivery_charge, 2); ?></span></p>
+		<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
 
