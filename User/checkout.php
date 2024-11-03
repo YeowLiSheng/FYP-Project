@@ -513,13 +513,14 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
     <?php
-} else {
-    echo "<p>Your cart is empty.</p>";
-}
-?>
+	} else 
+	{
+    	echo "<p>Your cart is empty.</p>";
+	}
+	?>
 
 
-                    <!-- Confirm Payment Button -->
+	<!-- Confirm Payment Button -->
                     <button type="submit" class="checkout-btn">Confirm Payment</button>
                 </div>
             </div>
