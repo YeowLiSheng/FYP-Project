@@ -69,10 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     exit;
 }
 
-    // Reload the page to reflect changes
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
 
 function reapplyVoucher($conn, $user_id, &$final_total_price) {
     // Check if the voucher is already applied in the session
@@ -622,10 +618,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
         					<span class="stext-110 cl2">Subtotal:</span>
     					</div>
     					<div class="size-209">
-        					<span class="mtext-110 cl2">
-            					$<?php echo number_format($final_total_price, 2); ?>
-        					</span>
-    					</div>
+    						<span class="mtext-110 cl2">
+        						$<?php echo isset($_SESSION['final_total_price']) ? number_format($_SESSION['final_total_price'], 2) : number_format($final_total_price, 2); ?>
+    						</span>
+						</div>
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
