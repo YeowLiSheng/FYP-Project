@@ -59,7 +59,7 @@ $cart_result = mysqli_query($conn, $cart_query);
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     $subtotal = 0;
 
-	$discount_amount = isset($_POST['discount_amount']) ? $_POST['discount_amount'] : 0;
+
 ?>
 
 <!DOCTYPE html>
