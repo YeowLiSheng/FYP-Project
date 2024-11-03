@@ -214,6 +214,8 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
         $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
