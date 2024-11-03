@@ -59,8 +59,18 @@ $cart_result = mysqli_query($conn, $cart_query);
 if ($cart_result && mysqli_num_rows($cart_result) > 0) 
 {
 
-	$discount_amount = isset($_GET['discount_amount']) ? floatval($_GET['discount_amount']) : 0;
 
+
+	 // Retrieve discount amount for the user from shopping_cart table
+	 $discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+	 $discount_result = mysqli_query($conn, $discount_query);
+ 
+	 if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+		 $discount_row = mysqli_fetch_assoc($discount_result);
+		 $discount_amount = $discount_row['discount_amount'];
+	 } else {
+		 $discount_amount = 0; // Default to 0 if no discount is found
+	 }
 } else 
 {
 	echo "<p>Your cart is empty.</p>";
@@ -518,15 +528,14 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
     </div>
 
 
-	 <!-- Confirm Payment Button -->
-	 <button type="submit" class="checkout-btn" onclick="processPayment()">Confirm Payment</button>
+	<!-- Confirm Payment Button -->
+	<button type="button" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
-<!-- Overlay for payment processing and success message -->
-<div class="overlay" id="overlay">
-	<div id="processing">Payment Processing...</div>
-	<div class="success-message" id="successMessage">
-		Payment Successful!
-		<button class="ok-btn" onclick="closeOverlay()">OK</button>
+<!-- Payment Processing Popup -->
+<div class="overlay" id="paymentOverlay">
+	<div class="popup" id="popupContent">
+		<div class="spinner"></div>
+		<p>Payment Processing...</p>
 	</div>
 </div>
                 </div>
@@ -1018,29 +1027,25 @@ function validateCVV() {
     }
 }
 
-// Function to simulate payment processing and show success message
-function processPayment() {
-            const overlay = document.getElementById('overlay');
-            const processing = document.getElementById('processing');
-            const successMessage = document.getElementById('successMessage');
+function confirmPayment() {
+            // Show overlay and display "Processing" state
+            const overlay = document.getElementById('paymentOverlay');
+            const popupContent = document.getElementById('popupContent');
+            overlay.classList.add('show');
 
-            // Show the overlay with the processing message
-            overlay.style.display = 'flex';
-            processing.style.display = 'block';
-            successMessage.style.display = 'none';
-
-            // Simulate a delay for payment processing
+            // Simulate payment processing
             setTimeout(() => {
-                // Hide the processing message and show the success message
-                processing.style.display = 'none';
-                successMessage.style.display = 'flex';
-            }, 2000); // 2-second delay to simulate processing
+                // Switch to "Payment Successfully" message
+                popupContent.innerHTML = `
+                    <h2>Payment Successfully</h2>
+                    <button class="ok-btn" onclick="goToDashboard()">OK</button>
+                `;
+            }, 2000); // 2-second loading animation
         }
 
-        // Function to close the overlay when OK button is clicked
-        function closeOverlay() {
-            const overlay = document.getElementById('overlay');
-            overlay.style.display = 'none';
+        function goToDashboard() {
+            // Redirect to dashboard page
+            window.location.href = 'dashboard.php';
         }
 
 
