@@ -101,8 +101,8 @@
 }
 
 .checkout-order-item img {
-    width: 60px;
-    height: 60px;
+    width: 100px;
+    height: 1000px;
     border-radius: 5px;
     border: 1px solid #ccc;
     object-fit: cover;
