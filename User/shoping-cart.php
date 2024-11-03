@@ -247,6 +247,33 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 
 $_SESSION['discount_amount'] = $discount_amount;
 
+// Handle voucher removal
+if (isset($_POST['remove_voucher'])) {
+    $conn->query("
+        UPDATE shopping_cart 
+        SET voucher_applied = 0, 
+            discount_amount = 0, 
+            final_total_price = total_price 
+        WHERE user_id = $user_id");
+
+    // Decrement usage in voucher_usage
+    $voucher_id = $_POST['voucher_id'];
+    $conn->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
+
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+
+// Display applied voucher
+$voucher_applied_query = "
+    SELECT v.voucher_code, sc.discount_amount, v.voucher_id 
+    FROM shopping_cart sc
+    JOIN voucher v ON v.voucher_id = sc.voucher_applied
+    WHERE sc.user_id = $user_id AND sc.voucher_applied = 1";
+$voucher_applied_result = $conn->query($voucher_applied_query);
+$applied_voucher = $voucher_applied_result->fetch_assoc();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -278,6 +305,81 @@ $_SESSION['discount_amount'] = $discount_amount;
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<style>
+/* Chat box styling */
+.chat-box {
+    position: relative;
+    max-width: 250px;
+    padding: 15px;
+    border-radius: 12px;
+    background-color: #f1f1f1;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+    margin-left: 20px;
+    transition: transform 0.3s ease;
+}
+
+/* Speech bubble effect */
+.chat-box::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 15px;
+    width: 0;
+    height: 0;
+    border-width: 10px;
+    border-style: solid;
+    border-color: #f1f1f1 transparent transparent transparent;
+}
+
+/* Text inside the chat box */
+.chat-box p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Remove (close) button styling */
+.chat-box .remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.chat-box .remove-btn:hover {
+    color: #ff4d4d;
+}
+
+/* Button styling specific to chat box */
+.chat-box .apply-voucher-btn {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.chat-box .apply-voucher-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Error message styling specific to chat box */
+.chat-box .text-danger {
+    color: #ff4d4d;
+    font-size: 14px;
+    margin-top: 10px;
+}
+</style>
 </head>
 <body class="animsition">
 	
@@ -641,6 +743,16 @@ $_SESSION['discount_amount'] = $discount_amount;
         					<span class="mtext-110 cl2">
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
+							<?php if (!empty($applied_voucher)): ?>
+       							<div class="chat-box">
+           	 						<form method="POST" action="">
+                						<p>Voucher Code: <?php echo $applied_voucher['voucher_code']; ?></p>
+                						<p>Discount: $<?php echo number_format($applied_voucher['discount_amount'], 2); ?></p>
+                						<input type="hidden" name="voucher_id" value="<?php echo $applied_voucher['voucher_id']; ?>">
+                						<button type="submit" name="remove_voucher" class="remove-btn">✖</button>
+           							</form>
+        						</div>
+    						<?php endif; ?>
     					</div>
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
