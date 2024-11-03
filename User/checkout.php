@@ -518,8 +518,17 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
     </div>
 
 
-	<!-- Confirm Payment Button -->
-                    <button type="submit" class="checkout-btn">Confirm Payment</button>
+	 <!-- Confirm Payment Button -->
+	 <button type="submit" class="checkout-btn" onclick="processPayment()">Confirm Payment</button>
+
+<!-- Overlay for payment processing and success message -->
+<div class="overlay" id="overlay">
+	<div id="processing">Payment Processing...</div>
+	<div class="success-message" id="successMessage">
+		Payment Successful!
+		<button class="ok-btn" onclick="closeOverlay()">OK</button>
+	</div>
+</div>
                 </div>
             </div>
         </form>
@@ -1008,6 +1017,31 @@ function validateCVV() {
         cvvError.style.display = "none"; 
     }
 }
+
+// Function to simulate payment processing and show success message
+function processPayment() {
+            const overlay = document.getElementById('overlay');
+            const processing = document.getElementById('processing');
+            const successMessage = document.getElementById('successMessage');
+
+            // Show the overlay with the processing message
+            overlay.style.display = 'flex';
+            processing.style.display = 'block';
+            successMessage.style.display = 'none';
+
+            // Simulate a delay for payment processing
+            setTimeout(() => {
+                // Hide the processing message and show the success message
+                processing.style.display = 'none';
+                successMessage.style.display = 'flex';
+            }, 2000); // 2-second delay to simulate processing
+        }
+
+        // Function to close the overlay when OK button is clicked
+        function closeOverlay() {
+            const overlay = document.getElementById('overlay');
+            overlay.style.display = 'none';
+        }
 
 
 </script>   
