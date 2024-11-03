@@ -89,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
 
 // Reapply the voucher if previously applied
 function reapplyVoucher($conn, $user_id, &$final_total_price) {
-    // Retrieve the applied voucher
     $voucher_usage_query = "
         SELECT v.discount_rate, v.minimum_amount, v.voucher_id 
         FROM voucher_usage vu
@@ -116,17 +115,21 @@ function reapplyVoucher($conn, $user_id, &$final_total_price) {
             $discount_amount = $total_price * ($discount_rate / 100);
             $final_total_price = $total_price - $discount_amount;
 
-            // Update final total price in the shopping cart for each item
+            // Update shopping_cart with final total price, discount_amount, and voucher_applied
             $update_final_total_query = "
                 UPDATE shopping_cart 
-                SET final_total_price = $final_total_price, voucher_applied = 1 
+                SET final_total_price = $final_total_price, 
+                    discount_amount = $discount_amount, 
+                    voucher_applied = 1 
                 WHERE user_id = $user_id";
             $conn->query($update_final_total_query);
         } else {
             // Remove voucher if conditions no longer met
             $update_remove_voucher_query = "
                 UPDATE shopping_cart 
-                SET final_total_price = total_price, voucher_applied = 0 
+                SET final_total_price = total_price, 
+                    discount_amount = 0, 
+                    voucher_applied = 0 
                 WHERE user_id = $user_id";
             $conn->query($update_remove_voucher_query);
         }
@@ -197,10 +200,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 				$discount_amount = $total_price * ($discount_rate / 100);
 				$final_total_price = $total_price - $discount_amount;
 	
-				// Update shopping_cart with the final total and voucher_applied
+				// Update shopping_cart with the final total, discount_amount, and voucher_applied
 				$update_final_total_query = "
 					UPDATE shopping_cart 
-					SET final_total_price = $final_total_price, voucher_applied = 1 
+					SET final_total_price = $final_total_price, 
+                        discount_amount = $discount_amount, 
+                        voucher_applied = 1 
 					WHERE user_id = $user_id";
 				$conn->query($update_final_total_query);
 	
