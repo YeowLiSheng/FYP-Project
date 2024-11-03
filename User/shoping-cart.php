@@ -337,7 +337,7 @@ $_SESSION['discount_amount'] = $discount_amount;
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="voucher_page.php">Voucher/a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
