@@ -240,6 +240,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
     }
 }
 
+$_SESSION['discount_amount'] = $discount_amount;
 
 ?>
 <!DOCTYPE html>
@@ -640,7 +641,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
     					<!-- Check Out Button with form action to checkout.php -->
-    					<button type="submit" formaction="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
         					Check Out
     					</button>
 					</div>
