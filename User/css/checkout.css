@@ -13,24 +13,24 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    background: #f5f5f5;
-    padding: 20px 0;
+    background: #f5f5f5; /* Light background for the entire page */
+    padding: 20px 0; /* Space around the main content */
 }
 
 /* Main content container, aligning with the header width */
 .checkout-container {
     width: 100%;
-    max-width: 1200px;
-    background: #fff;
-    border-radius: 8px;
+    max-width: 1200px; /* Adjust to match header width */
+    background: #fff; /* White background for content */
+    border-radius: 8px; /* Soft rounding for a cleaner look */
     margin-left: 135px;
-    padding: 40px;
+    padding: 40px; /* Internal padding for comfortable spacing */
 }
 
 /* Layout for the form rows and columns */
 .checkout-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allows responsiveness on smaller screens */
     gap: 20px;
     align-items: stretch;
 }
@@ -40,8 +40,10 @@
     min-width: 280px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: flex-start; 
+    
 }
+
 
 /* Section titles */
 .checkout-title {
@@ -74,7 +76,7 @@
 }
 
 .checkout-input-box input:focus {
-    border-color: #8175d3;
+    border-color: #8175d3; /* Highlighted border on focus */
     outline: none;
 }
 
@@ -91,34 +93,19 @@
     margin-left: 20px;
 }
 
-/* Product item styling */
 .checkout-order-item {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    align-items: flex-start;
+    gap: 15px;
     margin-bottom: 15px;
 }
 
 .checkout-order-item img {
-    width: 100px; /* Adjust width as needed */
-    height: 100px; /* Adjust height as needed */
+    width: 60px;
+    height: 60px;
     border-radius: 5px;
     border: 1px solid #ccc;
     object-fit: cover;
-}
-
-.checkout-order-item div {
-    display: flex;
-    flex-direction: row;
-    gap: 15px;
-    align-items: center;
-}
-
-.checkout-order-item div span, 
-.checkout-order-item div p {
-    font-size: 15px;
-    margin: 0;
-    padding: 0;
 }
 
 /* Total summary section */
