@@ -31,37 +31,24 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 // Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
-    foreach ($_POST['product_qty'] as $product_id => $new_qty) {
-        $new_qty = intval($new_qty);
-
-        // Get the current total quantity of the product in the shopping cart for this user
-        $current_qty_query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-        $current_qty_result = $conn->query($current_qty_query);
-
-        if ($current_qty_result && $current_qty_result->num_rows > 0) {
-            $current_qty_row = $current_qty_result->fetch_assoc();
-            $current_total_qty = $current_qty_row['total_qty'];
-
-            // Update only if the new quantity is different from the current total quantity
-            if ($new_qty != $current_total_qty) {
-                if ($new_qty > 0) {
-                    // Update each item’s quantity proportionally
-                    $update_query = "
-                        UPDATE shopping_cart 
-                        SET qty = $new_qty, 
-                            total_price = $new_qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
-                        WHERE user_id = $user_id AND product_id = $product_id";
-                    $conn->query($update_query);
-                } else {
-                    // Remove product from the shopping cart if quantity is zero
-                    $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-                    $conn->query($delete_query);
-                }
-            }
+    foreach ($_POST['product_qty'] as $product_id => $qty) {
+        $qty = intval($qty);
+        if ($qty > 0) {
+            // Update quantity and total price for the product in the shopping cart
+            $update_query = "
+                UPDATE shopping_cart 
+                SET qty = $qty, 
+                    total_price = $qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
+                WHERE user_id = $user_id AND product_id = $product_id";
+            $conn->query($update_query);
+        } else {
+            // Remove product from the shopping cart if quantity is zero
+            $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
+            $conn->query($delete_query);
         }
     }
 
-    // Check if a voucher was previously applied and reapply if necessary
+    // Check if a voucher was previously applied
     $voucher_applied_check_query = "SELECT MAX(voucher_applied) AS voucher_applied FROM shopping_cart WHERE user_id = $user_id";
     $voucher_applied_check_result = $conn->query($voucher_applied_check_query);
     $voucher_applied_row = $voucher_applied_check_result->fetch_assoc();
@@ -74,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
-
 
 // Reapply the voucher if previously applied
 function reapplyVoucher($conn, $user_id, &$final_total_price) {
@@ -105,6 +91,13 @@ function reapplyVoucher($conn, $user_id, &$final_total_price) {
             $discount_amount = $total_price * ($discount_rate / 100);
             $final_total_price = $total_price - $discount_amount;
 
+			$update_discount_amount_query="
+				UPDATE shopping_cart
+				SET discount_amount= $discount_amount
+				WHERE user_id = $user_id";
+			
+			$conn->query($update_discount_amount_query);	
+			
             // Update final total price in the shopping cart for each item
             $update_final_total_query = "
                 UPDATE shopping_cart 
@@ -228,9 +221,6 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
         $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
 }
-
-$_SESSION['discount_amount'] = $discount_amount;
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -290,7 +280,7 @@ $_SESSION['discount_amount'] = $discount_amount;
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							US
+							USD
 						</a>
 					</div>
 				</div>
@@ -630,7 +620,7 @@ $_SESSION['discount_amount'] = $discount_amount;
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
     					<!-- Check Out Button with form action to checkout.php -->
-						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+    					<button type="submit" formaction="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
         					Check Out
     					</button>
 					</div>
