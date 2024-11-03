@@ -529,7 +529,15 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 
 
 	<!-- Confirm Payment Button -->
-                    <button type="submit" class="checkout-btn">Confirm Payment</button>
+	<button type="button" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+
+<!-- Payment Processing Popup -->
+<div class="overlay" id="paymentOverlay">
+	<div class="popup" id="popupContent">
+		<div class="spinner"></div>
+		<p>Payment Processing...</p>
+	</div>
+</div>
                 </div>
             </div>
         </form>
@@ -1018,6 +1026,27 @@ function validateCVV() {
         cvvError.style.display = "none"; 
     }
 }
+
+function confirmPayment() {
+            // Show overlay and display "Processing" state
+            const overlay = document.getElementById('paymentOverlay');
+            const popupContent = document.getElementById('popupContent');
+            overlay.classList.add('show');
+
+            // Simulate payment processing
+            setTimeout(() => {
+                // Switch to "Payment Successfully" message
+                popupContent.innerHTML = `
+                    <h2>Payment Successfully</h2>
+                    <button class="ok-btn" onclick="goToDashboard()">OK</button>
+                `;
+            }, 2000); // 2-second loading animation
+        }
+
+        function goToDashboard() {
+            // Redirect to dashboard page
+            window.location.href = 'dashboard.php';
+        }
 
 
 </script>   
