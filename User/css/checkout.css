@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Reset styles */
+.checkout-reset * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Root container for centering the layout */
+.checkout-root {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: #f5f5f5; /* Light background for the entire page */
+    padding: 20px 0; /* Space around the main content */
+}
+
+/* Main content container, aligning with the header width */
+.checkout-container {
+    width: 100%;
+    max-width: 1200px; /* Adjust to match header width */
+    background: #fff; /* White background for content */
+    border-radius: 8px; /* Soft rounding for a cleaner look */
+    margin-left: 135px;
+    padding: 40px; /* Internal padding for comfortable spacing */
+}
+
+/* Layout for the form rows and columns */
+.checkout-row {
+    display: flex;
+    flex-wrap: wrap; /* Allows responsiveness on smaller screens */
+    gap: 20px;
+    align-items: stretch;
+}
+
+.checkout-column {
+    flex: 1 1 30%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    
+}
+
+
+/* Section titles */
+.checkout-title {
+    font-size: 20px;
+    color: #333;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Input boxes styling */
+.checkout-input-box {
+    margin: 15px 0;
+}
+
+.checkout-input-box span {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.checkout-input-box input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.checkout-input-box input:focus {
+    border-color: #8175d3; /* Highlighted border on focus */
+    outline: none;
+}
+
+/* Flex layout for grouped input fields */
+.checkout-flex {
+    display: flex;
+    gap: 15px;
+}
+
+/* Order summary and item styling */
+.checkout-order-summary {
+    font-size: 16px;
+    color: #333;
+    margin-left: 20px;
+}
+
+.checkout-order-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.checkout-order-item img {
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    object-fit: cover;
+}
+
+/* Total summary section */
+.checkout-order-totals {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+.checkout-order-totals p {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.checkout-order-totals .checkout-total {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Payment button styling */
+.checkout-btn {
+    width: 100%;
+    padding: 15px;
+    background: #8175d3;
+    border: none;
+    border-radius: 6px;
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s;
+    margin-top: 30px;
+}
+
+.checkout-btn:hover {
+    background: #6a5acd;
+}
+
+/* Styling for accepted card images */
+.checkout-input-box img {
+    width: 100px;
+    height: auto;
+    margin-top: 5px;
+    filter: drop-shadow(0 0 1px #000);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .checkout-row {
+        flex-direction: column;
+    }
+}
