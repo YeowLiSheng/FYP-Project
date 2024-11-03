@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
                 $discount_amount = $total_price * ($discount_rate / 100);
                 $final_total_price = $total_price - $discount_amount;
 
-                // Update shopping_cart with the final total and voucher_applied
+                // Store the final total and voucher applied status in shopping_cart permanently
                 $update_final_total_query = "
                     UPDATE shopping_cart 
                     SET final_total_price = $final_total_price, voucher_applied = 1 
