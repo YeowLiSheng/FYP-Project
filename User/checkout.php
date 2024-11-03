@@ -59,7 +59,7 @@ $cart_result = mysqli_query($conn, $cart_query);
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     $subtotal = 0;
 
-
+	$discount_amount = isset($_SESSION['discount_amount']) ? $_SESSION['discount_amount'] : 0;
 
 ?>
 
@@ -509,7 +509,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         $total_payment = $grand_total - $discount;
         ?>
         <p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
-        <p>Discount: <span>-RM<?php echo number_format($discount, 2); ?></span></p>
+		<p>Discount Amount: $<?php echo number_format($discount_amount, 2); ?></p>
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
     <?php
