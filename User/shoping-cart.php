@@ -533,7 +533,7 @@ $display_total_price = $voucher_applied ? $final_total_price : $total_price;
 		
 
 	<!-- Shopping Cart Form -->
-<form class="bg0 p-t-75 p-b-85" method="POST" action="checkout.php">
+<form class="bg0 p-t-75 p-b-85" method="POST" action="">
     <div class="container">
         <div class="row">
             <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
