@@ -61,8 +61,16 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 
 
 
-	$discount_amount = isset($_SESSION['discount_amount']) ? $_SESSION['discount_amount'] : 0;
-
+	 // Retrieve discount amount for the user from shopping_cart table
+	 $discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+	 $discount_result = mysqli_query($conn, $discount_query);
+ 
+	 if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+		 $discount_row = mysqli_fetch_assoc($discount_result);
+		 $discount_amount = $discount_row['discount_amount'];
+	 } else {
+		 $discount_amount = 0; // Default to 0 if no discount is found
+	 }
 } else 
 {
 	echo "<p>Your cart is empty.</p>";
