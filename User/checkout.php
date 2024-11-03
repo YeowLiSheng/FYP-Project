@@ -1037,7 +1037,8 @@ function confirmPayment() {
             setTimeout(() => {
                 // Switch to "Payment Successfully" message
                 popupContent.innerHTML = `
-                    <h2>Payment Successfully</h2>
+                    <div class="success-icon">✓</div>
+                    <h2 class="success-title">Payment Successfully</h2>
                     <button class="ok-btn" onclick="goToDashboard()">OK</button>
                 `;
             }, 2000); // 2-second loading animation
