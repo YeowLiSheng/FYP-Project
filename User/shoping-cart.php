@@ -173,6 +173,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 				$final_total_price = $total_price - $discount_amount;
 	
 
+				//Update discount amount
+
+				$update_discount =
+				"
+					UPDATE shopping_cart
+					SET discount = $discount_amount
+					WHERE user_id = $user_id";
+
+				$conn->query($update_discount);	
 
 				// Update shopping_cart with the final total and voucher_applied
 				$update_final_total_query = "
@@ -216,9 +225,6 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
         $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
 }
-
-$_SESSION['discount_amount'] = $discount_amount;
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -538,7 +544,7 @@ $_SESSION['discount_amount'] = $discount_amount;
 		
 
 	<!-- Shopping Cart Form -->
-<form class="bg0 p-t-75 p-b-85" method="POST" action="checkout.php">
+<form class="bg0 p-t-75 p-b-85" method="POST" action="">
     <div class="container">
         <div class="row">
             <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
@@ -614,9 +620,9 @@ $_SESSION['discount_amount'] = $discount_amount;
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
     					</div>
-						<button type="submit" name="checkout" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                                    Check Out
-                        </button>
+						<a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        	Check Out
+                    	</a>
 					</div>
                 </div>
             </div>
