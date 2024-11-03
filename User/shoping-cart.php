@@ -172,6 +172,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 				$discount_amount = $total_price * ($discount_rate / 100);
 				$final_total_price = $total_price - $discount_amount;
 	
+
+				//Update discount amount
+
+				$update_discount =
+				"
+					UPDATE shopping_cart
+					SET discount = $discount_amount
+					WHERE user_id = $user_id";
+
+				$conn->query($update_discount);	
+
 				// Update shopping_cart with the final total and voucher_applied
 				$update_final_total_query = "
 					UPDATE shopping_cart 
