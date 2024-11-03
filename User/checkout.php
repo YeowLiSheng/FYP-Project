@@ -60,7 +60,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 {
 
 
-d
+
 	$discount_amount = isset($_SESSION['discount_amount']) ? $_SESSION['discount_amount'] : 0;
 
 } else 
