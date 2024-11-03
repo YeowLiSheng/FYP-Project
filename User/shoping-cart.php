@@ -844,7 +844,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 	<script>
 $(document).ready(function() {
-    $('.btn-num-product-down').click(function() {
+    $('.btn-num-product-down').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
         if (currentValue > 1) {
@@ -854,7 +854,7 @@ $(document).ready(function() {
         }
     });
 
-    $('.btn-num-product-up').click(function() {
+    $('.btn-num-product-up').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
         input.val(currentValue + 1);
