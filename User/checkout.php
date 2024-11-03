@@ -474,13 +474,21 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
                 <div class="checkout-column checkout-order-summary">
                     <h3 class="checkout-title">Your Order</h3>
                     <!-- Product List -->
-					<?php while ($row = mysqli_fetch_assoc($cart_result)): 
+					<?php 
+					
+					$grand_total = 0;
+
+					while ($row = mysqli_fetch_assoc($cart_result)): 
         			$product_name = $row['product_name'];
         			$product_price = $row['product_price'];
         			$product_image = $row['product_image'];
         			$total_qty = $row['total_qty'];
         			$item_total_price = $row['item_total_price'];
-        			$subtotal += $item_total_price;
+        	
+
+					// Accumulate the grand total
+					$grand_total += $item_total_price;
+
     				?> 
                    <div class="checkout-order-item">
         <img src="images/<?php echo htmlspecialchars($product_image); ?>" alt="<?php echo htmlspecialchars($product_name); ?>">
@@ -500,7 +508,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         $discount = 5; // Placeholder for discount
         $total_payment = $subtotal - $discount;
         ?>
-        <p>Grand total: <span>RM<?php echo number_format($subtotal, 2); ?></span></p>
+        <p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
         <p>Discount: <span>-RM<?php echo number_format($discount, 2); ?></span></p>
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
