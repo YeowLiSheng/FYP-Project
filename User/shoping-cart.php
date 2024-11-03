@@ -215,6 +215,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
     }
 }
 
+$_SESSION['discount_amount'] = $discount_amount;
 
 ?>
 <!DOCTYPE html>
