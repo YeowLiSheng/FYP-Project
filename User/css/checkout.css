@@ -13,24 +13,24 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    background: #f5f5f5; /* Light background for the entire page */
-    padding: 20px 0; /* Space around the main content */
+    background: #f5f5f5;
+    padding: 20px 0;
 }
 
 /* Main content container, aligning with the header width */
 .checkout-container {
     width: 100%;
-    max-width: 1200px; /* Adjust to match header width */
-    background: #fff; /* White background for content */
-    border-radius: 8px; /* Soft rounding for a cleaner look */
+    max-width: 1200px;
+    background: #fff;
+    border-radius: 8px;
     margin-left: 135px;
-    padding: 40px; /* Internal padding for comfortable spacing */
+    padding: 40px;
 }
 
 /* Layout for the form rows and columns */
 .checkout-row {
     display: flex;
-    flex-wrap: wrap; /* Allows responsiveness on smaller screens */
+    flex-wrap: wrap;
     gap: 20px;
     align-items: stretch;
 }
@@ -41,9 +41,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start; 
-    
 }
-
 
 /* Section titles */
 .checkout-title {
@@ -76,7 +74,7 @@
 }
 
 .checkout-input-box input:focus {
-    border-color: #8175d3; /* Highlighted border on focus */
+    border-color: #8175d3;
     outline: none;
 }
 
@@ -93,9 +91,10 @@
     margin-left: 20px;
 }
 
+/* Product item display */
 .checkout-order-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 15px;
     margin-bottom: 15px;
 }
@@ -109,13 +108,32 @@
 }
 
 .checkout-order-item div {
-    padding-top: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
 }
 
-.checkout-order-item div span, 
-.checkout-order-item div p {
-    line-height: 1.5;
+.checkout-order-item div p, 
+.checkout-order-item div span {
+    margin: 0;
     font-size: 15px;
+    color: #333;
+}
+
+/* Specific styling for each product detail to maintain alignment */
+.checkout-order-item div span {
+    flex: 1;
+}
+
+.checkout-order-item div .product-name {
+    flex: 2;
+    font-weight: 500;
+}
+
+.checkout-order-item div .subtotal {
+    text-align: right;
 }
 
 /* Total summary section */

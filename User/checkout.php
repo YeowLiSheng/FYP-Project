@@ -483,14 +483,15 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         			$subtotal += $item_total_price;
     				?> 
                    <div class="checkout-order-item">
-        <img src="images/<?php echo htmlspecialchars($product_image); ?>" alt="<?php echo htmlspecialchars($product_name); ?>">
-        <div>
-            <p><?php echo htmlspecialchars($product_name); ?></p>
-            <span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
-            <span>Quantity: <?php echo $total_qty; ?></span><br>
-            <span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
-        </div>
+    <img src="images/<?php echo htmlspecialchars($product_image); ?>" alt="<?php echo htmlspecialchars($product_name); ?>">
+    <div>
+        <p class="product-name"><?php echo htmlspecialchars($product_name); ?></p>
+        <span>Price: RM<?php echo number_format($product_price, 2); ?></span>
+        <span>Quantity: <?php echo $total_qty; ?></span>
+        <span class="subtotal">Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
     </div>
+</div>
+
     <?php endwhile; ?>
                     
                     <!-- Order Totals -->
