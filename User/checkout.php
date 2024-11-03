@@ -59,10 +59,14 @@ $cart_result = mysqli_query($conn, $cart_query);
 if ($cart_result && mysqli_num_rows($cart_result) > 0) 
 {
     $subtotal = 0;
-}
+
 
 	$discount_amount = isset($_SESSION['discount_amount']) ? $_SESSION['discount_amount'] : 0;
 
+} else 
+{
+	echo "<p>Your cart is empty.</p>";
+}
 ?>
 
 <!DOCTYPE html>
@@ -514,12 +518,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
         <p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
-    <?php
-	} else 
-	{
-    	echo "<p>Your cart is empty.</p>";
-	}
-	?>
 
 
 	<!-- Confirm Payment Button -->
