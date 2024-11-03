@@ -29,6 +29,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
+// Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['product_qty'] as $product_id => $qty) {
         $qty = intval($qty);
@@ -45,6 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
             $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
             $conn->query($delete_query);
         }
+    }
+
+    // Check if a voucher was previously applied
+    $voucher_applied_check_query = "SELECT MAX(voucher_applied) AS voucher_applied FROM shopping_cart WHERE user_id = $user_id";
+    $voucher_applied_check_result = $conn->query($voucher_applied_check_query);
+    $voucher_applied_row = $voucher_applied_check_result->fetch_assoc();
+    if ($voucher_applied_row['voucher_applied'] == 1) {
+        // Reapply the voucher to recalculate final total
+        reapplyVoucher($conn, $user_id, $total_price);
     }
 
     // Reload the page to reflect changes
@@ -205,7 +215,6 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
