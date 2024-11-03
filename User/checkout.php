@@ -56,8 +56,10 @@ $cart_query = "
 
 $cart_result = mysqli_query($conn, $cart_query);
 
-if ($cart_result && mysqli_num_rows($cart_result) > 0) {
+if ($cart_result && mysqli_num_rows($cart_result) > 0) 
+{
     $subtotal = 0;
+}
 
 	$discount_amount = isset($_SESSION['discount_amount']) ? $_SESSION['discount_amount'] : 0;
 
@@ -505,7 +507,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 					<div class="checkout-order-totals">
         <?php
         // Assuming $discount is calculated elsewhere or based on some logic
-    
+						
         $total_payment = $grand_total - $discount_amount;
         ?>
         <p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
