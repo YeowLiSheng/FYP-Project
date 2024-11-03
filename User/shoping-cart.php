@@ -610,7 +610,7 @@ $display_total_price = $voucher_applied ? $final_total_price : $total_price;
         					</span>
     					</div>
 						 <!-- Hidden field to pass discount amount to checkout.php -->
-						 <input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
+    					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
     					<!-- Check Out Button with form action to checkout.php -->
     					<button type="submit" formaction="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
