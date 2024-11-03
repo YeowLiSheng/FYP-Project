@@ -42,21 +42,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
             $current_qty_row = $current_qty_result->fetch_assoc();
             $current_total_qty = $current_qty_row['total_qty'];
 
-            // Update only if the new quantity is different from the current total quantity
-            if ($new_qty != $current_total_qty) {
-                if ($new_qty > 0) {
-                    // Update each item’s quantity proportionally
-                    $update_query = "
-                        UPDATE shopping_cart 
-                        SET qty = $new_qty, 
-                            total_price = $new_qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
-                        WHERE user_id = $user_id AND product_id = $product_id";
-                    $conn->query($update_query);
-                } else {
-                    // Remove product from the shopping cart if quantity is zero
-                    $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-                    $conn->query($delete_query);
-                }
+            // Calculate the quantity difference
+            $qty_difference = $new_qty - $current_total_qty;
+
+            if ($qty_difference > 0) {
+                // Increase total quantity by adding the difference
+                $update_query = "
+                    UPDATE shopping_cart 
+                    SET qty = qty + $qty_difference, 
+                        total_price = (qty + $qty_difference) * (SELECT product_price FROM product WHERE product_id = $product_id) 
+                    WHERE user_id = $user_id AND product_id = $product_id 
+                    LIMIT 1"; // Only apply to one row if there are multiple entries for this product
+                $conn->query($update_query);
+
+            } elseif ($qty_difference < 0) {
+                // Decrease total quantity by subtracting the difference
+                $reduce_qty = abs($qty_difference); // Positive value for decrement
+                $update_query = "
+                    UPDATE shopping_cart 
+                    SET qty = GREATEST(0, qty - $reduce_qty), 
+                        total_price = GREATEST(0, (qty - $reduce_qty) * (SELECT product_price FROM product WHERE product_id = $product_id)) 
+                    WHERE user_id = $user_id AND product_id = $product_id 
+                    LIMIT 1"; // Only apply to one row if there are multiple entries for this product
+                $conn->query($update_query);
+
+                // Remove any rows where qty becomes zero after update
+                $conn->query("DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id AND qty = 0");
             }
         }
     }
