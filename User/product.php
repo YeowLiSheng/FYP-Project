@@ -1106,6 +1106,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             success: function(response) {
                 if (response.success) {
                     alert(`${productName} has been added to your cart!`);
+					location.reload(); // Refresh the page after a successful addition
                 } else {
                     alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
                 }

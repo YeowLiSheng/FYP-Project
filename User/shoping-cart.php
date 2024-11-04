@@ -408,7 +408,7 @@ $applied_voucher = $voucher_applied_result->fetch_assoc();
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							US
+							USD
 						</a>
 					</div>
 				</div>
