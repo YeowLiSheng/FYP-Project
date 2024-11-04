@@ -80,11 +80,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 </head>
 <body class="animsition">
 	
-
-
-
-
-
 	<!-- Header -->
 	<header>
 		<!-- Header desktop -->
@@ -164,7 +159,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -280,7 +275,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 				</li>
 
 				<li>
-					<a href="contact.html">Contact</a>
+					<a href="contact.php">Contact</a>
 				</li>
 			</ul>
 		</div>
