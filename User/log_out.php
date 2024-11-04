@@ -5,6 +5,6 @@ include("dataconnection.php");
 session_destroy(); // Destroy the session
 echo "<script type='text/javascript'>
         alert('Successful Log Out');
-        window.location.href='homepage.html';
+        window.location.href='homepage.php';
       </script>";
 ?>

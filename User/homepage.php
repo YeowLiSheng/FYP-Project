@@ -80,7 +80,19 @@
 
 
 
-						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
+						<?php if (isset($_SESSION['id'])): ?>
+							<!-- If logged in, show "Hi [username]" and "Log Out" links -->
+							<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+								Hi <?php echo $user_name; ?>
+							</a>
+
+							<a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+								LOG OUT
+							</a>
+						<?php else: ?>
+							<!-- If not logged in, show "My Account" link -->
+							<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
+						<?php endif; ?>
 
 					</div>
 				</div>
@@ -98,7 +110,7 @@
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li class="active-menu">
-								<a href="homepage.html">Home</a>
+								<a href="homepage.php">Home</a>
 								
 							</li>
 
@@ -147,7 +159,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="homepage.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
+				<a href="homepage.php"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
 			</div>
 
 			<!-- Icon header -->
@@ -211,7 +223,7 @@
 
 			<ul class="main-menu-m">
 				<li>
-					<a href="homepage.html">Home</a>
+					<a href="homepage.php">Home</a>
 					
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
