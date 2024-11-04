@@ -56,11 +56,25 @@ $cart_query = "
 
 $cart_result = mysqli_query($conn, $cart_query);
 
-if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-    $subtotal = 0;
+if ($cart_result && mysqli_num_rows($cart_result) > 0) 
+{
 
 
 
+	 // Retrieve discount amount for the user from shopping_cart table
+	 $discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+	 $discount_result = mysqli_query($conn, $discount_query);
+ 
+	 if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+		 $discount_row = mysqli_fetch_assoc($discount_result);
+		 $discount_amount = $discount_row['discount_amount'];
+	 } else {
+		 $discount_amount = 0; // Default to 0 if no discount is found
+	 }
+} else 
+{
+	echo "<p>Your cart is empty.</p>";
+}
 ?>
 
 <!DOCTYPE html>
@@ -505,22 +519,26 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 					<div class="checkout-order-totals">
         <?php
         // Assuming $discount is calculated elsewhere or based on some logic
-        $discount = 5; // Placeholder for discount
-        $total_payment = $grand_total - $discount;
+		$delivery_charge=10;				
+        $total_payment = $grand_total - $discount_amount+$delivery_charge;
         ?>
         <p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
-        <p>Discount: <span>-RM<?php echo number_format($discount, 2); ?></span></p>
+        <p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
+		<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
         <p class="checkout-total">Total Payment: <span>RM<?php echo number_format($total_payment, 2); ?></span></p>
     </div>
-    <?php
-} else {
-    echo "<p>Your cart is empty.</p>";
-}
-?>
 
 
-                    <!-- Confirm Payment Button -->
-                    <button type="submit" class="checkout-btn">Confirm Payment</button>
+	<!-- Confirm Payment Button -->
+	<button type="button" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+
+<!-- Payment Processing Popup -->
+<div class="overlay" id="paymentOverlay">
+	<div class="popup" id="popupContent">
+		<div class="spinner"></div>
+		<p>Payment Processing...</p>
+	</div>
+</div>
                 </div>
             </div>
         </form>
@@ -1009,6 +1027,28 @@ function validateCVV() {
         cvvError.style.display = "none"; 
     }
 }
+
+function confirmPayment() {
+            // Show overlay and display "Processing" state
+            const overlay = document.getElementById('paymentOverlay');
+            const popupContent = document.getElementById('popupContent');
+            overlay.classList.add('show');
+
+            // Simulate payment processing
+            setTimeout(() => {
+                // Switch to "Payment Successfully" message
+                popupContent.innerHTML = `
+                    <div class="success-icon">✓</div>
+                    <h2 class="success-title">Payment Successfully</h2>
+                    <button class="ok-btn" onclick="goToDashboard()">OK</button>
+                `;
+            }, 2000); // 2-second loading animation
+        }
+
+        function goToDashboard() {
+            // Redirect to dashboard page
+            window.location.href = 'dashboard.php';
+        }
 
 
 </script>   

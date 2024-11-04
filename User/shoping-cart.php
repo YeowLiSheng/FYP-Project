@@ -31,24 +31,48 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 // Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
-    foreach ($_POST['product_qty'] as $product_id => $qty) {
-        $qty = intval($qty);
-        if ($qty > 0) {
-            // Update quantity and total price for the product in the shopping cart
-            $update_query = "
-                UPDATE shopping_cart 
-                SET qty = $qty, 
-                    total_price = $qty * (SELECT product_price FROM product WHERE product_id = $product_id) 
-                WHERE user_id = $user_id AND product_id = $product_id";
-            $conn->query($update_query);
-        } else {
-            // Remove product from the shopping cart if quantity is zero
-            $delete_query = "DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-            $conn->query($delete_query);
+    foreach ($_POST['product_qty'] as $product_id => $new_qty) {
+        $new_qty = intval($new_qty);
+
+        // Get the current total quantity of the product in the shopping cart for this user
+        $current_qty_query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
+        $current_qty_result = $conn->query($current_qty_query);
+
+        if ($current_qty_result && $current_qty_result->num_rows > 0) {
+            $current_qty_row = $current_qty_result->fetch_assoc();
+            $current_total_qty = $current_qty_row['total_qty'];
+
+            // Calculate the quantity difference
+            $qty_difference = $new_qty - $current_total_qty;
+
+            if ($qty_difference > 0) {
+                // Increase total quantity by adding the difference
+                $update_query = "
+                    UPDATE shopping_cart 
+                    SET qty = qty + $qty_difference, 
+                        total_price = (qty + $qty_difference) * (SELECT product_price FROM product WHERE product_id = $product_id) 
+                    WHERE user_id = $user_id AND product_id = $product_id 
+                    LIMIT 1"; // Only apply to one row if there are multiple entries for this product
+                $conn->query($update_query);
+
+            } elseif ($qty_difference < 0) {
+                // Decrease total quantity by subtracting the difference
+                $reduce_qty = abs($qty_difference); // Positive value for decrement
+                $update_query = "
+                    UPDATE shopping_cart 
+                    SET qty = GREATEST(0, qty - $reduce_qty), 
+                        total_price = GREATEST(0, (qty - $reduce_qty) * (SELECT product_price FROM product WHERE product_id = $product_id)) 
+                    WHERE user_id = $user_id AND product_id = $product_id 
+                    LIMIT 1"; // Only apply to one row if there are multiple entries for this product
+                $conn->query($update_query);
+
+                // Remove any rows where qty becomes zero after update
+                $conn->query("DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id AND qty = 0");
+            }
         }
     }
 
-    // Check if a voucher was previously applied
+    // Check if a voucher was previously applied and reapply if necessary
     $voucher_applied_check_query = "SELECT MAX(voucher_applied) AS voucher_applied FROM shopping_cart WHERE user_id = $user_id";
     $voucher_applied_check_result = $conn->query($voucher_applied_check_query);
     $voucher_applied_row = $voucher_applied_check_result->fetch_assoc();
@@ -62,9 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     exit;
 }
 
+
 // Reapply the voucher if previously applied
 function reapplyVoucher($conn, $user_id, &$final_total_price) {
-    // Retrieve the applied voucher
     $voucher_usage_query = "
         SELECT v.discount_rate, v.minimum_amount, v.voucher_id 
         FROM voucher_usage vu
@@ -91,17 +115,21 @@ function reapplyVoucher($conn, $user_id, &$final_total_price) {
             $discount_amount = $total_price * ($discount_rate / 100);
             $final_total_price = $total_price - $discount_amount;
 
-            // Update final total price in the shopping cart for each item
+            // Update shopping_cart with final total price, discount_amount, and voucher_applied
             $update_final_total_query = "
                 UPDATE shopping_cart 
-                SET final_total_price = $final_total_price, voucher_applied = 1 
+                SET final_total_price = $final_total_price, 
+                    discount_amount = $discount_amount, 
+                    voucher_applied = 1 
                 WHERE user_id = $user_id";
             $conn->query($update_final_total_query);
         } else {
             // Remove voucher if conditions no longer met
             $update_remove_voucher_query = "
                 UPDATE shopping_cart 
-                SET final_total_price = total_price, voucher_applied = 0 
+                SET final_total_price = total_price, 
+                    discount_amount = 0, 
+                    voucher_applied = 0 
                 WHERE user_id = $user_id";
             $conn->query($update_remove_voucher_query);
         }
@@ -172,21 +200,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 				$discount_amount = $total_price * ($discount_rate / 100);
 				$final_total_price = $total_price - $discount_amount;
 	
-
-				//Update discount amount
-
-				$update_discount =
-				"
-					UPDATE shopping_cart
-					SET discount = $discount_amount
-					WHERE user_id = $user_id";
-
-				$conn->query($update_discount);	
-
-				// Update shopping_cart with the final total and voucher_applied
+				// Update shopping_cart with the final total, discount_amount, and voucher_applied
 				$update_final_total_query = "
 					UPDATE shopping_cart 
-					SET final_total_price = $final_total_price, voucher_applied = 1 
+					SET final_total_price = $final_total_price, 
+                        discount_amount = $discount_amount, 
+                        voucher_applied = 1 
 					WHERE user_id = $user_id";
 				$conn->query($update_final_total_query);
 	
@@ -225,6 +244,36 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
         $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
 }
+
+$_SESSION['discount_amount'] = $discount_amount;
+
+// Handle voucher removal
+if (isset($_POST['remove_voucher'])) {
+    $conn->query("
+        UPDATE shopping_cart 
+        SET voucher_applied = 0, 
+            discount_amount = 0, 
+            final_total_price = total_price 
+        WHERE user_id = $user_id");
+
+    // Decrement usage in voucher_usage
+    $voucher_id = $_POST['voucher_id'];
+    $conn->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
+
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+
+// Display applied voucher
+$voucher_applied_query = "
+    SELECT v.voucher_code, sc.discount_amount, v.voucher_id 
+    FROM shopping_cart sc
+    JOIN voucher v ON v.voucher_id = sc.voucher_applied
+    WHERE sc.user_id = $user_id AND sc.voucher_applied = 1";
+$voucher_applied_result = $conn->query($voucher_applied_query);
+$applied_voucher = $voucher_applied_result->fetch_assoc();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -256,6 +305,81 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<style>
+/* Chat box styling */
+.chat-box {
+    position: relative;
+    max-width: 250px;
+    padding: 15px;
+    border-radius: 12px;
+    background-color: #f1f1f1;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+    margin-left: 20px;
+    transition: transform 0.3s ease;
+}
+
+/* Speech bubble effect */
+.chat-box::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 15px;
+    width: 0;
+    height: 0;
+    border-width: 10px;
+    border-style: solid;
+    border-color: #f1f1f1 transparent transparent transparent;
+}
+
+/* Text inside the chat box */
+.chat-box p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Remove (close) button styling */
+.chat-box .remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.chat-box .remove-btn:hover {
+    color: #ff4d4d;
+}
+
+/* Button styling specific to chat box */
+.chat-box .apply-voucher-btn {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.chat-box .apply-voucher-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Error message styling specific to chat box */
+.chat-box .text-danger {
+    color: #ff4d4d;
+    font-size: 14px;
+    margin-top: 10px;
+}
+</style>
 </head>
 <body class="animsition">
 	
@@ -284,7 +408,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
+							US
 						</a>
 					</div>
 				</div>
@@ -315,7 +439,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="voucher_page.php">Voucher/a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
@@ -514,7 +638,7 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
                 </div>
 
                 <div class="header-cart-buttons flex-w w-full">
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
                         View Cart
                     </a>
 
@@ -619,10 +743,24 @@ if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
         					<span class="mtext-110 cl2">
             					$<?php echo number_format($final_total_price, 2); ?>
         					</span>
+							<?php if (!empty($applied_voucher)): ?>
+       							<div class="chat-box">
+           	 						<form method="POST" action="">
+                						<p>Voucher Code: <?php echo $applied_voucher['voucher_code']; ?></p>
+                						<p>Discount: $<?php echo number_format($applied_voucher['discount_amount'], 2); ?></p>
+                						<input type="hidden" name="voucher_id" value="<?php echo $applied_voucher['voucher_id']; ?>">
+                						<button type="submit" name="remove_voucher" class="remove-btn">✖</button>
+           							</form>
+        						</div>
+    						<?php endif; ?>
     					</div>
-						<a href="payment.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        	Check Out
-                    	</a>
+						 <!-- Hidden field to pass discount amount to checkout.php -->
+    					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
+    
+    					<!-- Check Out Button with form action to checkout.php -->
+						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+        					Check Out
+    					</button>
 					</div>
                 </div>
             </div>
@@ -818,7 +956,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 	<script>
 $(document).ready(function() {
-    $('.btn-num-product-down').click(function() {
+    $('.btn-num-product-down').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
         if (currentValue > 1) {
@@ -828,7 +966,7 @@ $(document).ready(function() {
         }
     });
 
-    $('.btn-num-product-up').click(function() {
+    $('.btn-num-product-up').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
         input.val(currentValue + 1);
