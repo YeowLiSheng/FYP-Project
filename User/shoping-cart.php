@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 					UPDATE shopping_cart 
 					SET final_total_price = $final_total_price, 
                         discount_amount = $discount_amount, 
-                        voucher_applied = 1 
+                        voucher_applied = $voucher_id 
 					WHERE user_id = $user_id";
 				$conn->query($update_final_total_query);
 	
@@ -269,9 +269,9 @@ $voucher_applied_query = "
     SELECT v.voucher_code, sc.discount_amount, v.voucher_id 
     FROM shopping_cart sc
     JOIN voucher v ON v.voucher_id = sc.voucher_applied
-    WHERE sc.user_id = $user_id AND sc.voucher_applied = 1";
+    WHERE sc.user_id = $user_id AND sc.voucher_applied IS NOT NULL";
 $voucher_applied_result = $conn->query($voucher_applied_query);
-$applied_voucher = $voucher_applied_result->fetch_assoc();
+$applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_assoc() : null;
 
 
 ?>
