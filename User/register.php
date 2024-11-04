@@ -439,7 +439,7 @@
         <div class="field">
             <label for="contact">Contact Number:</label>
             <input type="text" id="contact" name="contact" required oninput="checkContact()">
-            <span id="contactError" class="error">Format must be xxx-xxxxxxx.</span>
+            <span id="contactError" class="error">Format must be xxx-xxxxxxx OR xxx-xxxxxxxx</span>
         </div>
 
         <div class="field">
@@ -464,7 +464,7 @@
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required oninput="checkPassword()">
             <span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">👁️</span>
-            <span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 15 characters long.</span>
+            <span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</span>
         </div>
 
         <div class="field">
@@ -479,240 +479,172 @@
         </p>
     </form>
 
-    <script>
-        function checkEmail() {
-            const email = document.getElementById("email").value;
-            const emailError = document.getElementById("emailError");
-            const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	<script>
+    function checkEmail() {
+        const email = document.getElementById("email").value;
+        const emailError = document.getElementById("emailError");
+        const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            emailError.style.display = validEmail.test(email) ? "none" : "block";
-        }
-
-        function checkName() {
-            const name = document.getElementById("name").value;
-            const nameError = document.getElementById("nameError");
-            nameError.style.display = name.length >= 6 ? "none" : "block";
-        }
-
-        function checkContact() {
-            const contact = document.getElementById("contact").value;
-            const contactError = document.getElementById("contactError");
-            const validContact = /^\d{3}-\d{7}$/;
-
-            contactError.style.display = validContact.test(contact) ? "none" : "block";
-        }
-
-        function hideGenderError() {
-            const genderError = document.getElementById("genderError");
-            genderError.style.display = "none";
-        }
-
-        function checkDob() {
-            const dobInput = document.getElementById("dob");
-            const dobError = document.getElementById("dobError");
-            const dobFutureError = document.getElementById("dobFutureError");
-
-            const selectedDate = new Date(dobInput.value);
-            const currentDate = new Date();
-
-            // Reset error messages
-            dobError.style.display = "none";
-            dobFutureError.style.display = "none";
-
-            if (!dobInput.value) {
-                dobError.style.display = "block";
-                return;
-            }
-
-            // Check if selected date is in the future
-            if (selectedDate > currentDate) {
-                dobFutureError.style.display = "block";
-            }
-        }
-
-        function checkPassword() {
-            const password = document.getElementById("password").value;
-            const passwordError = document.getElementById("passwordError");
-            const validPassword = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{15,}$/;
-
-            passwordError.style.display = validPassword.test(password) ? "none" : "block";
-        }
-
-        function checkConfirmPassword() {
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-            const confirmPasswordError = document.getElementById("confirmPasswordError");
-
-            confirmPasswordError.style.display = password === confirmPassword ? "none" : "block";
-        }
-
-        function togglePassword(inputId, toggleIcon) {
-            const passwordInput = document.getElementById(inputId);
-            const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', inputType);
-        }
-
-        function setMaxDate() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById("dob").setAttribute('max', today);
-        }
-
-        // Call setMaxDate when the page loads
-        window.onload = setMaxDate();
-
-        function validateForm() {
-            let hasError = false;
-
-            // Check each field and display corresponding error messages
-            const emailInput = document.getElementById("email");
-            const emailError = document.getElementById("emailError");
-            if (!emailInput.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
-                emailError.style.display = "block";
-                hasError = true;
-            }
-
-            const nameInput = document.getElementById("name");
-            const nameError = document.getElementById("nameError");
-            if (!nameInput.value || nameInput.value.length < 6) {
-                nameError.style.display = "block";
-                hasError = true;
-            }
-
-            const contactInput = document.getElementById("contact");
-            const contactError = document.getElementById("contactError");
-            if (!contactInput.value || !/^\d{3}-\d{7}$/.test(contactInput.value)) {
-                contactError.style.display = "block";
-                hasError = true;
-            }
-
-            const genderError = document.getElementById("genderError");
-            if (!document.querySelector('input[name="gender"]:checked')) {
-                genderError.style.display = "block";
-                hasError = true;
-            }
-
-            const dobInput = document.getElementById("dob");
-            const dobError = document.getElementById("dobError");
-            const dobFutureError = document.getElementById("dobFutureError");
-            const selectedDate = new Date(dobInput.value);
-            const currentDate = new Date();
-            if (!dobInput.value) {
-                dobError.style.display = "block";
-                hasError = true;
-            } else if (selectedDate > currentDate) {
-                dobFutureError.style.display = "block";
-                hasError = true;
-            }
-
-            const passwordInput = document.getElementById("password");
-            const passwordError = document.getElementById("passwordError");
-            if (!passwordInput.value || !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{15,}$/.test(passwordInput.value)) {
-                passwordError.style.display = "block";
-                hasError = true;
-            }
-
-            const confirmPasswordInput = document.getElementById("confirmPassword");
-            const confirmPasswordError = document.getElementById("confirmPasswordError");
-            if (passwordInput.value !== confirmPasswordInput.value) {
-                confirmPasswordError.style.display = "block";
-                hasError = true;
-            }
-
-            return !hasError;
-        }
-
-        // Ensure form validation before submission
-        document.getElementById("registrationForm").onsubmit = function() {
-            return validateForm();
-        };
-
-
-
-        function scrollToFirstError() {
-    const errors = document.querySelectorAll('.error');
-    for (let error of errors) {
-        if (error.style.display === 'block') {
-            const field = error.previousElementSibling; // Get the associated input field
-            field.focus(); // Focus on the input field
-            field.style.border = '2px solid red'; // Highlight the input field with a red border
-            error.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Scroll to the field
-            break; // Only scroll to the first error found
-        }
-    }
-}
-
-function validateForm() {
-    let hasError = false;
-
-    // Check each field and display corresponding error messages
-    const emailInput = document.getElementById("email");
-    const emailError = document.getElementById("emailError");
-    if (!emailInput.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
-        emailError.style.display = "block";
-        hasError = true;
+        emailError.style.display = validEmail.test(email) ? "none" : "block";
     }
 
-    const nameInput = document.getElementById("name");
-    const nameError = document.getElementById("nameError");
-    if (!nameInput.value || nameInput.value.length < 6) {
-        nameError.style.display = "block";
-        hasError = true;
+    function checkName() {
+        const name = document.getElementById("name").value;
+        const nameError = document.getElementById("nameError");
+        nameError.style.display = name.length >= 6 ? "none" : "block";
     }
 
-    const contactInput = document.getElementById("contact");
-    const contactError = document.getElementById("contactError");
-    if (!contactInput.value || !/^\d{3}-\d{7}$/.test(contactInput.value)) {
-        contactError.style.display = "block";
-        hasError = true;
+    function checkContact() {
+        const contact = document.getElementById("contact").value;
+        const contactError = document.getElementById("contactError");
+        const validContact = /^\d{3}-\d{7,8}$/;
+
+        contactError.style.display = validContact.test(contact) ? "none" : "block";
     }
 
-    const genderError = document.getElementById("genderError");
-    if (!document.querySelector('input[name="gender"]:checked')) {
-        genderError.style.display = "block";
-        hasError = true;
+    function hideGenderError() {
+        const genderError = document.getElementById("genderError");
+        genderError.style.display = "none";
     }
 
-    const dobInput = document.getElementById("dob");
-    const dobError = document.getElementById("dobError");
-    const dobFutureError = document.getElementById("dobFutureError");
-    const selectedDate = new Date(dobInput.value);
-    const currentDate = new Date();
-    if (!dobInput.value) {
-        dobError.style.display = "block";
-        hasError = true;
-    } else if (selectedDate > currentDate) {
-        dobFutureError.style.display = "block";
-        hasError = true;
+    function checkDob() {
+        const dobInput = document.getElementById("dob");
+        const dobError = document.getElementById("dobError");
+        const dobFutureError = document.getElementById("dobFutureError");
+
+        const selectedDate = new Date(dobInput.value);
+        const currentDate = new Date();
+
+        // Reset error messages
+        dobError.style.display = "none";
+        dobFutureError.style.display = "none";
+
+        if (!dobInput.value) {
+            dobError.style.display = "block";
+            return;
+        }
+
+        // Check if selected date is in the future
+        if (selectedDate > currentDate) {
+            dobFutureError.style.display = "block";
+        }
     }
 
-    const passwordInput = document.getElementById("password");
-    const passwordError = document.getElementById("passwordError");
-    if (!passwordInput.value || !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{15,}$/.test(passwordInput.value)) {
-        passwordError.style.display = "block";
-        hasError = true;
+    function checkPassword() {
+        const password = document.getElementById("password").value;
+        const passwordError = document.getElementById("passwordError");
+        const validPassword = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+
+        passwordError.style.display = validPassword.test(password) ? "none" : "block";
     }
 
-    const confirmPasswordInput = document.getElementById("confirmPassword");
-    const confirmPasswordError = document.getElementById("confirmPasswordError");
-    if (passwordInput.value !== confirmPasswordInput.value) {
-        confirmPasswordError.style.display = "block";
-        hasError = true;
+    function checkConfirmPassword() {
+        const password = document.getElementById("password").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+        const confirmPasswordError = document.getElementById("confirmPasswordError");
+
+        confirmPasswordError.style.display = password === confirmPassword ? "none" : "block";
     }
 
-    // If there are errors, scroll to the first one
-    if (hasError) {
-        scrollToFirstError();
+    function togglePassword(inputId, toggleIcon) {
+        const passwordInput = document.getElementById(inputId);
+        const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', inputType);
     }
 
-    return !hasError;
-}
+    function setMaxDate() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("dob").setAttribute('max', today);
+    }
 
-// Ensure form validation before submission
-document.getElementById("registrationForm").onsubmit = function() {
-    return validateForm();
-};
+    // Call setMaxDate when the page loads
+    window.onload = setMaxDate;
 
-    </script>
+    function validateForm() {
+        let hasError = false;
+
+        // Check each field and display corresponding error messages
+        const emailInput = document.getElementById("email");
+        const emailError = document.getElementById("emailError");
+        if (!emailInput.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
+            emailError.style.display = "block";
+            hasError = true;
+        }
+
+        const nameInput = document.getElementById("name");
+        const nameError = document.getElementById("nameError");
+        if (!nameInput.value || nameInput.value.length < 6) {
+            nameError.style.display = "block";
+            hasError = true;
+        }
+
+        const contactInput = document.getElementById("contact");
+        const contactError = document.getElementById("contactError");
+        if (!contactInput.value || !/^\d{3}-\d{7,8}$/.test(contactInput.value)) {
+            contactError.style.display = "block";
+            hasError = true;
+        }
+
+        const genderError = document.getElementById("genderError");
+        if (!document.querySelector('input[name="gender"]:checked')) {
+            genderError.style.display = "block";
+            hasError = true;
+        }
+
+        const dobInput = document.getElementById("dob");
+        const dobError = document.getElementById("dobError");
+        const dobFutureError = document.getElementById("dobFutureError");
+        const selectedDate = new Date(dobInput.value);
+        const currentDate = new Date();
+        if (!dobInput.value) {
+            dobError.style.display = "block";
+            hasError = true;
+        } else if (selectedDate > currentDate) {
+            dobFutureError.style.display = "block";
+            hasError = true;
+        }
+
+        const passwordInput = document.getElementById("password");
+        const passwordError = document.getElementById("passwordError");
+        if (!passwordInput.value || !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/.test(passwordInput.value)) {
+            passwordError.style.display = "block";
+            hasError = true;
+        }
+
+        const confirmPasswordInput = document.getElementById("confirmPassword");
+        const confirmPasswordError = document.getElementById("confirmPasswordError");
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordError.style.display = "block";
+            hasError = true;
+        }
+
+        // If there are errors, scroll to the first one
+        if (hasError) {
+            scrollToFirstError();
+        }
+
+        return !hasError;
+    }
+
+    // Ensure form validation before submission
+    document.getElementById("registrationForm").onsubmit = function() {
+        return validateForm();
+    };
+
+    function scrollToFirstError() {
+        const errors = document.querySelectorAll('.error');
+        for (let error of errors) {
+            if (error.style.display === 'block') {
+                const field = error.previousElementSibling; // Get the associated input field
+                field.focus(); // Focus on the input field
+                field.style.border = '2px solid red'; // Highlight the input field with a red border
+                error.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Scroll to the field
+                break; // Only scroll to the first error found
+            }
+        }
+    }
+</script>
+
 
 
 
