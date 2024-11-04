@@ -595,20 +595,20 @@ body {
         <small class="error-message" id="emailError" style="display: none;">Please enter a valid email (must include '@' and '.').</small>
     </div>
 
-    <!-- Password -->
-    <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
-        <span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
-        <small class="error-message" id="passwordError" style="display: none;">Password must include 1 uppercase letter, 1 number, 1 special character, and be 15 characters long.</small>
-    </div>
+	<!-- Password -->
+	<div class="form-group">
+		<label for="password">Password</label>
+		<input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
+		<span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
+		<small class="error-message" id="passwordError" style="display: none; color: red;">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</small>
+	</div>
 
-    <!-- Contact Number -->
-    <div class="form-group">
-        <label for="contact">Contact Number</label>
-        <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($row['user_contact_number']); ?>" required oninput="validateContact()">
-        <small class="error-message" id="contactError" style="display: none;">Format must be xxx-xxxxxxx.</small>
-    </div>
+	<!-- Contact Number -->
+	<div class="form-group">
+		<label for="contact">Contact Number</label>
+		<input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($row['user_contact_number']); ?>" required oninput="validateContact()">
+		<small class="error-message" id="contactError" style="display: none; color: red;">Format must be xxx-xxxxxxxx or xxx-xxxxxxx.</small>
+	</div>
 
     <!-- Gender -->
     <div class="form-group">
@@ -677,7 +677,6 @@ body {
     <!-- Submit Button -->
     <input type="submit" name="submitbtn" value="Save Changes" class="submit-btn">
 </form>
-
 <script>
     function togglePasswordVisibility() {
         const passwordField = document.getElementById('password');
@@ -693,7 +692,7 @@ body {
         const hasUppercase = /[A-Z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
         const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-        const isValidLength = password.length >= 15;
+        const isValidLength = password.length >= 8;
 
         // Show or hide error based on criteria
         if (hasUppercase && hasNumber && hasSpecialChar && isValidLength) {
@@ -701,40 +700,14 @@ body {
             return true; // Password is valid
         } else {
             passwordError.style.display = 'block'; // Show error
-            passwordField.focus(); // Set focus to password field
             return false; // Password is invalid
-        }
-    }
-
-    function validateName() {
-        const nameField = document.getElementById('name');
-        const nameError = document.getElementById('nameError');
-        if (nameField.value.length < 6) {
-            nameError.style.display = 'block';
-            return false;
-        } else {
-            nameError.style.display = 'none';
-            return true;
-        }
-    }
-
-    function validateEmail() {
-        const emailField = document.getElementById('email');
-        const emailError = document.getElementById('emailError');
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(emailField.value)) {
-            emailError.style.display = 'block';
-            return false;
-        } else {
-            emailError.style.display = 'none';
-            return true;
         }
     }
 
     function validateContact() {
         const contactField = document.getElementById('contact');
         const contactError = document.getElementById('contactError');
-        const contactPattern = /^\d{3}-\d{7}$/;
+        const contactPattern = /^\d{3}-\d{7,8}$/;
         if (!contactPattern.test(contactField.value)) {
             contactError.style.display = 'block';
             return false;
@@ -745,13 +718,11 @@ body {
     }
 
     function validateForm() {
-        // Validate each field and store errors
         const isNameValid = validateName();
         const isEmailValid = validateEmail();
         const isPasswordValid = validatePassword();
         const isContactValid = validateContact();
 
-        // Check if all validations passed
         if (!isNameValid) {
             document.getElementById('name').focus();
             return false;
@@ -759,27 +730,15 @@ body {
             document.getElementById('email').focus();
             return false;
         } else if (!isPasswordValid) {
-            // Focus on password field if invalid
             return false;
         } else if (!isContactValid) {
             document.getElementById('contact').focus();
             return false;
         }
-        
-        // If all fields are valid, allow form submission
+
         return true;
     }
-
-    function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = function() {
-            const preview = document.getElementById('profilePreview');
-            preview.src = reader.result; // Set the image source to the uploaded file
-        };
-        reader.readAsDataURL(event.target.files[0]); // Read the uploaded file
-    }
 </script>
-
 
 
 
