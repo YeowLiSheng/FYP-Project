@@ -256,9 +256,9 @@ if (isset($_POST['remove_voucher'])) {
             final_total_price = total_price 
         WHERE user_id = $user_id");
 
-    // Completely remove the voucher usage entry for the user
-    $voucher_id = intval($_POST['voucher_id']);
-    $conn->query("DELETE FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id");
+    // Decrement usage in voucher_usage
+    $voucher_id = $_POST['voucher_id'];
+    $conn->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
 
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
