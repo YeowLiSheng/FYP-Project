@@ -724,7 +724,7 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
                                     </tr>';
                                 }
                             } else {
-                                echo '<tr><td colspan="5">Your cart is empty.</td></tr>';
+                                echo '<tr><td colspan="5">&emsp;&emsp;&emsp;&emsp;&emsp;Your cart is empty.</td></tr>';
                             }
                             ?>
                         </table>
