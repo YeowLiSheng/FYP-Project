@@ -733,10 +733,14 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
                     <!-- Apply Coupon and Update Cart Buttons -->
                     <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
     					<div class="flex-w flex-m m-r-20 m-tb-5">
-        					<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Voucher Code">
-        					<button type="submit" name="apply_voucher" class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
-            					Apply Voucher
-        					</button>
+						<?php if (empty($applied_voucher)): ?>
+            				<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Voucher Code">
+            				<button type="submit" name="apply_voucher" class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+                				Apply Voucher
+            				</button>
+        					<?php else: ?>
+            					<p class="stext-104 cl2 plh4 size-117 p-lr-20 m-r-10 m-tb-5">Voucher applied: <?php echo $applied_voucher['voucher_code']; ?></p>
+        					<?php endif; ?>
     					</div>
     						<button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
        					 		Update Cart
