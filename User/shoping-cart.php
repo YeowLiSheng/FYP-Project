@@ -770,8 +770,6 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
         						</div>
     						<?php endif; ?>
     					</div>
-						<div class="size-209">
-						</div>
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
