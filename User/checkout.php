@@ -447,9 +447,9 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
             			<input type="number" id="postcode" value="" required>
         			</div>
 					<!-- Autofill Checkbox -->
-					<br>
+					<
 					<div class="checkout-input-box">
-       	 				
+						<br>
 						<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
         				<label for="autofill-checkbox">Use saved address information</label>
     				</div>
