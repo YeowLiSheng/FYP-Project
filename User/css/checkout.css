@@ -89,14 +89,14 @@
 /* Style for the autofill checkbox */
 .checkout-checkbox {
     display: flex;
-    align-items: center;
+    
     margin-top: 20px;
     font-size: 15px;
     color: #555;
 }
 
 .checkout-checkbox input[type="checkbox"] {
-    margin-right: 1px;
+    margin-right: 10px;
     accent-color: #8175d3;
 }
 
