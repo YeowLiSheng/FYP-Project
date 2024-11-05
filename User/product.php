@@ -80,28 +80,25 @@ $price_range = isset($_GET['price']) ? $_GET['price'] : 'all';
 $color = isset($_GET['color']) ? $_GET['color'] : '';
 $sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'default';
 
-// Create the base SQL query
 $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%'";
 
 // Apply price filter
-if ($price_range != 'all') {
-    switch ($price_range) {
-        case '0-50':
-            $product_query .= " AND product_price BETWEEN 0 AND 50";
-            break;
-        case '50-100':
-            $product_query .= " AND product_price BETWEEN 50 AND 100";
-            break;
-        case '100-150':
-            $product_query .= " AND product_price BETWEEN 100 AND 150";
-            break;
-        case '150-200':
-            $product_query .= " AND product_price BETWEEN 150 AND 200";
-            break;
-        case '200+':
-            $product_query .= " AND product_price > 200";
-            break;
-    }
+switch ($price_range) {
+    case '0-50':
+        $product_query .= " AND product_price BETWEEN 0 AND 50";
+        break;
+    case '50-100':
+        $product_query .= " AND product_price BETWEEN 50 AND 100";
+        break;
+    case '100-150':
+        $product_query .= " AND product_price BETWEEN 100 AND 150";
+        break;
+    case '150-200':
+        $product_query .= " AND product_price BETWEEN 150 AND 200";
+        break;
+    case '200+':
+        $product_query .= " AND product_price > 200";
+        break;
 }
 
 // Apply color filter
@@ -477,66 +474,82 @@ $product_result = $conn->query($product_query);
                 	}
                 	?>
             	</div>
-        	</div>
+        	
 
-			<div class="flex-w flex-c-m m-tb-10">
-        <div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
-            <i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
-            <i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-            Filter
-        </div>
+				<div class="flex-w flex-c-m m-tb-10">
+        			<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
+            			<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
+            			<i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
+            		 	 Filter
+        			</div>
 
-        <div class="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
-            <i class="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
-            <i class="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-            Search
-        </div>
-    </div>
+        			<div class="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
+            			<i class="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
+            			<i class="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
+            			 Search
+        			</div>
+    			</div>
 
-    <!-- Search product -->
-    <div class="dis-none panel-search w-full p-t-10 p-b-15">
-        <form method="GET" action="">
-            <div class="bor8 dis-flex p-l-15">
-                <button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
-                    <i class="zmdi zmdi-search"></i>
-                </button>
-                <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search" placeholder="Search product">
-            </div>  
-        </form>
-    </div>
+   				<!-- Search product -->
+    			<div class="dis-none panel-search w-full p-t-10 p-b-15">
+        			<form method="GET" action="">
+            			<div class="bor8 dis-flex p-l-15">
+                			<button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
+                    			<i class="zmdi zmdi-search"></i>
+                			</button>
+                			<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search" placeholder="Search product">
+            			</div>  
+        			</form>
+    			</div>
 
-    <!-- Filter panel -->
-    <div class="dis-none panel-filter w-full p-t-10">
-        <form method="GET" action="">
-            <div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-                <!-- Sort By -->
-                <div class="filter-col1 p-r-15 p-b-27">
-                    <div class="mtext-102 cl2 p-b-15">Sort By</div>
-                    <select name="sort_by" class="filter-link stext-106 trans-04">
-                        <option value="default">Default</option>
-                        <option value="popularity">Popularity</option>
-                        <option value="average_rating">Average rating</option>
-                        <option value="newness">Newness</option>
-                        <option value="price_low_high">Price: Low to High</option>
-                        <option value="price_high_low">Price: High to Low</option>
-                    </select>
-                </div>
+    			<!-- Filter panel -->
+    			<div class="dis-none panel-filter w-full p-t-10">
+					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">	
+						<div class="filter-col2 p-r-15 p-b-27">
+							<div class="mtext-102 cl2 p-b-15">
+								Price
+							</div>
 
-                <!-- Price -->
-                <div class="filter-col2 p-r-15 p-b-27">
-                    <div class="mtext-102 cl2 p-b-15">Price</div>
-                    <select name="price" class="filter-link stext-106 trans-04">
-                        <option value="all">All</option>
-                        <option value="0-50">$0.00 - $50.00</option>
-                        <option value="50-100">$50.00 - $100.00</option>
-                        <option value="100-150">$100.00 - $150.00</option>
-                        <option value="150-200">$150.00 - $200.00</option>
-                        <option value="200+">$200.00+</option>
-                    </select>
-                </div>
+							<ul>
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+										All
+									</a>
+								</li>
 
-                <!-- Color -->
-                <div class="filter-col3 p-r-15 p-b-27">
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04">
+										$0.00 - $50.00
+									</a>
+								</li>
+
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04">
+										$50.00 - $100.00
+									</a>
+								</li>
+
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04">
+										$100.00 - $150.00
+									</a>
+								</li>
+
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04">
+										$150.00 - $200.00
+									</a>
+								</li>
+
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04">
+										$200.00+
+									</a>
+								</li>
+							</ul>
+						</div>
+
+						<div class="filter-col3 p-r-15 p-b-27">
 							<div class="mtext-102 cl2 p-b-15">
 								Color
 							</div>
@@ -604,14 +617,36 @@ $product_result = $conn->query($product_query);
 							</ul>
 						</div>
 
-                <div class="p-t-20">
-                    <button type="submit" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-                        Apply Filter
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
+						<div class="filter-col4 p-b-27">
+							<div class="mtext-102 cl2 p-b-15">
+								Tags
+							</div>
+
+							<div class="flex-w p-t-4 m-r--5">
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+									Fashion
+								</a>
+
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+									Lifestyle
+								</a>
+
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+									Denim
+								</a>
+
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+									Streetstyle
+								</a>
+
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+									Crafts
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
 	        <div class="row isotope-grid">
             <?php
@@ -1053,49 +1088,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
     });
 
-</script>
-<script>
-    $(document).on('click', '.js-show-modal1', function(event) {
-        event.preventDefault();
-        var productId = $(this).data('id');
-        
-        // Make an AJAX call to fetch product details
-        $.ajax({
-            url: '', // The same PHP file
-            type: 'GET',
-            data: { fetch_product: true, id: productId },
-            dataType: 'json',
-            success: function(response) {
-                if (response) {
-                    // Populate the modal with product data
-                    $('.js-name-detail').text(response.product_name);
-                    $('.mtext-106').text('$' + response.product_price);
-                    $('.stext-102').text(response.product_des);
-                    
-                    // Update Quick View images
-                    $('.gallery-lb .item-slick3').each(function(index) {
-                        var imagePath = 'images/' + response['Quick_View' + (index + 1)];
-                        $(this).find('.wrap-pic-w img').attr('src', imagePath);
-                        $(this).find('.wrap-pic-w a').attr('href', imagePath);
-                        $(this).attr('data-thumb', imagePath);
-                    });
-
-                    // Show the modal
-                    $('.js-modal1').addClass('show-modal1');
-                } else {
-                    alert('Product details not found.');
-                }
-            },
-            error: function() {
-                alert('An error occurred while fetching product details.');
-            }
-        });
-    });
-
-    // Close modal
-    $('.js-hide-modal1').on('click', function(){
-        $('.js-modal1').removeClass('show-modal1');
-    });
 </script>
 <script>
     $(document).on('click', '.js-show-modal1', function(event) {
