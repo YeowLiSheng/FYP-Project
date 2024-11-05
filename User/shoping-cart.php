@@ -763,7 +763,6 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 							<?php if (!empty($applied_voucher)): ?>
        							<div class="chat-box">
            	 						<form method="POST" action="">
-                						<p>Voucher Code: <?php echo $applied_voucher['voucher_code']; ?></p>
                 						<p>Discount: $<?php echo number_format($applied_voucher['discount_amount'], 2); ?></p>
                 						<input type="hidden" name="voucher_id" value="<?php echo $applied_voucher['voucher_id']; ?>">
                 						<button type="submit" name="remove_voucher" class="remove-btn">✖</button>
