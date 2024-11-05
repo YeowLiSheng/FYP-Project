@@ -78,35 +78,44 @@ $product_result = $conn->query($product_query);
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
 $price_range = isset($_GET['price']) ? $_GET['price'] : 'all';
 $color = isset($_GET['color']) ? $_GET['color'] : '';
+$tag = isset($_GET['tag']) ? $_GET['tag'] : '';
 $sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'default';
 
+// Base query to select products
 $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%'";
 
-// Apply price filter
-switch ($price_range) {
-    case '0-50':
-        $product_query .= " AND product_price BETWEEN 0 AND 50";
-        break;
-    case '50-100':
-        $product_query .= " AND product_price BETWEEN 50 AND 100";
-        break;
-    case '100-150':
-        $product_query .= " AND product_price BETWEEN 100 AND 150";
-        break;
-    case '150-200':
-        $product_query .= " AND product_price BETWEEN 150 AND 200";
-        break;
-    case '200+':
-        $product_query .= " AND product_price > 200";
-        break;
+// Apply price range filter
+if ($price_range != 'all') {
+    switch ($price_range) {
+        case '0-50':
+            $product_query .= " AND product_price BETWEEN 0 AND 50";
+            break;
+        case '50-100':
+            $product_query .= " AND product_price BETWEEN 50 AND 100";
+            break;
+        case '100-150':
+            $product_query .= " AND product_price BETWEEN 100 AND 150";
+            break;
+        case '150-200':
+            $product_query .= " AND product_price BETWEEN 150 AND 200";
+            break;
+        case '200+':
+            $product_query .= " AND product_price > 200";
+            break;
+    }
 }
 
-// Apply color filter
+// Apply color filter, checking both color1 and color2 columns
 if ($color != '') {
-    $product_query .= " AND product_des LIKE '%$color%'";
+    $product_query .= " AND (color1 = '$color' OR color2 = '$color')";
 }
 
-// Apply sorting
+// Apply tag filter
+if ($tag != '') {
+    $product_query .= " AND tags LIKE '%$tag%'";
+}
+
+// Apply sorting filter
 switch ($sort_by) {
     case 'popularity':
         $product_query .= " ORDER BY popularity DESC";
@@ -129,6 +138,36 @@ switch ($sort_by) {
 }
 
 $product_result = $conn->query($product_query);
+if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
+    ob_start();
+    while($product = $product_result->fetch_assoc()) {
+        echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
+                <div class="block2">
+                    <div class="block2-pic hov-img0">
+                        <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
+                        <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                            data-id="' . $product['product_id'] . '">Quick View</a>
+                    </div>
+                    <div class="block2-txt flex-w flex-t p-t-14">
+                        <div class="block2-txt-child1 flex-col-l ">
+                            <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">'
+                            . $product['product_name'] . 
+                            '</a>
+                            <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
+                        </div>
+                        <div class="block2-txt-child2 flex-r p-t-3">
+                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                                <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+              </div>';
+    }
+    echo ob_get_clean();
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -560,7 +599,7 @@ $product_result = $conn->query($product_query);
 										<i class="zmdi zmdi-circle"></i>
 									</span>
 
-									<a href="#" class="filter-link stext-106 trans-04">
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="black">
 										Black
 									</a>
 								</li>
@@ -580,7 +619,7 @@ $product_result = $conn->query($product_query);
 										<i class="zmdi zmdi-circle"></i>
 									</span>
 
-									<a href="#" class="filter-link stext-106 trans-04">
+									<a href="#" class=" filter-link stext-106 trans-04">
 										Grey
 									</a>
 								</li>
@@ -623,11 +662,11 @@ $product_result = $conn->query($product_query);
 							</div>
 
 							<div class="flex-w p-t-4 m-r--5">
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="fashion">
 									Fashion
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="lifestyle">
 									Lifestyle
 								</a>
 
@@ -1165,6 +1204,41 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         });
     });
+</script>
+<script>
+	let filters = { price: 'all', color: '', tag: '' }; // Initialize filters
+
+// Function to update product display
+function updateProducts() {
+    $.ajax({
+        url: '', // The current PHP file
+        type: 'GET',
+        data: {
+            price: filters.price,
+            color: filters.color,
+            tag: filters.tag
+        },
+        success: function(response) {
+            $('.isotope-grid').html(response); // Replace product display with filtered products
+        },
+        error: function() {
+            alert('Failed to fetch filtered products.');
+        }
+    });
+}
+
+// Handle filter clicks
+$(document).on('click', '.filter-link', function(event) {
+    event.preventDefault();
+    let filterType = $(this).data('filter');
+    let filterValue = $(this).data('value');
+
+    // Update filter based on the clicked item
+    filters[filterType] = filterValue;
+
+    // Fetch and update the product list based on the selected filters
+    updateProducts();
+});
 </script>
 <script src="js/main.js"></script>
 
