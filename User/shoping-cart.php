@@ -249,6 +249,9 @@ $_SESSION['discount_amount'] = $discount_amount;
 
 // Handle voucher removal
 if (isset($_POST['remove_voucher'])) {
+    $voucher_id = $_POST['voucher_id'];
+
+    // Reset voucher values in shopping_cart
     $conn->query("
         UPDATE shopping_cart 
         SET voucher_applied = 0, 
@@ -257,9 +260,19 @@ if (isset($_POST['remove_voucher'])) {
         WHERE user_id = $user_id");
 
     // Decrement usage in voucher_usage
-    $voucher_id = $_POST['voucher_id'];
     $conn->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
 
+    // Check if usage_num is 0, then delete the record
+    $usage_check_query = "SELECT usage_num FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id";
+    $usage_check_result = $conn->query($usage_check_query);
+    
+    if ($usage_check_result && $usage_row = $usage_check_result->fetch_assoc()) {
+        if ($usage_row['usage_num'] <= 0) {
+            $conn->query("DELETE FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id");
+        }
+    }
+
+    // Reload page to reflect changes
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
