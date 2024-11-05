@@ -86,6 +86,25 @@
     gap: 15px;
 }
 
+/* Style for the autofill checkbox */
+.checkout-checkbox {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    font-size: 15px;
+    color: #555;
+}
+
+.checkout-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    accent-color: #8175d3;
+}
+
+.checkout-checkbox label {
+    font-weight: 500;
+}
+
+
 /* Order summary and item styling */
 .checkout-order-summary {
     font-size: 16px;
