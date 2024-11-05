@@ -551,38 +551,38 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
 
 							<ul>
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="all">
 										All
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										$0.00 - $50.00
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="0-2000">
+										$0.00 - $2000.00
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										$50.00 - $100.00
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="2000-3000">
+										$2000.00 - $3000.00
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										$100.00 - $150.00
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="3000-4000">
+										$3000.00 - $4000.00
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										$150.00 - $200.00
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="4000-5000">
+										$4000.00 - $5000.00
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										$200.00+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="5000+">
+										$5000.00+
 									</a>
 								</li>
 							</ul>
@@ -617,7 +617,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
 
 		
 								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #f5f5dc;">
+									<span class="fs-15 lh-12 m-r-6" style="color: #f5deb3;">
 										<i class="zmdi zmdi-circle"></i>
 									</span>
 
