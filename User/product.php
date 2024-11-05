@@ -604,43 +604,25 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
 									</a>
 								</li>
 
-								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #4272d7;">
-										<i class="zmdi zmdi-circle"></i>
-									</span>
-
-									<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
-										Blue
-									</a>
-								</li>
 
 								<li class="p-b-6">
 									<span class="fs-15 lh-12 m-r-6" style="color: #b3b3b3;">
 										<i class="zmdi zmdi-circle"></i>
 									</span>
 
-									<a href="#" class=" filter-link stext-106 trans-04">
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="grey">
 										Grey
 									</a>
 								</li>
 
+		
 								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #00ad5f;">
+									<span class="fs-15 lh-12 m-r-6" style="color: #f5f5dc;">
 										<i class="zmdi zmdi-circle"></i>
 									</span>
 
-									<a href="#" class="filter-link stext-106 trans-04">
-										Green
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #fa4251;">
-										<i class="zmdi zmdi-circle"></i>
-									</span>
-
-									<a href="#" class="filter-link stext-106 trans-04">
-										Red
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="beige">
+										Beige
 									</a>
 								</li>
 
@@ -649,7 +631,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
 										<i class="zmdi zmdi-circle-o"></i>
 									</span>
 
-									<a href="#" class="filter-link stext-106 trans-04">
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="white">
 										White
 									</a>
 								</li>
@@ -670,15 +652,11 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
 									Lifestyle
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-									Denim
-								</a>
-
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="streetstyle">
 									Streetstyle
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="crafts"">
 									Crafts
 								</a>
 							</div>
