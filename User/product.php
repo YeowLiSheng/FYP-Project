@@ -87,20 +87,20 @@ $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%
 // Apply price range filter
 if ($price_range != 'all') {
     switch ($price_range) {
-        case '0-50':
-            $product_query .= " AND product_price BETWEEN 0 AND 50";
+        case '0-2000':
+            $product_query .= " AND product_price BETWEEN 0 AND 2000";
             break;
-        case '50-100':
-            $product_query .= " AND product_price BETWEEN 50 AND 100";
+        case '2000-3000':
+            $product_query .= " AND product_price BETWEEN 2000 AND 3000";
             break;
-        case '100-150':
-            $product_query .= " AND product_price BETWEEN 100 AND 150";
+        case '3000-4000':
+            $product_query .= " AND product_price BETWEEN 3000 AND 4000";
             break;
-        case '150-200':
-            $product_query .= " AND product_price BETWEEN 150 AND 200";
+        case '4000-5000':
+            $product_query .= " AND product_price BETWEEN 4000 AND 5000";
             break;
-        case '200+':
-            $product_query .= " AND product_price > 200";
+        case '5000+':
+            $product_query .= " AND product_price > 5000";
             break;
     }
 }
