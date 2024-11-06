@@ -104,6 +104,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
+// Define variables from user input
+$input_card_holder_name = $_POST['card_holder_name'];
+$input_card_number = $_POST['card_number'];
+$input_valid_thru = $_POST['valid_thru'];
+$input_cvv = $_POST['cvv'];
+
+// Check if card details match any in the bank_card table
+$card_check_query = "
+    SELECT * FROM bank_card 
+    WHERE card_holder_name = ? 
+      AND card_number = ? 
+      AND valid_thru = ? 
+      AND cvv = ?
+";
+$stmt = $conn->prepare($card_check_query);
+$stmt->bind_param("sssi", $input_card_holder_name, $input_card_number, $input_valid_thru, $input_cvv);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Check if a matching record was found
+if ($result->num_rows > 0) {
+    // Card details are valid; proceed with payment confirmation
+    echo "<script>confirmPayment();</script>";
+} else {
+    // Card details are invalid; display error message
+    echo "<script>alert('Please enter valid card details');</script>";
+}
+
+$stmt->close();
 
 ?>
 
@@ -568,7 +597,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 	<!-- Confirm Payment Button -->
-	<button type="button" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+	<button type="submit" class="checkout-btn" >Confirm Payment</button>
 
 <!-- Payment Processing Popup -->
 <div class="overlay" id="paymentOverlay">
