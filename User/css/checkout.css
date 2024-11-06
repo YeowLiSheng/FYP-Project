@@ -86,6 +86,7 @@
     gap: 8px; /* Adjust spacing between checkbox and text */
     font-weight: 500; /* Optional: matches the style of the other labels */
     color: #555; /* Optional: color for the label text */
+    margin-left: -20px;
 }
 
 /* Flex layout for grouped input fields */
