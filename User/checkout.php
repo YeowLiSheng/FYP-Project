@@ -76,34 +76,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Function to validate card details
-function validateCardDetails($conn, $name, $number, $expiry, $cvv) {
-    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("sssi", $name, $number, $expiry, $cvv);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return $result->num_rows > 0;
-}
-
-// Handling form submission
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $cardHolderName = $_POST['card_holder_name'];
-    $cardNumber = $_POST['card_number'];
-    $expiryDate = $_POST['valid_thru'];
-    $cvv = $_POST['cvv'];
-
-    // Validate card details
-    if (!validateCardDetails($conn, $cardHolderName, $cardNumber, $expiryDate, $cvv)) {
-        echo "<script>alert('Please enter a valid card details');</script>";
-    } else {
-        // Card details are valid; process the payment
-        echo "<script>alert('Payment processing...');</script>";
-        // Redirect to dashboard or continue with payment processing
-        header("Location: dashboard.php");
-        exit;
-    }
-}
-
 
 ?>
 
@@ -494,11 +466,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
                     <div class="checkout-input-box">
                         <span>Card Holder Name :</span>
-                        <input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+                        <input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
-                        <input   type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
+                        <input   type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
     					pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" title="Please enter exactly 16 digits" autocomplete="off" required 
     					oninput="formatCardNumber(this)">
                     </div>
@@ -510,12 +482,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="checkout-flex">
                         <div class="checkout-input-box">
                             <span>Valid Thru (MM/YY) :</span>
-                            <input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
+                            <input type="text" id="expiry-date" placeholder="MM/YY" required>
                             <small id="expiry-error" style="color: red; display: none;">Please enter a valid, non-expired date.</small>
                         </div>
                         <div class="checkout-input-box">
                             <span>CVV :</span>
-							<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()" required>
+							<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()" required>
 							<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV code.</small>
 
                         </div>
