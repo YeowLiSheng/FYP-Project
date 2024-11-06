@@ -1,127 +1,150 @@
+<?php
+// Start session
+session_start();
+
+// Include the database connection file
+include("dataconnection.php"); 
+
+$user_email = '';
+// Check if the user is logged in
+if (isset($_SESSION['id'])) {
+    // Check if the database connection exists
+    if (!isset($connect) || !$connect) {
+        die("Database connection failed.");
+    }
+
+    // Retrieve the user information
+    $user_id = $_SESSION['id'];
+    $result = mysqli_query($connect, "SELECT * FROM user WHERE user_id = '$user_id'");
+
+    // Check if the query was successful and fetch user data
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $user_name = htmlspecialchars($row["user_name"]); // Get the user name
+		 $user_email = $row['user_email'];
+    } else {
+        echo "User not found.";
+        exit;
+    }
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
+    <title>Contact Us</title>
     <link rel="stylesheet" href="styles.css">
 
-    <!--===============================================================================================-->	
+	<!--===============================================================================================-->	
 	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/linearicons-v1.0.0/icon-font.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/slick/slick.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/MagnificPopup/magnific-popup.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/util.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-<!--===============================================================================================-->
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="fonts/linearicons-v1.0.0/icon-font.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+	<!--===============================================================================================-->	
+		<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+	<!--===============================================================================================-->	
+		<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/slick/slick.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/MagnificPopup/magnific-popup.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="css/util.css">
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	<!--===============================================================================================-->
 
-    
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: white;
-            margin: 0;
-            padding: 0;
-        }
 
-        #registrationForm {
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 20px;
-        }
 
-        h2 {
-            text-align: center;
-            color: #333333;
-        }
+<style>
+	/* Basic styling for the form */
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f4f4f9;
+	}
 
-        .field {
-            margin-bottom: 15px;
-            position: relative;
-        }
+	.container {
+		width: 80%;
+		margin: auto;
+		padding: 20px;
+	}
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
 
-        input[type="text"],
-        input[type="password"],
-        input[type="date"],
-        input[type="submit"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+	h1 {
+		text-align: center;
+		color: #333;
+	}
 
-        input[type="submit"] {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
+	.form-group {
+		margin-bottom: 15px;
+	}
 
-        input[type="submit"]:hover {
-            background-color: #218838;
-        }
+	label {
+		font-weight: bold;
+		padding: auto;
+	}
 
-        .error {
-            color: red;
-            font-size: 0.9em;
-            display: none; /* Initially hide error messages */
-        }
+	input, textarea {
+		width: 100%;
+		padding: 10px;
+		margin-top: 5px;
+		border: 1px solid #ddd;
+		border-radius: 5px;
+	}
 
-        .gender-container {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-        }
+	textarea {
+		height: 100px;
+	}
 
-        .gender-label {
-            margin-right: 10px;
-        }
+	.submit-btn {
+		display: inline-block;
+		padding: 10px 20px;
+		color: #fff;
+		background-color: #007bff;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		margin-top: 10px;
+	}
 
-        .eye-icon {
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 35%;
-            user-select: none;
-        }
-    </style>
+	.submit-btn:hover {
+		background-color: #0056b3;
+	}
+
+	/* Map styling */
+	#map {
+		width: 100%;
+		height: 300px;
+		margin-bottom: 20px;
+		border: 1px solid #ddd;
+		margin: 50px 45px 2px -5px ;
+	}
+</style>
 </head>
 <body class="animsition">
-<!-- Header -->
-<header>
+
+
+
+	<!-- Header -->
+	<header>
 		<!-- Header desktop -->
 		<div class="container-menu-desktop">
 			<!-- Topbar -->
@@ -135,8 +158,8 @@
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
-						
-					
+
+
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -146,8 +169,23 @@
 						</a>
 
 
+						<?php if (isset($_SESSION['id'])): ?>
+						<!-- If logged in, show "Hi [username]" and "Log Out" links -->
+						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+							Hi <?php echo $user_name; ?>
+						</a>
+
+						<a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
+						</a>
+					<?php else: ?>
+						<!-- If not logged in, show "My Account" link -->
 						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
-						
+					<?php endif; ?>
+
+
+
+
 					</div>
 				</div>
 			</div>
@@ -164,7 +202,7 @@
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li class="active-menu">
-								<a href="homepage.html">Home</a>
+								<a href="homepage.php">Home</a>
 								
 							</li>
 
@@ -185,7 +223,7 @@
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -212,7 +250,7 @@
 		<div class="wrap-header-mobile">
 			<!-- Logo moblie -->		
 			<div class="logo-mobile">
-				<a href="homepage.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
+				<a href="homepage.php"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
 			</div>
 
 			<!-- Icon header -->
@@ -255,7 +293,6 @@
 						</a>
 
 
-
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							EN
 						</a>
@@ -267,18 +304,19 @@
 
 
 
+						
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							My Account
 						</a>
 
-						
+
 					</div>
 				</li>
 			</ul>
 
 			<ul class="main-menu-m">
 				<li>
-					<a href="homepage.html">Home</a>
+					<a href="homepage.php">Home</a>
 					
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
@@ -302,7 +340,7 @@
 				</li>
 
 				<li>
-					<a href="contact.html">Contact</a>
+					<a href="contact.php">Contact</a>
 				</li>
 			</ul>
 		</div>
@@ -328,7 +366,8 @@
 				</form>
 			</div>
 		</div>
-    </header>
+	</header>
+
 
 
 
@@ -418,237 +457,59 @@
 	</div>
 
 
-    <form id="registrationForm" method="POST" action="">
-        <h2>Register Account</h2>
-        <p style="text-align: center; margin-top: 20px;">
-            Already have an account? <a href="login.php" style="color: #28a745; text-decoration: none;">Log in</a>
-        </p>
 
-        <div class="field">
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" required oninput="checkEmail()">
-            <span id="emailError" class="error">Please enter a valid email (must include '@' AND '.')</span>
-        </div>
 
-        <div class="field">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required oninput="checkName()">
-            <span id="nameError" class="error">Name must be at least 6 characters long.</span>
-        </div>
 
-        <div class="field">
-            <label for="contact">Contact Number:</label>
-            <input type="text" id="contact" name="contact" required oninput="checkContact()">
-            <span id="contactError" class="error">Format must be xxx-xxxxxxx OR xxx-xxxxxxxx</span>
-        </div>
+	<div class="container">
+		
+		
+		<!-- Map Section -->
+		<div id="map">
+			<!-- Embed Google Maps -->
+			<iframe
+				width="100%"
+				height="100%"
+				frameborder="0"
+				style="border:0"
+				src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345097074!2d144.95565211531896!3d-37.816279179751566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d43b2c97c4d%3A0x1e9c0f736c0e839b!2sMelbourne%20CBD%2C%20Melbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus"
+				allowfullscreen
+				aria-hidden="false"
+				tabindex="0">
+			</iframe>
+		</div>
+	
+		<!-- Contact Form -->
+		
+<!-- Contact Form -->
+<form action="contact.php" method="POST">
+    <?php if (isset($_SESSION['id'])): ?>
+        <!-- Display email if user is logged in -->
+        <label>Email:</label>
+        <input type="text" name="email" value="<?php echo htmlspecialchars($user_email); ?>" readonly>
+    <?php else: ?>
+        <!-- Show email input if user is not logged in -->
+        <label>Email:</label>
+        <input type="email" name="email" required>
+    <?php endif; ?>
 
-        <div class="field">
-            <label>Gender:</label>
-            <div class="gender-container">
-                <span class="gender-label">Female</span>
-                <input type="radio" name="gender" value="female" id="genderFemale" required onchange="hideGenderError()">
-                <span class="gender-label">Male</span>
-                <input type="radio" name="gender" value="male" id="genderMale" required onchange="hideGenderError()">
-            </div>
-            <span id="genderError" class="error">Please select your gender.</span>
-        </div>
+    <label>Message:</label>
+    <textarea name="message" required></textarea>
 
-        <div class="field">
-            <label for="dob">Date of Birth:</label>
-            <input type="date" id="dob" name="dob" required oninput="checkDob()">
-            <span id="dobError" class="error">Please enter a valid date of birth.</span>
-            <span id="dobFutureError" class="error">Date of birth cannot be in the future.</span>
-        </div>
+    <button type="submit" name="submitbtn" class="submit-btn">Send Message</button>
+</form>
+	</div>
 
-        <div class="field">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required oninput="checkPassword()">
-            <span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">👁️</span>
-            <span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</span>
-        </div>
 
-        <div class="field">
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
-            <span id="confirmPasswordToggle" class="eye-icon" onclick="togglePassword('confirmPassword', this)">👁️</span>
-            <span id="confirmPasswordError" class="error">Passwords do not match.</span>
-        </div>
-
-        <p>
-            <input type="submit" name="signupbtn" value="Sign Up">
-        </p>
-    </form>
-
-	<script>
-    function checkEmail() {
-        const email = document.getElementById("email").value;
-        const emailError = document.getElementById("emailError");
-        const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        emailError.style.display = validEmail.test(email) ? "none" : "block";
-    }
-
-    function checkName() {
-        const name = document.getElementById("name").value;
-        const nameError = document.getElementById("nameError");
-        nameError.style.display = name.length >= 6 ? "none" : "block";
-    }
-
-    function checkContact() {
-        const contact = document.getElementById("contact").value;
-        const contactError = document.getElementById("contactError");
-        const validContact = /^\d{3}-\d{7,8}$/;
-
-        contactError.style.display = validContact.test(contact) ? "none" : "block";
-    }
-
-    function hideGenderError() {
-        const genderError = document.getElementById("genderError");
-        genderError.style.display = "none";
-    }
-
-    function checkDob() {
-        const dobInput = document.getElementById("dob");
-        const dobError = document.getElementById("dobError");
-        const dobFutureError = document.getElementById("dobFutureError");
-
-        const selectedDate = new Date(dobInput.value);
-        const currentDate = new Date();
-
-        // Reset error messages
-        dobError.style.display = "none";
-        dobFutureError.style.display = "none";
-
-        if (!dobInput.value) {
-            dobError.style.display = "block";
-            return;
-        }
-
-        // Check if selected date is in the future
-        if (selectedDate > currentDate) {
-            dobFutureError.style.display = "block";
-        }
-    }
-
-    function checkPassword() {
-        const password = document.getElementById("password").value;
-        const passwordError = document.getElementById("passwordError");
-        const validPassword = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-
-        passwordError.style.display = validPassword.test(password) ? "none" : "block";
-    }
-
-    function checkConfirmPassword() {
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("confirmPassword").value;
-        const confirmPasswordError = document.getElementById("confirmPasswordError");
-
-        confirmPasswordError.style.display = password === confirmPassword ? "none" : "block";
-    }
-
-    function togglePassword(inputId, toggleIcon) {
-        const passwordInput = document.getElementById(inputId);
-        const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', inputType);
-    }
-
-    function setMaxDate() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById("dob").setAttribute('max', today);
-    }
-
-    // Call setMaxDate when the page loads
-    window.onload = setMaxDate;
-
-    function validateForm() {
-        let hasError = false;
-
-        // Check each field and display corresponding error messages
-        const emailInput = document.getElementById("email");
-        const emailError = document.getElementById("emailError");
-        if (!emailInput.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
-            emailError.style.display = "block";
-            hasError = true;
-        }
-
-        const nameInput = document.getElementById("name");
-        const nameError = document.getElementById("nameError");
-        if (!nameInput.value || nameInput.value.length < 6) {
-            nameError.style.display = "block";
-            hasError = true;
-        }
-
-        const contactInput = document.getElementById("contact");
-        const contactError = document.getElementById("contactError");
-        if (!contactInput.value || !/^\d{3}-\d{7,8}$/.test(contactInput.value)) {
-            contactError.style.display = "block";
-            hasError = true;
-        }
-
-        const genderError = document.getElementById("genderError");
-        if (!document.querySelector('input[name="gender"]:checked')) {
-            genderError.style.display = "block";
-            hasError = true;
-        }
-
-        const dobInput = document.getElementById("dob");
-        const dobError = document.getElementById("dobError");
-        const dobFutureError = document.getElementById("dobFutureError");
-        const selectedDate = new Date(dobInput.value);
-        const currentDate = new Date();
-        if (!dobInput.value) {
-            dobError.style.display = "block";
-            hasError = true;
-        } else if (selectedDate > currentDate) {
-            dobFutureError.style.display = "block";
-            hasError = true;
-        }
-
-        const passwordInput = document.getElementById("password");
-        const passwordError = document.getElementById("passwordError");
-        if (!passwordInput.value || !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/.test(passwordInput.value)) {
-            passwordError.style.display = "block";
-            hasError = true;
-        }
-
-        const confirmPasswordInput = document.getElementById("confirmPassword");
-        const confirmPasswordError = document.getElementById("confirmPasswordError");
-        if (passwordInput.value !== confirmPasswordInput.value) {
-            confirmPasswordError.style.display = "block";
-            hasError = true;
-        }
-
-        // If there are errors, scroll to the first one
-        if (hasError) {
-            scrollToFirstError();
-        }
-
-        return !hasError;
-    }
-
-    // Ensure form validation before submission
-    document.getElementById("registrationForm").onsubmit = function() {
-        return validateForm();
-    };
-
-    function scrollToFirstError() {
-        const errors = document.querySelectorAll('.error');
-        for (let error of errors) {
-            if (error.style.display === 'block') {
-                const field = error.previousElementSibling; // Get the associated input field
-                field.focus(); // Focus on the input field
-                field.style.border = '2px solid red'; // Highlight the input field with a red border
-                error.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Scroll to the field
-                break; // Only scroll to the first error found
-            }
-        }
-    }
-</script>
+    
 
 
 
 
-        
+
+
+
+
+                 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
@@ -1052,51 +913,53 @@
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-  
 </body>
 </html>
 
 
 
+
+
 <?php
-// Database connection
-include 'dataconnection.php';
 
-// Enable error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-if (isset($_POST["signupbtn"])) {
-    // Retrieve form data
-    $email = mysqli_real_escape_string($connect, $_POST["email"]); 
-    $name = mysqli_real_escape_string($connect, $_POST["name"]); 
-    $contact = mysqli_real_escape_string($connect, $_POST["contact"]);
-    $gender = mysqli_real_escape_string($connect, $_POST["gender"]);  
-    $dob = mysqli_real_escape_string($connect, $_POST["dob"]); 
-    $password = $_POST["password"];  // Plain text password
-    $confirmPassword = $_POST["confirmPassword"];
+// Check if the form is submitted
+if (isset($_POST['submitbtn'])) {
+    // Retrieve user input
+    $message = $_POST['message'];
 
-    $now = new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur'));
-    $currentDateTime = $now->format('Y-m-d H:i:s');
-
-    // Check if email already exists
-    $verify_query = mysqli_query($connect, "SELECT * FROM user WHERE user_email='$email'");
-    if (mysqli_num_rows($verify_query) > 0) {
-        echo "<script>alert('The email has already been used. Please choose another email.');window.location.href='register.php';</script>";
-    } else if ($password != $confirmPassword) {
-        echo "<script>alert('The password and confirm password must match.');window.location.href='register.php';</script>";
-    } else {
-        // Insert data into the database without encryption
-        $insert_query = mysqli_query($connect, "INSERT INTO user (user_email, user_name, user_contact_number, user_gender, user_date_of_birth, user_password, user_join_time) 
-        VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$password', '$currentDateTime')");
+    // Check if the user is logged in
+    if (isset($_SESSION['id'])) {
+        // Logged in: retrieve user email and user ID from session
+        $user_id = $_SESSION['id'];
+        $query = "SELECT user_email FROM user WHERE user_id = ?";
+        $stmt = $connect->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
         
-        if ($insert_query) {
-            echo "<script>alert('Registration successful.');window.location.href='login.php';</script>";
-        } else {
-            echo "Error: " . mysqli_error($connect); // Show the error message
-            echo "<script>alert('Registration failed. Please try again.');window.location.href='register.php';</script>";
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $email = $row['user_email'];
         }
+    } else {
+        // Not logged in: retrieve email from the form input
+        $email = $_POST['email'];
+        $user_id = null; // Set user_id as null for non-logged-in users
     }
-}
-?>
 
+    // Insert into contact_us table
+    $query = "INSERT INTO contact_us (user_email, message, user_id) VALUES (?, ?, ?)";
+    $stmt = $connect->prepare($query);
+    $stmt->bind_param("ssi", $email, $message, $user_id);
+
+    if ($stmt->execute()) {
+        echo '<script>alert("The Message Send Successful");</script>';
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
+}
+
+?>
