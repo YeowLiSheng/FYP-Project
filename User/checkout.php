@@ -1063,19 +1063,28 @@ function validateCVV() {
 }
 
 function confirmPayment() {
+    // 显示覆盖层和“处理中”状态
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
 
+    // 模拟支付处理
     setTimeout(() => {
+        // 切换到“支付成功”消息
         popupContent.innerHTML = `
             <div class="success-icon">✓</div>
             <h2 class="success-title">Payment Successfully</h2>
-            <button class="ok-btn" id="okButton">OK</button>
+            <button id="okButton" class="ok-btn">OK</button>
         `;
 
+        // 重新绑定 OK 按钮的点击事件
         document.getElementById('okButton').addEventListener('click', goToDashboard);
-    }, 2000);
+    }, 2000); // 2 秒加载动画
+}
+
+function goToDashboard() {
+    // 重定向到仪表盘页面
+    window.location.href = 'dashboard.php';
 }
 
 </script>   
