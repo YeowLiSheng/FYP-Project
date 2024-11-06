@@ -414,7 +414,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 	<body class="checkout-root checkout-reset">
 
     <div class="checkout-container">
-        <form action="">
+        <form action=""onsubmit="return handleSubmit(event)">
             <div class="checkout-row">
               <!-- Billing Address Section -->
 				<div class="checkout-column">
@@ -1062,6 +1062,48 @@ function validateCVV() {
     }
 }
 
+function validateForm() {
+    // Get all required fields
+    const fullName = document.querySelector('input[name="fullName"]'); // replace with actual name or id if different
+    const email = document.querySelector('input[type="email"]');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
+    const cardHolder = document.querySelector('input[placeholder="Cheong Wei Kit"]'); // or give it a name/id
+    const cardNum = document.querySelector('input[name="cardNum"]');
+    const expiryDate = document.getElementById('expiry-date');
+    const cvv = document.getElementById('cvv');
+
+    // Check each field for validity
+    if (
+        !fullName.value.trim() ||
+        !email.value.trim() ||
+        !address.value.trim() ||
+        !city.value.trim() ||
+        !state.value.trim() ||
+        !postcode.value.trim() ||
+        !cardHolder.value.trim() ||
+        !cardNum.checkValidity() ||
+        !expiryDate.checkValidity() ||
+        !cvv.checkValidity()
+    ) {
+        alert('Please fill in all required fields correctly.');
+        return false; // Prevent form submission
+    }
+    return true; // Allow form submission
+}
+
+function handleSubmit(event) {
+    // Prevent form submission to handle with JavaScript
+    event.preventDefault();
+
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
+}
+
 function confirmPayment() {
     // 显示覆盖层和“处理中”状态
     const overlay = document.getElementById('paymentOverlay');
@@ -1083,6 +1125,9 @@ function goToDashboard() {
     // 重定向到仪表盘页面
     window.location.href = 'dashboard.php';
 }
+
+
+
 
 </script>   
 </body>
