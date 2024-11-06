@@ -75,8 +75,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 {
 	echo "<p>Your cart is empty.</p>";
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -454,7 +452,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 					<div class="autofill-checkbox">
     					<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
     					<label for="autofill-checkbox">Use saved address information</label>
-					</div>
+				</div>
 					</div>
 
                 <!-- Payment Section -->
@@ -1065,27 +1063,20 @@ function validateCVV() {
 }
 
 function confirmPayment() {
-            // Show overlay and display "Processing" state
-            const overlay = document.getElementById('paymentOverlay');
-            const popupContent = document.getElementById('popupContent');
-            overlay.classList.add('show');
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
 
-            // Simulate payment processing
-            setTimeout(() => {
-                // Switch to "Payment Successfully" message
-                popupContent.innerHTML = `
-                    <div class="success-icon">✓</div>
-                    <h2 class="success-title">Payment Successfully</h2>
-                    <button class="ok-btn" onclick="goToDashboard()">OK</button>
-                `;
-            }, 2000); // 2-second loading animation
-        }
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successfully</h2>
+            <button class="ok-btn" id="okButton">OK</button>
+        `;
 
-        function goToDashboard() {
-            // Redirect to dashboard page
-            window.location.href = 'dashboard.php';
-        }
-
+        document.getElementById('okButton').addEventListener('click', goToDashboard);
+    }, 2000);
+}
 
 </script>   
 </body>
