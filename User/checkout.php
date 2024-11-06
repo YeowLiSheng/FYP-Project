@@ -452,8 +452,10 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 					
 					<div class="checkout-input-box">
        	 				
-						<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
-        				<label for="autofill-checkbox">Use saved address information</label>
+					<label>
+        				<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
+        					Use saved address information
+    				</label>
     				</div>
 
 

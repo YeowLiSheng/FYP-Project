@@ -80,6 +80,14 @@
     outline: none;
 }
 
+.autofill-container label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Adjust spacing between checkbox and text */
+    font-weight: 500; /* Optional: matches the style of the other labels */
+    color: #555; /* Optional: color for the label text */
+}
+
 /* Flex layout for grouped input fields */
 .checkout-flex {
     display: flex;
