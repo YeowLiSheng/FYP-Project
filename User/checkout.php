@@ -468,7 +468,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
-                        <input   type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
+                        <input   type="text"  placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
     					pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" title="Please enter exactly 16 digits" autocomplete="off" required 
     					oninput="formatCardNumber(this)">
                     </div>
@@ -1063,25 +1063,19 @@ function validateCVV() {
 }
 
 function confirmPayment() {
-    // 显示覆盖层和“处理中”状态
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
 
-    // 模拟支付处理
     setTimeout(() => {
-        // 更新弹窗内容并直接设置 OK 按钮的 onclick 属性
         popupContent.innerHTML = `
             <div class="success-icon">✓</div>
             <h2 class="success-title">Payment Successfully</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+            <button class="ok-btn" id="okButton">OK</button>
         `;
-    }, 2000); // 2 秒加载动画
-}
 
-function goToDashboard() {
-    // 重定向到仪表盘页面
-    window.location.href = 'dashboard.php';
+        document.getElementById('okButton').addEventListener('click', goToDashboard);
+    }, 2000);
 }
 
 </script>   
