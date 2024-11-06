@@ -1070,15 +1070,12 @@ function confirmPayment() {
 
     // 模拟支付处理
     setTimeout(() => {
-        // 切换到“支付成功”消息
+        // 更新弹窗内容并直接设置 OK 按钮的 onclick 属性
         popupContent.innerHTML = `
             <div class="success-icon">✓</div>
             <h2 class="success-title">Payment Successfully</h2>
-            <button id="okButton" class="ok-btn">OK</button>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
         `;
-
-        // 重新绑定 OK 按钮的点击事件
-        document.getElementById('okButton').addEventListener('click', goToDashboard);
     }, 2000); // 2 秒加载动画
 }
 
