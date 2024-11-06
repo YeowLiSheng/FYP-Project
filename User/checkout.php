@@ -76,37 +76,33 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Card validation logic if form is submitted
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $input_card_holder_name = $_POST['card_holder_name'];
-    $input_card_number = $_POST['card_number'];
-    $input_valid_thru = $_POST['valid_thru'];
-    $input_cvv = $_POST['cvv'];
-
-    // Check if card details match any in the bank_card table
-    $card_check_query = "
-        SELECT * FROM bank_card 
-        WHERE card_holder_name = ? 
-          AND card_number = ? 
-          AND valid_thru = ? 
-          AND cvv = ?
-    ";
-    $stmt = $conn->prepare($card_check_query);
-    $stmt->bind_param("sssi", $input_card_holder_name, $input_card_number, $input_valid_thru, $input_cvv);
+// Function to validate card details
+function validateCardDetails($conn, $name, $number, $expiry, $cvv) {
+    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
+    $stmt->bind_param("sssi", $name, $number, $expiry, $cvv);
     $stmt->execute();
     $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // Card details are valid; proceed with payment
-        echo "<script>confirmPayment();</script>";
-    } else {
-        // Invalid card details; show error message
-        echo "<script>alert('Please enter valid card details');</script>";
-    }
-
-    $stmt->close();
+    return $result->num_rows > 0;
 }
 
+// Handling form submission
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $cardHolderName = $_POST['card_holder_name'];
+    $cardNumber = $_POST['card_number'];
+    $expiryDate = $_POST['valid_thru'];
+    $cvv = $_POST['cvv'];
+
+    // Validate card details
+    if (!validateCardDetails($conn, $cardHolderName, $cardNumber, $expiryDate, $cvv)) {
+        echo "<script>alert('Please enter a valid card details');</script>";
+    } else {
+        // Card details are valid; process the payment
+        echo "<script>alert('Payment processing...');</script>";
+        // Redirect to dashboard or continue with payment processing
+        header("Location: dashboard.php");
+        exit;
+    }
+}
 
 
 ?>
@@ -572,7 +568,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
 	<!-- Confirm Payment Button -->
-	<button type="button" class="checkout-btn" >Confirm Payment</button>
+	<button type="button" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 <!-- Payment Processing Popup -->
 <div class="overlay" id="paymentOverlay">
