@@ -538,7 +538,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 
 
 	<!-- Confirm Payment Button -->
-	<button type="button" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+	<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 <!-- Payment Processing Popup -->
 <div class="overlay" id="paymentOverlay">
