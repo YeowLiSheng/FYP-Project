@@ -438,22 +438,22 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
         				<input type="text" id="city" value="" required>
     				</div>
     				<div class="checkout-flex">
-        				<div class="checkout-input-box">
-            				<span class="required">State :</span>
-            				<input type="text" id="state" value="" required>
-        				</div>
-        			<div class="checkout-input-box">
-            			<span class="required">Postcode :</span>
-            			<input type="number" id="postcode" value="" required>
-        			</div>
-    			
-					<div class="checkout-input-box autofill-checkbox">
-                    	<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
-                    	<label for="autofill-checkbox">Use saved address information</label>
-                	</div>
-				</div>
+    					<div class="checkout-input-box">
+       						<span class="required">State :</span>
+        					<input type="text" id="state" value="" required>
+   				 		</div>
+    					<div class="checkout-input-box">
+        					<span class="required">Postcode :</span>
+        					<input type="number" id="postcode" value="" required>
+    					</div>
+					</div>
 
-		</div>
+					<!-- Checkbox in a new row -->
+						<div class="checkout-input-box autofill-checkbox">
+    						<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
+    						<label for="autofill-checkbox">Use saved address information</label>
+						</div>
+					</div>
 
                 <!-- Payment Section -->
                 <div class="checkout-column">
