@@ -416,44 +416,36 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
     <div class="checkout-container">
         <form action="">
             <div class="checkout-row">
-              <!-- Billing Address Section -->
-				<div class="checkout-column">
-    				<h3 class="checkout-title">Delivery Address</h3>
-    
-    				<div class="checkout-input-box">
-						<span class="required">Full Name :</span>
-        				<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
-    			
-					</div>
-    				<div class="checkout-input-box">
-        				<span class="required">Email :</span>
-        				<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
-    				</div>
-    				<div class="checkout-input-box">
-        				<span class="required">Address :</span>
-        				<input type="text" id="address" value="" required>
-    				</div>
-    				<div class="checkout-input-box">
-        				<span class="required">City :</span>
-        				<input type="text" id="city" value="" required>
-    				</div>
-    				<div class="checkout-flex">
-    					<div class="checkout-input-box">
-       						<span class="required">State :</span>
-        					<input type="text" id="state" value="" required>
-   				 		</div>
-    					<div class="checkout-input-box">
-        					<span class="required">Postcode :</span>
-        					<input type="number" id="postcode" value="" required>
-    					</div>
-					</div>
-
-					<!-- Checkbox in a new row -->
-					<div class="autofill-checkbox">
-    					<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
-    					<label for="autofill-checkbox">Use saved address information</label>
-				</div>
-					</div>
+                <!-- Billing Address Section -->
+                <div class="checkout-column">
+                    <h3 class="checkout-title">Delivery Address</h3>
+                    <div class="checkout-input-box">
+                        <span class="required">Full Name :</span>
+                        <input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
+                    </div>
+                    <div class="checkout-input-box">
+                        <span class="required">Email :</span>
+                        <input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
+                    </div>
+                    <div class="checkout-input-box">
+                        <span class="required">Address :</span>
+                        <input type="text" value="<?php echo htmlspecialchars($address['address'] ?? ''); ?>" required>
+                    </div>
+                    <div class="checkout-input-box">
+                        <span class="required">City :</span>
+                        <input type="text" value="<?php echo htmlspecialchars($address['city'] ?? ''); ?>" required>
+                    </div>
+                    <div class="checkout-flex">
+                        <div class="checkout-input-box">
+                            <span class="required">State :</span>
+                            <input type="text" value="<?php echo htmlspecialchars($address['state'] ?? ''); ?>" required>
+                        </div>
+                        <div class="checkout-input-box">
+                            <span class="required">Postcode :</span>
+                            <input type="number" value="<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>" required>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Payment Section -->
                 <div class="checkout-column">
@@ -468,7 +460,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
-                        <input   type="text"  placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
+                        <input   type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16" maxlength="19" 
     					pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}" title="Please enter exactly 16 digits" autocomplete="off" required 
     					oninput="formatCardNumber(this)">
                     </div>
@@ -964,32 +956,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="js/main.js"></script>
 
 <script>
-
-	function toggleAutofill() 
-	{
-    const autofillCheckbox = document.getElementById('autofill-checkbox');
-    const address = document.getElementById('address');
-    const city = document.getElementById('city');
-    const state = document.getElementById('state');
-    const postcode = document.getElementById('postcode');
-    
-    if (autofillCheckbox.checked) {
-        // Fill with saved data if checkbox is checked
-        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-        state.value = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
-        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
-    } else {
-        // Clear fields for manual input if checkbox is unchecked
-        address.value = "";
-        city.value = "";
-        state.value = "";
-        postcode.value = "";
-    }
-	}	
-
-
-
     document.getElementById('expiry-date').addEventListener('input', function() {
     const input = this.value;
     const error = document.getElementById('expiry-error');
@@ -1063,20 +1029,27 @@ function validateCVV() {
 }
 
 function confirmPayment() {
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
+            // Show overlay and display "Processing" state
+            const overlay = document.getElementById('paymentOverlay');
+            const popupContent = document.getElementById('popupContent');
+            overlay.classList.add('show');
 
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successfully</h2>
-            <button class="ok-btn" id="okButton">OK</button>
-        `;
+            // Simulate payment processing
+            setTimeout(() => {
+                // Switch to "Payment Successfully" message
+                popupContent.innerHTML = `
+                    <div class="success-icon">✓</div>
+                    <h2 class="success-title">Payment Successfully</h2>
+                    <button class="ok-btn" onclick="goToDashboard()">OK</button>
+                `;
+            }, 2000); // 2-second loading animation
+        }
 
-        document.getElementById('okButton').addEventListener('click', goToDashboard);
-    }, 2000);
-}
+        function goToDashboard() {
+            // Redirect to dashboard page
+            window.location.href = 'dashboard.php';
+        }
+
 
 </script>   
 </body>
