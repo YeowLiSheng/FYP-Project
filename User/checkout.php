@@ -75,6 +75,44 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
 {
 	echo "<p>Your cart is empty.</p>";
 }
+
+// Assuming you already have $conn for the database connection
+
+// Retrieve form data
+$card_holder_name = $_POST['card_holder_name'];
+$card_number = $_POST['cardNum'];
+$valid_thru = $_POST['expiry_date'];
+$cvv = $_POST['cvv'];
+
+// Sanitize input data to avoid SQL injection
+$card_holder_name = mysqli_real_escape_string($conn, $card_holder_name);
+$card_number = mysqli_real_escape_string($conn, $card_number);
+$valid_thru = mysqli_real_escape_string($conn, $valid_thru);
+$cvv = mysqli_real_escape_string($conn, $cvv);
+
+// Query to check if the card details exist in the bank_card table
+$card_check_query = "
+    SELECT * 
+    FROM bank_card 
+    WHERE 
+        card_holder_name = '$card_holder_name' AND 
+        card_number = '$card_number' AND 
+        valid_thru = '$valid_thru' AND 
+        cvv = '$cvv'
+";
+
+$card_check_result = mysqli_query($conn, $card_check_query);
+
+// Check if a match was found
+if ($card_check_result && mysqli_num_rows($card_check_result) > 0) {
+    echo "Card details are valid.";
+    // Proceed with the payment process here
+} else {
+    echo "Invalid card details. Please check and try again.";
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -464,7 +502,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0)
                     </div>
                     <div class="checkout-input-box">
                         <span>Card Holder Name :</span>
-                        <input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+                        <input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
                     </div>
                     <div class="checkout-input-box">
                         <span> Card Number :</span>
