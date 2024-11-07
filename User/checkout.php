@@ -420,7 +420,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return validateForm(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -1090,39 +1090,37 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 			}
 		}
 
-		function validateForm(event) {
-        // Required fields including card details
-        const fields = [
-            "full-name", 
-            "email", 
-            "address", 
-            "city", 
-            "state", 
-            "postcode", 
-            "card-holder-name", 
-            "card-number", 
-            "expiry-date", 
-            "cvv"
-        ];
-        let allFilled = true;
+		function validateForm() {
+			// Get all required fields
+			const fullName = document.querySelector('input[name="fullName"]'); // replace with actual name or id if different
+			const email = document.querySelector('input[type="email"]');
+			const address = document.getElementById('address');
+			const city = document.getElementById('city');
+			const state = document.getElementById('state');
+			const postcode = document.getElementById('postcode');
+			const cardHolder = document.querySelector('input[placeholder="Cheong Wei Kit"]'); // or give it a name/id
+			const cardNum = document.querySelector('input[name="cardNum"]');
+			const expiryDate = document.getElementById('expiry-date');
+			const cvv = document.getElementById('cvv');
 
-        fields.forEach(id => {
-            const field = document.getElementById(id);
-            if (!field.value) {
-                field.style.borderColor = "red";
-                allFilled = false;
-            } else {
-                field.style.borderColor = "";
-            }
-        });
-
-        if (!allFilled) {
-            event.preventDefault(); // Prevent form submission
-            alert("Please fill out all required fields, including payment details.");
-            return false;
-        }
-        return true; // Proceed with form submission
-    }
+			// Check each field for validity
+			if (
+				!fullName.value.trim() ||
+				!email.value.trim() ||
+				!address.value.trim() ||
+				!city.value.trim() ||
+				!state.value.trim() ||
+				!postcode.value.trim() ||
+				!cardHolder.value.trim() ||
+				!cardNum.checkValidity() ||
+				!expiryDate.checkValidity() ||
+				!cvv.checkValidity()
+			) {
+				alert('Please fill in all required fields correctly.');
+				return false; // Prevent form submission
+			}
+			return true; // Allow form submission
+		}
 
 		function handleSubmit(event) {
 			// Prevent form submission to handle with JavaScript
@@ -1135,7 +1133,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		}
 
 		function confirmPayment() {
-			
+			// 显示覆盖层和“处理中”状态
 			const overlay = document.getElementById('paymentOverlay');
 			const popupContent = document.getElementById('popupContent');
 			overlay.classList.add('show');
