@@ -1017,6 +1017,79 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		}
 
 
+
+		document.getElementById('expiry-date').addEventListener('input', function () {
+			const input = this.value;
+			const error = document.getElementById('expiry-error');
+
+			// Check if the input matches MM/YY format using regex
+			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+			if (!datePattern.test(input)) {
+				error.style.display = 'none';
+				return;
+			}
+
+			// Parse month and year from input
+			const [month, year] = input.split('/').map(Number);
+			const currentYear = new Date().getFullYear() % 100; // last two digits of current year
+			const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+
+			// Check if the entered date is valid (current month/year or later)
+			if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+				error.style.display = 'none'; // hide error message if valid
+			} else {
+				error.style.display = 'block'; // show error message if expired
+				this.value = ''; // clear input field
+			}
+		});
+
+		function formatCardNumber(input) {
+			// Remove all spaces and get only digits
+			let cardNum = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+
+			// Split into groups of 4 digits
+			let formattedCardNum = cardNum.match(/.{1,4}/g);
+
+			// Join groups with a space
+			if (formattedCardNum) {
+				input.value = formattedCardNum.join(' ');
+			}
+		}
+
+		document.getElementById("expiry-date").addEventListener("input", function (e) {
+			const input = e.target;
+			let value = input.value.replace(/\D/g, "");
+
+			if (value.length >= 2) {
+				value = value.slice(0, 2) + '/' + value.slice(2);
+			}
+
+			if (value.length > 5) {
+				value = value.slice(0, 5);
+			}
+
+			input.value = value;
+		});
+
+		function validateCVV() {
+			const cvvInput = document.getElementById("cvv");
+			const cvvError = document.getElementById("cvv-error");
+
+
+			if (cvvInput.value.length > 3) {
+				cvvInput.value = cvvInput.value.slice(0, 3);
+			}
+
+
+			if (cvvInput.value.length < 3) {
+				cvvInput.setCustomValidity("Please enter a 3-digit CVV code.");
+				cvvError.style.display = "inline";
+			} else {
+				cvvInput.setCustomValidity("");
+				cvvError.style.display = "none";
+			}
+		}
+
 		function validateForm() {
     // Get form fields
     const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
