@@ -1091,68 +1091,63 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		}
 
 		function validateForm() {
-			// Get all required fields
-			const fullName = document.querySelector('input[name="fullName"]'); // replace with actual name or id if different
-			const email = document.querySelector('input[type="email"]');
-			const address = document.getElementById('address');
-			const city = document.getElementById('city');
-			const state = document.getElementById('state');
-			const postcode = document.getElementById('postcode');
-			const cardHolder = document.querySelector('input[placeholder="Cheong Wei Kit"]'); // or give it a name/id
-			const cardNum = document.querySelector('input[name="cardNum"]');
-			const expiryDate = document.getElementById('expiry-date');
-			const cvv = document.getElementById('cvv');
+    // 获取表单字段
+    const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
+    const cardNum = document.querySelector('input[name="cardNum"]');
+    const expiryDate = document.getElementById('expiry-date');
+    const cvv = document.getElementById('cvv');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
 
-			// Check each field for validity
-			if (
-				!fullName.value.trim() ||
-				!email.value.trim() ||
-				!address.value.trim() ||
-				!city.value.trim() ||
-				!state.value.trim() ||
-				!postcode.value.trim() ||
-				!cardHolder.value.trim() ||
-				!cardNum.checkValidity() ||
-				!expiryDate.checkValidity() ||
-				!cvv.checkValidity()
-			) {
-				alert('Please fill in all required fields correctly.');
-				return false; // Prevent form submission
-			}
-			return true; // Allow form submission
-		}
+    // 检查每个字段是否已填充并有效
+    if (
+        !fullName.value.trim() || 
+        !cardNum.value.trim() || 
+        !expiryDate.value.trim() || 
+        !cvv.value.trim() || 
+        !address.value.trim() ||
+        !city.value.trim() ||
+        !state.value.trim() ||
+        !postcode.value.trim()
+    ) {
+        alert('请填写所有必填字段。');
+        return false; // 防止表单提交
+    }
+    return true; // 允许表单提交
+}
 
-		function handleSubmit(event) {
-			// Prevent form submission to handle with JavaScript
-			event.preventDefault();
+function handleSubmit(event) {
+    // 阻止表单提交，以便用JavaScript处理
+    event.preventDefault();
 
-			// Validate form fields
-			if (validateForm()) {
-				confirmPayment(); // Show payment processing overlay if valid
-			}
-		}
+    // 验证表单字段
+    if (validateForm()) {
+        confirmPayment(); // 如果验证通过，则显示支付处理弹窗
+    }
+}
 
-		function confirmPayment() {
-			// 显示覆盖层和“处理中”状态
-			const overlay = document.getElementById('paymentOverlay');
-			const popupContent = document.getElementById('popupContent');
-			overlay.classList.add('show');
+function confirmPayment() {
+    // 再次运行验证，以确保所有字段已填写
+    if (!validateForm()) {
+        return; // 如果表单无效，则停止执行
+    }
+    
+    // 显示覆盖层和“处理中”状态
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
 
-			
-			setTimeout(() => {
-				
-				popupContent.innerHTML = `
-			<div class="success-icon">✓</div>
-			<h2 class="success-title">Payment Successfully</h2>
-			<button class="ok-btn" onclick="goToDashboard()">OK</button>
-		`;
-			}, 2000); 
-		}
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successfully</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
 
-		function goToDashboard() {
-		
-			window.location.href = 'dashboard.php';
-		}
 
 
 
