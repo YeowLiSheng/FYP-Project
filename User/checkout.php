@@ -1177,6 +1177,11 @@ function confirmPayment() {
         `;
     }, 2000); 
 }
+function goToDashboard() {
+		
+		window.location.href = 'dashboard.php';
+	}
+
 
 
 
