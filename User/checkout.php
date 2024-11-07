@@ -1091,7 +1091,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		}
 
 		function validateForm() {
-   
+    // Get form fields
     const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
     const cardNum = document.querySelector('input[name="cardNum"]');
     const expiryDate = document.getElementById('expiry-date');
@@ -1101,7 +1101,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     const state = document.getElementById('state');
     const postcode = document.getElementById('postcode');
 
-    //check whether the information required is fill in 
+    // Check if all required fields are filled
     if (
         !fullName.value.trim() || 
         !cardNum.value.trim() || 
@@ -1112,30 +1112,59 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         !state.value.trim() ||
         !postcode.value.trim()
     ) {
-        alert('Please fill in all required fields correctly.');
-        return false; // prevent submit form
+        alert('Please fill in all required fields.');
+        return false; // Prevent form submission
     }
-    return true; // allow to submit form
+
+    // Check card number format (should be 16 digits with spaces)
+    const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
+    if (!cardNumberPattern.test(cardNum.value)) {
+        alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
+        return false;
+    }
+
+    // Check CVV length (should be 3 digits)
+    if (cvv.value.length !== 3) {
+        alert('Please enter a 3-digit CVV code.');
+        return false;
+    }
+
+    // Check expiration date format and validity (should be MM/YY format and not expired)
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(expiryDate.value)) {
+        alert('Please enter a valid expiration date (format: MM/YY).');
+        return false;
+    } else {
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const currentYear = new Date().getFullYear() % 100; // last two digits of current year
+        const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert('Please enter a valid, non-expired expiration date.');
+            return false;
+        }
+    }
+
+    return true; // Allow form submission if all fields pass validation
 }
 
 function handleSubmit(event) {
-    
+    // Prevent form submission for JavaScript validation
     event.preventDefault();
 
-
-    // Validate form fields before proceeding
+    // Validate form fields
     if (validateForm()) {
         confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
 function confirmPayment() {
-    // Run form validation again to ensure all fields are filled
+    // Run validation again to ensure all fields are filled
     if (!validateForm()) {
         return; // Stop if form is invalid
     }
-    
 
+    // Show overlay and processing status
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
@@ -1143,133 +1172,12 @@ function confirmPayment() {
     setTimeout(() => {
         popupContent.innerHTML = `
             <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successfully</h2>
+            <h2 class="success-title">Payment Successful</h2>
             <button class="ok-btn" onclick="goToDashboard()">OK</button>
         `;
     }, 2000); 
 }
-function goToDashboard() {
-		
-		window.location.href = 'dashboard.php';
-	}
 
-
-// Validate card number, CVV, and expiry date inputs
-function validateCardNumber() {
-        const cardNumInput = document.querySelector('input[name="cardNum"]');
-        const cardNumError = document.getElementById("cardnum-error");
-        const cardNum = cardNumInput.value.replace(/\s+/g, '').replace(/\D/g, ''); // Remove spaces and non-digit characters
-        
-        // Check if card number has 16 digits
-        if (cardNum.length !== 16) {
-            cardNumError.style.display = "block";
-            cardNumInput.setCustomValidity("Please enter exactly 16 digits.");
-        } else {
-            cardNumError.style.display = "none";
-            cardNumInput.setCustomValidity("");
-        }
-    }
-
-    function validateCVV() {
-        const cvvInput = document.getElementById("cvv");
-        const cvvError = document.getElementById("cvv-error");
-
-        // Check if CVV has 3 digits
-        if (cvvInput.value.length !== 3) {
-            cvvError.style.display = "inline";
-            cvvInput.setCustomValidity("Please enter exactly 3 digits.");
-        } else {
-            cvvError.style.display = "none";
-            cvvInput.setCustomValidity("");
-        }
-    }
-
-    function validateExpiryDate() {
-        const expiryDateInput = document.getElementById("expiry-date");
-        const expiryError = document.getElementById("expiry-error");
-
-        // Check if expiry date is in MM/YY format and valid
-        const expiryValue = expiryDateInput.value.replace(/\D/g, ""); // Remove any non-digit characters
-        if (expiryValue.length !== 4) {
-            expiryError.style.display = "block";
-            expiryDateInput.setCustomValidity("Please enter a valid MM/YY expiry date.");
-        } else {
-            const month = expiryValue.slice(0, 2);
-            const year = expiryValue.slice(2);
-
-            if (parseInt(month) > 12 || parseInt(month) < 1) {
-                expiryError.style.display = "block";
-                expiryDateInput.setCustomValidity("Please enter a valid month (01-12).");
-            } else {
-                expiryError.style.display = "none";
-                expiryDateInput.setCustomValidity("");
-            }
-        }
-    }
-
-    function validateForm() {
-        const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
-        const cardNum = document.querySelector('input[name="cardNum"]');
-        const expiryDate = document.getElementById('expiry-date');
-        const cvv = document.getElementById('cvv');
-        const address = document.getElementById('address');
-        const city = document.getElementById('city');
-        const state = document.getElementById('state');
-        const postcode = document.getElementById('postcode');
-
-        // Check whether the required information is filled in correctly
-        if (
-            !fullName.value.trim() ||
-            !cardNum.value.trim() ||
-            !expiryDate.value.trim() ||
-            !cvv.value.trim() ||
-            !address.value.trim() ||
-            !city.value.trim() ||
-            !state.value.trim() ||
-            !postcode.value.trim()
-        ) {
-            alert('Please fill in all required fields correctly.');
-            return false; // Prevent form submission
-        }
-        return true; // Allow form submission
-    }
-
-    function handleSubmit(event) {
-        event.preventDefault(); // Prevent form submission to handle validation
-
-        // Validate the form fields
-        if (validateForm()) {
-            confirmPayment(); // Show payment processing popup if valid
-        }
-    }
-
-    function confirmPayment() {
-        // Run form validation again to ensure all fields are filled
-        if (!validateForm()) {
-            return; // Stop if form is invalid
-        }
-
-        const overlay = document.getElementById('paymentOverlay');
-        const popupContent = document.getElementById('popupContent');
-        overlay.classList.add('show');
-
-        setTimeout(() => {
-            popupContent.innerHTML = `
-                <div class="success-icon">✓</div>
-                <h2 class="success-title">Payment Successfully</h2>
-                <button class="ok-btn" onclick="goToDashboard()">OK</button>
-            `;
-        }, 2000);
-    }
-
-    function goToDashboard() {
-        window.location.href = 'dashboard.php';
-    }
-
-    // Event listeners for validation
-    document.querySelector('input[name="cardNum"]').addEventListener('input', validateCardNumber);
-    document.getElementById('cvv').addEventListener('input', validateCVV);
-    document.getElementById('expiry-date').addEventListener('input', validateExpiryDate);
 
 
 
