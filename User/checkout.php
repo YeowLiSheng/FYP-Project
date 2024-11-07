@@ -74,7 +74,31 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+// 添加在提交表单时验证卡信息的 PHP 逻辑
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 获取用户输入的卡信息
+    $input_card_holder_name = $_POST['card_holder_name'];
+    $input_card_number = $_POST['card_number'];
+    $input_valid_thru = $_POST['valid_thru'];
+    $input_cvv = $_POST['cvv'];
 
+    // 查询数据库以匹配输入的卡信息
+    $card_query = "SELECT * FROM bank_card 
+                   WHERE card_holder_name = '$input_card_holder_name' 
+                   AND card_number = '$input_card_number' 
+                   AND valid_thru = '$input_valid_thru' 
+                   AND cvv = '$input_cvv'";
+
+    $card_result = mysqli_query($conn, $card_query);
+
+    if ($card_result && mysqli_num_rows($card_result) > 0) {
+        // 匹配成功，允许进行支付
+        echo "<script>confirmPayment();</script>";
+    } else {
+        // 匹配失败，显示错误提示并阻止支付
+        echo "<script>alert('Invalid card details. Please check your information and try again.');</script>";
+    }
+}
 
 ?>
 
@@ -423,7 +447,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+			<form action="checkout.php" method="POST" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -473,11 +497,11 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -490,13 +514,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
