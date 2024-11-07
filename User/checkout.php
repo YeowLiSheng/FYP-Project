@@ -74,37 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-$cardHolderName = trim($_POST['card_holder_name']);
-$cardNumber = preg_replace('/\s+/', '', $_POST['card_number']); 
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get posted form data
-    $input_card_holder = trim($_POST['card_holder_name']);
-    $input_card_number = trim($_POST['cardNum']);
-    $input_valid_thru = trim($_POST['expiry_date']);
-    $input_cvv = intval(trim($_POST['cvv']));
-
-    // Check if input matches with database record
-    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("sssi", $input_card_holder, $input_card_number, $input_valid_thru, $input_cvv);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // Proceed with payment if match is found
-        echo "<script>confirmPayment();</script>";
-    } else {
-        // Show error if no match is found
-        echo "<script>alert('Card details do not match. Please check your input and try again.');</script>";
-    }
-
-	if ($result->num_rows == 0) {
-		echo "<script>alert('Card details do not match.');</script>";
-		exit;
-	}
-
-    $stmt->close();
-}
 
 
 ?>
@@ -454,7 +423,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" method="post" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -504,11 +473,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -521,13 +490,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -1184,12 +1153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function handleSubmit(event) {
-    event.preventDefault(); // Prevent form submission to validate with JavaScript
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
-    // Check if fields pass initial validation
+    // Validate form fields
     if (validateForm()) {
-        // Submit the form if validation passes; the PHP will handle further checks
-        document.querySelector('form').submit();
+        confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
