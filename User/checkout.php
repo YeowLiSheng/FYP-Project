@@ -1057,20 +1057,21 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		}
 
 		document.getElementById("expiry-date").addEventListener("input", function (e) {
-			const input = e.target;
-			let value = input.value.replace(/\D/g, "");
+    const input = e.target;
+    let value = input.value.replace(/\D/g, ""); // Remove non-digit characters
 
-			if (value.length >= 2) {
-				value = value.slice(0, 2) + '/' + value.slice(2);
-			}
+    // Insert '/' after the month if exactly two digits are entered
+    if (value.length > 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
 
-			if (value.length > 5) {
-				value = value.slice(0, 5);
-			}
+    // Limit to 5 characters (MM/YY)
+    if (value.length > 5) {
+        value = value.slice(0, 5);
+    }
 
-			input.value = value;
-		});
-
+    input.value = value;
+});
 		function validateCVV() {
 			const cvvInput = document.getElementById("cvv");
 			const cvvError = document.getElementById("cvv-error");
