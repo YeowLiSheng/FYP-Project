@@ -76,65 +76,54 @@ $product_result = $conn->query($product_query);
 
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
-$price_range = isset($_GET['price']) ? $_GET['price'] : 'all';
-$color = isset($_GET['color']) ? $_GET['color'] : '';
-$tag = isset($_GET['tag']) ? $_GET['tag'] : '';
-$sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'default';
+$price_filter = isset($_GET['price']) ? explode(',', $_GET['price']) : [];
+$color_filter = isset($_GET['color']) ? explode(',', $_GET['color']) : [];
+$tag_filter = isset($_GET['tag']) ? explode(',', $_GET['tag']) : [];
 
-// Base query to select products
+// Base query
 $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%'";
 
-// Apply price range filter
-if ($price_range != 'all') {
-    switch ($price_range) {
-        case '0-2000':
-            $product_query .= " AND product_price BETWEEN 0 AND 2000";
-            break;
-        case '2000-3000':
-            $product_query .= " AND product_price BETWEEN 2000 AND 3000";
-            break;
-        case '3000-4000':
-            $product_query .= " AND product_price BETWEEN 3000 AND 4000";
-            break;
-        case '4000-5000':
-            $product_query .= " AND product_price BETWEEN 4000 AND 5000";
-            break;
-        case '5000+':
-            $product_query .= " AND product_price > 5000";
-            break;
+// Apply multiple price ranges
+if (!empty($price_filter)) {
+    $price_conditions = [];
+    foreach ($price_filter as $range) {
+        switch ($range) {
+            case '0-2000':
+                $price_conditions[] = "product_price BETWEEN 0 AND 2000";
+                break;
+            case '2000-3000':
+                $price_conditions[] = "product_price BETWEEN 2000 AND 3000";
+                break;
+            case '3000-4000':
+                $price_conditions[] = "product_price BETWEEN 3000 AND 4000";
+                break;
+            case '4000-5000':
+                $price_conditions[] = "product_price BETWEEN 4000 AND 5000";
+                break;
+            case '5000+':
+                $price_conditions[] = "product_price > 5000";
+                break;
+        }
+    }
+    if ($price_conditions) {
+        $product_query .= " AND (" . implode(" OR ", $price_conditions) . ")";
     }
 }
 
-// Apply color filter, checking both color1 and color2 columns
-if ($color != '') {
-    $product_query .= " AND (color1 = '$color' OR color2 = '$color')";
+// Apply multiple colors
+if (!empty($color_filter)) {
+    $color_conditions = array_map(function ($color) {
+        return "(color1 = '$color' OR color2 = '$color')";
+    }, $color_filter);
+    $product_query .= " AND (" . implode(" OR ", $color_conditions) . ")";
 }
 
-// Apply tag filter
-if ($tag != '') {
-    $product_query .= " AND tags LIKE '%$tag%'";
-}
-
-// Apply sorting filter
-switch ($sort_by) {
-    case 'popularity':
-        $product_query .= " ORDER BY popularity DESC";
-        break;
-    case 'average_rating':
-        $product_query .= " ORDER BY average_rating DESC";
-        break;
-    case 'newness':
-        $product_query .= " ORDER BY product_id DESC";
-        break;
-    case 'price_low_high':
-        $product_query .= " ORDER BY product_price ASC";
-        break;
-    case 'price_high_low':
-        $product_query .= " ORDER BY product_price DESC";
-        break;
-    default:
-        $product_query .= " ORDER BY product_id DESC";
-        break;
+// Apply multiple tags
+if (!empty($tag_filter)) {
+    $tag_conditions = array_map(function ($tag) {
+        return "tags LIKE '%$tag%'";
+    }, $tag_filter);
+    $product_query .= " AND (" . implode(" OR ", $tag_conditions) . ")";
 }
 
 $product_result = $conn->query($product_query);
@@ -205,6 +194,14 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+
+<style>
+.selected {
+    color: blue !important;
+    font-weight: bold;
+}
+</style>
+
 </head>
 <body class="animsition">
 	
@@ -1184,7 +1181,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 <script>
-	let filters = { price: 'all', color: '', tag: '' }; // Initialize filters
+let filters = { price: [], color: [], tag: [] }; // Initialize filters with arrays
 
 // Function to update product display
 function updateProducts() {
@@ -1192,9 +1189,9 @@ function updateProducts() {
         url: '', // The current PHP file
         type: 'GET',
         data: {
-            price: filters.price,
-            color: filters.color,
-            tag: filters.tag
+            price: filters.price.join(','), // Send as comma-separated values
+            color: filters.color.join(','),
+            tag: filters.tag.join(',')
         },
         success: function(response) {
             $('.isotope-grid').html(response); // Replace product display with filtered products
@@ -1205,18 +1202,27 @@ function updateProducts() {
     });
 }
 
-// Handle filter clicks
+// Handle filter clicks with multi-select logic
 $(document).on('click', '.filter-link', function(event) {
     event.preventDefault();
     let filterType = $(this).data('filter');
     let filterValue = $(this).data('value');
 
-    // Update filter based on the clicked item
-    filters[filterType] = filterValue;
+    // Toggle selection for the filter value
+    if (filters[filterType].includes(filterValue)) {
+        // Remove the filter if it's already selected
+        filters[filterType] = filters[filterType].filter(value => value !== filterValue);
+        $(this).removeClass('selected'); // Remove blue highlight
+    } else {
+        // Add the filter if it's not already selected
+        filters[filterType].push(filterValue);
+        $(this).addClass('selected'); // Add blue highlight
+    }
 
     // Fetch and update the product list based on the selected filters
     updateProducts();
 });
+
 </script>
 <script src="js/main.js"></script>
 
