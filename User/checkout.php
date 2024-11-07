@@ -1091,7 +1091,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		}
 
 		function validateForm() {
-    // 获取表单字段
+   
     const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
     const cardNum = document.querySelector('input[name="cardNum"]');
     const expiryDate = document.getElementById('expiry-date');
@@ -1101,7 +1101,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     const state = document.getElementById('state');
     const postcode = document.getElementById('postcode');
 
-    // 检查每个字段是否已填充并有效
+    //check whether the information required is fill in 
     if (
         !fullName.value.trim() || 
         !cardNum.value.trim() || 
@@ -1112,29 +1112,30 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
         !state.value.trim() ||
         !postcode.value.trim()
     ) {
-        alert('请填写所有必填字段。');
-        return false; // 防止表单提交
+        alert('Please fill in all required fields correctly.');
+        return false; // prevent submit form
     }
-    return true; // 允许表单提交
+    return true; // allow to submit form
 }
 
 function handleSubmit(event) {
-    // 阻止表单提交，以便用JavaScript处理
+    
     event.preventDefault();
 
-    // 验证表单字段
+
+    // Validate form fields before proceeding
     if (validateForm()) {
-        confirmPayment(); // 如果验证通过，则显示支付处理弹窗
+        confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
 function confirmPayment() {
-    // 再次运行验证，以确保所有字段已填写
+    // Run form validation again to ensure all fields are filled
     if (!validateForm()) {
-        return; // 如果表单无效，则停止执行
+        return; // Stop if form is invalid
     }
     
-    // 显示覆盖层和“处理中”状态
+
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
