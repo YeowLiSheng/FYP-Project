@@ -74,33 +74,29 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Check payment information
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$entered_name = $_POST['cardHolderName'];
-	$entered_card_number = $_POST['cardNum'];
-	$entered_expiry_date = $_POST['expiryDate'];
+// Check if the form has been submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	// Retrieve user-input card details
+	$entered_name = $_POST['card_holder_name'];
+	$entered_card_num = $_POST['cardNum'];
+	$entered_valid_thru = $_POST['expiry_date'];
 	$entered_cvv = $_POST['cvv'];
 
-	// Validate against bank_card table
-	$card_query = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-	$card_query->bind_param("sssi", $entered_name, $entered_card_number, $entered_expiry_date, $entered_cvv);
-	$card_query->execute();
-	$card_result = $card_query->get_result();
+	// Query to validate the entered card details
+	$card_query = "SELECT * FROM bank_card 
+				   WHERE card_holder_name = '$entered_name' 
+				   AND card_number = '$entered_card_num' 
+				   AND valid_thru = '$entered_valid_thru' 
+				   AND cvv = '$entered_cvv'";
+	$card_result = mysqli_query($conn, $card_query);
 
-	if ($card_result->num_rows > 0) {
-		// Proceed with payment if a match is found
-		echo "<script>
-				document.getElementById('paymentOverlay').classList.add('show');
-				setTimeout(() => {
-					document.getElementById('popupContent').innerHTML = '<div class=\"success-icon\">✓</div><h2 class=\"success-title\">Payment Successful</h2><button class=\"ok-btn\" onclick=\"goToDashboard()\">OK</button>';
-				}, 2000);
-			  </script>";
+	if (mysqli_num_rows($card_result) > 0) {
+		// Card details are valid, proceed with payment
+		echo "<script>showPaymentProcessing();</script>";
 	} else {
-		// Display error if no match found
-		echo "<script>alert('Invalid card details. Please check your card information and try again.');</script>";
+		// Invalid card details
+		echo "<script>alert('Invalid card details');</script>";
 	}
-
-	$card_query->close();
 }
 
 ?>
@@ -450,7 +446,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+			<form action="" method="POST" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -500,7 +496,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -517,13 +513,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" name="expiry_date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" name="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -1183,10 +1179,7 @@ function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
 
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
-    }
+   
 }
 
 function confirmPayment() {
