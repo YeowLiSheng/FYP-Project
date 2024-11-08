@@ -74,30 +74,33 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// 添加在提交表单时验证卡信息的 PHP 逻辑
+// Check payment information
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 获取用户输入的卡信息
-    $input_card_holder_name = $_POST['card_holder_name'];
-    $input_card_number = $_POST['card_number'];
-    $input_valid_thru = $_POST['valid_thru'];
-    $input_cvv = $_POST['cvv'];
+	$entered_name = $_POST['cardHolderName'];
+	$entered_card_number = $_POST['cardNum'];
+	$entered_expiry_date = $_POST['expiryDate'];
+	$entered_cvv = $_POST['cvv'];
 
-    // 查询数据库以匹配输入的卡信息
-    $card_query = "SELECT * FROM bank_card 
-                   WHERE card_holder_name = '$input_card_holder_name' 
-                   AND card_number = '$input_card_number' 
-                   AND valid_thru = '$input_valid_thru' 
-                   AND cvv = '$input_cvv'";
+	// Validate against bank_card table
+	$card_query = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
+	$card_query->bind_param("sssi", $entered_name, $entered_card_number, $entered_expiry_date, $entered_cvv);
+	$card_query->execute();
+	$card_result = $card_query->get_result();
 
-    $card_result = mysqli_query($conn, $card_query);
+	if ($card_result->num_rows > 0) {
+		// Proceed with payment if a match is found
+		echo "<script>
+				document.getElementById('paymentOverlay').classList.add('show');
+				setTimeout(() => {
+					document.getElementById('popupContent').innerHTML = '<div class=\"success-icon\">✓</div><h2 class=\"success-title\">Payment Successful</h2><button class=\"ok-btn\" onclick=\"goToDashboard()\">OK</button>';
+				}, 2000);
+			  </script>";
+	} else {
+		// Display error if no match found
+		echo "<script>alert('Invalid card details. Please check your card information and try again.');</script>";
+	}
 
-    if ($card_result && mysqli_num_rows($card_result) > 0) {
-        // 匹配成功，允许进行支付
-        echo "<script>confirmPayment();</script>";
-    } else {
-        // 匹配失败，显示错误提示并阻止支付
-        echo "<script>alert('Invalid card details. Please check your information and try again.');</script>";
-    }
+	$card_query->close();
 }
 
 ?>
@@ -447,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="checkout.php" method="POST" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -497,11 +500,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -514,13 +517,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
