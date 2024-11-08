@@ -74,7 +74,27 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+// Card validation logic in PHP
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $card_holder_name = $_POST['card_holder_name'];
+    $card_number = $_POST['card_number'];
+    $valid_thru = $_POST['valid_thru'];
+    $cvv = $_POST['cvv'];
 
+    // Query to check card details
+    $check_card_query = "SELECT * FROM bank_card 
+                         WHERE card_holder_name = '$card_holder_name' 
+                         AND card_number = '$card_number' 
+                         AND valid_thru = '$valid_thru' 
+                         AND cvv = '$cvv'";
+    $result = mysqli_query($conn, $check_card_query);
+
+    if (mysqli_num_rows($result) > 0) {
+        echo "<script>document.getElementById('paymentOverlay').classList.add('show');</script>";
+    } else {
+        echo "<script>alert('Invalid card details');</script>";
+    }
+}
 
 ?>
 
@@ -553,7 +573,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" >Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
