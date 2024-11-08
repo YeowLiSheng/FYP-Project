@@ -1180,8 +1180,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
+	event.preventDefault(); // 阻止表单的默认提交
+
+// 进行卡片信息验证
+const cardHolderName = document.querySelector('input[name="card_holder_name"]').value;
+const cardNumber = document.querySelector('input[name="card_number"]').value;
+const validThru = document.querySelector('input[name="valid_thru"]').value;
+const cvv = document.querySelector('input[name="cvv"]').value;
+
+if (cardHolderName && cardNumber && validThru && cvv) {
+	event.target.submit(); // 如果验证通过，提交表单
+	return true;
+} else {
+	alert('请填写所有的卡片信息');
+	return false;
+}
 
 }
 
