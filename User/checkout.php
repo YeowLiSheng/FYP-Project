@@ -74,31 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Check if the form has been submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	// Retrieve user-input card details
-	$entered_name = $_POST['card_holder_name'];
-	$entered_card_num = $_POST['cardNum'];
-	$entered_valid_thru = $_POST['expiry_date'];
-	$entered_cvv = $_POST['cvv'];
-
-	// Query to validate the entered card details
-	$card_query = "SELECT * FROM bank_card 
-				   WHERE card_holder_name = '$entered_name' 
-				   AND card_number = '$entered_card_num' 
-				   AND valid_thru = '$entered_valid_thru' 
-				   AND cvv = '$entered_cvv'";
-	$card_result = mysqli_query($conn, $card_query);
-
-	if (mysqli_num_rows($card_result) > 0) {
-		// Card details are valid, proceed with payment
-		echo "<script>showPaymentProcessing();</script>";
-	} else {
-		// Invalid card details
-		echo "<script>alert('Invalid card details');</script>";
-	}
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -446,7 +421,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" method="POST" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -496,7 +471,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -513,13 +488,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" name="expiry_date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" name="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -1179,7 +1154,10 @@ function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
 
-   
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
 }
 
 function confirmPayment() {
