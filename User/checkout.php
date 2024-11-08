@@ -74,37 +74,35 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // 接收用户输入的卡信息
-    $input_card_holder = $_POST['card_holder'];
-    $input_card_number = $_POST['card_number'];
+// Assuming the card details are posted to the server
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the input values from the form
+    $input_name = $_POST['card_holder_name'];
+    $input_number = $_POST['card_number'];
     $input_valid_thru = $_POST['valid_thru'];
     $input_cvv = $_POST['cvv'];
 
-    // 查询数据库以匹配输入的信息
+    // Query to check if the input details match any record in bank_card table
     $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("sssi", $input_card_holder, $input_card_number, $input_valid_thru, $input_cvv);
+    $stmt->bind_param("sssi", $input_name, $input_number, $input_valid_thru, $input_cvv);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // 检查查询结果
+    // Check if the card details match
     if ($result->num_rows > 0) {
-        // 如果匹配，则显示处理支付的消息
+        // Card details are valid, process the payment
         echo "<script>
-            document.getElementById('paymentOverlay').classList.add('show');
-            setTimeout(() => {
-                document.getElementById('popupContent').innerHTML = `
-                    <div class='success-icon'>✓</div>
-                    <h2 class='success-title'>Payment Successful</h2>
-                    <button class='ok-btn' onclick='goToDashboard()'>OK</button>
-                `;
-            }, 2000);
-        </script>";
+                confirmPayment();
+              </script>";
     } else {
-        // 如果不匹配，显示警告
-        echo "<script>alert('Invalid card details. Please check your input.');</script>";
+        // Card details are invalid, show an alert
+        echo "<script>
+                alert('Invalid card details. Please check your input and try again.');
+              </script>";
     }
+
     $stmt->close();
+    
 }
 
 ?>
