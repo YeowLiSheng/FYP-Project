@@ -74,25 +74,29 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Card validation logic in PHP
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $card_holder_name = $_POST['card_holder_name'];
-    $card_number = $_POST['card_number'];
-    $valid_thru = $_POST['valid_thru'];
-    $cvv = $_POST['cvv'];
+    // 检查并获取输入字段的值
+    $card_holder_name = isset($_POST['card_holder_name']) ? $_POST['card_holder_name'] : '';
+    $card_number = isset($_POST['card_number']) ? $_POST['card_number'] : '';
+    $valid_thru = isset($_POST['valid_thru']) ? $_POST['valid_thru'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
-    // Query to check card details
-    $check_card_query = "SELECT * FROM bank_card 
-                         WHERE card_holder_name = '$card_holder_name' 
-                         AND card_number = '$card_number' 
-                         AND valid_thru = '$valid_thru' 
-                         AND cvv = '$cvv'";
-    $result = mysqli_query($conn, $check_card_query);
+    // 验证输入是否为空
+    if ($card_holder_name && $card_number && $valid_thru && $cvv) {
+        // 假设有数据库连接和查询验证逻辑
+        // 在这里添加从数据库中验证卡信息的代码
+        // 示例：检查是否存在匹配的卡片信息
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = '$card_holder_name' AND card_number = '$card_number' AND valid_thru = '$valid_thru' AND cvv = '$cvv'";
+        $result = mysqli_query($conn, $query);
 
-    if (mysqli_num_rows($result) > 0) {
-        echo "<script>document.getElementById('paymentOverlay').classList.add('show');</script>";
+        if (mysqli_num_rows($result) > 0) {
+            echo "Card details are valid. Payment processing...";
+            // 在这里处理付款逻辑
+        } else {
+            echo "Invalid card details";
+        }
     } else {
-        echo "<script>alert('Invalid card details');</script>";
+        echo "Please fill in all card details";
     }
 }
 
@@ -573,7 +577,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" >Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
