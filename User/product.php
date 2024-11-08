@@ -81,10 +81,11 @@ $color_filter = isset($_GET['color']) ? explode(',', $_GET['color']) : [];
 $tag_filter = isset($_GET['tag']) ? explode(',', $_GET['tag']) : [];
 
 // Base query
+// Base query to fetch products
 $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%'";
 
-// Apply multiple price ranges
-if (!empty($price_filter)) {
+// Apply price filter if it's not 'all'
+if (!empty($price_filter) && $price_filter[0] !== 'all') {
     $price_conditions = [];
     foreach ($price_filter as $range) {
         switch ($range) {
@@ -110,16 +111,16 @@ if (!empty($price_filter)) {
     }
 }
 
-// Apply multiple colors
-if (!empty($color_filter)) {
+// Apply color filter if it's not 'all'
+if (!empty($color_filter) && $color_filter[0] !== 'all') {
     $color_conditions = array_map(function ($color) {
         return "(color1 = '$color' OR color2 = '$color')";
     }, $color_filter);
     $product_query .= " AND (" . implode(" OR ", $color_conditions) . ")";
 }
 
-// Apply multiple tags
-if (!empty($tag_filter)) {
+// Apply tag filter if it's not 'all'
+if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
     $tag_conditions = array_map(function ($tag) {
         return "tags LIKE '%$tag%'";
     }, $tag_filter);
@@ -127,6 +128,7 @@ if (!empty($tag_filter)) {
 }
 
 $product_result = $conn->query($product_query);
+
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag'])) {
     ob_start();
     while($product = $product_result->fetch_assoc()) {
@@ -1181,48 +1183,48 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 <script>
-let filters = { price: [], color: [], tag: [] }; // Initialize filters with arrays
+// Initialize filters with 'all' default values for price, color, and tag.
+let filters = { price: 'all', color: 'all', tag: 'all' }; // Set default filters to 'all'
 
-// Function to update product display
-function updateProducts() {
-    $.ajax({
-        url: '', // The current PHP file
-        type: 'GET',
-        data: {
-            price: filters.price.join(','), // Send as comma-separated values
-            color: filters.color.join(','),
-            tag: filters.tag.join(',')
-        },
-        success: function(response) {
-            $('.isotope-grid').html(response); // Replace product display with filtered products
-        },
-        error: function() {
-            alert('Failed to fetch filtered products.');
-        }
-    });
-}
+		// Function to update product display based on filters
+		function updateProducts() {
+			$.ajax({
+				url: '', // The current PHP file
+				type: 'GET',
+				data: {
+					price: filters.price,
+					color: filters.color,
+					tag: filters.tag
+				},
+				success: function(response) {
+					$('.isotope-grid').html(response); // Replace product display with filtered products
+				},
+				error: function() {
+					alert('Failed to fetch filtered products.');
+				}
+			});
+		}
 
-// Handle filter clicks with multi-select logic
-$(document).on('click', '.filter-link', function(event) {
-    event.preventDefault();
-    let filterType = $(this).data('filter');
-    let filterValue = $(this).data('value');
+		// Handle filter clicks and toggling selection
+		$(document).on('click', '.filter-link', function(event) {
+			event.preventDefault();
 
-    // Toggle selection for the filter value
-    if (filters[filterType].includes(filterValue)) {
-        // Remove the filter if it's already selected
-        filters[filterType] = filters[filterType].filter(value => value !== filterValue);
-        $(this).removeClass('selected'); // Remove blue highlight
-    } else {
-        // Add the filter if it's not already selected
-        filters[filterType].push(filterValue);
-        $(this).addClass('selected'); // Add blue highlight
-    }
+			let filterType = $(this).data('filter');
+			let filterValue = $(this).data('value');
 
-    // Fetch and update the product list based on the selected filters
-    updateProducts();
-});
+			// Toggle selection
+			if (filters[filterType] === filterValue) {
+				filters[filterType] = 'all'; // Reset to 'all' if already selected
+				$(this).removeClass('selected'); // Remove blue highlight
+			} else {
+				filters[filterType] = filterValue; // Set new filter value
+				$(`.filter-link[data-filter=${filterType}]`).removeClass('selected'); // Remove highlight from other options
+				$(this).addClass('selected'); // Highlight the selected option
+			}
 
+			// Fetch and update the product list based on the selected filters
+			updateProducts();
+		});
 </script>
 <script src="js/main.js"></script>
 
