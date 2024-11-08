@@ -74,34 +74,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// 验证支付信息仅在表单提交时
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input_card_name = $_POST['card_holder_name'];
-    $input_card_number = $_POST['card_number'];
-    $input_valid_thru = $_POST['valid_thru'];
-    $input_cvv = $_POST['cvv'];
 
-    // 查询 bank_card 表以检查卡信息
-    $card_query = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $card_query->bind_param("sssi", $input_card_name, $input_card_number, $input_valid_thru, $input_cvv);
-    $card_query->execute();
-    $card_result = $card_query->get_result();
-
-    if ($card_result->num_rows > 0) {
-        echo "<script>
-                document.getElementById('paymentOverlay').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('popupContent').innerHTML = `
-                        <div class='success-icon'>✓</div>
-                        <h2 class='success-title'>Payment Successful</h2>
-                        <button class='ok-btn' onclick='goToDashboard()'>OK</button>
-                    `;
-                }, 2000);
-              </script>";
-    } else {
-        echo "<script>alert('Invalid card details');</script>";
-    }
-}
 
 ?>
 
@@ -450,7 +423,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" method="POST" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -580,7 +553,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" >Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1180,24 +1153,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 function handleSubmit(event) {
-	event.preventDefault(); // 阻止表单的默认提交
-
-// 进行卡片信息验证
-const cardHolderName = document.querySelector('input[name="card_holder_name"]').value;
-const cardNumber = document.querySelector('input[name="card_number"]').value;
-const validThru = document.querySelector('input[name="valid_thru"]').value;
-const cvv = document.querySelector('input[name="cvv"]').value;
-
-if (cardHolderName && cardNumber && validThru && cvv) {
-	event.target.submit(); // 如果验证通过，提交表单
-	return true;
-} else {
-	alert('请填写所有的卡片信息');
-	return false;
-}
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
 }
 
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
+
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
