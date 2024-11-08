@@ -1225,6 +1225,7 @@ $(document).on('click', '.filter-link', function(event) {
     // Fetch and update the product list based on the selected filters
     updateProducts();
 });
+
 </script>
 <script src="js/main.js"></script>
 
