@@ -95,9 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo "Invalid card details";
         }
-    } else {
-        echo "Please fill in all card details";
-    }
+    } 
 }
 
 ?>
