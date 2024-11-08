@@ -74,7 +74,33 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+// Validate payment details on form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input_card_name = $_POST['card_holder_name'];
+    $input_card_number = $_POST['card_number'];
+    $input_valid_thru = $_POST['expiry_date'];
+    $input_cvv = $_POST['cvv'];
 
+    // Query to check card details in the bank_card table
+    $card_query = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
+    $card_query->bind_param("sssi", $input_card_name, $input_card_number, $input_valid_thru, $input_cvv);
+    $card_query->execute();
+    $card_result = $card_query->get_result();
+
+    if ($card_result->num_rows > 0) {
+        echo "<script>
+                document.getElementById('paymentOverlay').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('popupContent').innerHTML = `
+                        <div class='success-icon'>✓</div>
+                        <h2 class='success-title'>Payment Successful</h2>
+                        <button class='ok-btn' onclick='goToDashboard()'>OK</button>`;
+                }, 2000);
+              </script>";
+    } else {
+        echo "<script>alert('Invalid card details');</script>";
+    }
+}
 
 ?>
 
@@ -553,7 +579,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" >Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1156,31 +1182,8 @@ function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
 
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
-    }
 }
 
-function confirmPayment() {
-    // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
-    }
-
-    // Show overlay and processing status
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
-
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
-}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
