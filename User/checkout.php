@@ -74,30 +74,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-$payment_successful = false;
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-	// 从表单中获取卡信息
-	$input_card_holder_name = $_POST['card_holder_name'];
-	$input_card_number = $_POST['card_number'];
-	$input_valid_thru = $_POST['valid_thru'];
-	$input_cvv = $_POST['cvv'];
-
-	// 在数据库中查找匹配的卡信息
-	$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-	$stmt = $conn->prepare($query);
-	$stmt->bind_param("sssi", $input_card_holder_name, $input_card_number, $input_valid_thru, $input_cvv);
-	$stmt->execute();
-	$result = $stmt->get_result();
-
-	if ($result->num_rows > 0) {
-		// 卡信息验证成功
-		$payment_successful = true;
-	} else {
-		// 卡信息不匹配
-		$error_message = "卡信息无效";
-	}
-}
 
 ?>
 
