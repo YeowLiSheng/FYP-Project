@@ -74,28 +74,37 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 检查并获取输入字段的值
-    $card_holder_name = isset($_POST['card_holder_name']) ? $_POST['card_holder_name'] : '';
-    $card_number = isset($_POST['card_number']) ? $_POST['card_number'] : '';
-    $valid_thru = isset($_POST['valid_thru']) ? $_POST['valid_thru'] : '';
-    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // 接收用户输入的卡信息
+    $input_card_holder = $_POST['card_holder'];
+    $input_card_number = $_POST['card_number'];
+    $input_valid_thru = $_POST['valid_thru'];
+    $input_cvv = $_POST['cvv'];
 
-    // 验证输入是否为空
-    if ($card_holder_name && $card_number && $valid_thru && $cvv) {
-        // 假设有数据库连接和查询验证逻辑
-        // 在这里添加从数据库中验证卡信息的代码
-        // 示例：检查是否存在匹配的卡片信息
-        $query = "SELECT * FROM bank_card WHERE card_holder_name = '$card_holder_name' AND card_number = '$card_number' AND valid_thru = '$valid_thru' AND cvv = '$cvv'";
-        $result = mysqli_query($conn, $query);
+    // 查询数据库以匹配输入的信息
+    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
+    $stmt->bind_param("sssi", $input_card_holder, $input_card_number, $input_valid_thru, $input_cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        if (mysqli_num_rows($result) > 0) {
-            echo "Card details are valid. Payment processing...";
-            // 在这里处理付款逻辑
-        } else {
-            echo "Invalid card details";
-        }
-    } 
+    // 检查查询结果
+    if ($result->num_rows > 0) {
+        // 如果匹配，则显示处理支付的消息
+        echo "<script>
+            document.getElementById('paymentOverlay').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('popupContent').innerHTML = `
+                    <div class='success-icon'>✓</div>
+                    <h2 class='success-title'>Payment Successful</h2>
+                    <button class='ok-btn' onclick='goToDashboard()'>OK</button>
+                `;
+            }, 2000);
+        </script>";
+    } else {
+        // 如果不匹配，显示警告
+        echo "<script>alert('Invalid card details. Please check your input.');</script>";
+    }
+    $stmt->close();
 }
 
 ?>
