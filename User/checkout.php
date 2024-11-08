@@ -74,7 +74,30 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+$payment_successful = false;
 
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+	// 从表单中获取卡信息
+	$input_card_holder_name = $_POST['card_holder_name'];
+	$input_card_number = $_POST['card_number'];
+	$input_valid_thru = $_POST['valid_thru'];
+	$input_cvv = $_POST['cvv'];
+
+	// 在数据库中查找匹配的卡信息
+	$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+	$stmt = $conn->prepare($query);
+	$stmt->bind_param("sssi", $input_card_holder_name, $input_card_number, $input_valid_thru, $input_cvv);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
+	if ($result->num_rows > 0) {
+		// 卡信息验证成功
+		$payment_successful = true;
+	} else {
+		// 卡信息不匹配
+		$error_message = "卡信息无效";
+	}
+}
 
 ?>
 
@@ -473,11 +496,11 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -490,13 +513,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" name="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
