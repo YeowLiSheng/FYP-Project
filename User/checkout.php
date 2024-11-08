@@ -74,14 +74,14 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Validate payment details on form submission
+// 验证支付信息仅在表单提交时
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input_card_name = $_POST['card_holder_name'];
     $input_card_number = $_POST['card_number'];
-    $input_valid_thru = $_POST['expiry_date'];
+    $input_valid_thru = $_POST['valid_thru'];
     $input_cvv = $_POST['cvv'];
 
-    // Query to check card details in the bank_card table
+    // 查询 bank_card 表以检查卡信息
     $card_query = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
     $card_query->bind_param("sssi", $input_card_name, $input_card_number, $input_valid_thru, $input_cvv);
     $card_query->execute();
@@ -94,7 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     document.getElementById('popupContent').innerHTML = `
                         <div class='success-icon'>✓</div>
                         <h2 class='success-title'>Payment Successful</h2>
-                        <button class='ok-btn' onclick='goToDashboard()'>OK</button>`;
+                        <button class='ok-btn' onclick='goToDashboard()'>OK</button>
+                    `;
                 }, 2000);
               </script>";
     } else {
