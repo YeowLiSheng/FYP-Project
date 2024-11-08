@@ -74,35 +74,25 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Assuming the card details are posted to the server
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get the input values from the form
-    $input_name = $_POST['card_holder_name'];
-    $input_number = $_POST['card_number'];
-    $input_valid_thru = $_POST['valid_thru'];
-    $input_cvv = $_POST['cvv'];
+    // Get form data
+    $card_holder_name = $_POST['card_holder_name'] ?? '';
+    $card_number = $_POST['card_number'] ?? '';
+    $valid_thru = $_POST['valid_thru'] ?? '';
+    $cvv = $_POST['cvv'] ?? '';
 
-    // Query to check if the input details match any record in bank_card table
+    // Validate against the bank_card table
     $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("sssi", $input_name, $input_number, $input_valid_thru, $input_cvv);
+    $stmt->bind_param("sssi", $card_holder_name, $card_number, $valid_thru, $cvv);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Check if the card details match
-    if ($result->num_rows > 0) {
-        // Card details are valid, process the payment
-        echo "<script>
-                confirmPayment();
-              </script>";
+    if ($result->num_rows === 0) {
+        echo "<script>alert('Invalid card details');</script>";
     } else {
-        // Card details are invalid, show an alert
-        echo "<script>
-                alert('Invalid card details. Please check your input and try again.');
-              </script>";
+        echo "<script>document.getElementById('paymentOverlay').classList.add('show');</script>";
     }
-
     $stmt->close();
-    
 }
 
 ?>
@@ -1185,6 +1175,12 @@ function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
 
+    // Perform basic client-side validation (if needed)
+    if (validateForm()) {
+        event.target.submit(); // Submit the form if validation passes
+    } else {
+        alert('Please ensure all card details are correct.');
+    }
 }
 
 function confirmPayment() {
