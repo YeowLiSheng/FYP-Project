@@ -73,9 +73,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 } else {
 	echo "<p>Your cart is empty.</p>";
 }
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -473,11 +470,11 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -490,13 +487,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" name="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -1156,6 +1153,10 @@ function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
 
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
 }
 
 function confirmPayment() {
