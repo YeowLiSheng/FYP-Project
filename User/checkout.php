@@ -74,7 +74,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-
+s
 
 ?>
 
@@ -1155,7 +1155,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
-
 
 }
 
