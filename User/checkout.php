@@ -74,26 +74,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
-    $card_holder_name = $_POST['card_holder_name'] ?? '';
-    $card_number = $_POST['card_number'] ?? '';
-    $valid_thru = $_POST['valid_thru'] ?? '';
-    $cvv = $_POST['cvv'] ?? '';
 
-    // Validate against the bank_card table
-    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("sssi", $card_holder_name, $card_number, $valid_thru, $cvv);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 0) {
-        echo "<script>alert('Invalid card details');</script>";
-    } else {
-        echo "<script>document.getElementById('paymentOverlay').classList.add('show');</script>";
-    }
-    $stmt->close();
-}
 
 ?>
 
@@ -1175,12 +1156,6 @@ function handleSubmit(event) {
     // Prevent form submission for JavaScript validation
     event.preventDefault();
 
-    // Perform basic client-side validation (if needed)
-    if (validateForm()) {
-        event.target.submit(); // Submit the form if validation passes
-    } else {
-        alert('Please ensure all card details are correct.');
-    }
 }
 
 function confirmPayment() {
