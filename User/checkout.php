@@ -76,31 +76,26 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Check if form data is available in $_POST
-    if (isset($_POST['cardHolderName']) && isset($_POST['cardNumber']) && isset($_POST['validThru']) && isset($_POST['cvv'])) {
-        // Retrieve the user input from the form
-        $cardHolderName = $_POST['cardHolderName'];
-        $cardNumber = $_POST['cardNumber'];
-        $validThru = $_POST['validThru'];
-        $cvv = $_POST['cvv'];
+    // Retrieve the user input from the form
+    $cardHolderName = $_POST['cardHolderName'];
+    $cardNumber = $_POST['cardNumber'];
+    $validThru = $_POST['validThru'];
+    $cvv = $_POST['cvv'];
 
-        // Query the database to validate the card details
-        $card_query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-        $stmt = $conn->prepare($card_query);
-        $stmt->bind_param("ssss", $cardHolderName, $cardNumber, $validThru, $cvv);
-        $stmt->execute();
-        $result = $stmt->get_result();
+    // Query the database to validate the card details
+    $card_query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+    $stmt = $conn->prepare($card_query);
+    $stmt->bind_param("ssss", $cardHolderName, $cardNumber, $validThru, $cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        // Check if the card details are valid
-        if ($result->num_rows > 0) {
-            // Card details are valid, proceed with payment processing
-            echo '<script>confirmPayment();</script>';
-        } else {
-            // Invalid card details
-            echo '<script>alert("Invalid card details.");</script>';
-        }
+    // Check if the card details are valid
+    if ($result->num_rows > 0) {
+        // Card details are valid, proceed with payment processing
+        echo '<script>confirmPayment();</script>';
     } else {
-        echo '<script>alert("Please fill in all required fields.");</script>';
+        // Invalid card details
+        echo '<script>alert("Invalid card details.");</script>';
     }
 }
 
@@ -451,7 +446,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="POST" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
