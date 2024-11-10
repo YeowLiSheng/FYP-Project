@@ -421,7 +421,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+			<form method="POST" action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -551,7 +551,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" >Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -566,6 +566,45 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		</div>
 
 	</body>
+
+	<?php
+// Validate card details on form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $cardHolder = $_POST['cardHolder'];
+    $cardNum = str_replace(' ', '', $_POST['cardNum']); // Remove spaces from card number
+    $validThru = $_POST['validThru'];
+    $cvv = $_POST['cvv'];
+
+    // Check if card details match any record in the bank_card table
+    $card_query = "
+        SELECT * FROM bank_card 
+        WHERE card_holder = '$cardHolder' 
+        AND REPLACE(card_number, ' ', '') = '$cardNum' 
+        AND valid_thru = '$validThru' 
+        AND cvv = '$cvv'
+    ";
+    $card_result = mysqli_query($conn, $card_query);
+
+    if ($card_result && mysqli_num_rows($card_result) > 0) {
+        // Card details are valid; continue with payment processing
+        echo "<script>
+                document.getElementById('paymentOverlay').classList.add('show');
+                setTimeout(function() {
+                    document.getElementById('popupContent').innerHTML = `
+                        <div class='success-icon'>✓</div>
+                        <h2 class='success-title'>Payment Successful</h2>
+                        <button class='ok-btn' onclick='goToDashboard()'>OK</button>
+                    `;
+                }, 2000);
+            </script>";
+    } else {
+        // Invalid card details
+        echo "<script>alert('Invalid card details');</script>";
+    }
+}
+?>
+
+
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
@@ -1151,14 +1190,12 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
-
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+        event.preventDefault();
+        // Form validation before submitting
+        if (validateForm()) {
+            document.forms[0].submit();
+        }
     }
-}
 
 function confirmPayment() {
     // Run validation again to ensure all fields are filled
