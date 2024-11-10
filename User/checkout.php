@@ -1151,68 +1151,22 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 function handleSubmit(event) {
-   // 阻止表单默认提交
-   event.preventDefault();
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
-// 执行卡片验证
-if (validateCardDetails()) {
-	confirmPayment(); // 信息匹配时显示付款处理中
-}
-}
-
-function validateCardDetails() {
-const cardHolderName = document.querySelector('input[placeholder="Cheong Wei Kit"]').value.trim();
-const cardNumber = document.querySelector('input[name="cardNum"]').value.trim();
-const expiryDate = document.getElementById('expiry-date').value.trim();
-const cvv = document.getElementById('cvv').value.trim();
-
-// 发送表单数据到后台与数据库比对
-<?php
-// 数据库验证逻辑，获取数据库中的卡片信息
-$user_id = $_SESSION['id']; // 获取登录用户的ID
-$card_query = "SELECT * FROM bank_card WHERE card_holder_name = (SELECT user_name FROM user WHERE user_id = '$user_id') LIMIT 1";
-$card_result = mysqli_query($conn, $card_query);
-$card_data = mysqli_fetch_assoc($card_result);
-?>
-
-// 验证数据
-if (cardHolderName !== "<?php echo $card_data['card_holder_name']; ?>" || 
-	cardNumber.replace(/\s+/g, '') !== "<?php echo str_replace(' ', '', $card_data['card_number']); ?>" || 
-	expiryDate !== "<?php echo $card_data['valid_thru']; ?>" || 
-	cvv !== "<?php echo $card_data['cvv']; ?>") {
-	alert('Invalid card details');
-	return false; // 返回false，防止表单提交
-}
-
-return true; // 数据一致，允许提交
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
 }
 
 function confirmPayment() {
-    / 获取输入的卡片信息
-    const cardHolderName = document.querySelector('input[placeholder="Cheong Wei Kit"]').value.trim();
-    const cardNumber = document.querySelector('input[name="cardNum"]').value.trim();
-    const expiryDate = document.getElementById('expiry-date').value.trim();
-    const cvv = document.getElementById('cvv').value.trim();
-
-    // 获取数据库中的卡片信息
-    <?php
-    // 获取当前登录用户的卡片信息
-    $user_id = $_SESSION['id']; // 从session中获取user_id
-    $card_query = "SELECT * FROM bank_card WHERE card_holder_name = (SELECT user_name FROM user WHERE user_id = '$user_id') LIMIT 1";
-    $card_result = mysqli_query($conn, $card_query);
-    $card_data = mysqli_fetch_assoc($card_result);
-    ?>
-
-    // 如果用户输入的卡片信息和数据库中的信息不一致，显示alert
-    if (cardHolderName !== "<?php echo $card_data['card_holder_name']; ?>" || 
-        cardNumber.replace(/\s+/g, '') !== "<?php echo str_replace(' ', '', $card_data['card_number']); ?>" || 
-        expiryDate !== "<?php echo $card_data['valid_thru']; ?>" || 
-        cvv !== "<?php echo $card_data['cvv']; ?>") {
-        alert('Invalid card details');
-        return; // 停止付款处理
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
     }
 
-    // 如果信息一致，显示付款处理中
+    // Show overlay and processing status
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
