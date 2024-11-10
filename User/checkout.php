@@ -421,7 +421,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form method="POST" action="" onsubmit="return handleSubmit(event)">
+			<form method="POST" action="" onsubmit="return confirmPayment(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -570,11 +570,10 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cardHolder = $_POST['cardHolder'];
-    $cardNum = str_replace(' ', '', $_POST['cardNum']); // Remove spaces from card number
+    $cardNum = str_replace(' ', '', $_POST['cardNum']);
     $validThru = $_POST['validThru'];
     $cvv = $_POST['cvv'];
 
-    // 查询 bank_card 表中的卡片信息
     $card_query = "
         SELECT * FROM bank_card 
         WHERE card_holder = '$cardHolder' 
@@ -585,7 +584,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $card_result = mysqli_query($conn, $card_query);
 
     if ($card_result && mysqli_num_rows($card_result) > 0) {
-        // 验证成功，继续处理支付逻辑
         echo "<script>
                 document.getElementById('paymentOverlay').classList.add('show');
                 setTimeout(function() {
@@ -597,7 +595,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }, 2000);
             </script>";
     } else {
-        // 验证失败，显示提示信息
         echo "<script>alert('Invalid card details');</script>";
     }
 }
@@ -1196,25 +1193,18 @@ function handleSubmit(event) {
         }
     }
 
-function confirmPayment() {
-    // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
+	function confirmPayment(event) {
+    event.preventDefault();
+
+    if (validateForm()) {
+        document.getElementById('paymentOverlay').classList.add('show');
+        
+        setTimeout(() => {
+            document.forms[0].submit();
+        }, 2000);
     }
-
-    // Show overlay and processing status
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
-
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
 }
+
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
