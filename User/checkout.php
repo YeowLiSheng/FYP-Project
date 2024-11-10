@@ -74,8 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-
-
 ?>
 
 <!DOCTYPE html>
@@ -1162,7 +1160,6 @@ function handleSubmit(event) {
     }
 }
 
-
 function confirmPayment() {
     // Run validation again to ensure all fields are filled
     if (!validateForm()) {
@@ -1182,27 +1179,6 @@ function confirmPayment() {
         `;
     }, 2000); 
 }
-
-function checkCardDetails() {
-        const cardHolderName = document.getElementById('cardHolderName').value.trim();
-        const cardNumber = document.getElementById('cardNumber').value.replace(/\s+/g, '').trim(); // Remove spaces
-        const expiryDate = document.getElementById('expiry-date').value.trim();
-        const cvv = document.getElementById('cvv').value.trim();
-
-        // Using PHP to validate the card details against the database
-        <?php
-        $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-        $stmt->bind_param("ssss", $cardHolderName, $cardNumber, $expiryDate, $cvv);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows > 0) {
-            echo "<script>confirmPayment();</script>";
-        } else {
-            echo "<script>alert('Invalid card details');</script>";
-        }
-        ?>
-    }
-
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
