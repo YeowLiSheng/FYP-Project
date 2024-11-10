@@ -1109,30 +1109,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 <script>
-	// Toggle search panel
-    $('.js-show-search').on('click', function(){
-        if (!$(this).hasClass('active')) {
-            $(this).addClass('active');
-            $('.panel-search').slideDown(400);
-        } else {
-            $(this).removeClass('active');
-            $('.panel-search').slideUp(400);
-        }
-    });
-
-    // Toggle filter panel
-    $('.js-show-filter').on('click', function(){
-        if (!$(this).hasClass('active')) {
-            $(this).addClass('active');
-            $('.panel-filter').slideDown(400);
-        } else {
-            $(this).removeClass('active');
-            $('.panel-filter').slideUp(400);
-        }
-    });
-
-</script>
-<script>
     $(document).on('click', '.js-show-modal1', function(event) {
         event.preventDefault();
         var productId = $(this).data('id');
