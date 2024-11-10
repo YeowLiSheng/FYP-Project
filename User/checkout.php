@@ -74,33 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Retrieve the card details from form submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-	$card_holder_name = mysqli_real_escape_string($conn, $_POST['card_holder_name']);
-	$card_number = mysqli_real_escape_string($conn, $_POST['card_number']);
-	$valid_thru = mysqli_real_escape_string($conn, $_POST['valid_thru']);
-	$cvv = mysqli_real_escape_string($conn, $_POST['cvv']);
-
-	// Retrieve card details from the database
-	$card_query = "SELECT * FROM bank_card WHERE card_holder_name = '$card_holder_name' AND card_number = '$card_number' AND valid_thru = '$valid_thru' AND cvv = '$cvv' LIMIT 1";
-	$card_result = mysqli_query($conn, $card_query);
-
-	if ($card_result && mysqli_num_rows($card_result) > 0) {
-		// Card details are valid, proceed with payment processing
-		// (Display the payment processing overlay here)
-		echo "<script>
-			document.getElementById('paymentOverlay').style.display = 'block';
-			setTimeout(function() {
-				document.getElementById('paymentOverlay').style.display = 'none';
-				alert('Payment Successful');
-			}, 2000);
-		</script>";
-	} else {
-		// Invalid card details
-		echo "<script>alert('Invalid card details');</script>";
-	}
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -578,7 +551,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1187,7 +1160,25 @@ function handleSubmit(event) {
     }
 }
 
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
 
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
