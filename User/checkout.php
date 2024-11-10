@@ -74,10 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Fetch card info from database for validation
-$card_query = "SELECT * FROM bank_card WHERE card_holder_name = 'Cheong Wei Kit'"; // Use actual logic to get the correct card
-$card_result = mysqli_query($conn, $card_query);
-$card_info = mysqli_fetch_assoc($card_result);
 
 ?>
 
@@ -1155,33 +1151,15 @@ $card_info = mysqli_fetch_assoc($card_result);
     return true; // Allow form submission if all fields pass validation
 }
 
-// Validate Card Information on Submit
 function handleSubmit(event) {
-			event.preventDefault(); // Prevent form submission to validate first
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
-			// Get values
-			var cardHolderName = document.getElementById('card-holder-name').value;
-			var cardNumber = document.getElementById('card-number').value.replace(/\s/g, ''); // Remove spaces for validation
-			var expiryDate = document.getElementById('expiry-date').value;
-			var cvv = document.getElementById('cvv').value;
-
-			// Validate input with database values
-			var cardMatch = cardHolderName === '<?php echo addslashes($card_info['card_holder_name']); ?>' &&
-							cardNumber === '<?php echo addslashes($card_info['card_number']); ?>' &&
-							expiryDate === '<?php echo addslashes($card_info['valid_thru']); ?>' &&
-							cvv === '<?php echo addslashes($card_info['cvv']); ?>';
-
-			// If details do not match
-			if (!cardMatch) {
-				alert('Invalid card details');
-				return false;
-			}
-
-			// If details match, allow the form to submit and process payment
-			alert('Card details validated. Proceeding to payment...');
-			// Additional logic to process payment could go here (e.g., call backend processing)
-			return true; // Submit the form
-		}
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
+}
 
 function confirmPayment() {
     // Run validation again to ensure all fields are filled
