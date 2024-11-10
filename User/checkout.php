@@ -74,6 +74,45 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Get card details from form submission
+    $card_holder_name = $_POST['card_holder_name'];
+    $card_number = preg_replace('/\s+/', '', $_POST['card_number']); // Remove spaces
+    $valid_thru = $_POST['valid_thru'];
+    $cvv = $_POST['cvv'];
+
+    // Check if card details match with bank_card table
+    $stmt = $conn->prepare("
+        SELECT * FROM bank_card 
+        WHERE card_holder_name = ? 
+        AND card_number = ? 
+        AND valid_thru = ? 
+        AND cvv = ?
+    ");
+    $stmt->bind_param("ssss", $card_holder_name, $card_number, $valid_thru, $cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Payment processing logic
+        echo "<script>
+            document.getElementById('paymentOverlay').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('popupContent').innerHTML = `
+                    <div class='success-icon'>✓</div>
+                    <h2 class='success-title'>Payment Successful</h2>
+                    <button class='ok-btn' onclick='goToDashboard()'>OK</button>
+                `;
+            }, 2000);
+        </script>";
+    } else {
+        // Card details did not match
+        echo "<script>alert('Invalid card details');</script>";
+    }
+    $stmt->close();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -471,11 +510,11 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -488,13 +527,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -551,7 +590,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
