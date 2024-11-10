@@ -74,45 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get card details from form submission
-    $card_holder_name = $_POST['card_holder_name'];
-    $card_number = preg_replace('/\s+/', '', $_POST['card_number']); // Remove spaces
-    $valid_thru = $_POST['valid_thru'];
-    $cvv = $_POST['cvv'];
-
-    // Check if card details match with bank_card table
-    $stmt = $conn->prepare("
-        SELECT * FROM bank_card 
-        WHERE card_holder_name = ? 
-        AND card_number = ? 
-        AND valid_thru = ? 
-        AND cvv = ?
-    ");
-    $stmt->bind_param("ssss", $card_holder_name, $card_number, $valid_thru, $cvv);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // Payment processing logic
-        echo "<script>
-            document.getElementById('paymentOverlay').classList.add('show');
-            setTimeout(() => {
-                document.getElementById('popupContent').innerHTML = `
-                    <div class='success-icon'>✓</div>
-                    <h2 class='success-title'>Payment Successful</h2>
-                    <button class='ok-btn' onclick='goToDashboard()'>OK</button>
-                `;
-            }, 2000);
-        </script>";
-    } else {
-        // Card details did not match
-        echo "<script>alert('Invalid card details');</script>";
-    }
-    $stmt->close();
-}
-
 ?>
 
 <!DOCTYPE html>
