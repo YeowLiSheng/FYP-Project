@@ -10,6 +10,7 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
 	die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
 	header("Location: login.php"); // Redirect to login page if not logged in
@@ -57,9 +58,6 @@ $cart_query = "
 $cart_result = mysqli_query($conn, $cart_query);
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-
-
-
 	// Retrieve discount amount for the user from shopping_cart table
 	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
 	$discount_result = mysqli_query($conn, $discount_query);
@@ -74,7 +72,12 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-?>
+// Fetch card info from database for validation
+$card_query = "SELECT * FROM bank_card WHERE card_holder_name = 'Cheong Wei Kit'"; // Use actual logic to get the correct card
+$card_result = mysqli_query($conn, $card_query);
+$card_info = mysqli_fetch_assoc($card_result);
+?> 
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -421,7 +424,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+			<form action="POST" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -1150,15 +1153,33 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     return true; // Allow form submission if all fields pass validation
 }
 
+// Validate Card Information on Submit
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
+			event.preventDefault(); // Prevent form submission to validate first
 
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
-    }
-}
+			// Get values
+			var cardHolderName = document.getElementById('card-holder-name').value;
+			var cardNumber = document.getElementById('card-number').value.replace(/\s/g, ''); // Remove spaces for validation
+			var expiryDate = document.getElementById('expiry-date').value;
+			var cvv = document.getElementById('cvv').value;
+
+			// Validate input with database values
+			var cardMatch = cardHolderName === '<?php echo addslashes($card_info['card_holder_name']); ?>' &&
+							cardNumber === '<?php echo addslashes($card_info['card_number']); ?>' &&
+							expiryDate === '<?php echo addslashes($card_info['valid_thru']); ?>' &&
+							cvv === '<?php echo addslashes($card_info['cvv']); ?>';
+
+			// If details do not match
+			if (!cardMatch) {
+				alert('Invalid card details');
+				return false;
+			}
+
+			// If details match, allow the form to submit and process payment
+			alert('Card details validated. Proceeding to payment...');
+			// Additional logic to process payment could go here (e.g., call backend processing)
+			return true; // Submit the form
+		}
 
 function confirmPayment() {
     // Run validation again to ensure all fields are filled
