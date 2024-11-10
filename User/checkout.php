@@ -1161,24 +1161,55 @@ function handleSubmit(event) {
 }
 
 function confirmPayment() {
-    // Run validation again to ensure all fields are filled
+    // Get the entered card details from the form
+    const cardHolderName = document.querySelector('input[placeholder="Cheong Wei Kit"]').value.trim();
+    const cardNumber = document.querySelector('input[name="cardNum"]').value.trim();
+    const expiryDate = document.getElementById('expiry-date').value.trim();
+    const cvv = document.getElementById('cvv').value.trim();
+
+    // Make sure the form is valid before checking the card details
     if (!validateForm()) {
         return; // Stop if form is invalid
     }
 
-    // Show overlay and processing status
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
+    // Fetch card data from PHP and compare (you could fetch from the database at the start)
+    const validCardData = <?php
+        // Fetch card data from database
+        $cardQuery = "SELECT card_holder_name, card_number, valid_thru, cvv FROM bank_card WHERE card_number = ?";
+        $stmt = $conn->prepare($cardQuery);
+        $stmt->bind_param("s", $_POST['cardNum']);  // Bind card number to check if it exists
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $card = $result->fetch_assoc();
 
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
+        echo json_encode($card);  // Pass the fetched card details to JS
+    ?>;
+
+    // Check if the entered details match the stored data
+    if (
+        cardHolderName === validCardData.card_holder_name &&
+        cardNumber === validCardData.card_number &&
+        expiryDate === validCardData.valid_thru &&
+        cvv === validCardData.cvv
+    ) {
+        // Show the payment processing overlay
+        const overlay = document.getElementById('paymentOverlay');
+        const popupContent = document.getElementById('popupContent');
+        overlay.classList.add('show');
+
+        setTimeout(() => {
+            popupContent.innerHTML = `
+                <div class="success-icon">✓</div>
+                <h2 class="success-title">Payment Successful</h2>
+                <button class="ok-btn" onclick="goToDashboard()">OK</button>
+            `;
+        }, 2000); 
+    } else {
+        // Show an alert if the card details are invalid
+        alert("Invalid card details");
+    }
 }
+
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
