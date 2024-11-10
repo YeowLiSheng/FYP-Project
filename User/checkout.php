@@ -471,7 +471,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text"name="cardHolder"  placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -488,13 +488,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="validThru" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -568,14 +568,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	</body>
 
 	<?php
-// Validate card details on form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cardHolder = $_POST['cardHolder'];
     $cardNum = str_replace(' ', '', $_POST['cardNum']); // Remove spaces from card number
     $validThru = $_POST['validThru'];
     $cvv = $_POST['cvv'];
 
-    // Check if card details match any record in the bank_card table
+    // 查询 bank_card 表中的卡片信息
     $card_query = "
         SELECT * FROM bank_card 
         WHERE card_holder = '$cardHolder' 
@@ -586,7 +585,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $card_result = mysqli_query($conn, $card_query);
 
     if ($card_result && mysqli_num_rows($card_result) > 0) {
-        // Card details are valid; continue with payment processing
+        // 验证成功，继续处理支付逻辑
         echo "<script>
                 document.getElementById('paymentOverlay').classList.add('show');
                 setTimeout(function() {
@@ -598,11 +597,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }, 2000);
             </script>";
     } else {
-        // Invalid card details
+        // 验证失败，显示提示信息
         echo "<script>alert('Invalid card details');</script>";
     }
 }
-?>
 
 
 
