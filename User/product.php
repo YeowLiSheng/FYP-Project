@@ -138,6 +138,7 @@ $product_result = $conn->query($product_query);
 // Render filtered products as HTML for AJAX response
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
     ob_start();
+	if ($product_result->num_rows > 0) {
     while ($product = $product_result->fetch_assoc()) {
         echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
                 <div class="block2">
@@ -165,6 +166,9 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
     }
     echo ob_get_clean();
     exit;
+} else {
+	echo "<p>No products found.</p>";
+}
 }
 
 ?>
