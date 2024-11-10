@@ -421,7 +421,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form method="POST" action="" onsubmit="return confirmPayment(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -471,7 +471,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text"name="cardHolder"  placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -488,13 +488,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="validThru" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -551,7 +551,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" >Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -566,41 +566,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 		</div>
 
 	</body>
-
-	<?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $cardHolder = $_POST['cardHolder'];
-    $cardNum = str_replace(' ', '', $_POST['cardNum']);
-    $validThru = $_POST['validThru'];
-    $cvv = $_POST['cvv'];
-
-    $card_query = "
-        SELECT * FROM bank_card 
-        WHERE card_holder = '$cardHolder' 
-        AND REPLACE(card_number, ' ', '') = '$cardNum' 
-        AND valid_thru = '$validThru' 
-        AND cvv = '$cvv'
-    ";
-    $card_result = mysqli_query($conn, $card_query);
-
-    if ($card_result && mysqli_num_rows($card_result) > 0) {
-        echo "<script>
-                document.getElementById('paymentOverlay').classList.add('show');
-                setTimeout(function() {
-                    document.getElementById('popupContent').innerHTML = `
-                        <div class='success-icon'>✓</div>
-                        <h2 class='success-title'>Payment Successful</h2>
-                        <button class='ok-btn' onclick='goToDashboard()'>OK</button>
-                    `;
-                }, 2000);
-            </script>";
-    } else {
-        echo "<script>alert('Invalid card details');</script>";
-    }
-}
-?>
-
-
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
@@ -1186,25 +1151,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 function handleSubmit(event) {
-        event.preventDefault();
-        // Form validation before submitting
-        if (validateForm()) {
-            document.forms[0].submit();
-        }
-    }
-
-	function confirmPayment(event) {
+    // Prevent form submission for JavaScript validation
     event.preventDefault();
 
+    // Validate form fields
     if (validateForm()) {
-        document.getElementById('paymentOverlay').classList.add('show');
-        
-        setTimeout(() => {
-            document.forms[0].submit();
-        }, 2000);
+        confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
+
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
