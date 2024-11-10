@@ -1178,46 +1178,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 function handleSubmit(event) {
-    // 获取用户输入的卡信息
-    const cardHolderName = document.querySelector('input[name="card_holder_name"]').value.trim();
-    const cardNumber = document.querySelector('input[name="card_number"]').value.trim();
-    const validThru = document.querySelector('input[name="valid_thru"]').value.trim();
-    const cvv = document.querySelector('input[name="cvv"]').value.trim();
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
-    // 清除错误提示
-    document.getElementById('expiry-error').style.display = 'none';
-    document.getElementById('cvv-error').style.display = 'none';
-
-    // 进行卡信息验证
-    const isCardHolderNameValid = cardHolderName.length > 0; // 持卡人姓名不能为空
-    const isCardNumberValid = /^\d{4} \d{4} \d{4} \d{4}$/.test(cardNumber); // 卡号格式验证
-    const isValidThruValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(validThru); // 有效期格式验证
-    const isCVVValid = /^\d{3}$/.test(cvv); // CVV格式验证
-
-    // 如果有错误，阻止表单提交并显示错误提示
-    if (!isCardHolderNameValid) {
-        alert("Please enter a valid card holder name.");
-        return false;
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
     }
-
-    if (!isCardNumberValid) {
-        alert("Invalid card number format. Please use the correct format (e.g. 1111 2222 3333 4444).");
-        return false;
-    }
-
-    if (!isValidThruValid) {
-        document.getElementById('expiry-error').style.display = 'block'; // 显示有效期错误
-        return false;
-    }
-
-    if (!isCVVValid) {
-        document.getElementById('cvv-error').style.display = 'block'; // 显示CVV错误
-        return false;
-    }
-
-    // 如果验证都通过，提交表单
-    event.target.submit();
 }
+
 
 function goToDashboard() {
 		
