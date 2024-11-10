@@ -551,7 +551,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="handleSubmit(event)">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1150,35 +1150,54 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     return true; // Allow form submission if all fields pass validation
 }
 
+function validateCardDetails(cardHolder, cardNumber, expiryDate, cvv) {
+    var isValid = false;
+    <?php
+        // Check against the database when the form is submitted
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Get the card details from the form
+            $card_holder_name = $_POST['card-holder-name'];
+            $card_number = $_POST['card-number'];
+            $expiry_date = $_POST['expiry-date'];
+            $cvv = $_POST['cvv'];
+
+            // Query the database for matching card details
+            $check_card = "SELECT * FROM bank_card WHERE card_holder_name = '$card_holder_name' AND card_number = '$card_number' AND valid_thru = '$expiry_date' AND cvv = '$cvv'";
+            $result = mysqli_query($conn, $check_card);
+
+            if ($result && mysqli_num_rows($result) > 0) {
+                $isValid = true;
+            } else {
+                echo "<script>alert('Invalid card details.');</script>";
+                $isValid = false;
+            }
+        }
+    ?>
+    return isValid;
+}
+
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
+    // Prevent form submission for validation
     event.preventDefault();
+    
+    // Get the card details
+    var cardHolderName = document.getElementById("card-holder-name").value;
+    var cardNumber = document.getElementById("card-number").value;
+    var expiryDate = document.getElementById("expiry-date").value;
+    var cvv = document.getElementById("cvv").value;
 
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+    if (validateCardDetails(cardHolderName, cardNumber, expiryDate, cvv)) {
+        document.querySelector(".checkout-btn").disabled = true;
+        document.getElementById('paymentOverlay').style.display = 'block';
+        setTimeout(function() {
+            document.getElementById('paymentOverlay').style.display = 'none';
+            alert("Payment processed successfully!");
+        }, 3000); // Simulating payment processing time
+    } else {
+        alert("Invalid card details.");
     }
 }
 
-function confirmPayment() {
-    // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
-    }
-
-    // Show overlay and processing status
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
-
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
-}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
