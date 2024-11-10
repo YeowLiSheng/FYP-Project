@@ -74,6 +74,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+
 ?>
 
 <!DOCTYPE html>
