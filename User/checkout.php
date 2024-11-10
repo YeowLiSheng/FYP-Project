@@ -1157,7 +1157,7 @@ function handleSubmit(event) {
 
     // Validate form fields
     if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+        
     }
 }
 
