@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result->num_rows > 0) {
         // Valid card, proceed with payment processing
-        echo "<script>window.location.href = 'payment_processing.php';</script>";
+        echo "<script>confirmpayment();</script>";
     } else {
         // Invalid card details, show alert
         echo "<script>alert('Invalid card details');</script>";
