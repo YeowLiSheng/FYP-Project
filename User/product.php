@@ -227,7 +227,7 @@ body {
     overflow-y: auto; /* Allow smooth scrolling on larger content */
 }
 .isotope-grid {
-    min-height: 100vh; /* Ensures content area fills the screen */
+    min-height: 50vh; /* Ensures content area fills the screen */
 }
 </style>
 
