@@ -74,6 +74,33 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+// Retrieve the card details from form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+	$card_holder_name = mysqli_real_escape_string($conn, $_POST['card_holder_name']);
+	$card_number = mysqli_real_escape_string($conn, $_POST['card_number']);
+	$valid_thru = mysqli_real_escape_string($conn, $_POST['valid_thru']);
+	$cvv = mysqli_real_escape_string($conn, $_POST['cvv']);
+
+	// Retrieve card details from the database
+	$card_query = "SELECT * FROM bank_card WHERE card_holder_name = '$card_holder_name' AND card_number = '$card_number' AND valid_thru = '$valid_thru' AND cvv = '$cvv' LIMIT 1";
+	$card_result = mysqli_query($conn, $card_query);
+
+	if ($card_result && mysqli_num_rows($card_result) > 0) {
+		// Card details are valid, proceed with payment processing
+		// (Display the payment processing overlay here)
+		echo "<script>
+			document.getElementById('paymentOverlay').style.display = 'block';
+			setTimeout(function() {
+				document.getElementById('paymentOverlay').style.display = 'none';
+				alert('Payment Successful');
+			}, 2000);
+		</script>";
+	} else {
+		// Invalid card details
+		echo "<script>alert('Invalid card details');</script>";
+	}
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -551,7 +578,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1151,34 +1178,47 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
+    // 获取用户输入的卡信息
+    const cardHolderName = document.querySelector('input[name="card_holder_name"]').value.trim();
+    const cardNumber = document.querySelector('input[name="card_number"]').value.trim();
+    const validThru = document.querySelector('input[name="valid_thru"]').value.trim();
+    const cvv = document.querySelector('input[name="cvv"]').value.trim();
 
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+    // 清除错误提示
+    document.getElementById('expiry-error').style.display = 'none';
+    document.getElementById('cvv-error').style.display = 'none';
+
+    // 进行卡信息验证
+    const isCardHolderNameValid = cardHolderName.length > 0; // 持卡人姓名不能为空
+    const isCardNumberValid = /^\d{4} \d{4} \d{4} \d{4}$/.test(cardNumber); // 卡号格式验证
+    const isValidThruValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(validThru); // 有效期格式验证
+    const isCVVValid = /^\d{3}$/.test(cvv); // CVV格式验证
+
+    // 如果有错误，阻止表单提交并显示错误提示
+    if (!isCardHolderNameValid) {
+        alert("Please enter a valid card holder name.");
+        return false;
     }
+
+    if (!isCardNumberValid) {
+        alert("Invalid card number format. Please use the correct format (e.g. 1111 2222 3333 4444).");
+        return false;
+    }
+
+    if (!isValidThruValid) {
+        document.getElementById('expiry-error').style.display = 'block'; // 显示有效期错误
+        return false;
+    }
+
+    if (!isCVVValid) {
+        document.getElementById('cvv-error').style.display = 'block'; // 显示CVV错误
+        return false;
+    }
+
+    // 如果验证都通过，提交表单
+    event.target.submit();
 }
 
-function confirmPayment() {
-    // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
-    }
-
-    // Show overlay and processing status
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
-
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
-}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
