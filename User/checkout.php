@@ -74,6 +74,30 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get input values from the form
+    $cardHolderName = $_POST['cardHolderName'];
+    $cardNumber = $_POST['cardNumber'];
+    $validThru = $_POST['validThru'];
+    $cvv = $_POST['cvv'];
+
+    // Query to check the card details
+    $sql = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssss", $cardHolderName, $cardNumber, $validThru, $cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // Valid card, proceed with payment processing
+        echo "<script>window.location.href = 'payment_processing.php';</script>";
+    } else {
+        // Invalid card details, show alert
+        echo "<script>alert('Invalid card details');</script>";
+    }
+
+    $stmt->close();
+}
 
 ?>
 
@@ -1152,14 +1176,15 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
+        // Prevent form submission for JavaScript validation
+        event.preventDefault();
 
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+        // Validate form fields
+        if (validateForm()) {
+            // Only proceed to payment processing if valid
+            document.querySelector("form").submit();
+        }
     }
-}
 
 
 function confirmPayment() {
