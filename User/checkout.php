@@ -74,6 +74,35 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 获取用户输入的卡片信息
+    $input_card_holder_name = $_POST['card_holder_name'];
+    $input_card_number = $_POST['card_number'];
+    $input_valid_thru = $_POST['valid_thru'];
+    $input_cvv = $_POST['cvv'];
+
+    // 查询数据库验证输入的卡片信息
+    $card_check_query = "
+        SELECT * FROM bank_card 
+        WHERE 
+            card_holder_name = '$input_card_holder_name' AND 
+            card_number = '$input_card_number' AND 
+            valid_thru = '$input_valid_thru' AND 
+            cvv = '$input_cvv'
+        LIMIT 1";
+    $card_check_result = mysqli_query($conn, $card_check_query);
+
+    if ($card_check_result && mysqli_num_rows($card_check_result) > 0) {
+        // 信息匹配，继续进行支付处理
+        echo "<script>alert('卡片信息验证成功！继续进行支付...');</script>";
+        // 其他支付逻辑...
+    } else {
+        // 信息不匹配，显示错误信息并停止支付
+        echo "<script>alert('无效的卡片信息，请重试。');</script>";
+        exit;
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -421,7 +450,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+		<form action="checkout.php" method="post" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -471,11 +500,11 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -488,13 +517,13 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -551,7 +580,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="handleSubmit(event)">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1150,54 +1179,35 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
     return true; // Allow form submission if all fields pass validation
 }
 
-function validateCardDetails(cardHolder, cardNumber, expiryDate, cvv) {
-    var isValid = false;
-    <?php
-        // Check against the database when the form is submitted
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Get the card details from the form
-            $card_holder_name = $_POST['card-holder-name'];
-            $card_number = $_POST['card-number'];
-            $expiry_date = $_POST['expiry-date'];
-            $cvv = $_POST['cvv'];
-
-            // Query the database for matching card details
-            $check_card = "SELECT * FROM bank_card WHERE card_holder_name = '$card_holder_name' AND card_number = '$card_number' AND valid_thru = '$expiry_date' AND cvv = '$cvv'";
-            $result = mysqli_query($conn, $check_card);
-
-            if ($result && mysqli_num_rows($result) > 0) {
-                $isValid = true;
-            } else {
-                echo "<script>alert('Invalid card details.');</script>";
-                $isValid = false;
-            }
-        }
-    ?>
-    return isValid;
-}
-
 function handleSubmit(event) {
-    // Prevent form submission for validation
+    // Prevent form submission for JavaScript validation
     event.preventDefault();
-    
-    // Get the card details
-    var cardHolderName = document.getElementById("card-holder-name").value;
-    var cardNumber = document.getElementById("card-number").value;
-    var expiryDate = document.getElementById("expiry-date").value;
-    var cvv = document.getElementById("cvv").value;
 
-    if (validateCardDetails(cardHolderName, cardNumber, expiryDate, cvv)) {
-        document.querySelector(".checkout-btn").disabled = true;
-        document.getElementById('paymentOverlay').style.display = 'block';
-        setTimeout(function() {
-            document.getElementById('paymentOverlay').style.display = 'none';
-            alert("Payment processed successfully!");
-        }, 3000); // Simulating payment processing time
-    } else {
-        alert("Invalid card details.");
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
+
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
