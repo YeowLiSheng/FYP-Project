@@ -80,6 +80,27 @@
     outline: none;
 }
 
+/* Style the autofill checkbox */
+.autofill-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between checkbox and label */
+    margin-top: 15px;
+    margin-left: 5px; /* Align with State field */
+}
+
+.autofill-checkbox input[type="checkbox"] {
+    transform: scale(1.2); /* Slightly enlarge checkbox */
+}
+
+.autofill-checkbox label {
+    font-size: 15px;
+    color: #555;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+
 /* Flex layout for grouped input fields */
 .checkout-flex {
     display: flex;

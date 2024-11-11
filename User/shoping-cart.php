@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 					UPDATE shopping_cart 
 					SET final_total_price = $final_total_price, 
                         discount_amount = $discount_amount, 
-                        voucher_applied = 1 
+                        voucher_applied = $voucher_id 
 					WHERE user_id = $user_id";
 				$conn->query($update_final_total_query);
 	
@@ -249,6 +249,9 @@ $_SESSION['discount_amount'] = $discount_amount;
 
 // Handle voucher removal
 if (isset($_POST['remove_voucher'])) {
+    $voucher_id = $_POST['voucher_id'];
+
+    // Reset voucher values in shopping_cart
     $conn->query("
         UPDATE shopping_cart 
         SET voucher_applied = 0, 
@@ -257,9 +260,19 @@ if (isset($_POST['remove_voucher'])) {
         WHERE user_id = $user_id");
 
     // Decrement usage in voucher_usage
-    $voucher_id = $_POST['voucher_id'];
     $conn->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
 
+    // Check if usage_num is 0, then delete the record
+    $usage_check_query = "SELECT usage_num FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id";
+    $usage_check_result = $conn->query($usage_check_query);
+    
+    if ($usage_check_result && $usage_row = $usage_check_result->fetch_assoc()) {
+        if ($usage_row['usage_num'] <= 0) {
+            $conn->query("DELETE FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id");
+        }
+    }
+
+    // Reload page to reflect changes
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -269,9 +282,9 @@ $voucher_applied_query = "
     SELECT v.voucher_code, sc.discount_amount, v.voucher_id 
     FROM shopping_cart sc
     JOIN voucher v ON v.voucher_id = sc.voucher_applied
-    WHERE sc.user_id = $user_id AND sc.voucher_applied = 1";
+    WHERE sc.user_id = $user_id AND sc.voucher_applied IS NOT NULL";
 $voucher_applied_result = $conn->query($voucher_applied_query);
-$applied_voucher = $voucher_applied_result->fetch_assoc();
+$applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_assoc() : null;
 
 
 ?>
@@ -711,7 +724,7 @@ $applied_voucher = $voucher_applied_result->fetch_assoc();
                                     </tr>';
                                 }
                             } else {
-                                echo '<tr><td colspan="5">Your cart is empty.</td></tr>';
+                                echo '<tr><td colspan="5">&emsp;&emsp;&emsp;&emsp;&emsp;Your cart is empty.</td></tr>';
                             }
                             ?>
                         </table>
@@ -720,10 +733,14 @@ $applied_voucher = $voucher_applied_result->fetch_assoc();
                     <!-- Apply Coupon and Update Cart Buttons -->
                     <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
     					<div class="flex-w flex-m m-r-20 m-tb-5">
-        					<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Voucher Code">
-        					<button type="submit" name="apply_voucher" class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
-            					Apply Voucher
-        					</button>
+						<?php if (empty($applied_voucher)): ?>
+            				<input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Voucher Code">
+            				<button type="submit" name="apply_voucher" class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+                				Apply Voucher
+            				</button>
+        					<?php else: ?>
+            					<p class="stext-104 cl2 plh4 size-117 p-lr-20 m-r-10 m-tb-5">Voucher applied: <?php echo $applied_voucher['voucher_code']; ?></p>
+        					<?php endif; ?>
     					</div>
     						<button type="submit" name="update_cart" class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
        					 		Update Cart
@@ -746,8 +763,7 @@ $applied_voucher = $voucher_applied_result->fetch_assoc();
 							<?php if (!empty($applied_voucher)): ?>
        							<div class="chat-box">
            	 						<form method="POST" action="">
-                						<p>Voucher Code: <?php echo $applied_voucher['voucher_code']; ?></p>
-                						<p>Discount: $<?php echo number_format($applied_voucher['discount_amount'], 2); ?></p>
+                						<p>Total Discount: $<?php echo number_format($applied_voucher['discount_amount'], 2); ?></p>
                 						<input type="hidden" name="voucher_id" value="<?php echo $applied_voucher['voucher_id']; ?>">
                 						<button type="submit" name="remove_voucher" class="remove-btn">✖</button>
            							</form>
