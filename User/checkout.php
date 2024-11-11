@@ -92,7 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            echo "<script>confirmPayment();</script>";
+            echo "<script>alert('Payment successful');</script>";
             // 添加更多支付逻辑，例如创建订单、生成收据等
         } else {
             echo "<script>alert('Invalid card details');</script>";
