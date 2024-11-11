@@ -74,26 +74,6 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $card_holder_name = $_POST['card_holder_name'];
-    $card_number = str_replace(' ', '', $_POST['cardNum']);
-    $valid_thru = $_POST['expiry-date'];
-    $cvv = $_POST['cvv'];
-
-    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-	$stmt->bind_param("ssss", $card_holder_name, $card_number, $valid_thru, $cvv);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        echo "<script>showSuccessPopup();</script>";
-    } else {
-        echo "<script>alert('Invalid card details');</script>";
-    }
-
-    $stmt->close();
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -441,7 +421,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form method="POST" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -491,7 +471,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -508,13 +488,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" id="expiry-date" name="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" id="cvv" name="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -1171,24 +1151,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 function handleSubmit(event) {
+    // Prevent form submission for JavaScript validation
     event.preventDefault();
 
-    // 如果表单验证通过，提交表单
+    // Validate form fields
     if (validateForm()) {
-        document.getElementById('paymentOverlay').style.display = 'block';
-        document.querySelector('form').submit(); // 提交表单
+        confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
-function showSuccessPopup() {
-    document.getElementById('paymentOverlay').innerHTML = `
-        <div class="success-icon">✓</div>
-        <h2>Payment Successful</h2>
-        <button onclick="window.location.href='dashboard.php'">OK</button>
-    `;
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
+
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
 }
-
-
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
