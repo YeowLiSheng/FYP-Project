@@ -448,7 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return validateForm()">
+		<form action="checkout.php" method="post" onsubmit="handleSubmit(event)">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -1173,22 +1173,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
+    // 阻止表单的默认提交行为
     event.preventDefault();
 
-    // Validate form fields
+    // 验证表单字段
     if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+        confirmPayment(); // 验证通过后显示付款处理状态
     }
 }
 
 function confirmPayment() {
-    // Run validation again to ensure all fields are filled
+    console.log("开始处理付款..."); // 检查是否触发此函数
+
     if (!validateForm()) {
-        return; // Stop if form is invalid
+        return;
     }
 
-    // Show overlay and processing status
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
@@ -1199,7 +1199,7 @@ function confirmPayment() {
             <h2 class="success-title">Payment Successful</h2>
             <button class="ok-btn" onclick="goToDashboard()">OK</button>
         `;
-    }, 2000); 
+    }, 2000);
 }
 function goToDashboard() {
 		
