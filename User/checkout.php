@@ -74,30 +74,30 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // 获取用户输入的卡信息
-    $input_card_holder_name = trim($_POST['card_holder_name']);
-    $input_card_number = trim($_POST['card_number']);
-    $input_valid_thru = trim($_POST['valid_thru']);
-    $input_cvv = trim($_POST['cvv']);
+// 如果表单被提交
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	$cardHolderName = $_POST['cardHolderName'];
+	$cardNum = str_replace(' ', '', $_POST['cardNum']); // 移除空格
+	$expiryDate = $_POST['expiryDate'];
+	$cvv = $_POST['cvv'];
 
-    // 查询数据库进行验证
-    $query = "SELECT * FROM bank_card 
-              WHERE card_holder_name = '$input_card_holder_name' 
-              AND card_number = '$input_card_number' 
-              AND valid_thru = '$input_valid_thru' 
-              AND cvv = '$input_cvv'";
-    
-    $result = mysqli_query($conn, $query);
-    
-    if (mysqli_num_rows($result) == 0) {
-        // 如果找不到匹配的卡片信息，显示 alert 并停止处理
-        echo "<script>alert('Invalid card details. Please enter the correct card information.');</script>";
-    } else {
-        // 继续执行支付处理
-        echo "<script>confirmPayment();</script>";
-    }
+	// 从数据库中检查卡信息是否匹配
+	$card_query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+	$stmt = $conn->prepare($card_query);
+	$stmt->bind_param("sssi", $cardHolderName, $cardNum, $expiryDate, $cvv);
+	$stmt->execute();
+	$result = $stmt->get_result();
+
+	if ($result->num_rows > 0) {
+		// 匹配成功，显示付款成功信息
+		echo "<script>alert('支付成功！'); window.location.href = 'dashboard.php';</script>";
+	} else {
+		// 匹配失败，显示错误提示
+		echo "<script>alert('无效的卡信息，请检查您的输入。');</script>";
+	}
+	$stmt->close();
 }
+
 
 ?>
 
@@ -446,7 +446,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+		<form action="checkout.php" method="post" onsubmit="return handleSubmit(event)">
+
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -496,11 +497,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="card_holder_name" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="cardHolderName" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -513,7 +514,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="expiryDate" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
