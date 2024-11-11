@@ -515,7 +515,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="expiryDate" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
