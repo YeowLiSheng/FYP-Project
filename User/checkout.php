@@ -1193,19 +1193,7 @@ function handleSubmit(event) {
     }
 }
 
-function confirmPayment() {
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
 
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
-}
 
 function goToDashboard() {
 		
