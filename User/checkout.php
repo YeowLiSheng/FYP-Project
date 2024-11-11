@@ -1186,17 +1186,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST")
     return true;
 }
 
-function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
-
-    // Validate form fields
-    if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
-    }
-}
-
-
 
 
 
