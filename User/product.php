@@ -75,7 +75,6 @@ $product_query = "SELECT * FROM product";
 $product_result = $conn->query($product_query);
 
 // Fetch products based on filters and search
-// Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
 $price_filter = isset($_GET['price']) ? explode(',', $_GET['price']) : [];
 $color_filter = isset($_GET['color']) ? explode(',', $_GET['color']) : [];
@@ -213,6 +212,22 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
 .selected {
     color: blue !important;
     font-weight: bold;
+}
+.isotope-grid {
+    position: relative;
+    overflow: hidden; /* Prevent overflow issues */
+}
+
+.footer {
+    position: relative;
+    z-index: 10; /* Ensure footer stays below content */
+    margin-top: 10px; /* Ensure spacing between product container and footer */
+}
+body {
+    overflow-y: auto; /* Allow smooth scrolling on larger content */
+}
+.isotope-grid {
+    min-height: 50vh; /* Ensures content area fills the screen */
 }
 </style>
 
@@ -1094,30 +1109,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 <script>
-	// Toggle search panel
-    $('.js-show-search').on('click', function(){
-        if (!$(this).hasClass('active')) {
-            $(this).addClass('active');
-            $('.panel-search').slideDown(400);
-        } else {
-            $(this).removeClass('active');
-            $('.panel-search').slideUp(400);
-        }
-    });
-
-    // Toggle filter panel
-    $('.js-show-filter').on('click', function(){
-        if (!$(this).hasClass('active')) {
-            $(this).addClass('active');
-            $('.panel-filter').slideDown(400);
-        } else {
-            $(this).removeClass('active');
-            $('.panel-filter').slideUp(400);
-        }
-    });
-
-</script>
-<script>
     $(document).on('click', '.js-show-modal1', function(event) {
         event.preventDefault();
         var productId = $(this).data('id');
@@ -1198,24 +1189,85 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 // Initialize filters with 'all' default values for price, color, tag, and category.
 let filters = { price: 'all', color: 'all', tag: 'all', category: 'all' };
 
-// Function to update product display
+// Function to update product display based on selected filters
 function updateProducts() {
     $.ajax({
-        url: '', // The current PHP file
-        type: 'GET',
-        data: {
-            price: filters.price,
-            color: filters.color,
-            tag: filters.tag,
-            category: filters.category
-        },
-        success: function(response) {
-            $('.isotope-grid').html(response); // Replace product display with filtered products
-        },
-        error: function() {
-            alert('Failed to fetch filtered products.');
+    url: '', 
+    type: 'GET',
+    data: {
+        price: filters.price,
+        color: filters.color,
+        tag: filters.tag,
+        category: filters.category
+    },
+    success: function(response) {
+        // Check if the response contains error
+        if (response.error) {
+            alert('Error: ' + response.error);
+            return;
         }
-    });
+        // Proceed with normal filtering process
+        if (response.trim() === '' || response.includes('No products found')) {
+            $('.isotope-grid').html('<p>No products found for the selected filters.</p>');
+        } else {
+            $('.isotope-grid').html(response);
+        }
+
+        adjustLayoutAfterFiltering();
+    },
+    error: function(xhr, status, error) {
+        // This handles other AJAX errors
+        alert('An error occurred while fetching products: ' + error);
+    }
+});
+
+}
+
+
+// Function to adjust the layout and avoid overflow issues
+function adjustLayoutAfterFiltering() {
+    // Ensure that the container adjusts after filtering
+    var container = $('.isotope-grid');
+    
+    // Reset any unnecessary inline styles from previous content
+    container.css('height', 'auto'); 
+
+    // If the container's height is too small, adjust it to avoid overlap with footer
+    if (container.outerHeight() < $(window).height()) {
+        container.css('min-height', $(window).height() - $('.footer').outerHeight());
+    }
+
+    // Optional: Trigger a reflow if necessary
+    setTimeout(function() {
+        container.css('visibility', 'visible'); // Ensure visibility if hidden for animation
+    }, 10);
+}
+// Function to adjust the footer position dynamically based on content height
+function adjustFooterPosition() {
+    var container = $('.isotope-grid');
+    var footer = $('.footer');
+    var windowHeight = $(window).height();
+
+    // Get the current height of the product container
+    var contentHeight = container.outerHeight(true); // Includes margin/padding
+
+    // Get the footer height
+    var footerHeight = footer.outerHeight(true);
+
+    // Calculate total height of the page (content + footer)
+    var totalHeight = contentHeight + footerHeight;
+
+    // If content height is smaller than the window height, adjust it
+    if (totalHeight < windowHeight) {
+        // Set the container's height to fill the remaining space
+        container.css('min-height', windowHeight - footerHeight);
+    } else {
+        // Reset container min-height if the content is enough
+        container.css('min-height', 'auto');
+    }
+
+    // Optional: Add a smooth transition to avoid sudden shifts
+    container.css('transition', 'min-height 0.3s ease-in-out');
 }
 
 // Handle filter clicks for price, color, and tag
