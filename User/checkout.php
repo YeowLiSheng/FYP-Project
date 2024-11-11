@@ -75,23 +75,19 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve form data
     $card_holder_name = $_POST['card_holder_name'];
-    $card_number = str_replace(' ', '', $_POST['cardNum']); // Remove spaces
+    $card_number = str_replace(' ', '', $_POST['cardNum']);
     $valid_thru = $_POST['expiry-date'];
     $cvv = $_POST['cvv'];
 
-    // Prepare SQL statement to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
     $stmt->bind_param("sssi", $card_holder_name, $card_number, $valid_thru, $cvv);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // Card details matched, process payment
-        echo "<script>confirmPayment();</script>";
+        echo "<script>showSuccessPopup();</script>";
     } else {
-        // Card details did not match
         echo "<script>alert('Invalid card details');</script>";
     }
 
@@ -445,7 +441,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="" method="POST" onsubmit="return validateForm()">
+		<form method="POST" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -1175,30 +1171,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
+    // 阻止默认提交
     event.preventDefault();
 
-    // Validate form fields
+    // 验证表单
     if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+        // 显示支付处理中弹窗
+        document.getElementById('paymentOverlay').style.display = 'block';
+        
+        // 提交表单
+        event.target.submit();
     }
 }
 
-function confirmPayment() {
-    // Run validation again to ensure all fields are filled
- if (!validateForm()) {
-        return; // 停止执行
-    }
-
-    // 显示覆盖层和支付状态
-    const overlay = document.getElementById('paymentOverlay');
-    overlay.classList.add('show');
-
-    setTimeout(() => {
-        overlay.classList.remove('show');
-        document.querySelector('form').submit(); // 提交表单
-    }, 2000);
+function showSuccessPopup() {
+    document.getElementById('paymentOverlay').innerHTML = `
+        <div class="success-icon">✓</div>
+        <h2>Payment Successful</h2>
+        <button onclick="window.location.href='dashboard.php'">OK</button>
+    `;
 }
+
+
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
