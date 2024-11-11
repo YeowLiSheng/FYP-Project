@@ -92,8 +92,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            echo "<script>alert('Payment successful');</script>";
-            // 添加更多支付逻辑，例如创建订单、生成收据等
+			echo "
+			<script>
+				// Show payment processing animation
+				document.body.innerHTML += `
+					<div id='processing'>
+						<p>Processing Payment...</p>
+					</div>
+					<style>
+						#processing {
+							position: fixed;
+							top: 0; left: 0; right: 0; bottom: 0;
+							display: flex; align-items: center; justify-content: center;
+							background-color: rgba(0, 0, 0, 0.5);
+							color: white; font-size: 24px;
+						}
+					</style>
+				`;
+
+				// Simulate a 2-second processing time
+				setTimeout(function() {
+					document.getElementById('processing').remove(); // Remove animation
+					alert('Payment successful'); // Show success message
+					window.location.href = 'homepage.php'; // Redirect to homepage
+				}, 2000);
+			</script>
+		";
         } else {
             echo "<script>alert('Invalid card details');</script>";
         }
