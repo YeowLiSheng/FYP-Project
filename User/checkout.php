@@ -92,22 +92,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-			echo "<script>
-				const overlay = document.getElementById('paymentOverlay');
-				const popupContent = document.getElementById('popupContent');
-				overlay.classList.add('show');
-				
-				setTimeout(() => {
-					popupContent.innerHTML = `
-						<div class='success-icon'>✓</div>
-						<h2 class='success-title'>Payment Successful</h2>
-						<button class='ok-btn' onclick='goToDashboard()'>OK</button>
-					`;
-				}, 2000);
-			</script>";
-		} else {
-			echo "<script>alert('Invalid card details');</script>";
-		}
+            echo "<script>alert('Payment successful');</script>";
+            // 添加更多支付逻辑，例如创建订单、生成收据等
+        } else {
+            echo "<script>alert('Invalid card details');</script>";
+        }
 
         $stmt->close();
     }
