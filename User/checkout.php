@@ -580,7 +580,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn" >Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
