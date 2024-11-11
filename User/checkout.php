@@ -92,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-			echo "<script>confirmPayment();</script>";
-		// 添加更多支付逻辑，例如创建订单、生成收据等
+            echo "<script>confirmPayment();</script>";
+            // 添加更多支付逻辑，例如创建订单、生成收据等
         } else {
             echo "<script>alert('Invalid card details');</script>";
         }
@@ -1182,8 +1182,25 @@ function handleSubmit(event) {
     }
 }
 
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
 
-   
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
