@@ -92,10 +92,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST")
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
-			echo "
-			<script>
-				// Show payment processing animation
+		if ($result->num_rows > 0) {
+			// Card details matched
+			echo "<script>
 				document.body.innerHTML += `
 					<div id='processing'>
 						<p>Processing Payment...</p>
@@ -110,18 +109,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST")
 						}
 					</style>
 				`;
-
-				// Simulate a 2-second processing time
 				setTimeout(function() {
-					document.getElementById('processing').remove(); // Remove animation
-					alert('Payment successful'); // Show success message
-					window.location.href = 'homepage.php'; // Redirect to homepage
+					alert('Payment successful');
+					window.location.href = 'homepage.php';
 				}, 2000);
-			</script>
-		";
-        } else {
-            echo "<script>alert('Invalid card details');</script>";
-        }
+			</script>";
+		} else {
+			// Card details did not match
+			echo "<script>alert('Invalid card details');</script>";
+		}
 
         $stmt->close();
     }
@@ -473,7 +469,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST")
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return validateForm()">
+		<form action="checkout.php" method="post" onsubmit="validateForm()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
