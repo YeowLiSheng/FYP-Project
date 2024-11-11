@@ -74,15 +74,16 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") 
-{
-    // 获取表单输入的卡信息
-    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum']: '';
-    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+// Form submission handling
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // 获取用户输入的卡信息
+    $cardHolderName = trim($_POST['cardHolderName']);
+    $cardNum = trim($_POST['cardNum']);
+    $expiryDate = trim($_POST['expiry-date']);
+    $cvv = trim($_POST['cvv']);
 
-    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+    // 检查表单是否为空
+    if (empty($cardHolderName) || empty($cardNum) || empty($expiryDate) || empty($cvv)) {
         echo "<script>alert('Please fill in all required fields.');</script>";
     } else {
         // 验证卡信息是否存在于数据库中
@@ -92,33 +93,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST")
         $stmt->execute();
         $result = $stmt->get_result();
 
-		if ($result->num_rows > 0) {
-			// Card details matched
-			echo "<script>
-				document.body.innerHTML += `
-					<div id='processing'>
-						<p>Processing Payment...</p>
-					</div>
-					<style>
-						#processing {
-							position: fixed;
-							top: 0; left: 0; right: 0; bottom: 0;
-							display: flex; align-items: center; justify-content: center;
-							background-color: rgba(0, 0, 0, 0.5);
-							color: white; font-size: 24px;
-						}
-					</style>
-				`;
-				setTimeout(function() {
-					alert('Payment successful');
-					window.location.href = 'homepage.php';
-				}, 2000);
-			</script>";
-		} else {
-			// Card details did not match
-			echo "<script>alert('Invalid card details');</script>";
-		}
-
+        if ($result->num_rows > 0) {
+            // 卡信息匹配
+            echo "<script>
+                alert('Payment successful');
+                window.location.href = 'homepage.php';
+            </script>";
+        } else {
+            // 卡信息不匹配
+            echo "<script>alert('Invalid card details');</script>";
+        }
         $stmt->close();
     }
 }
@@ -469,7 +453,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST")
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="validateForm()">
+        <form action="checkout.php" method="post" onsubmit="return validateForm()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
