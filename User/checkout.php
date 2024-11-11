@@ -74,33 +74,28 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 获取用户输入的卡片信息
-    $input_card_holder_name = $_POST['card_holder_name'];
-    $input_card_number = $_POST['card_number'];
-    $input_valid_thru = $_POST['valid_thru'];
-    $input_cvv = $_POST['cvv'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve form data
+    $card_holder_name = $_POST['card_holder_name'];
+    $card_number = str_replace(' ', '', $_POST['cardNum']); // Remove spaces
+    $valid_thru = $_POST['expiry-date'];
+    $cvv = $_POST['cvv'];
 
-    // 查询数据库验证输入的卡片信息
-    $card_check_query = "
-        SELECT * FROM bank_card 
-        WHERE 
-            card_holder_name = '$input_card_holder_name' AND 
-            card_number = '$input_card_number' AND 
-            valid_thru = '$input_valid_thru' AND 
-            cvv = '$input_cvv'
-        LIMIT 1";
-    $card_check_result = mysqli_query($conn, $card_check_query);
+    // Prepare SQL statement to prevent SQL injection
+    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
+    $stmt->bind_param("sssi", $card_holder_name, $card_number, $valid_thru, $cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if ($card_check_result && mysqli_num_rows($card_check_result) > 0) {
-        // 信息匹配，继续进行支付处理
-        echo "<script>alert('卡片信息验证成功！继续进行支付...');</script>";
-        // 其他支付逻辑...
+    if ($result->num_rows > 0) {
+        // Card details matched, process payment
+        echo "<script>confirmPayment();</script>";
     } else {
-        // 信息不匹配，显示错误信息并停止支付
-        echo "<script>alert('无效的卡片信息，请重试。');</script>";
-        exit;
+        // Card details did not match
+        echo "<script>alert('Invalid card details');</script>";
     }
+
+    $stmt->close();
 }
 
 ?>
@@ -450,7 +445,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return handleSubmit(event)">
+			<form action="" onsubmit="return handleSubmit(event)">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -504,7 +499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
-							<input type="text" name="card_number" placeholder="1111 2222 3333 4444" minlength="16"
+							<input type="text" name="cardNum" placeholder="1111 2222 3333 4444" minlength="16"
 								maxlength="19" pattern="\d{4}\s\d{4}\s\d{4}\s\d{4}"
 								title="Please enter exactly 16 digits" autocomplete="off" required
 								oninput="formatCardNumber(this)">
@@ -517,13 +512,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="valid_thru" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" name="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" name="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -580,7 +575,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" >Confirm Payment</button>
+						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
