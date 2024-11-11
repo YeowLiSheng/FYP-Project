@@ -83,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Prepare SQL statement to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("sssi", $card_holder_name, $card_number, $valid_thru, $cvv);
+	$stmt->bind_param("ssis", $card_holder_name, $card_number, $valid_thru, $cvv);
     $stmt->execute();
     $result = $stmt->get_result();
 
