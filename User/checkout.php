@@ -75,31 +75,24 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // 获取表单输入的卡信息
-    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
-    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $cardHolderName = $_POST['cardHolderName'];
+    $cardNum = str_replace(' ', '', $_POST['cardNum']); // Remove spaces
+    $expiryDate = $_POST['expiry-date'];
+    $cvv = $_POST['cvv'];
 
-    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-        echo "<script>alert('Please fill in all required fields.');</script>";
+    $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        echo "<script>confirmPayment();</script>";
     } else {
-        // 验证卡信息是否存在于数据库中
-        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if ($result->num_rows > 0) {
-            echo "<script>confirmPayment();</script>";
-            // 添加更多支付逻辑，例如创建订单、生成收据等
-        } else {
-            echo "<script>alert('Invalid card details');</script>";
-        }
-
-        $stmt->close();
+        echo "<script>alert('Invalid card details');</script>";
     }
+
+    $stmt->close();
 }
 ?>
 
@@ -448,7 +441,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="handleSubmit(event)">
+		<form action="checkout.php" method="post" onsubmit="return validateForm(event)">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -1120,7 +1113,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			}
 		}
 
-		function validateForm() {
+		function validateForm(event) {
     const fullName = document.querySelector('input[name="cardHolderName"]');
     const cardNum = document.querySelector('input[name="cardNum"]');
     const expiryDate = document.getElementById('expiry-date');
@@ -1131,33 +1124,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     const postcode = document.getElementById('postcode');
 
     if (
-        !fullName.value.trim() || 
-        !cardNum.value.trim() || 
-        !expiryDate.value.trim() || 
-        !cvv.value.trim() || 
+        !fullName.value.trim() ||
+        !cardNum.value.trim() ||
+        !expiryDate.value.trim() ||
+        !cvv.value.trim() ||
         !address.value.trim() ||
         !city.value.trim() ||
         !state.value.trim() ||
         !postcode.value.trim()
     ) {
         alert('Please fill in all required fields.');
+        event.preventDefault();
         return false;
     }
 
     const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
     if (!cardNumberPattern.test(cardNum.value)) {
         alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
+        event.preventDefault();
         return false;
     }
 
     if (cvv.value.length !== 3) {
         alert('Please enter a 3-digit CVV code.');
+        event.preventDefault();
         return false;
     }
 
     const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!datePattern.test(expiryDate.value)) {
         alert('Please enter a valid expiration date (format: MM/YY).');
+        event.preventDefault();
         return false;
     } else {
         const [month, year] = expiryDate.value.split('/').map(Number);
@@ -1165,12 +1162,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         const currentMonth = new Date().getMonth() + 1;
         if (year < currentYear || (year === currentYear && month < currentMonth)) {
             alert('Please enter a valid, non-expired expiration date.');
+            event.preventDefault();
             return false;
         }
     }
 
-    return true;
+    return true; // Allow form submission if all validations pass
 }
+
 
 function handleSubmit(event) {
     // 阻止表单的默认提交行为
@@ -1183,12 +1182,6 @@ function handleSubmit(event) {
 }
 
 function confirmPayment() {
-    console.log("开始处理付款..."); // 检查是否触发此函数
-
-    if (!validateForm()) {
-        return;
-    }
-
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
@@ -1199,8 +1192,9 @@ function confirmPayment() {
             <h2 class="success-title">Payment Successful</h2>
             <button class="ok-btn" onclick="goToDashboard()">OK</button>
         `;
-    }, 2000);
+    }, 2000); 
 }
+
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
