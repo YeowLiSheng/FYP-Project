@@ -78,8 +78,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $card_holder_name = $_POST['card_holder_name'];
     $card_number = str_replace(' ', '', $_POST['cardNum']);
     $valid_thru = $_POST['expiry-date'];
-    $cvv = $_POST['cvv'];
+    $cvv = (int)$_POST['cvv']; // 确保CVV为整数
 
+    // 使用适当的绑定类型
     $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
     $stmt->bind_param("sssi", $card_holder_name, $card_number, $valid_thru, $cvv);
     $stmt->execute();
@@ -93,7 +94,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt->close();
 }
-
 ?>
 
 <!DOCTYPE html>
