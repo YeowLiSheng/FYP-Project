@@ -445,7 +445,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="" onsubmit="return handleSubmit(event)">
+		<form action="" method="POST" onsubmit="return validateForm()">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -1186,22 +1186,18 @@ function handleSubmit(event) {
 
 function confirmPayment() {
     // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
+	if (!validateForm()) {
+        return; // 停止执行
     }
 
-    // Show overlay and processing status
+    // 显示覆盖层和支付状态
     const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
 
     setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
+        overlay.classList.remove('show');
+        document.querySelector('form').submit(); // 提交表单
+    }, 2000);
 }
 function goToDashboard() {
 		
