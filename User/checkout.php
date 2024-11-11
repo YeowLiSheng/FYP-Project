@@ -74,33 +74,38 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
+
 $cardError = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Retrieve and sanitize user inputs
-    $inputCardName = $_POST['card_holder_name'];
-    $inputCardNumber = $_POST['card_number'];
-    $inputValidThru = $_POST['valid_thru'];
-    $inputCVV = $_POST['cvv'];
+    // Check if all required POST data exists to avoid undefined array key warnings
+    $inputCardName = $_POST['card_holder_name'] ?? null;
+    $inputCardNumber = $_POST['card_number'] ?? null;
+    $inputValidThru = $_POST['valid_thru'] ?? null;
+    $inputCVV = $_POST['cvv'] ?? null;
 
-    // Query the bank_card table for matching card details
-    $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
-    $stmt->bind_param("ssss", $inputCardName, $inputCardNumber, $inputValidThru, $inputCVV);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // Proceed only if all fields are filled
+    if ($inputCardName && $inputCardNumber && $inputValidThru && $inputCVV) {
+        // Query the bank_card table for matching card details
+        $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
+        $stmt->bind_param("ssss", $inputCardName, $inputCardNumber, $inputValidThru, $inputCVV);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    // Check if a matching record was found
-    if ($result->num_rows === 0) {
-        $cardError = true; // Flag if no match is found
+        // Check if a matching record was found
+        if ($result->num_rows === 0) {
+            $cardError = true; // Flag if no match is found
+        } else {
+            // Call confirmPayment() in JavaScript if valid
+            echo "<script>confirmPayment();</script>";
+        }
+
+        $stmt->close();
     } else {
-        // Call confirmPayment() in JavaScript if valid
-        echo "<script>confirmPayment();</script>";
+        // Handle missing field inputs here if needed
+        echo "<script>alert('Please fill in all card details.');</script>";
     }
-
-    $stmt->close();
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -1201,7 +1206,7 @@ function handleSubmit(event) {
             }, 2000); 
         }
 
-		
+
 function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
