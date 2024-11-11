@@ -78,9 +78,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $card_holder_name = $_POST['card_holder_name'];
     $card_number = str_replace(' ', '', $_POST['cardNum']);
     $valid_thru = $_POST['expiry-date'];
-    $cvv = (int)$_POST['cvv']; // 确保CVV为整数
+    $cvv = $_POST['cvv'];
 
-    // 使用适当的绑定类型
     $stmt = $conn->prepare("SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?");
 	$stmt->bind_param("ssss", $card_holder_name, $card_number, $valid_thru, $cvv);
     $stmt->execute();
@@ -94,6 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt->close();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -1171,16 +1171,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 function handleSubmit(event) {
-    // 阻止默认提交
     event.preventDefault();
 
-    // 验证表单
+    // 如果表单验证通过，提交表单
     if (validateForm()) {
-        // 显示支付处理中弹窗
         document.getElementById('paymentOverlay').style.display = 'block';
-        
-        // 提交表单
-        event.target.submit();
+        document.querySelector('form').submit(); // 提交表单
     }
 }
 
