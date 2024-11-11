@@ -76,29 +76,30 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // 获取表单输入的卡信息
-    $cardHolderName = $_POST['cardHolderName'];
-    $cardNum = str_replace(' ', '', $_POST['cardNum']); // 移除空格
-    $expiryDate = $_POST['expiry-date'];
-    $cvv = $_POST['cvv'];
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
-    // 验证卡信息是否存在于数据库中
-    $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        // 卡信息匹配，可以继续处理支付逻辑
-        echo "<script>alert('Payment successful');</script>";
-        // 添加更多支付逻辑，例如创建订单、生成收据等
+    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+        echo "<script>alert('Please fill in all required fields.');</script>";
     } else {
-        // 卡信息不匹配，显示错误消息
-        echo "<script>alert('Invalid card details');</script>";
+        // 验证卡信息是否存在于数据库中
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            echo "<script>alert('Payment successful');</script>";
+            // 添加更多支付逻辑，例如创建订单、生成收据等
+        } else {
+            echo "<script>alert('Invalid card details');</script>";
+        }
+
+        $stmt->close();
     }
-
-    $stmt->close();
-
 }
 ?>
 
