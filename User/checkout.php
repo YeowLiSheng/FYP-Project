@@ -605,13 +605,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<!-- Confirm Payment Button -->
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
-						<!-- Payment Processing Popup -->
-						<div class="overlay" id="paymentOverlay">
-							<div class="popup" id="popupContent">
-								<div class="spinner"></div>
-								<p>Payment Processing...</p>
-							</div>
-						</div>
 					</div>
 				</div>
 			</form>
@@ -1206,29 +1199,6 @@ function handleSubmit(event) {
     }
 }
 
-function confirmPayment() {
-    // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
-    }
-
-    // Show overlay and processing status
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
-
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
-}
-function goToDashboard() {
-		
-		window.location.href = 'dashboard.php';
-	}
 
 
 
