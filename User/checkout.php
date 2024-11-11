@@ -74,31 +74,32 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 	echo "<p>Your cart is empty.</p>";
 }
 
-// 如果表单被提交
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	$cardHolderName = $_POST['cardHolderName'];
-	$cardNum = str_replace(' ', '', $_POST['cardNum']); // 移除空格
-	$expiryDate = $_POST['expiryDate'];
-	$cvv = $_POST['cvv'];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // 获取表单输入的卡信息
+    $cardHolderName = $_POST['cardHolderName'];
+    $cardNum = str_replace(' ', '', $_POST['cardNum']); // 移除空格
+    $expiryDate = $_POST['expiry-date'];
+    $cvv = $_POST['cvv'];
 
-	// 从数据库中检查卡信息是否匹配
-	$card_query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-	$stmt = $conn->prepare($card_query);
-	$stmt->bind_param("sssi", $cardHolderName, $cardNum, $expiryDate, $cvv);
-	$stmt->execute();
-	$result = $stmt->get_result();
+    // 验证卡信息是否存在于数据库中
+    $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-	if ($result->num_rows > 0) {
-		// 匹配成功，显示付款成功信息
-		echo "<script>alert('支付成功！'); window.location.href = 'dashboard.php';</script>";
-	} else {
-		// 匹配失败，显示错误提示
-		echo "<script>alert('无效的卡信息，请检查您的输入。');</script>";
-	}
-	$stmt->close();
+    if ($result->num_rows > 0) {
+        // 卡信息匹配，可以继续处理支付逻辑
+        echo "<script>alert('Payment successful');</script>";
+        // 添加更多支付逻辑，例如创建订单、生成收据等
+    } else {
+        // 卡信息不匹配，显示错误消息
+        echo "<script>alert('Invalid card details');</script>";
+    }
+
+    $stmt->close();
+
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -446,7 +447,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return handleSubmit(event)">
+		<form action="checkout.php" method="post" onsubmit="return validateForm()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -1119,8 +1120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		function validateForm() {
-    // Get form fields
-    const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
+    const fullName = document.querySelector('input[name="cardHolderName"]');
     const cardNum = document.querySelector('input[name="cardNum"]');
     const expiryDate = document.getElementById('expiry-date');
     const cvv = document.getElementById('cvv');
@@ -1129,7 +1129,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     const state = document.getElementById('state');
     const postcode = document.getElementById('postcode');
 
-    // Check if all required fields are filled
     if (
         !fullName.value.trim() || 
         !cardNum.value.trim() || 
@@ -1141,39 +1140,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         !postcode.value.trim()
     ) {
         alert('Please fill in all required fields.');
-        return false; // Prevent form submission
+        return false;
     }
 
-    // Check card number format (should be 16 digits with spaces)
     const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
     if (!cardNumberPattern.test(cardNum.value)) {
         alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
         return false;
     }
 
-    // Check CVV length (should be 3 digits)
     if (cvv.value.length !== 3) {
         alert('Please enter a 3-digit CVV code.');
         return false;
     }
 
-    // Check expiration date format and validity (should be MM/YY format and not expired)
     const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!datePattern.test(expiryDate.value)) {
         alert('Please enter a valid expiration date (format: MM/YY).');
         return false;
     } else {
         const [month, year] = expiryDate.value.split('/').map(Number);
-        const currentYear = new Date().getFullYear() % 100; // last two digits of current year
-        const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
-
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
         if (year < currentYear || (year === currentYear && month < currentMonth)) {
             alert('Please enter a valid, non-expired expiration date.');
             return false;
         }
     }
 
-    return true; // Allow form submission if all fields pass validation
+    return true;
 }
 
 function handleSubmit(event) {
