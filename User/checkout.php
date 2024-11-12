@@ -8,12 +8,12 @@ $dbname = "fyp";
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
+    die("Connection failed: " . $conn->connect_error);
 }
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-	header("Location: login.php"); // Redirect to login page if not logged in
-	exit;
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
 
 // Retrieve the user information
@@ -23,19 +23,20 @@ $address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id 
 
 // Check if the query was successful and fetch user data
 if ($user_result && mysqli_num_rows($user_result) > 0) {
-	$user = mysqli_fetch_assoc($user_result);
+    $user = mysqli_fetch_assoc($user_result);
 } else {
-	echo "User not found.";
-	exit;
+    echo "User not found.";
+    exit;
 }
 
 // Fetch the address information if available
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
-	$address = mysqli_fetch_assoc($address_result);
+    $address = mysqli_fetch_assoc($address_result);
 }
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
+$cart_items = []; // Initialize cart_items as an array
 $cart_query = "
     SELECT 
         p.product_id,
@@ -57,102 +58,105 @@ $cart_query = "
 $cart_result = mysqli_query($conn, $cart_query);
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
+    while ($row = mysqli_fetch_assoc($cart_result)) {
+        $cart_items[] = $row; // Add each row to the $cart_items array
+    }
 
+    // Retrieve discount amount for the user from shopping_cart table
+    $discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+    $discount_result = mysqli_query($conn, $discount_query);
 
-
-	// Retrieve discount amount for the user from shopping_cart table
-	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
-	$discount_result = mysqli_query($conn, $discount_query);
-
-	if ($discount_result && mysqli_num_rows($discount_result) > 0) {
-		$discount_row = mysqli_fetch_assoc($discount_result);
-		$discount_amount = $discount_row['discount_amount'];
-	} else {
-		$discount_amount = 0; // Default to 0 if no discount is found
-	}
+    if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+        $discount_row = mysqli_fetch_assoc($discount_result);
+        $discount_amount = $discount_row['discount_amount'];
+    } else {
+        $discount_amount = 0; // Default to 0 if no discount is found
+    }
 } else {
-	echo "<p>Your cart is empty.</p>";
+    echo "<p>Your cart is empty.</p>";
 }
-$paymentSuccess = false; 
+
+$paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-	$cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
-	$expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
-	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-		echo "<script>alert('Please fill in all required fields.');</script>";
-	} else {
+    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+        echo "<script>alert('Please fill in all required fields.');</script>";
+    } else {
 
-		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-		$stmt = $conn->prepare($query);
-		$stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-		$stmt->execute();
-		$result = $stmt->get_result();
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		if ($result->num_rows > 0) {
+        if ($result->num_rows > 0) {
             $paymentSuccess = true;
-        } 
-		else {
+        } else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
-		$stmt->close();
-	}
+        $stmt->close();
+    }
 
-	// 如果支付成功，插入订单信息
-	if ($paymentSuccess) {
-		$shipping_address = $address ? ($address['address'] . ', ' . $address['city'] . ', ' . $address['state'] . ', ' . $address['postcode']) : '';
-		$shipping_method = 'Standard'; // 默认配送方式
-		$user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
-		$order_status = 'Preparing';
+    // If payment is successful, insert order information
+    if ($paymentSuccess) {
+        $shipping_address = $address ? ($address['address'] . ', ' . $address['city'] . ', ' . $address['state'] . ', ' . $address['postcode']) : '';
+        $shipping_method = 'Standard'; // Default shipping method
+        $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
+        $order_status = 'Preparing';
 
-		// 计算订单总金额
-		$grand_total = array_sum(array_column($cart_items, 'item_total_price'));
-		$delivery_charge = 10; // 固定配送费
-		$final_amount = $grand_total - $discount_amount + $delivery_charge;
+        // Calculate total amount of the order
+        if (!empty($cart_items)) {
+            $grand_total = array_sum(array_column($cart_items, 'item_total_price'));
+        } else {
+            $grand_total = 0;
+        }
 
-		// 插入到`orders`表
-		$order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message) 
-						VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
-		$stmt = $conn->prepare($order_query);
-		$stmt->bind_param("iddddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $shipping_method, $user_message);
-		$stmt->execute();
+        $delivery_charge = 10; // Fixed delivery charge
+        $final_amount = $grand_total - $discount_amount + $delivery_charge;
 
-		// 获取订单ID
-		$order_id = $conn->insert_id;
+        // Insert into `orders` table
+        $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message) 
+                        VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($order_query);
+        $stmt->bind_param("iddddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $shipping_method, $user_message);
+        $stmt->execute();
 
-		// 插入`order_details`表
-		foreach ($cart_items as $item) {
-			$product_id = $item['product_id'];
-			$product_name = $item['product_name'];
-			$quantity = $item['total_qty'];
-			$unit_price = $item['product_price'];
-			$total_price = $item['item_total_price'];
+        // Get the order ID
+        $order_id = $conn->insert_id;
 
-			$order_details_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) 
-									VALUES (?, ?, ?, ?, ?, ?)";
-			$stmt = $conn->prepare($order_details_query);
-			$stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
-			$stmt->execute();
-		}
+        // Insert into `order_details` table
+        foreach ($cart_items as $item) {
+            $product_id = $item['product_id'];
+            $product_name = $item['product_name'];
+            $quantity = $item['total_qty'];
+            $unit_price = $item['product_price'];
+            $total_price = $item['item_total_price'];
 
-	}
+            $order_details_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) 
+                                    VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($order_details_query);
+            $stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
+            $stmt->execute();
+        }
+    }
 }
-
 
 ?>
 
 <?php if ($paymentSuccess): ?>
-	<script>
-	window.onload = function() {
-	confirmPayment();
-	}
-	</script>
-	<?php endif; ?>			
-
+    <script>
+    window.onload = function() {
+        confirmPayment();
+    }
+    </script>
+<?php endif; ?>
 
 <!DOCTYPE html>
 <html lang="en">
