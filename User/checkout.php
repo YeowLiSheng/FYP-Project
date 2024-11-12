@@ -8,12 +8,12 @@ $dbname = "fyp";
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
+    die("Connection failed: " . $conn->connect_error);
 }
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-	header("Location: login.php"); // Redirect to login page if not logged in
-	exit;
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
 
 // Retrieve the user information
@@ -23,16 +23,16 @@ $address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id 
 
 // Check if the query was successful and fetch user data
 if ($user_result && mysqli_num_rows($user_result) > 0) {
-	$user = mysqli_fetch_assoc($user_result);
+    $user = mysqli_fetch_assoc($user_result);
 } else {
-	echo "User not found.";
-	exit;
+    echo "User not found.";
+    exit;
 }
 
 // Fetch the address information if available
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
-	$address = mysqli_fetch_assoc($address_result);
+    $address = mysqli_fetch_assoc($address_result);
 }
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
@@ -57,21 +57,18 @@ $cart_query = "
 $cart_result = mysqli_query($conn, $cart_query);
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
+    // Retrieve discount amount for the user from shopping_cart table
+    $discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+    $discount_result = mysqli_query($conn, $discount_query);
 
-
-
-	// Retrieve discount amount for the user from shopping_cart table
-	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
-	$discount_result = mysqli_query($conn, $discount_query);
-
-	if ($discount_result && mysqli_num_rows($discount_result) > 0) {
-		$discount_row = mysqli_fetch_assoc($discount_result);
-		$discount_amount = $discount_row['discount_amount'];
-	} else {
-		$discount_amount = 0; // Default to 0 if no discount is found
-	}
+    if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+        $discount_row = mysqli_fetch_assoc($discount_result);
+        $discount_amount = $discount_row['discount_amount'];
+    } else {
+        $discount_amount = 0; // Default to 0 if no discount is found
+    }
 } else {
-	echo "<p>Your cart is empty.</p>";
+    echo "<p>Your cart is empty.</p>";
 }
 
 // Form submission handling
@@ -93,10 +90,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute();
         $result = $stmt->get_result();
 
-		if ($result->num_rows > 0) {
-            echo "success"; // 匹配成功返回 'success'
+        if ($result->num_rows > 0) {
+            // 卡信息匹配成功
+            echo "<script>
+                showPaymentProcessing(true);
+            </script>";
         } else {
-            echo "error"; // 匹配失败返回 'error'
+            // 卡信息匹配失败
+            echo "<script>
+                showPaymentProcessing(false);
+            </script>";
         }
         $stmt->close();
     }
@@ -448,7 +451,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return submitPayment()">
+        <form action="checkout.php" method="post" onsubmit="return validateForm(event)"> <!-- Prevent default submit -->
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -1122,110 +1125,102 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			}
 		}
 
-		function validateForm() {
-    const fullName = document.querySelector('input[name="cardHolderName"]');
-    const cardNum = document.querySelector('input[name="cardNum"]');
-    const expiryDate = document.getElementById('expiry-date');
-    const cvv = document.getElementById('cvv');
-    const address = document.getElementById('address');
-    const city = document.getElementById('city');
-    const state = document.getElementById('state');
-    const postcode = document.getElementById('postcode');
+		function validateForm(event) {
+        event.preventDefault(); // Prevent form from reloading the page
 
-    if (
-        !fullName.value.trim() || 
-        !cardNum.value.trim() || 
-        !expiryDate.value.trim() || 
-        !cvv.value.trim() || 
-        !address.value.trim() ||
-        !city.value.trim() ||
-        !state.value.trim() ||
-        !postcode.value.trim()
-    ) {
-        alert('Please fill in all required fields.');
-        return false;
-    }
+        const fullName = document.querySelector('input[name="cardHolderName"]');
+        const cardNum = document.querySelector('input[name="cardNum"]');
+        const expiryDate = document.getElementById('expiry-date');
+        const cvv = document.getElementById('cvv');
+        const address = document.getElementById('address');
+        const city = document.getElementById('city');
+        const state = document.getElementById('state');
+        const postcode = document.getElementById('postcode');
 
-    const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
-    if (!cardNumberPattern.test(cardNum.value)) {
-        alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
-        return false;
-    }
-
-    if (cvv.value.length !== 3) {
-        alert('Please enter a 3-digit CVV code.');
-        return false;
-    }
-
-    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-    if (!datePattern.test(expiryDate.value)) {
-        alert('Please enter a valid expiration date (format: MM/YY).');
-        return false;
-    } else {
-        const [month, year] = expiryDate.value.split('/').map(Number);
-        const currentYear = new Date().getFullYear() % 100;
-        const currentMonth = new Date().getMonth() + 1;
-        if (year < currentYear || (year === currentYear && month < currentMonth)) {
-            alert('Please enter a valid, non-expired expiration date.');
+        if (
+            !fullName.value.trim() || 
+            !cardNum.value.trim() || 
+            !expiryDate.value.trim() || 
+            !cvv.value.trim() || 
+            !address.value.trim() ||
+            !city.value.trim() ||
+            !state.value.trim() ||
+            !postcode.value.trim()
+        ) {
+            alert('Please fill in all required fields.');
             return false;
         }
-    }
 
-    return true;
-}
-
-function submitPayment() {
-    if (!validateForm()) {
-        return false;
-    }
-    
-    const formData = new FormData(document.querySelector("form"));
-    
-    fetch("checkout.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.text())
-    .then(data => {
-        const isSuccessful = data.trim() === "success";
-        showPaymentProcessing(isSuccessful);
-    })
-    .catch(error => {
-        console.error("Error:", error);
-    });
-    
-    return false; // 阻止默认提交
-}
-
-function showPaymentProcessing(isSuccessful) {
-    document.getElementById('paymentOverlay').style.display = 'block';
-    document.getElementById('processingText').style.display = 'block';
-    setTimeout(() => {
-        document.getElementById('processingText').style.display = 'none';
-        if (isSuccessful) {
-            document.getElementById('checkmark').style.display = 'block';
-            document.getElementById('okButton').style.display = 'inline-block';
-        } else {
-            document.getElementById('cross').style.display = 'block';
-            document.getElementById('retryButton').style.display = 'inline-block';
+        const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
+        if (!cardNumberPattern.test(cardNum.value)) {
+            alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
+            return false;
         }
-    }, 2000); // 2-second delay
-}
 
-function redirectToDashboard() {
-    window.location.href = 'dashboard.php';
-}
+        if (cvv.value.length !== 3) {
+            alert('Please enter a 3-digit CVV code.');
+            return false;
+        }
 
-function retryPayment() {
-    document.getElementById('paymentOverlay').style.display = 'none';
-    document.getElementById('checkmark').style.display = 'none';
-    document.getElementById('cross').style.display = 'none';
-    document.getElementById('retryButton').style.display = 'none';
-    document.getElementById('okButton').style.display = 'none';
-}
+        const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+        if (!datePattern.test(expiryDate.value)) {
+            alert('Please enter a valid expiration date (format: MM/YY).');
+            return false;
+        } else {
+            const [month, year] = expiryDate.value.split('/').map(Number);
+            const currentYear = new Date().getFullYear() % 100;
+            const currentMonth = new Date().getMonth() + 1;
+            if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                alert('Please enter a valid, non-expired expiration date.');
+                return false;
+            }
+        }
 
+        // Proceed with the payment logic after validation
+        processPayment();
+        return false; // Prevent form submission so page doesn't reload
+    }
 
+    function processPayment() {
+        const cardHolderName = document.querySelector('input[name="cardHolderName"]').value;
+        const cardNum = document.querySelector('input[name="cardNum"]').value;
+        const expiryDate = document.getElementById('expiry-date').value;
+        const cvv = document.getElementById('cvv').value;
 
+        // Send the payment details to the backend for validation
+        // For now, we simulate success or failure based on mock conditions
+
+        if (cardNum === '1111 2222 3333 4444' && cvv === '123') {
+            showPaymentProcessing(true);
+        } else {
+            showPaymentProcessing(false);
+        }
+    }
+
+    function showPaymentProcessing(isSuccessful) {
+        document.getElementById('paymentOverlay').style.display = 'block';
+        document.getElementById('processingText').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('processingText').style.display = 'none';
+            if (isSuccessful) {
+                document.getElementById('checkmark').style.display = 'block';
+                document.getElementById('okButton').style.display = 'inline-block';
+            } else {
+                document.getElementById('cross').style.display = 'block';
+                document.getElementById('retryButton').style.display = 'inline-block';
+            }
+        }, 2000); // 2-second delay
+    }
+
+    function retryPayment() {
+        document.getElementById('paymentOverlay').style.display = 'none';
+        document.getElementById('checkmark').style.display = 'none';
+        document.getElementById('cross').style.display = 'none';
+    }
+
+    function closePaymentOverlay() {
+        window.location.href = 'dashboard.php'; // Redirect to a confirmation page
+    }
 	</script>
 </body>
 
