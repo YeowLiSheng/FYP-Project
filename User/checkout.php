@@ -77,7 +77,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // 获取表单输入的卡信息
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
+    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
     $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
