@@ -75,7 +75,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // 获取表单输入的卡信息
+   
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
     $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
@@ -84,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
         echo "<script>alert('Please fill in all required fields.');</script>";
     } else {
-        // 验证卡信息是否存在于数据库中
+        
         $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
@@ -92,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            echo "<script>alert('Payment successful');</script>";
-            // 添加更多支付逻辑，例如创建订单、生成收据等
+            echo "<script>confirmPayment()</script>";
+            
         } else {
             echo "<script>alert('Invalid card details');</script>";
         }
