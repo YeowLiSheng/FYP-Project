@@ -105,6 +105,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 ?>
 
+<?php if ($paymentSuccess): ?>
+	<script>
+	window.onload = function() {
+	confirmPayment();
+	}
+	</script>
+	<?php endif; ?>			
+
+
 <!DOCTYPE html>
 <html lang="en">
 
