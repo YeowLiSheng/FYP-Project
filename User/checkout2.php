@@ -448,7 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return validateForm()">
+		<form action="checkout2.php" method="post" onsubmit="return validateForm()">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
