@@ -1298,17 +1298,16 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     // Toggle category - if clicked again, deselect by setting to 'all'
     if (filters.category === categoryValue) {
         filters.category = 'all'; // Deselect if already selected
-        $(this).removeClass('selected'); // Remove blue highlight
     } else {
         filters.category = categoryValue; // Apply selected category value
         $('.filter-tope-group button').removeClass('selected'); // Remove highlight from other options
-        $(this).addClass('selected'); // Highlight the selected category
     }
 
     // Fetch and update the product list based on the selected filters
     updateProducts();
 });
 </script>
+
 <script src="js/main.js"></script>
 
 </body>
