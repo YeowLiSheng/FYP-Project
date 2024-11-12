@@ -510,7 +510,7 @@ if (isset($_POST["loginbtn"])) {
         </p>
 
         <div class="forgot-password">
-            <p><a href="reset_password.php">Forgot Password?</a></p>
+            <p><a href="forget_password.php">Forgot Password?</a></p>
         </div>
     </form>
 
