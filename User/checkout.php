@@ -73,6 +73,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 } else {
 	echo "<p>Your cart is empty.</p>";
 }
+$paymentSuccess = false; // 用于确定 PHP 是否验证通过
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
