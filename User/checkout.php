@@ -10,6 +10,7 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
 	die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
 	header("Location: login.php"); // Redirect to login page if not logged in
@@ -57,9 +58,6 @@ $cart_query = "
 $cart_result = mysqli_query($conn, $cart_query);
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-
-
-
 	// Retrieve discount amount for the user from shopping_cart table
 	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
 	$discount_result = mysqli_query($conn, $discount_query);
@@ -73,6 +71,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 } else {
 	echo "<p>Your cart is empty.</p>";
 }
+
 $paymentSuccess = false; 
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -101,12 +100,48 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 		$stmt->close();
 	}
-
-	
 }
 
+// If payment is successful, process order
+if ($paymentSuccess) {
+    // Step 1: Insert order into `orders` table
+    $order_status = 'Processing'; // Default status
+    $delivery_charge = 10;
+    $grand_total = 0;
+    while ($row = mysqli_fetch_assoc($cart_result)) {
+        $grand_total += $row['item_total_price'];
+    }
+    $total_payment = $grand_total - $discount_amount + $delivery_charge;
+
+    $insert_order_query = "INSERT INTO orders (user_id, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($insert_order_query);
+    $stmt->bind_param("idddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $total_payment, $order_status, $address['address'], 'Standard', '');
+    $stmt->execute();
+    $order_id = $stmt->insert_id;
+    $stmt->close();
+
+    // Step 2: Insert order details into `order_details` table
+    mysqli_data_seek($cart_result, 0); // Reset the cart query result pointer
+    while ($row = mysqli_fetch_assoc($cart_result)) {
+        $insert_order_details_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) 
+                                        VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($insert_order_details_query);
+        $stmt->bind_param("iisddd", $order_id, $row['product_id'], $row['product_name'], $row['total_qty'], $row['product_price'], $row['item_total_price']);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    // Step 3: Clear the shopping cart
+    $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = '$user_id'";
+    mysqli_query($conn, $clear_cart_query);
+
+    echo "<script>alert('Order placed successfully!'); window.location.href='dashboard.php';</script>";
+}
 
 ?>
+
+
 
 <?php if ($paymentSuccess): ?>
 	<script>
