@@ -448,7 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="return validateForm()">
+		<form action="checkout.php" method="post" onsubmit="handleSubmit(event)">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -1173,22 +1173,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 function handleSubmit(event) {
-    // Prevent form submission for JavaScript validation
-    event.preventDefault();
+    event.preventDefault(); // Prevent form from submitting
 
-    // Validate form fields
     if (validateForm()) {
-        confirmPayment(); // Show payment processing overlay if valid
+        confirmPayment(); // Show payment overlay if valid
     }
 }
 
 function confirmPayment() {
-    // Run validation again to ensure all fields are filled
-    if (!validateForm()) {
-        return; // Stop if form is invalid
-    }
-
-    // Show overlay and processing status
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
@@ -1201,12 +1193,10 @@ function confirmPayment() {
         `;
     }, 2000); 
 }
+
 function goToDashboard() {
-		
-		window.location.href = 'dashboard.php';
-	}
-
-
+    window.location.href = 'dashboard.php';
+}
 
 
 
