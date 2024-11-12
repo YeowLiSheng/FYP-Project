@@ -77,7 +77,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // 获取表单输入的卡信息
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
     $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
@@ -101,8 +101,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->close();
     }
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -450,7 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-			<form action="checkout2.php" method="POST" onsubmit="return handleSubmit(event)">
+		<form action="checkout.php" method="post" onsubmit="return validateForm()">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -580,7 +578,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 						<!-- Confirm Payment Button -->
-						<button type="submit" class="checkout-btn" onclick="confirmPayment()">Confirm Payment</button>
+						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1024,7 +1022,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 	<script>
 
-		function toggleAutofill() {
+function toggleAutofill() {
 			const autofillCheckbox = document.getElementById('autofill-checkbox');
 			const address = document.getElementById('address');
 			const city = document.getElementById('city');
@@ -1122,8 +1120,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		}
 
 		function validateForm() {
-    // Get form fields
-    const fullName = document.querySelector('input[placeholder="Cheong Wei Kit"]');
+    const fullName = document.querySelector('input[name="cardHolderName"]');
     const cardNum = document.querySelector('input[name="cardNum"]');
     const expiryDate = document.getElementById('expiry-date');
     const cvv = document.getElementById('cvv');
@@ -1132,7 +1129,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     const state = document.getElementById('state');
     const postcode = document.getElementById('postcode');
 
-    // Check if all required fields are filled
     if (
         !fullName.value.trim() || 
         !cardNum.value.trim() || 
@@ -1144,39 +1140,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         !postcode.value.trim()
     ) {
         alert('Please fill in all required fields.');
-        return false; // Prevent form submission
+        return false;
     }
 
-    // Check card number format (should be 16 digits with spaces)
     const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
     if (!cardNumberPattern.test(cardNum.value)) {
         alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
         return false;
     }
 
-    // Check CVV length (should be 3 digits)
     if (cvv.value.length !== 3) {
         alert('Please enter a 3-digit CVV code.');
         return false;
     }
 
-    // Check expiration date format and validity (should be MM/YY format and not expired)
     const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!datePattern.test(expiryDate.value)) {
         alert('Please enter a valid expiration date (format: MM/YY).');
         return false;
     } else {
         const [month, year] = expiryDate.value.split('/').map(Number);
-        const currentYear = new Date().getFullYear() % 100; // last two digits of current year
-        const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
-
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
         if (year < currentYear || (year === currentYear && month < currentMonth)) {
             alert('Please enter a valid, non-expired expiration date.');
             return false;
         }
     }
 
-    return true; // Allow form submission if all fields pass validation
+    return true;
 }
 
 function handleSubmit(event) {
@@ -1212,7 +1204,6 @@ function goToDashboard() {
 		
 		window.location.href = 'dashboard.php';
 	}
-
 
 
 
