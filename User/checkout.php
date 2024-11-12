@@ -585,13 +585,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<!-- Confirm Payment Button -->
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
-						<?php if ($paymentSuccess): ?>
-						<script>
-    					window.onload = function() {
-        				confirmPayment();
-    					}
-						</script>
-						<?php endif; ?>						
+									
 						
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -1185,6 +1179,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		}
 
 	
+		<?php if ($paymentSuccess): ?>
+						<script>
+    					window.onload = function() {
+        				confirmPayment();
+    					}
+						</script>
+						<?php endif; ?>			
+
 		function confirmPayment() {
 			const overlay = document.getElementById('paymentOverlay');
 			const popupContent = document.getElementById('popupContent');
