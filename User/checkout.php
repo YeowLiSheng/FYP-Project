@@ -101,6 +101,45 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 		$stmt->close();
 	}
+
+	// 如果支付成功，插入订单信息
+	if ($paymentSuccess) {
+		$shipping_address = $address ? ($address['address'] . ', ' . $address['city'] . ', ' . $address['state'] . ', ' . $address['postcode']) : '';
+		$shipping_method = 'Standard'; // 默认配送方式
+		$user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
+		$order_status = 'Preparing';
+
+		// 计算订单总金额
+		$grand_total = array_sum(array_column($cart_items, 'item_total_price'));
+		$delivery_charge = 10; // 固定配送费
+		$final_amount = $grand_total - $discount_amount + $delivery_charge;
+
+		// 插入到`orders`表
+		$order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message) 
+						VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
+		$stmt = $conn->prepare($order_query);
+		$stmt->bind_param("iddddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $shipping_method, $user_message);
+		$stmt->execute();
+
+		// 获取订单ID
+		$order_id = $conn->insert_id;
+
+		// 插入`order_details`表
+		foreach ($cart_items as $item) {
+			$product_id = $item['product_id'];
+			$product_name = $item['product_name'];
+			$quantity = $item['total_qty'];
+			$unit_price = $item['product_price'];
+			$total_price = $item['item_total_price'];
+
+			$order_details_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) 
+									VALUES (?, ?, ?, ?, ?, ?)";
+			$stmt = $conn->prepare($order_details_query);
+			$stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
+			$stmt->execute();
+		}
+
+	}
 }
 
 
