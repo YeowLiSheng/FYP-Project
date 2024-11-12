@@ -94,13 +94,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
 		if ($result->num_rows > 0) {
-            echo "<script>
-                showPaymentProcessing(true);
-            </script>";
+            echo "success"; // 匹配成功返回 'success'
         } else {
-            echo "<script>
-                showPaymentProcessing(false);
-            </script>";
+            echo "error"; // 匹配失败返回 'error'
         }
         $stmt->close();
     }
@@ -452,7 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-        <form action="checkout.php" method="post" onsubmit="return validateForm()">
+		<form action="checkout.php" method="post" onsubmit="return submitPayment()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -1176,6 +1172,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     return true;
+}
+
+function submitPayment() {
+    if (!validateForm()) {
+        return false;
+    }
+    
+    const formData = new FormData(document.querySelector("form"));
+    
+    fetch("checkout.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        const isSuccessful = data.trim() === "success";
+        showPaymentProcessing(isSuccessful);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+    
+    return false; // 阻止默认提交
 }
 
 function showPaymentProcessing(isSuccessful) {
