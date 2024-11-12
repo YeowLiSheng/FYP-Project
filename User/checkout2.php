@@ -75,16 +75,16 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-   
+    // 获取表单输入的卡信息
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
     $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
     if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
         echo "<script>alert('Please fill in all required fields.');</script>";
     } else {
-        
+        // 验证卡信息是否存在于数据库中
         $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
@@ -92,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            echo "<script>confirmPayment()</script>";
-            
+            echo "<script>alert('Payment successful');</script>";
+            // 添加更多支付逻辑，例如创建订单、生成收据等
         } else {
             echo "<script>alert('Invalid card details');</script>";
         }
@@ -448,8 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="handleSubmit(event)">
-
+		<form action="checkout2.php" method="post" onsubmit="return validateForm()">
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
 					<div class="checkout-column">
@@ -499,7 +498,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="cardHolderName" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" placeholder="Cheong Wei Kit" autocomplete="off" required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -516,13 +515,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" id="expiry-date" placeholder="MM/YY" required>
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
+								<input type="number" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
 									required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
@@ -1023,7 +1022,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 	<script>
 
-		function toggleAutofill() {
+function toggleAutofill() {
 			const autofillCheckbox = document.getElementById('autofill-checkbox');
 			const address = document.getElementById('address');
 			const city = document.getElementById('city');
@@ -1173,14 +1172,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 function handleSubmit(event) {
-    event.preventDefault(); // Prevent form from submitting
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
+    // Validate form fields
     if (validateForm()) {
-        confirmPayment(); // Show payment overlay if valid
+        confirmPayment(); // Show payment processing overlay if valid
     }
 }
 
 function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
+
+    // Show overlay and processing status
     const overlay = document.getElementById('paymentOverlay');
     const popupContent = document.getElementById('popupContent');
     overlay.classList.add('show');
@@ -1193,10 +1200,11 @@ function confirmPayment() {
         `;
     }, 2000); 
 }
-
 function goToDashboard() {
-    window.location.href = 'dashboard.php';
-}
+		
+		window.location.href = 'dashboard.php';
+	}
+
 
 
 
