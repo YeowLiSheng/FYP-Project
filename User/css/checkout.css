@@ -190,21 +190,37 @@
 }
 
 /* Overlay background covering the entire screen */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
+.overlay { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.5); }
+.processing-box { 
+    width: 300px; 
+    margin: 100px auto; 
+    padding: 20px; 
+    background: #fff; 
+    text-align: center; 
 }
+.checkmark { 
+    color: green; 
+    font-size: 2em; 
+    display: none; }
+
+.cross { 
+    color: red; 
+    font-size: 2em; 
+    display: none; }
+
+.processing 
+{ color: #333; 
+    font-size: 1.5em; 
+}
+
+.retry, .ok-button { margin-top: 10px; padding: 10px 20px; }
 
 /* Popup content */
 .popup {

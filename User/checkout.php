@@ -93,120 +93,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
-            // 卡信息匹配
+		if ($result->num_rows > 0) {
             echo "<script>
-        // Create processing overlay
-        document.body.innerHTML += `
-            <div id='processing'>
-                <p>Processing Payment...</p>
-            </div>
-            <style>
-                #processing {
-                    position: fixed;
-                    top: 0; left: 0; right: 0; bottom: 0;
-                    display: flex; align-items: center; justify-content: center;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    color: white; font-size: 24px;
-                }
-                #success-popup {
-                    display: none;
-                    position: fixed;
-                    top: 50%; left: 50%;
-                    transform: translate(-50%, -50%);
-                    background-color: #d4edda;
-                    border: 1px solid #c3e6cb;
-                    padding: 20px;
-                    text-align: center;
-                    border-radius: 10px;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-                }
-                #success-popup p {
-                    margin: 0;
-                    color: #155724;
-                    font-size: 20px;
-                }
-                #success-popup button {
-                    margin-top: 10px;
-                    padding: 5px 15px;
-                    border: none;
-                    background-color: #28a745;
-                    color: white;
-                    cursor: pointer;
-                    border-radius: 5px;
-                    font-size: 16px;
-                }
-                #success-popup button:hover {
-                    background-color: #218838;
-                }
-                .checkmark {
-                    width: 56px;
-                    height: 56px;
-                    border-radius: 50%;
-                    display: block;
-                    stroke-width: 2;
-                    stroke: #28a745;
-                    stroke-miterlimit: 10;
-                    margin: 10px auto;
-                    box-shadow: inset 0px 0px 0px #28a745;
-                    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-                }
-                .checkmark__circle {
-                    stroke-dasharray: 166;
-                    stroke-dashoffset: 166;
-                    stroke-width: 2;
-                    stroke-miterlimit: 10;
-                    stroke: #28a745;
-                    fill: none;
-                    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-                }
-                .checkmark__check {
-                    transform-origin: 50% 50%;
-                    stroke-dasharray: 48;
-                    stroke-dashoffset: 48;
-                    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) .5s forwards;
-                }
-                @keyframes stroke {
-                    100% {
-                        stroke-dashoffset: 0;
-                    }
-                }
-                @keyframes scale {
-                    0%, 100% {
-                        transform: none;
-                    }
-                    50% {
-                        transform: scale3d(1.1, 1.1, 1);
-                    }
-                }
-                @keyframes fill {
-                    100% {
-                        box-shadow: inset 0px 0px 0px 30px #d4edda;
-                    }
-                }
-            </style>
-        `;
-
-        // Show payment processing and then success animation
-        setTimeout(function() {
-            document.getElementById('processing').remove();
-            document.body.innerHTML += `
-                <div id='success-popup'>
-                    <div class='checkmark'>
-                        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 52 52'>
-                            <circle class='checkmark__circle' cx='26' cy='26' r='25' fill='none'/>
-                            <path class='checkmark__check' fill='none' d='M14 27l7 7 17-17'/>
-                        </svg>
-                    </div>
-                    <p>Payment Successful!</p>
-                    <button onclick='window.location.href = \"dashboard.php\";'>OK</button>
-                </div>
-            `;
-        }, 2000);
-    </script>";} 
-	else {
-            // 卡信息不匹配
-            echo "<script>alert('Invalid card details');</script>";
+                showPaymentProcessing(true);
+            </script>";
+        } else {
+            echo "<script>
+                showPaymentProcessing(false);
+            </script>";
         }
         $stmt->close();
     }
@@ -690,7 +584,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						<!-- Confirm Payment Button -->
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
-
+						
+						<div class="overlay" id="paymentOverlay">
+    						<div class="processing-box">
+        					<div id="processingText" class="processing">Processing...</div>
+        					<div id="checkmark" class="checkmark">✔ Payment Successful</div>
+        					<div id="cross" class="cross">✘ Invalid Card Details</div>
+        					<button id="retryButton" class="retry" onclick="retryPayment()" style="display:none;">Retry</button>
+        					<button id="okButton" class="ok-button" onclick="redirectToDashboard()" style="display:none;">OK</button>
+    						</div>
+						</div>						
 					</div>
 				</div>
 			</form>
@@ -1275,7 +1178,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     return true;
 }
 
+function showPaymentProcessing(isSuccessful) {
+    document.getElementById('paymentOverlay').style.display = 'block';
+    document.getElementById('processingText').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('processingText').style.display = 'none';
+        if (isSuccessful) {
+            document.getElementById('checkmark').style.display = 'block';
+            document.getElementById('okButton').style.display = 'inline-block';
+        } else {
+            document.getElementById('cross').style.display = 'block';
+            document.getElementById('retryButton').style.display = 'inline-block';
+        }
+    }, 2000); // 2-second delay
+}
 
+function redirectToDashboard() {
+    window.location.href = 'dashboard.php';
+}
+
+function retryPayment() {
+    document.getElementById('paymentOverlay').style.display = 'none';
+    document.getElementById('checkmark').style.display = 'none';
+    document.getElementById('cross').style.display = 'none';
+    document.getElementById('retryButton').style.display = 'none';
+    document.getElementById('okButton').style.display = 'none';
+}
 
 
 
