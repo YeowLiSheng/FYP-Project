@@ -1,3 +1,107 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fyp";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+	die("Connection failed: " . $conn->connect_error);
+}
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+	header("Location: login.php"); // Redirect to login page if not logged in
+	exit;
+}
+
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$user_result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($user_result && mysqli_num_rows($user_result) > 0) {
+	$user = mysqli_fetch_assoc($user_result);
+} else {
+	echo "User not found.";
+	exit;
+}
+
+// Fetch the address information if available
+$address = null;
+if ($address_result && mysqli_num_rows($address_result) > 0) {
+	$address = mysqli_fetch_assoc($address_result);
+}
+
+// Retrieve unique products with total quantity and price in the cart for the logged-in user
+$cart_query = "
+    SELECT 
+        p.product_id,
+        p.product_name, 
+        p.product_price, 
+        p.product_image,
+        SUM(sc.qty) AS total_qty, 
+        (p.product_price * SUM(sc.qty)) AS item_total_price
+    FROM 
+        shopping_cart AS sc
+    JOIN 
+        product AS p ON sc.product_id = p.product_id
+    WHERE 
+        sc.user_id = '$user_id'
+    GROUP BY 
+        p.product_id
+";
+
+$cart_result = mysqli_query($conn, $cart_query);
+
+if ($cart_result && mysqli_num_rows($cart_result) > 0) {
+
+
+
+	// Retrieve discount amount for the user from shopping_cart table
+	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+	$discount_result = mysqli_query($conn, $discount_query);
+
+	if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+		$discount_row = mysqli_fetch_assoc($discount_result);
+		$discount_amount = $discount_row['discount_amount'];
+	} else {
+		$discount_amount = 0; // Default to 0 if no discount is found
+	}
+} else {
+	echo "<p>Your cart is empty.</p>";
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // 获取表单输入的卡信息
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+
+    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+        echo "<script>alert('Please fill in all required fields.');</script>";
+    } else {
+        // 验证卡信息是否存在于数据库中
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            echo "<script>alert('Payment successful');</script>";
+            // 添加更多支付逻辑，例如创建订单、生成收据等
+        } else {
+            echo "<script>alert('Invalid card details');</script>";
+        }
+
+        $stmt->close();
+    }
+}
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -344,6 +448,7 @@
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
+		<form action="checkout.php" method="post" onsubmit="return validateForm()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -474,6 +579,7 @@
 
 
 						<!-- Confirm Payment Button -->
+						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
@@ -917,6 +1023,188 @@
 
 	<script>
 
+		function toggleAutofill() {
+			const autofillCheckbox = document.getElementById('autofill-checkbox');
+			const address = document.getElementById('address');
+			const city = document.getElementById('city');
+			const state = document.getElementById('state');
+			const postcode = document.getElementById('postcode');
+
+			if (autofillCheckbox.checked) {
+				// Fill with saved data if checkbox is checked
+				address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+				city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+				state.value = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+				postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+			} else {
+				// Clear fields for manual input if checkbox is unchecked
+				address.value = "";
+				city.value = "";
+				state.value = "";
+				postcode.value = "";
+			}
+		}
+
+
+
+		document.getElementById('expiry-date').addEventListener('input', function () {
+			const input = this.value;
+			const error = document.getElementById('expiry-error');
+
+			// Check if the input matches MM/YY format using regex
+			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+			if (!datePattern.test(input)) {
+				error.style.display = 'none';
+				return;
+			}
+
+			// Parse month and year from input
+			const [month, year] = input.split('/').map(Number);
+			const currentYear = new Date().getFullYear() % 100; // last two digits of current year
+			const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+
+			// Check if the entered date is valid (current month/year or later)
+			if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+				error.style.display = 'none'; // hide error message if valid
+			} else {
+				error.style.display = 'block'; // show error message if expired
+				this.value = ''; // clear input field
+			}
+		});
+
+		function formatCardNumber(input) {
+			// Remove all spaces and get only digits
+			let cardNum = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+
+			// Split into groups of 4 digits
+			let formattedCardNum = cardNum.match(/.{1,4}/g);
+
+			// Join groups with a space
+			if (formattedCardNum) {
+				input.value = formattedCardNum.join(' ');
+			}
+		}
+
+		document.getElementById("expiry-date").addEventListener("input", function (e) {
+    const input = e.target;
+    let value = input.value.replace(/\D/g, ""); // Remove non-digit characters
+
+    // Insert '/' after the month if exactly two digits are entered
+    if (value.length > 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
+
+    // Limit to 5 characters (MM/YY)
+    if (value.length > 5) {
+        value = value.slice(0, 5);
+    }
+
+    input.value = value;
+});
+		function validateCVV() {
+			const cvvInput = document.getElementById("cvv");
+			const cvvError = document.getElementById("cvv-error");
+
+
+			if (cvvInput.value.length > 3) {
+				cvvInput.value = cvvInput.value.slice(0, 3);
+			}
+
+
+			if (cvvInput.value.length < 3) {
+				cvvInput.setCustomValidity("Please enter a 3-digit CVV code.");
+				cvvError.style.display = "inline";
+			} else {
+				cvvInput.setCustomValidity("");
+				cvvError.style.display = "none";
+			}
+		}
+
+		function validateForm() {
+    const fullName = document.querySelector('input[name="cardHolderName"]');
+    const cardNum = document.querySelector('input[name="cardNum"]');
+    const expiryDate = document.getElementById('expiry-date');
+    const cvv = document.getElementById('cvv');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
+
+    if (
+        !fullName.value.trim() || 
+        !cardNum.value.trim() || 
+        !expiryDate.value.trim() || 
+        !cvv.value.trim() || 
+        !address.value.trim() ||
+        !city.value.trim() ||
+        !state.value.trim() ||
+        !postcode.value.trim()
+    ) {
+        alert('Please fill in all required fields.');
+        return false;
+    }
+
+    const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
+    if (!cardNumberPattern.test(cardNum.value)) {
+        alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
+        return false;
+    }
+
+    if (cvv.value.length !== 3) {
+        alert('Please enter a 3-digit CVV code.');
+        return false;
+    }
+
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(expiryDate.value)) {
+        alert('Please enter a valid expiration date (format: MM/YY).');
+        return false;
+    } else {
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert('Please enter a valid, non-expired expiration date.');
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function handleSubmit(event) {
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
+
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
+}
+
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
+    }
+
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
+
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
+function goToDashboard() {
+		
+		window.location.href = 'dashboard.php';
+	}
 
 
 
