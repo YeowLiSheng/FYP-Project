@@ -8,12 +8,12 @@ $dbname = "fyp";
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+	die("Connection failed: " . $conn->connect_error);
 }
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
-    exit;
+	header("Location: login.php"); // Redirect to login page if not logged in
+	exit;
 }
 
 // Retrieve the user information
@@ -23,16 +23,16 @@ $address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id 
 
 // Check if the query was successful and fetch user data
 if ($user_result && mysqli_num_rows($user_result) > 0) {
-    $user = mysqli_fetch_assoc($user_result);
+	$user = mysqli_fetch_assoc($user_result);
 } else {
-    echo "User not found.";
-    exit;
+	echo "User not found.";
+	exit;
 }
 
 // Fetch the address information if available
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
-    $address = mysqli_fetch_assoc($address_result);
+	$address = mysqli_fetch_assoc($address_result);
 }
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
@@ -57,30 +57,31 @@ $cart_query = "
 $cart_result = mysqli_query($conn, $cart_query);
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-    // Retrieve discount amount for the user from shopping_cart table
-    $discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
-    $discount_result = mysqli_query($conn, $discount_query);
 
-    if ($discount_result && mysqli_num_rows($discount_result) > 0) {
-        $discount_row = mysqli_fetch_assoc($discount_result);
-        $discount_amount = $discount_row['discount_amount'];
-    } else {
-        $discount_amount = 0; // Default to 0 if no discount is found
-    }
+
+
+	// Retrieve discount amount for the user from shopping_cart table
+	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+	$discount_result = mysqli_query($conn, $discount_query);
+
+	if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+		$discount_row = mysqli_fetch_assoc($discount_result);
+		$discount_amount = $discount_row['discount_amount'];
+	} else {
+		$discount_amount = 0; // Default to 0 if no discount is found
+	}
 } else {
-    echo "<p>Your cart is empty.</p>";
+	echo "<p>Your cart is empty.</p>";
 }
 
-// Form submission handling
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // 获取用户输入的卡信息
-    $cardHolderName = trim($_POST['cardHolderName']);
-    $cardNum = trim($_POST['cardNum']);
-    $expiryDate = trim($_POST['expiry-date']);
-    $cvv = trim($_POST['cvv']);
+    // 获取表单输入的卡信息
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? str_replace(' ', '', $_POST['cardNum']) : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
-    // 检查表单是否为空
-    if (empty($cardHolderName) || empty($cardNum) || empty($expiryDate) || empty($cvv)) {
+    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
         echo "<script>alert('Please fill in all required fields.');</script>";
     } else {
         // 验证卡信息是否存在于数据库中
@@ -91,16 +92,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            // 卡信息匹配成功
-            echo "<script>
-                showPaymentProcessing(true);
-            </script>";
+            echo "<script>alert('Payment successful');</script>";
+            // 添加更多支付逻辑，例如创建订单、生成收据等
         } else {
-            // 卡信息匹配失败
-            echo "<script>
-                showPaymentProcessing(false);
-            </script>";
+            echo "<script>alert('Invalid card details');</script>";
         }
+
         $stmt->close();
     }
 }
@@ -451,7 +448,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-        <form action="checkout.php" method="post" onsubmit="return validateForm(event)"> <!-- Prevent default submit -->
+		<form action="checkout.php" method="post" onsubmit="return validateForm()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -583,16 +580,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						<!-- Confirm Payment Button -->
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
-						
+
+						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
-    						<div class="processing-box">
-        					<div id="processingText" class="processing">Processing...</div>
-        					<div id="checkmark" class="checkmark">✔ Payment Successful</div>
-        					<div id="cross" class="cross">✘ Invalid Card Details</div>
-        					<button id="retryButton" class="retry" onclick="retryPayment()" style="display:none;">Retry</button>
-        					<button id="okButton" class="ok-button" onclick="redirectToDashboard()" style="display:none;">OK</button>
-    						</div>
-						</div>						
+							<div class="popup" id="popupContent">
+								<div class="spinner"></div>
+								<p>Payment Processing...</p>
+							</div>
+						</div>
 					</div>
 				</div>
 			</form>
@@ -1125,102 +1120,96 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			}
 		}
 
-		function validateForm(event) {
-        event.preventDefault(); // Prevent form from reloading the page
+		function validateForm() {
+    const fullName = document.querySelector('input[name="cardHolderName"]');
+    const cardNum = document.querySelector('input[name="cardNum"]');
+    const expiryDate = document.getElementById('expiry-date');
+    const cvv = document.getElementById('cvv');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
 
-        const fullName = document.querySelector('input[name="cardHolderName"]');
-        const cardNum = document.querySelector('input[name="cardNum"]');
-        const expiryDate = document.getElementById('expiry-date');
-        const cvv = document.getElementById('cvv');
-        const address = document.getElementById('address');
-        const city = document.getElementById('city');
-        const state = document.getElementById('state');
-        const postcode = document.getElementById('postcode');
+    if (
+        !fullName.value.trim() || 
+        !cardNum.value.trim() || 
+        !expiryDate.value.trim() || 
+        !cvv.value.trim() || 
+        !address.value.trim() ||
+        !city.value.trim() ||
+        !state.value.trim() ||
+        !postcode.value.trim()
+    ) {
+        alert('Please fill in all required fields.');
+        return false;
+    }
 
-        if (
-            !fullName.value.trim() || 
-            !cardNum.value.trim() || 
-            !expiryDate.value.trim() || 
-            !cvv.value.trim() || 
-            !address.value.trim() ||
-            !city.value.trim() ||
-            !state.value.trim() ||
-            !postcode.value.trim()
-        ) {
-            alert('Please fill in all required fields.');
+    const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
+    if (!cardNumberPattern.test(cardNum.value)) {
+        alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
+        return false;
+    }
+
+    if (cvv.value.length !== 3) {
+        alert('Please enter a 3-digit CVV code.');
+        return false;
+    }
+
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(expiryDate.value)) {
+        alert('Please enter a valid expiration date (format: MM/YY).');
+        return false;
+    } else {
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert('Please enter a valid, non-expired expiration date.');
             return false;
         }
-
-        const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
-        if (!cardNumberPattern.test(cardNum.value)) {
-            alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
-            return false;
-        }
-
-        if (cvv.value.length !== 3) {
-            alert('Please enter a 3-digit CVV code.');
-            return false;
-        }
-
-        const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-        if (!datePattern.test(expiryDate.value)) {
-            alert('Please enter a valid expiration date (format: MM/YY).');
-            return false;
-        } else {
-            const [month, year] = expiryDate.value.split('/').map(Number);
-            const currentYear = new Date().getFullYear() % 100;
-            const currentMonth = new Date().getMonth() + 1;
-            if (year < currentYear || (year === currentYear && month < currentMonth)) {
-                alert('Please enter a valid, non-expired expiration date.');
-                return false;
-            }
-        }
-
-        // Proceed with the payment logic after validation
-        processPayment();
-        return false; // Prevent form submission so page doesn't reload
     }
 
-    function processPayment() {
-        const cardHolderName = document.querySelector('input[name="cardHolderName"]').value;
-        const cardNum = document.querySelector('input[name="cardNum"]').value;
-        const expiryDate = document.getElementById('expiry-date').value;
-        const cvv = document.getElementById('cvv').value;
+    return true;
+}
 
-        // Send the payment details to the backend for validation
-        // For now, we simulate success or failure based on mock conditions
+function handleSubmit(event) {
+    // Prevent form submission for JavaScript validation
+    event.preventDefault();
 
-        if (cardNum === '1111 2222 3333 4444' && cvv === '123') {
-            showPaymentProcessing(true);
-        } else {
-            showPaymentProcessing(false);
-        }
+    // Validate form fields
+    if (validateForm()) {
+        confirmPayment(); // Show payment processing overlay if valid
+    }
+}
+
+function confirmPayment() {
+    // Run validation again to ensure all fields are filled
+    if (!validateForm()) {
+        return; // Stop if form is invalid
     }
 
-    function showPaymentProcessing(isSuccessful) {
-        document.getElementById('paymentOverlay').style.display = 'block';
-        document.getElementById('processingText').style.display = 'block';
-        setTimeout(() => {
-            document.getElementById('processingText').style.display = 'none';
-            if (isSuccessful) {
-                document.getElementById('checkmark').style.display = 'block';
-                document.getElementById('okButton').style.display = 'inline-block';
-            } else {
-                document.getElementById('cross').style.display = 'block';
-                document.getElementById('retryButton').style.display = 'inline-block';
-            }
-        }, 2000); // 2-second delay
-    }
+    // Show overlay and processing status
+    const overlay = document.getElementById('paymentOverlay');
+    const popupContent = document.getElementById('popupContent');
+    overlay.classList.add('show');
 
-    function retryPayment() {
-        document.getElementById('paymentOverlay').style.display = 'none';
-        document.getElementById('checkmark').style.display = 'none';
-        document.getElementById('cross').style.display = 'none';
-    }
+    setTimeout(() => {
+        popupContent.innerHTML = `
+            <div class="success-icon">✓</div>
+            <h2 class="success-title">Payment Successful</h2>
+            <button class="ok-btn" onclick="goToDashboard()">OK</button>
+        `;
+    }, 2000); 
+}
+function goToDashboard() {
+		
+		window.location.href = 'dashboard.php';
+	}
 
-    function closePaymentOverlay() {
-        window.location.href = 'dashboard.php'; // Redirect to a confirmation page
-    }
+
+
+
+
 	</script>
 </body>
 
