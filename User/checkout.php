@@ -102,57 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		$stmt->close();
 	}
 	
-	if ($paymentSuccess) {
-		// Step 1: Insert order data into `orders` table
-		$order_date = date('Y-m-d H:i:s');
-		$order_status = 'preparing'; // Default status when an order is created
 	
-		// Calculate the final amount
-		$delivery_charge = 10; // Assuming a fixed delivery charge
-		$final_amount = $grand_total - $discount_amount + $delivery_charge;
-	
-		// Prepare the insert query for `orders`
-		$stmt = $conn->prepare("INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		$stmt->bind_param("isddddssss", $user_id, $order_date, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $shipping_method, $user_message);
-	
-		// Set the necessary values
-		$shipping_address = $address['full_address']; // 从地址结果中获取完整地址
-		$shipping_method = "Standard"; // 假设配送方式为“标准配送”
-		$user_message = $_POST['user_message']; // 用户留言
-	
-		// Execute the statement
-		if ($stmt->execute()) {
-			// 获取生成的 `order_id`
-			$order_id = $stmt->insert_id;
-	
-			// Step 2: Insert each product in cart into `order_details`
-			foreach ($cart_result as $item) {
-				$product_id = $item['product_id'];
-				$product_name = $item['product_name'];
-				$quantity = $item['total_qty'];
-				$unit_price = $item['product_price'];
-				$total_price = $item['item_total_price'];
-	
-				// Prepare and execute the insert query for `order_details`
-				$detail_stmt = $conn->prepare("INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)");
-				$detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
-				$detail_stmt->execute();
-			}
-	
-			// Step 3: Clear the user's shopping cart
-			$clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
-			$clear_cart_stmt = $conn->prepare($clear_cart_query);
-			$clear_cart_stmt->bind_param("i", $user_id);
-			$clear_cart_stmt->execute();
-	
-			echo "<script>alert('Order placed successfully!');</script>";
-			echo "<script>window.location.href = 'dashboard.php';</script>";
-		} else {
-			echo "<script>alert('Failed to place order. Please try again.');</script>";
-		}
-	
-		$stmt->close();
-	}
 	
 }
 
