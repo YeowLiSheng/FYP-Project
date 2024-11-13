@@ -1,3 +1,34 @@
+<?php
+// Connect to the database
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fyp";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch orders with all products for each order
+function fetchOrdersWithProducts($conn, $status) {
+    $sql = "
+        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
+               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
+               MIN(p.product_image) AS product_image
+        FROM orders o
+        JOIN order_details od ON o.order_id = od.order_id
+        JOIN product p ON od.product_id = p.product_id
+        WHERE o.order_status = '$status'
+        GROUP BY o.order_id 
+        ORDER BY o.order_date DESC";
+    return $conn->query($sql);
+}
+
+$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
+$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
+$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,31 +44,21 @@
     }
     .sidebar {
         width: 250px;
-        background-color: #f4f4f4;
+        background-color: #f2f2f2;
         padding: 20px;
         height: 100vh;
         position: fixed;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     }
     .sidebar ul {
         list-style-type: none;
         padding: 0;
     }
     .sidebar ul li {
-        padding: 15px;
+        padding: 10px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        font-size: 16px;
-        border-radius: 8px;
-        transition: background-color 0.3s;
     }
     .sidebar ul li:hover {
-        background-color: #e0e0e0;
-    }
-    .sidebar ul li i {
-        margin-right: 10px;
-        color: #4caf50;
+        background-color: #ddd;
     }
     .content {
         margin-left: 270px;
@@ -113,14 +134,16 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li><i class="fa fa-user"></i> My account
+            <li>My account
                 <ul>
-                    <li><i class="fa fa-id-card"></i> My profile</li>
-                    <li><i class="fa fa-map-marker-alt"></i> My address</li>
-                    <li><i class="fa fa-key"></i> Change password</li>
+                    <li>My profile</li>
+                    <li>My address</li>
+                    <li>Change password</li>
                 </ul>
             </li>
-            <li><i class="fa fa-box"></i> My orders</li>
+            <li>My orders</li>
+            <li>My voucher</li>
+            <li>My reward point</li>
         </ul>
     </div>
 
