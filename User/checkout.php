@@ -102,47 +102,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		$stmt->close();
 	}
 	
-	if ($paymentSuccess) {
-        // 插入订单信息到 orders 表
-        $order_status = 'Preparing';
-		$shipping_address = isset($_POST['address']) ? $_POST['address'] : '';
-        $shipping_method = 'Standard'; // 需替换为实际数据
-		$user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
-		$grand_total = isset($_POST['grand_total']) ? $_POST['grand_total'] : 0; // 接收总金额
-		$delivery_charge = isset($_POST['delivery_charge']) ? $_POST['delivery_charge'] : 0; // 接收运费
-		$final_amount = $grand_total + $delivery_charge;
-
-        $insert_order = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message)
-                         VALUES ('$user_id', NOW(), '$grand_total', 0.00, '$delivery_charge', '$final_amount', '$order_status', '$shipping_address', '$shipping_method', '$user_message')";
-        if ($conn->query($insert_order) === TRUE) {
-            $order_id = $conn->insert_id;
-
-            // 插入订单详情到 order_details 表
-            $cart_query = "SELECT p.product_id, p.product_name, p.product_price, sc.qty 
-                           FROM shopping_cart sc 
-                           JOIN product p ON sc.product_id = p.product_id 
-                           WHERE sc.user_id = '$user_id'";
-            $cart_result = $conn->query($cart_query);
-
-            while ($row = $cart_result->fetch_assoc()) {
-                $product_id = $row['product_id'];
-                $product_name = $row['product_name'];
-                $unit_price = $row['product_price'];
-                $quantity = $row['qty'];
-                $total_price = $unit_price * $quantity;
-
-                $insert_detail = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price)
-                                  VALUES ('$order_id', '$product_id', '$product_name', '$quantity', '$unit_price', '$total_price')";
-                $conn->query($insert_detail);
-            }
-
-            // 清空购物车
-            $clear_cart = "DELETE FROM shopping_cart WHERE user_id = '$user_id'";
-            $conn->query($clear_cart);
-
-        
-        } 
-    }
 	
 }
 
@@ -566,7 +525,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Message for Seller :</span>
-							<input type="text" name="user_message" placeholder="leave a message (optional)">
+							<input type="text" placeholder="leave a message (optional)">
 						</div>
 
 						<div class="checkout-flex">
