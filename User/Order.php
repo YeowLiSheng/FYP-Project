@@ -138,7 +138,7 @@ function toggleDetails(orderId) {
 <body>
     <!-- 侧边栏 -->
     <div class="sidebar">
-        <h2>Dashboard</h2>
+        <h2></h2>
         <ul>
             <li onclick="toggleSubmenu('account-submenu')">
                 <i class="fa fa-user"></i> My Account
