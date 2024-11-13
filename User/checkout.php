@@ -105,12 +105,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	if ($paymentSuccess) {
         // 插入订单信息到 orders 表
         $order_status = 'Preparing';
-        $shipping_address = 'Sample Address'; // 需替换为实际数据
+		$shipping_address = isset($_POST['address']) ? $_POST['address'] : '';
         $shipping_method = 'Standard'; // 需替换为实际数据
-        $user_message = ''; // 可替换为用户输入的信息
-        $grand_total = 100; // 示例总金额，需替换为实际计算数据
-        $delivery_charge = 10;
-        $final_amount = $grand_total + $delivery_charge;
+		$user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
+		$grand_total = isset($_POST['grand_total']) ? $_POST['grand_total'] : 0; // 接收总金额
+		$delivery_charge = isset($_POST['delivery_charge']) ? $_POST['delivery_charge'] : 0; // 接收运费
+		$final_amount = $grand_total + $delivery_charge;
 
         $insert_order = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, shipping_method, user_message)
                          VALUES ('$user_id', NOW(), '$grand_total', 0.00, '$delivery_charge', '$final_amount', '$order_status', '$shipping_address', '$shipping_method', '$user_message')";
@@ -566,7 +566,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Message for Seller :</span>
-							<input type="text" placeholder="leave a message (optional)">
+							<input type="text" name="user_message" placeholder="leave a message (optional)">
 						</div>
 
 						<div class="checkout-flex">
