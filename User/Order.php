@@ -10,9 +10,15 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Get order data
-$order_sql = "SELECT * FROM orders ORDER BY order_date DESC";
-$order_result = $conn->query($order_sql);
+// Fetch orders based on their statuses
+function fetchOrders($conn, $status) {
+    $sql = "SELECT * FROM orders WHERE order_status = '$status' ORDER BY order_date DESC";
+    return $conn->query($sql);
+}
+
+$processing_orders = fetchOrders($conn, 'Processing');
+$shipping_orders = fetchOrders($conn, 'Shipping');
+$completed_orders = fetchOrders($conn, 'Complete');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,10 +63,6 @@ $order_result = $conn->query($order_sql);
         margin-top: 20px;
         font-weight: bold;
     }
-    .progress-bar div {
-        flex: 1;
-        height: 4px;
-    }
     .progress-bar .completed {
         background-color: #4caf50;
     }
@@ -72,7 +74,41 @@ $order_result = $conn->query($order_sql);
         text-align: center;
         margin-top: 50px;
     }
+    /* Tab style */
+    .tabs {
+        display: flex;
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+    .tabs button {
+        background: none;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .tabs button.active {
+        color: #4caf50;
+        border-bottom: 2px solid #4caf50;
+    }
+    .order-summary {
+        border: 1px solid #e0e0e0;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+    }
 </style>
+<script>
+    function showTab(status) {
+        document.querySelectorAll('.order-container').forEach(container => {
+            container.style.display = container.id === status ? 'block' : 'none';
+        });
+        document.querySelectorAll('.tabs button').forEach(button => {
+            button.classList.remove('active');
+        });
+        document.getElementById(status + '-tab').classList.add('active');
+    }
+</script>
 </head>
 <body>
     <!-- Sidebar -->
@@ -94,37 +130,71 @@ $order_result = $conn->query($order_sql);
     <!-- Content Area -->
     <div class="content">
         <h1>My Orders</h1>
-        <!-- Progress bar -->
-        <div class="progress-bar">
-            <div class="completed" style="flex: 2;"></div>
-            <div class="upcoming" style="flex: 1;"></div>
-            <div class="upcoming" style="flex: 1;"></div>
-        </div>
-        <div class="progress-labels" style="display: flex; justify-content: space-between; margin-top: 5px;">
-            <span>Processing</span>
-            <span>To ship</span>
-            <span>Completed</span>
+        <!-- Tab Buttons -->
+        <div class="tabs">
+            <button id="Processing-tab" onclick="showTab('Processing')" class="active">Processing</button>
+            <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
+            <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
         </div>
 
-        <?php
-        if ($order_result->num_rows > 0) {
-            // Loop through each order
-            while ($order = $order_result->fetch_assoc()) {
-                $order_id = $order["order_id"];
-                $order_status = $order["order_status"];
-                echo "<div class='order-summary'>";
-                echo "<h3>Order #" . $order["order_id"] . "</h3>";
-                echo "<p>Status: $order_status</p>";
-                echo "</div>";
-            }
-        } else {
-            echo "<div class='no-orders'>";
-            echo "<p><i class='fa fa-ice-cream'></i> Nothing to show here.</p>";
-            echo "<button onclick=\"window.location.href='shop.php'\">Continue Shopping</button>";
-            echo "</div>";
-        }
-        $conn->close();
-        ?>
+        <!-- Processing Orders -->
+        <div class="order-container" id="Processing" style="display: block;">
+            <?php if ($processing_orders->num_rows > 0) { ?>
+                <?php while ($order = $processing_orders->fetch_assoc()) { ?>
+                    <div class="order-summary">
+                        <h3>Order #<?php echo $order['order_id']; ?></h3>
+                        <p>Status: <?php echo $order['order_status']; ?></p>
+                        <p>Date: <?php echo $order['order_date']; ?></p>
+                        <button onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">View Details</button>
+                    </div>
+                <?php } ?>
+            <?php } else { ?>
+                <div class="no-orders">
+                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+                    <button onclick="window.location.href='shop.php'">Continue Shopping</button>
+                </div>
+            <?php } ?>
+        </div>
+
+        <!-- Shipping Orders -->
+        <div class="order-container" id="Shipping" style="display: none;">
+            <?php if ($shipping_orders->num_rows > 0) { ?>
+                <?php while ($order = $shipping_orders->fetch_assoc()) { ?>
+                    <div class="order-summary">
+                        <h3>Order #<?php echo $order['order_id']; ?></h3>
+                        <p>Status: <?php echo $order['order_status']; ?></p>
+                        <p>Date: <?php echo $order['order_date']; ?></p>
+                        <button onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">View Details</button>
+                    </div>
+                <?php } ?>
+            <?php } else { ?>
+                <div class="no-orders">
+                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+                    <button onclick="window.location.href='shop.php'">Continue Shopping</button>
+                </div>
+            <?php } ?>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="order-container" id="Complete" style="display: none;">
+            <?php if ($completed_orders->num_rows > 0) { ?>
+                <?php while ($order = $completed_orders->fetch_assoc()) { ?>
+                    <div class="order-summary">
+                        <h3>Order #<?php echo $order['order_id']; ?></h3>
+                        <p>Status: <?php echo $order['order_status']; ?></p>
+                        <p>Date: <?php echo $order['order_date']; ?></p>
+                        <button onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">View Details</button>
+                    </div>
+                <?php } ?>
+            <?php } else { ?>
+                <div class="no-orders">
+                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+                    <button onclick="window.location.href='shop.php'">Continue Shopping</button>
+                </div>
+            <?php } ?>
+        </div>
     </div>
+
+    <?php $conn->close(); ?>
 </body>
 </html>
