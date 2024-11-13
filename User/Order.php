@@ -1,4 +1,3 @@
-<?php
 // Connect to the database
 $servername = "localhost";
 $username = "root";
@@ -10,11 +9,12 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch orders based on their statuses with first product info
-function fetchOrdersWithFirstProduct($conn, $status) {
+// Fetch orders with all products for each order
+function fetchOrdersWithProducts($conn, $status) {
     $sql = "
         SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               p.product_name, p.product_image 
+               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
+               MIN(p.product_image) AS product_image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
         JOIN product p ON od.product_id = p.product_id
@@ -24,9 +24,9 @@ function fetchOrdersWithFirstProduct($conn, $status) {
     return $conn->query($sql);
 }
 
-$processing_orders = fetchOrdersWithFirstProduct($conn, 'Processing');
-$shipping_orders = fetchOrdersWithFirstProduct($conn, 'Shipping');
-$completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
+$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
+$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
+$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -161,10 +161,11 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
             <?php if ($processing_orders->num_rows > 0) { ?>
                 <?php while ($order = $processing_orders->fetch_assoc()) { ?>
                     <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
-                        <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
+                        <img src="images/<?php echo $order['product_image']; ?>" alt="Product Image">
                         <div>
                             <h3><i class="fa fa-box"></i> Order #<?php echo $order['order_id']; ?></h3>
-                            <p><i class="fa fa-tag"></i> Product: <?php echo $order['product_name']; ?></p>
+                            <p><i class="fa fa-calendar-alt"></i> Date: <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
+                            <p><i class="fa fa-tag"></i> Products: <?php echo $order['products']; ?></p>
                             <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
                         </div>
                     </div>
@@ -182,10 +183,11 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
             <?php if ($shipping_orders->num_rows > 0) { ?>
                 <?php while ($order = $shipping_orders->fetch_assoc()) { ?>
                     <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
-                        <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
+                        <img src="images/<?php echo $order['product_image']; ?>" alt="Product Image">
                         <div>
                             <h3><i class="fa fa-truck"></i> Order #<?php echo $order['order_id']; ?></h3>
-                            <p><i class="fa fa-tag"></i> Product: <?php echo $order['product_name']; ?></p>
+                            <p><i class="fa fa-calendar-alt"></i> Date: <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
+                            <p><i class="fa fa-tag"></i> Products: <?php echo $order['products']; ?></p>
                             <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
                         </div>
                     </div>
@@ -203,10 +205,11 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
             <?php if ($completed_orders->num_rows > 0) { ?>
                 <?php while ($order = $completed_orders->fetch_assoc()) { ?>
                     <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
-                        <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
+                        <img src="images/<?php echo $order['product_image']; ?>" alt="Product Image">
                         <div>
                             <h3><i class="fa fa-check-circle"></i> Order #<?php echo $order['order_id']; ?></h3>
-                            <p><i class="fa fa-tag"></i> Product: <?php echo $order['product_name']; ?></p>
+                            <p><i class="fa fa-calendar-alt"></i> Date: <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
+                            <p><i class="fa fa-tag"></i> Products: <?php echo $order['products']; ?></p>
                             <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
                         </div>
                     </div>
@@ -219,7 +222,5 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
             <?php } ?>
         </div>
     </div>
-
-    <?php $conn->close(); ?>
 </body>
 </html>
