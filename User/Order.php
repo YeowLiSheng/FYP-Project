@@ -124,22 +124,35 @@
     <h1>Order History</h1>
 
     <?php
-session_start();
+session_start(); // Start the session
 
-// 假设登录时将用户 ID 存储在 $_SESSION 中
-if (!isset($_SESSION['user_id'])) {
-    // 如果用户未登录，重定向到登录页面
-    header("Location: login.php");
-    exit();
+// Include the database connection file
+include("dataconnection.php"); 
+
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
 
-$user_id = $_SESSION['user_id']; // 使用当前登录用户的 ID
-
-// 连接数据库
-$conn = new mysqli("localhost", "root", "", "fyp");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+// Check if the database connection exists
+if (!isset($connect) || !$connect) {
+    die("Database connection failed.");
 }
+
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+} else {
+    echo "User not found.";
+    exit;
+}
+
+
 
 // 仅查询当前登录用户的订单
 $order_sql = "SELECT * FROM orders WHERE user_id = $user_id";
