@@ -483,10 +483,8 @@ $conn->close();
 								<div class="rs1-select2 bor8 bg0">
 									<select class="js-select2" name="time">
 										<option>Choose an option</option>
-										<option>Size S</option>
-										<option>Size M</option>
-										<option>Size L</option>
-										<option>Size XL</option>
+										<option value="size1"><?php echo $product['size1']; ?></option>
+                						<option value="size2"><?php echo $product['size2']; ?></option>
 									</select>
 									<div class="dropDownSelect2"></div>
 								</div>
@@ -502,10 +500,8 @@ $conn->close();
 								<div class="rs1-select2 bor8 bg0">
 									<select class="js-select2" name="time">
 										<option>Choose an option</option>
-										<option>Red</option>
-										<option>Blue</option>
-										<option>White</option>
-										<option>Grey</option>
+										<option value="color1"><?php echo $product['color1']; ?></option>
+                						<option value="color2"><?php echo $product['color2']; ?></option>
 									</select>
 									<div class="dropDownSelect2"></div>
 								</div>
