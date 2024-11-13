@@ -127,7 +127,7 @@ function toggleSubmenu(id) {
         submenu.style.display = 'block';
     }
 }
-d
+
 // 切换订单详情的显示和隐藏
 function toggleDetails(orderId) {
     const detailsContainer = document.getElementById('details-' + orderId);
