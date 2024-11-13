@@ -112,8 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<script>
 	window.onload = function() {
 	confirmPayment();
-	window.open('$receipt_file');
-
+	
 	}
 	</script>
 	<?php endif; ?>			
