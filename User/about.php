@@ -83,6 +83,33 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 </head>
+<style>
+.rainbow-text {
+    background: linear-gradient(to right, red, orange, yellow, green, indigo, violet);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Ensures the text is transparent on WebKit browsers */
+    color: transparent; /* Ensures the text is transparent on non-WebKit browsers */
+    font-weight: bold;
+    background-size: 200%;
+    animation: fadeRainbow 2s infinite;
+}
+
+@keyframes fadeRainbow {
+    0% { background-position: 0%; }
+    100% { background-position: 100%; }
+}
+.hov-img0 {
+    width: 500px; /* Adjust width as needed */
+    height: 500px; /* Adjust height as needed */
+    overflow: hidden; /* Ensures the video doesn’t exceed the container bounds */
+}
+.responsive-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the video covers the container without stretching */
+}
+</style>
 <body class="animsition">
 	
 	<!-- Header -->
@@ -101,9 +128,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
-						</a>
+						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -112,6 +137,23 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
+
+
+
+
+                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
+						</a>
+
+
+
 					</div>
 				</div>
 			</div>
@@ -137,11 +179,11 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 							</li>
 
 							<li>
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
@@ -149,11 +191,11 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 							</li>
 
 							<li class="active-menu">
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -353,8 +395,8 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 </div>
 
 	<!-- Title page -->
-	<section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url('images/bg-01.jpg');">
-		<h2 class="ltext-105 cl0 txt-center">
+	<section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url('images/banner.png');">
+		<h2 class="ltext-105 cl0 txt-center rainbow-text">
 			About
 		</h2>
 	</section>	
@@ -371,15 +413,39 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 						</h3>
 
 						<p class="stext-113 cl6 p-b-26">
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris consequat consequat enim, non auctor massa ultrices non. Morbi sed odio massa. Quisque at vehicula tellus, sed tincidunt augue. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Maecenas varius egestas diam, eu sodales metus scelerisque congue. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Maecenas gravida justo eu arcu egestas convallis. Nullam eu erat bibendum, tempus ipsum eget, dictum enim. Donec non neque ut enim dapibus tincidunt vitae nec augue. Suspendisse potenti. Proin ut est diam. Donec condimentum euismod tortor, eget facilisis diam faucibus et. Morbi a tempor elit.
-						</p>
-
-						<p class="stext-113 cl6 p-b-26">
-							Donec gravida lorem elit, quis condimentum ex semper sit amet. Fusce eget ligula magna. Aliquam aliquam imperdiet sodales. Ut fringilla turpis in vehicula vehicula. Pellentesque congue ac orci ut gravida. Aliquam erat volutpat. Donec iaculis lectus a arcu facilisis, eu sodales lectus sagittis. Etiam pellentesque, magna vel dictum rutrum, neque justo eleifend elit, vel tincidunt erat arcu ut sem. Sed rutrum, turpis ut commodo efficitur, quam velit convallis ipsum, et maximus enim ligula ac ligula. 
-						</p>
-
-						<p class="stext-113 cl6 p-b-26">
-							Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
+							<br>
+								2011 – Yeow Li Sheng meets Chong Jun Li after visiting the Guggenheim Museum in Bilbao. The idea of collaborating on the YLS Atelier project is launched.
+							</br>
+							<br>
+								October 2012 – In the presence of Helen Coonan, Minister for Culture and Communication, Harry C. Goode Jr., Mayor of Malbourne, and Chong Jun Li, the project's leader, Yeow Li Sheng, Chairman & Chief Executive Officer of the YLS group, and Cheong Wei Kit, Chairman of YLS Atelier, officially announce the creation of the YLS Atelier.
+							</br>
+							<br>
+								December 2012 – By an agreement reached with the City of Malbourne in December 2006 granting occupancy of public land, the YLS Atelier obtains a 55-year lease for a plot of 1 hectare on which to construct a building dedicated to art and creation.
+							</br>
+							<br>
+								August 2013 – Planning permission is granted.
+							</br>
+							<br>
+								March 20014 – Construction begins with the earthworks and diaphragm walls.
+							</br>
+							<br>
+								2017 – End of structural works and installation of the iceberg's metallic framework.
+							</br>
+							<br>
+								2018 – Installation of the iceberg's shells, the Ductal then the glass sails.
+							</br>
+							<br>
+								2019 – "the laying of the last stone".
+							</br>
+							<br>
+								28 February 2020 – Building reception.
+							</br>
+							<br>
+								Spring 2020 – Final landscaping of the YLS Atelier surroundings.
+							</br>
+							<br>
+								27 October 2020 – Public opening.
+							</br>
 						</p>
 					</div>
 				</div>
@@ -387,7 +453,9 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 				<div class="col-11 col-md-5 col-lg-4 m-lr-auto">
 					<div class="how-bor1 ">
 						<div class="hov-img0">
-							<img src="images/about-01.jpg" alt="IMG">
+    						<video class="responsive-video" src="images/VID.mp4" controls autoplay muted loop>
+        						Your browser does not support the video tag.
+    						</video>
 						</div>
 					</div>
 				</div>
@@ -401,7 +469,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 						</h3>
 
 						<p class="stext-113 cl6 p-b-26">
-							Mauris non lacinia magna. Sed nec lobortis dolor. Vestibulum rhoncus dignissim risus, sed consectetur erat. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nullam maximus mauris sit amet odio convallis, in pharetra magna gravida. Praesent sed nunc fermentum mi molestie tempor. Morbi vitae viverra odio. Pellentesque ac velit egestas, luctus arcu non, laoreet mauris. Sed in ipsum tempor, consequat odio in, porttitor ante. Ut mauris ligula, volutpat in sodales in, porta non odio. Pellentesque tempor urna vitae mi vestibulum, nec venenatis nulla lobortis. Proin at gravida ante. Mauris auctor purus at lacus maximus euismod. Pellentesque vulputate massa ut nisl hendrerit, eget elementum libero iaculis.
+							Driven by our mission to serve the public, we are committed to making art and culture accessible to all. To promote the arts both nationally and internationally, we hosts temporary exhibitions of modern and contemporary art, presents works held in its collection, commissions artists to create site-specific pieces, and stages events across the cultural spectrum (concerts, performances, conferences, film screenings, dance and more).
 						</p>
 
 						<div class="bor16 p-l-29 p-b-9 m-t-22">
@@ -419,7 +487,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 				<div class="order-md-1 col-11 col-md-5 col-lg-4 m-lr-auto p-b-30">
 					<div class="how-bor2">
 						<div class="hov-img0">
-							<img src="images/about-02.jpg" alt="IMG">
+							<img src="images/Show.png" alt="IMG">
 						</div>
 					</div>
 				</div>
