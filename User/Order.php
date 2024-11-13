@@ -89,10 +89,28 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
         align-items: center;
     }
     .order-summary img {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         object-fit: cover;
+        border-radius: 8px;
         margin-right: 15px;
+    }
+    .order-summary h3 {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    .order-summary p {
+        margin: 5px 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+    }
+    .order-summary i {
+        margin-right: 8px;
+        color: #555;
     }
     .no-orders {
         text-align: center;
@@ -145,9 +163,9 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
                     <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
                         <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
                         <div>
-                            <h3>Order #<?php echo $order['order_id']; ?></h3>
-                            <p>Product: <?php echo $order['product_name']; ?></p>
-                            <p>Total Price: $<?php echo $order['final_amount']; ?></p>
+                            <h3><i class="fa fa-box"></i> Order #<?php echo $order['order_id']; ?></h3>
+                            <p><i class="fa fa-tag"></i> Product: <?php echo $order['product_name']; ?></p>
+                            <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
                         </div>
                     </div>
                 <?php } ?>
@@ -166,9 +184,9 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
                     <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
                         <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
                         <div>
-                            <h3>Order #<?php echo $order['order_id']; ?></h3>
-                            <p>Product: <?php echo $order['product_name']; ?></p>
-                            <p>Total Price: $<?php echo $order['final_amount']; ?></p>
+                            <h3><i class="fa fa-truck"></i> Order #<?php echo $order['order_id']; ?></h3>
+                            <p><i class="fa fa-tag"></i> Product: <?php echo $order['product_name']; ?></p>
+                            <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
                         </div>
                     </div>
                 <?php } ?>
@@ -187,9 +205,9 @@ $completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
                     <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
                         <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
                         <div>
-                            <h3>Order #<?php echo $order['order_id']; ?></h3>
-                            <p>Product: <?php echo $order['product_name']; ?></p>
-                            <p>Total Price: $<?php echo $order['final_amount']; ?></p>
+                            <h3><i class="fa fa-check-circle"></i> Order #<?php echo $order['order_id']; ?></h3>
+                            <p><i class="fa fa-tag"></i> Product: <?php echo $order['product_name']; ?></p>
+                            <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
                         </div>
                     </div>
                 <?php } ?>
