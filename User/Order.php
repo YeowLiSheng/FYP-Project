@@ -1,34 +1,3 @@
-<?php
-// Connect to the database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status) {
-    $sql = "
-        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
-        FROM orders o
-        JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id
-        WHERE o.order_status = '$status'
-        GROUP BY o.order_id 
-        ORDER BY o.order_date DESC";
-    return $conn->query($sql);
-}
-
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,16 +10,14 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     body {
         font-family: Arial, sans-serif;
         display: flex;
-        margin: 0;
     }
     .sidebar {
         width: 250px;
-        background-color: #333;
-        color: #fff;
+        background-color: #f4f4f4;
         padding: 20px;
         height: 100vh;
         position: fixed;
-        overflow-y: auto;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     }
     .sidebar ul {
         list-style-type: none;
@@ -61,18 +28,16 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         cursor: pointer;
         display: flex;
         align-items: center;
-        transition: background 0.3s;
+        font-size: 16px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+    }
+    .sidebar ul li:hover {
+        background-color: #e0e0e0;
     }
     .sidebar ul li i {
         margin-right: 10px;
         color: #4caf50;
-    }
-    .sidebar ul li:hover {
-        background-color: #4caf50;
-    }
-    .sidebar ul li ul {
-        margin-top: 10px;
-        margin-left: 20px;
     }
     .content {
         margin-left: 270px;
@@ -90,8 +55,6 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
-        color: #333;
-        outline: none;
     }
     .tabs button.active {
         color: #4caf50;
@@ -104,11 +67,6 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         cursor: pointer;
         display: flex;
         align-items: center;
-        background-color: #fff;
-        transition: box-shadow 0.3s;
-    }
-    .order-summary:hover {
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     .order-summary img {
         width: 60px;
@@ -155,14 +113,14 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li><i class="fa fa-user"></i> My Account
+            <li><i class="fa fa-user"></i> My account
                 <ul>
-                    <li><i class="fa fa-id-card"></i> My Profile</li>
-                    <li><i class="fa fa-map-marker-alt"></i> My Address</li>
-                    <li><i class="fa fa-key"></i> Change Password</li>
+                    <li><i class="fa fa-id-card"></i> My profile</li>
+                    <li><i class="fa fa-map-marker-alt"></i> My address</li>
+                    <li><i class="fa fa-key"></i> Change password</li>
                 </ul>
             </li>
-            <li><i class="fa fa-box"></i> My Orders</li>
+            <li><i class="fa fa-box"></i> My orders</li>
         </ul>
     </div>
 
