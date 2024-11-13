@@ -169,7 +169,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
             if ($orders->num_rows > 0) {
                 while ($order = $orders->fetch_assoc()) {
                     echo '
-                    <div class="order-summary" onclick="window.location.href=\'order_details.php?order_id=' . $order['order_id'] . '\'">
+                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
                         <img src="images/' . $order['product_image'] . '" alt="Product Image">
                         <div>
                             <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
