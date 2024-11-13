@@ -618,12 +618,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // 获取必要的订单数据
 
     $final_amount = $total_payment; // 总支付金额
-    
+
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表
-	$order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, DEFAULT, ?, ?)";
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
     $stmt->bind_param("idddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $user_message);
     $stmt->execute();
