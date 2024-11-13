@@ -651,8 +651,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
 
-    echo "<script>alert('Order placed successfully!');</script>";
-    echo "<script>window.location.href = 'dashboard.php';</script>";
+
 }
 ?>
 	<!-- Footer -->
