@@ -526,7 +526,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Message for Seller :</span>
-							<input type="text" placeholder="leave a message (optional)">
+							<input type="text" name="user_message" placeholder="leave a message (optional)">
 						</div>
 
 						<div class="checkout-flex">
