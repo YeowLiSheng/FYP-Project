@@ -120,6 +120,7 @@ body {
     font-family: Arial, sans-serif; /* Change to your desired font */
     background-color: #f4f4f4; /* Background color */
     margin: 0;
+	background :white;
     padding: 20px;
 }
 
@@ -570,7 +571,7 @@ body {
 
 
 
-    <form class="edit-profile-form" action="" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+	<form class="edit-profile-form" action="" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
     <h2>Edit Profile</h2>
 
     <!-- Profile Picture -->
@@ -585,30 +586,30 @@ body {
     <div class="form-group">
         <label for="name">Name</label>
         <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($row['user_name']); ?>" required oninput="validateName()">
-        <small class="error-message" id="nameError" style="display: none;">Name must be at least 6 characters long.</small>
+        <small class="error-message" id="nameError" style="display: none; color: red;">Name must be at least 6 characters long.</small>
     </div>
 
     <!-- Email -->
     <div class="form-group">
         <label for="email">Email</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($row['user_email']); ?>" required oninput="validateEmail()">
-        <small class="error-message" id="emailError" style="display: none;">Please enter a valid email (must include '@' and '.').</small>
+        <small class="error-message" id="emailError" style="display: none; color: red;">Please enter a valid email (must include '@' and '.').</small>
     </div>
 
-	<!-- Password -->
-	<div class="form-group">
-		<label for="password">Password</label>
-		<input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
-		<span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
-		<small class="error-message" id="passwordError" style="display: none; color: red;">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</small>
-	</div>
+    <!-- Password -->
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
+        <span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
+        <small class="error-message" id="passwordError" style="display: none; color: red;">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</small>
+    </div>
 
-	<!-- Contact Number -->
-	<div class="form-group">
-		<label for="contact">Contact Number</label>
-		<input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($row['user_contact_number']); ?>" required oninput="validateContact()">
-		<small class="error-message" id="contactError" style="display: none; color: red;">Format must be xxx-xxxxxxxx or xxx-xxxxxxx.</small>
-	</div>
+    <!-- Contact Number -->
+    <div class="form-group">
+        <label for="contact">Contact Number</label>
+        <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($row['user_contact_number']); ?>" required oninput="validateContact()">
+        <small class="error-message" id="contactError" style="display: none; color: red;">Format must be xxx-xxxxxxxx or xxx-xxxxxxx.</small>
+    </div>
 
     <!-- Gender -->
     <div class="form-group">
@@ -620,53 +621,32 @@ body {
         </select>
     </div>
 
+    <!-- Address -->
+    <div class="form-group">
+        <label for="address">Address</label>
 
+        <?php
+        $user_id = $_SESSION['id'];
+        $address_result = mysqli_query($connect, "SELECT * FROM user_address WHERE user_id ='$user_id'");
+        $user_address = '';
 
+        if ($address_result && mysqli_num_rows($address_result) > 0) {
+            $address_data = mysqli_fetch_assoc($address_result);
+            $user_address = htmlspecialchars($address_data['address'] . ", " . $address_data['city'] . ", " . $address_data['state'] . ", " . $address_data['postcode']);
+        }
+        ?>
+        
+        <input type="text" id="address" name="address" value="<?php echo $user_address; ?>" readonly>
 
+        <!-- Buttons to Add/Edit Address -->
+        <a href="add_address.php?id=<?php echo $user_id; ?>" class="edit-button">
+            <button type="button">Add Address</button>
+        </a>
 
-
-
-   <!-- Address -->
-	<div class="form-group">
-		<label for="address">Address</label>
-
-		<?php
-		// Retrieve the user ID from the session
-		$user_id = $_SESSION['id'];
-
-		// Check if the user already has an address
-		$address_result = mysqli_query($connect, "SELECT * FROM user_address WHERE user_id ='$user_id'");
-
-		// Initialize variables
-		$user_address = '';
-
-		if ($address_result && mysqli_num_rows($address_result) > 0) {
-			// Fetch the address data
-			$address_data = mysqli_fetch_assoc($address_result);
-			$user_address = htmlspecialchars($address_data['address'] . ", " . $address_data['city'] . ", " . $address_data['state'] . " ," . $address_data['postcode']);
-		}
-		?>
-		
-		<input type="text" id="address" name="contaddressa" value="<?php echo $user_address; ?>">
-
-		<!-- Button to Add New Address -->
-		<a href="add_address.php?id=<?php echo $user_id; ?>" class="edit-button">
-			<button type="button">Add Address</button>
-		</a>
-
-		<a href="change_address.php?id=<?php echo $user_id; ?>" class="edit-button">
-			<button type="button">Edit Address</button>
-		</a>
-	</div>
-
-
-
-
-
-
-
-
-
+        <a href="change_address.php?id=<?php echo $user_id; ?>" class="edit-button">
+            <button type="button">Edit Address</button>
+        </a>
+    </div>
 
     <!-- Date of Birth -->
     <div class="form-group">
@@ -677,10 +657,39 @@ body {
     <!-- Submit Button -->
     <input type="submit" name="submitbtn" value="Save Changes" class="submit-btn">
 </form>
+
 <script>
+    // Image preview function
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const output = document.getElementById('profilePreview');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
     function togglePasswordVisibility() {
         const passwordField = document.getElementById('password');
         passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
+
+    function validateName() {
+        const nameField = document.getElementById('name');
+        const nameError = document.getElementById('nameError');
+        const isValid = nameField.value.length >= 6;
+
+        nameError.style.display = isValid ? 'none' : 'block';
+        return isValid;
+    }
+
+    function validateEmail() {
+        const emailField = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value);
+
+        emailError.style.display = isValid ? 'none' : 'block';
+        return isValid;
     }
 
     function validatePassword() {
@@ -688,33 +697,24 @@ body {
         const passwordError = document.getElementById('passwordError');
         const password = passwordField.value;
 
-        // Regex to check password criteria
         const hasUppercase = /[A-Z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
         const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
         const isValidLength = password.length >= 8;
 
-        // Show or hide error based on criteria
-        if (hasUppercase && hasNumber && hasSpecialChar && isValidLength) {
-            passwordError.style.display = 'none'; // Hide error
-            return true; // Password is valid
-        } else {
-            passwordError.style.display = 'block'; // Show error
-            return false; // Password is invalid
-        }
+        const isValid = hasUppercase && hasNumber && hasSpecialChar && isValidLength;
+        passwordError.style.display = isValid ? 'none' : 'block';
+        return isValid;
     }
 
     function validateContact() {
         const contactField = document.getElementById('contact');
         const contactError = document.getElementById('contactError');
         const contactPattern = /^\d{3}-\d{7,8}$/;
-        if (!contactPattern.test(contactField.value)) {
-            contactError.style.display = 'block';
-            return false;
-        } else {
-            contactError.style.display = 'none';
-            return true;
-        }
+
+        const isValid = contactPattern.test(contactField.value);
+        contactError.style.display = isValid ? 'none' : 'block';
+        return isValid;
     }
 
     function validateForm() {
@@ -726,12 +726,16 @@ body {
         if (!isNameValid) {
             document.getElementById('name').focus();
             return false;
-        } else if (!isEmailValid) {
+        }
+        if (!isEmailValid) {
             document.getElementById('email').focus();
             return false;
-        } else if (!isPasswordValid) {
+        }
+        if (!isPasswordValid) {
+            document.getElementById('password').focus();
             return false;
-        } else if (!isContactValid) {
+        }
+        if (!isContactValid) {
             document.getElementById('contact').focus();
             return false;
         }
@@ -739,7 +743,6 @@ body {
         return true;
     }
 </script>
-
 
 
 

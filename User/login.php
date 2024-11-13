@@ -230,7 +230,7 @@ if (isset($_POST["loginbtn"])) {
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li class="active-menu">
-								<a href="homepage.html">Home</a>
+								<a href="homepage.php">Home</a>
 								
 							</li>
 
@@ -344,7 +344,7 @@ if (isset($_POST["loginbtn"])) {
 
 			<ul class="main-menu-m">
 				<li>
-					<a href="homepage.html">Home</a>
+					<a href="homepage.php">Home</a>
 					
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
