@@ -123,89 +123,91 @@
 <div class="order-container">
     <h1>Order History</h1>
 
-<?php
-session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
+    <?php
+    session_start();
+    $servername = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname = "fyp";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+    // 创建数据库连接
+    $conn = new mysqli($servername, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
-}
-// Check if the user is logged in
-if (!isset($_SESSION['id'])) {
-	header("Location: login.php"); // Redirect to login page if not logged in
-	exit;
-}
-
-// Retrieve the user information
-$user_id = $_SESSION['id'];
-$user_result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
-$address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id ='$user_id'");
-
-// Check if the query was successful and fetch user data
-if ($user_result && mysqli_num_rows($user_result) > 0) {
-	$user = mysqli_fetch_assoc($user_result);
-} else {
-	echo "User not found.";
-	exit;
-}
-
-
-
-// 仅查询当前登录用户的订单
-$order_sql = "SELECT * FROM orders WHERE user_id = $user_id";
-$order_result = $conn->query($order_sql);
-
-if ($order_result->num_rows > 0) {
-    while ($order = $order_result->fetch_assoc()) {
-        $order_id = $order["order_id"];
-        $order_status = ($order["order_status"] == 'Complete') ? 'Completed' : 'Processing';
-
-        // 从 order_details 表中获取产品图片
-        $detail_sql = "SELECT product_name, quantity, unit_price, total_price, product_image_path FROM order_details WHERE order_id = $order_id";
-        $detail_result = $conn->query($detail_sql);
-        $product_image = "";
-        if ($detail_result->num_rows > 0) {
-            $detail_row = $detail_result->fetch_assoc();
-            $product_image = $detail_row['product_image_path'];
-        }
-
-        echo "<div class='order-summary' onclick='toggleDetails($order_id)'>";
-        echo "<img src='$product_image' alt='Product Image'>"; // 从数据库显示产品图片
-        echo "<div class='order-info'>";
-        echo "<h3>Order #" . $order["order_id"] . "</h3>";
-        echo "<p>Order Date: " . $order["order_date"] . "</p>";
-        echo "<p class='order-status'>$order_status</p>";
-        echo "<p class='order-total'>RM" . $order["final_amount"] . "</p>";
-        echo "</div>";
-        echo "</div>";
-
-        echo "<div id='details-$order_id' class='details-container'>";
-        if ($detail_result->num_rows > 0) {
-            echo "<table class='details-table'>";
-            echo "<tr><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>";
-            do {
-                echo "<tr>";
-                echo "<td>" . $detail_row["product_name"] . "</td>";
-                echo "<td>" . $detail_row["quantity"] . "</td>";
-                echo "<td>RM" . $detail_row["unit_price"] . "</td>";
-                echo "<td>RM" . $detail_row["total_price"] . "</td>";
-                echo "</tr>";
-            } while ($detail_row = $detail_result->fetch_assoc());
-            echo "</table>";
-        }
-        echo "</div>";
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
-} else {
-    echo "<p>No orders found.</p>";
-}
 
-$conn->close();
-?>
+    // 检查用户是否已登录
+    if (!isset($_SESSION['id'])) {
+        header("Location: login.php");
+        exit;
+    }
+
+    // 获取当前登录用户的 ID
+    $user_id = $_SESSION['id'];
+
+    // 查询用户订单
+    $order_sql = "SELECT * FROM orders WHERE user_id = $user_id";
+    $order_result = $conn->query($order_sql);
+
+    // 检查订单查询结果
+    if ($order_result && $order_result->num_rows > 0) {
+        while ($order = $order_result->fetch_assoc()) {
+            $order_id = $order["order_id"];
+            $order_status = ($order["order_status"] == 'Complete') ? 'Completed' : 'Processing';
+
+            // 查询订单详情
+            $detail_sql = "SELECT product_name, quantity, unit_price, total_price, product_image_path 
+                           FROM order_details WHERE order_id = $order_id";
+            $detail_result = $conn->query($detail_sql);
+
+            if ($detail_result === false) {
+                echo "Error in query: " . $conn->error;
+                continue;
+            }
+
+            // 显示订单信息
+            echo "<div class='order-summary' onclick='toggleDetails($order_id)'>";
+            if ($detail_result->num_rows > 0) {
+                $detail_row = $detail_result->fetch_assoc();
+                $product_image = $detail_row['product_image_path'];
+                echo "<img src='$product_image' alt='Product Image'>";
+            } else {
+                echo "<img src='path/to/default-image.png' alt='Default Image'>";
+            }
+            echo "<div class='order-info'>";
+            echo "<h3>Order #" . $order["order_id"] . "</h3>";
+            echo "<p>Order Date: " . $order["order_date"] . "</p>";
+            echo "<p class='order-status'>$order_status</p>";
+            echo "<p class='order-total'>RM" . $order["final_amount"] . "</p>";
+            echo "</div>";
+            echo "</div>";
+
+            // 显示订单详情
+            echo "<div id='details-$order_id' class='details-container'>";
+            if ($detail_result->num_rows > 0) {
+                echo "<table class='details-table'>";
+                echo "<tr><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>";
+                do {
+                    echo "<tr>";
+                    echo "<td>" . $detail_row["product_name"] . "</td>";
+                    echo "<td>" . $detail_row["quantity"] . "</td>";
+                    echo "<td>RM" . $detail_row["unit_price"] . "</td>";
+                    echo "<td>RM" . $detail_row["total_price"] . "</td>";
+                    echo "</tr>";
+                } while ($detail_row = $detail_result->fetch_assoc());
+                echo "</table>";
+            } else {
+                echo "<p>No details available for this order.</p>";
+            }
+            echo "</div>";
+        }
+    } else {
+        echo "<p>No orders found.</p>";
+    }
+
+    $conn->close();
+    ?>
 
 </div>
 
