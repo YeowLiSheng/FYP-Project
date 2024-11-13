@@ -1,3 +1,4 @@
+<?php
 // Connect to the database
 $servername = "localhost";
 $username = "root";
@@ -156,70 +157,45 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
             <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
         </div>
 
-        <!-- Processing Orders -->
-        <div class="order-container" id="Processing" style="display: block;">
-            <?php if ($processing_orders->num_rows > 0) { ?>
-                <?php while ($order = $processing_orders->fetch_assoc()) { ?>
-                    <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
-                        <img src="images/<?php echo $order['product_image']; ?>" alt="Product Image">
+        <!-- Order Containers for Each Status -->
+        <?php
+        function renderOrders($orders) {
+            if ($orders->num_rows > 0) {
+                while ($order = $orders->fetch_assoc()) {
+                    echo '
+                    <div class="order-summary" onclick="window.location.href=\'order_details.php?order_id=' . $order['order_id'] . '\'">
+                        <img src="images/' . $order['product_image'] . '" alt="Product Image">
                         <div>
-                            <h3><i class="fa fa-box"></i> Order #<?php echo $order['order_id']; ?></h3>
-                            <p><i class="fa fa-calendar-alt"></i> Date: <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
-                            <p><i class="fa fa-tag"></i> Products: <?php echo $order['products']; ?></p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
+                            <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+                            <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
+                            <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
+                            <p><i class="fa fa-dollar-sign"></i> Total Price: $' . $order['final_amount'] . '</p>
                         </div>
-                    </div>
-                <?php } ?>
-            <?php } else { ?>
+                    </div>';
+                }
+            } else {
+                echo '
                 <div class="no-orders">
                     <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-                    <button onclick="window.location.href='shop.php'">Continue Shopping</button>
-                </div>
-            <?php } ?>
+                    <button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
+                </div>';
+            }
+        }
+        ?>
+
+        <!-- Processing Orders -->
+        <div class="order-container" id="Processing" style="display: block;">
+            <?php renderOrders($processing_orders); ?>
         </div>
 
         <!-- Shipping Orders -->
         <div class="order-container" id="Shipping" style="display: none;">
-            <?php if ($shipping_orders->num_rows > 0) { ?>
-                <?php while ($order = $shipping_orders->fetch_assoc()) { ?>
-                    <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
-                        <img src="images/<?php echo $order['product_image']; ?>" alt="Product Image">
-                        <div>
-                            <h3><i class="fa fa-truck"></i> Order #<?php echo $order['order_id']; ?></h3>
-                            <p><i class="fa fa-calendar-alt"></i> Date: <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
-                            <p><i class="fa fa-tag"></i> Products: <?php echo $order['products']; ?></p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
-                        </div>
-                    </div>
-                <?php } ?>
-            <?php } else { ?>
-                <div class="no-orders">
-                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-                    <button onclick="window.location.href='shop.php'">Continue Shopping</button>
-                </div>
-            <?php } ?>
+            <?php renderOrders($shipping_orders); ?>
         </div>
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
-            <?php if ($completed_orders->num_rows > 0) { ?>
-                <?php while ($order = $completed_orders->fetch_assoc()) { ?>
-                    <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
-                        <img src="images/<?php echo $order['product_image']; ?>" alt="Product Image">
-                        <div>
-                            <h3><i class="fa fa-check-circle"></i> Order #<?php echo $order['order_id']; ?></h3>
-                            <p><i class="fa fa-calendar-alt"></i> Date: <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
-                            <p><i class="fa fa-tag"></i> Products: <?php echo $order['products']; ?></p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: $<?php echo $order['final_amount']; ?></p>
-                        </div>
-                    </div>
-                <?php } ?>
-            <?php } else { ?>
-                <div class="no-orders">
-                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-                    <button onclick="window.location.href='shop.php'">Continue Shopping</button>
-                </div>
-            <?php } ?>
+            <?php renderOrders($completed_orders); ?>
         </div>
     </div>
 </body>
