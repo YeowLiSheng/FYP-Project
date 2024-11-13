@@ -54,6 +54,17 @@ $order_details_result = $conn->query($order_details_sql);
     .order-details th {
         background-color: #f2f2f2;
     }
+    .back-button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    .back-button:hover {
+        background-color: #45a049;
+    }
 </style>
 </head>
 <body>
@@ -61,36 +72,32 @@ $order_details_result = $conn->query($order_details_sql);
 <?php if ($order): ?>
     <div class="order-header">
         <h2>Order #<?php echo $order['order_id']; ?></h2>
-        <p><strong>Order Date:</strong> <?php echo date("Y-m-d H:i:s", strtotime($order['order_date'])); ?></p>
-        <p><strong>Final Amount:</strong> $<?php echo number_format($order['final_amount'], 2); ?></p>
+        <p><strong>Order Date:</strong> <?php echo date("Y-m-d", strtotime($order['order_date'])); ?></p>
         <p><strong>Order Status:</strong> <?php echo $order['order_status']; ?></p>
-        <p><strong>Shipping Address:</strong> <?php echo $order['shipping_address']; ?></p>
-        <p><strong>Shipping Method:</strong> <?php echo $order['shipping_method']; ?></p>
+        <p><strong>Total Amount:</strong> $<?php echo $order['final_amount']; ?></p>
     </div>
-    
+
     <div class="order-details">
         <h3>Order Details</h3>
         <table>
-            <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
+            </tr>
+            <?php while ($row = $order_details_result->fetch_assoc()): ?>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total Price</th>
+                    <td><?php echo $row['product_name']; ?></td>
+                    <td><?php echo $row['quantity']; ?></td>
+                    <td>$<?php echo number_format($row['unit_price'], 2); ?></td>
+                    <td>$<?php echo number_format($row['total_price'], 2); ?></td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php while ($detail = $order_details_result->fetch_assoc()): ?>
-                    <tr>
-                        <td><?php echo $detail['product_name']; ?></td>
-                        <td><?php echo $detail['quantity']; ?></td>
-                        <td>$<?php echo number_format($detail['unit_price'], 2); ?></td>
-                        <td>$<?php echo number_format($detail['total_price'], 2); ?></td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
+            <?php endwhile; ?>
         </table>
     </div>
+
+    <button class="back-button" onclick="window.location.href='order.php'">Back to Orders</button>
 <?php else: ?>
     <p>Order not found.</p>
 <?php endif; ?>
