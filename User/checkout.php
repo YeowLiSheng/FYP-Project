@@ -140,10 +140,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $clear_cart = "DELETE FROM shopping_cart WHERE user_id = '$user_id'";
             $conn->query($clear_cart);
 
-            echo "<script>alert('Order placed successfully!');</script>";
-        } else {
-            echo "<script>alert('Failed to create order.');</script>";
-        }
+        
+        } 
     }
 	
 }
