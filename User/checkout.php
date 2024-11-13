@@ -1243,10 +1243,10 @@ if ($paymentSuccess) {
 
 			setTimeout(() => {
 				popupContent.innerHTML = `
-			<div class="success-icon">✓</div>
-			<h2 class="success-title">Payment Successful</h2>
-			<button class="ok-btn" onclick="goToDashboard()">OK</button>
-		`;
+    			<div class="success-icon">✓</div>
+    			<h2 class="success-title">Payment Successful</h2>
+    			<button class="ok-btn" onclick="goToDashboard()">OK</button>
+			`;
 			}, 2000);
 		}
 
