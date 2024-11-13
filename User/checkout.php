@@ -105,7 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	
 }
 
-error_reporting(E_ALL); ini_set('display_errors', 1);
+
 ?>
 
 <?php if ($paymentSuccess): ?>
@@ -642,18 +642,13 @@ if ($paymentSuccess) {
         $detail_stmt->execute();
     }
 
-
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
 
-	$file_name = Receipt($order_id, $user_id, $user['user_name'], $shipping_address, $cart_result, $final_amount, $discount_amount, $delivery_charge);
-
-    // 生成 PDF 路径，传递给 JavaScript
-    echo "<script>var receiptFile = '$file_name';</script>";
-
+	
 }
 ?>
 	<!-- Footer -->
@@ -1243,24 +1238,14 @@ if ($paymentSuccess) {
 
 			setTimeout(() => {
 				popupContent.innerHTML = `
-    			<div class="success-icon">✓</div>
-    			<h2 class="success-title">Payment Successful</h2>
-    			<button class="ok-btn" onclick="goToDashboard()">OK</button>
-			`;
+			<div class="success-icon">✓</div>
+			<h2 class="success-title">Payment Successful</h2>
+			<button class="ok-btn" onclick="goToDashboard()">OK</button>
+		`;
 			}, 2000);
 		}
 
 		function goToDashboard() {
-
-			if (typeof receiptFile !== 'undefined' && receiptFile) {
-        	const link = document.createElement('a');
-        	link.href = receiptFile;
-        	link.download = 'receipt.pdf';
-        	document.body.appendChild(link);
-        	link.click();
-        	document.body.removeChild(link);
-    }
-
 			window.location.href = 'dashboard.php';
 		}
 
