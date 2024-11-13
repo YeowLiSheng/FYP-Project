@@ -472,36 +472,66 @@ $conn->close();
                         $<?php echo $product['product_price']; ?>
                     </span>
 
-                    <p class="stext-102 cl3 p-t-23">
-                        <?php echo $product['product_des']; ?>
-                    </p>
+                    <!--  -->
+					<div class="p-t-33">
+						<div class="flex-w flex-r-m p-b-10">
+							<div class="size-203 flex-c-m respon6">
+								Size
+							</div>
 
-                    <!-- Add to Cart Section -->
-                    <div class="flex-w flex-r-m p-b-10">
-                        <div class="size-204 flex-w flex-m respon6-next">
-                            <div class="wrap-num-product flex-w m-r-20 m-tb-10">
-                                <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                                    <i class="fs-16 zmdi zmdi-minus"></i>
-                                </div>
+							<div class="size-204 respon6-next">
+								<div class="rs1-select2 bor8 bg0">
+									<select class="js-select2" name="time">
+										<option>Choose an option</option>
+										<option>Size S</option>
+										<option>Size M</option>
+										<option>Size L</option>
+										<option>Size XL</option>
+									</select>
+									<div class="dropDownSelect2"></div>
+								</div>
+							</div>
+						</div>
 
-                                <input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+						<div class="flex-w flex-r-m p-b-10">
+							<div class="size-203 flex-c-m respon6">
+								Color
+							</div>
 
-                                <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                                    <i class="fs-16 zmdi zmdi-plus"></i>
-                                </div>
-                            </div>
+							<div class="size-204 respon6-next">
+								<div class="rs1-select2 bor8 bg0">
+									<select class="js-select2" name="time">
+										<option>Choose an option</option>
+										<option>Red</option>
+										<option>Blue</option>
+										<option>White</option>
+										<option>Grey</option>
+									</select>
+									<div class="dropDownSelect2"></div>
+								</div>
+							</div>
+						</div>
 
-                            <button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-                                Add to cart
-                            </button>
-                        </div>
-                    </div>  
-                </div>
-            </div>
-        </div>
-    </div>
+                    	<!-- Add to Cart Section -->
+                    	<div class="flex-w flex-r-m p-b-10">
+                        	<div class="size-204 flex-w flex-m respon6-next">
+                            	<div class="wrap-num-product flex-w m-r-20 m-tb-10">
+                                	<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                                    	<i class="fs-16 zmdi zmdi-minus"></i>
+                                	</div>
 
+                                	<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
 
+                                	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                                    	<i class="fs-16 zmdi zmdi-plus"></i>
+                                	</div>
+                            	</div>
+
+                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                                	Add to cart
+                            	</button>
+                        	</div>
+                    	</div> 
 						<!--  -->
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
 							<div class="flex-m bor9 p-r-10 m-r-11">
@@ -521,10 +551,12 @@ $conn->close();
 							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
 								<i class="fa fa-google-plus"></i>
 							</a>
-						</div>
-					</div>
-				</div>
-			</div>
+						</div> 
+                	</div>
+            	</div>
+        	</div>
+    	</div>
+	</div>			
 
 			<div class="bor10 m-t-50 p-t-43 p-b-40">
 				<!-- Tab01 -->
@@ -550,7 +582,7 @@ $conn->close();
 						<div class="tab-pane fade show active" id="description" role="tabpanel">
 							<div class="how-pos2 p-lr-15-md">
 								<p class="stext-102 cl6">
-									Aenean sit amet gravida nisi. Nam fermentum est felis, quis feugiat nunc fringilla sit amet. Ut in blandit ipsum. Quisque luctus dui at ante aliquet, in hendrerit lectus interdum. Morbi elementum sapien rhoncus pretium maximus. Nulla lectus enim, cursus et elementum sed, sodales vitae eros. Ut ex quam, porta consequat interdum in, faucibus eu velit. Quisque rhoncus ex ac libero varius molestie. Aenean tempor sit amet orci nec iaculis. Cras sit amet nulla libero. Curabitur dignissim, nunc nec laoreet consequat, purus nunc porta lacus, vel efficitur tellus augue in ipsum. Cras in arcu sed metus rutrum iaculis. Nulla non tempor erat. Duis in egestas nunc.
+								<?php echo $product['product_des']; ?>
 								</p>
 							</div>
 						</div>
@@ -710,7 +742,7 @@ $conn->close();
 				Categories: Jacket, Men
 			</span>
 		</div>
-	</section>
+</section>
 
 
 	<!-- Related Products -->
