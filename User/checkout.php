@@ -83,7 +83,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
 	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-		echo "<script>alert('Please fill in all required fields.');</script>";
 	} else {
 
 		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
