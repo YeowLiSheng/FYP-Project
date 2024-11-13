@@ -112,6 +112,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<script>
 	window.onload = function() {
 	confirmPayment();
+	window.open('$receipt_file');
+
 	}
 	</script>
 	<?php endif; ?>			
@@ -647,6 +649,10 @@ if ($paymentSuccess) {
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
+
+	$receipt_file = Receipt($order_id, $user_id, $user['user_name'], $shipping_address, $order_items, $total_payment, $discount_amount, $delivery_charge);
+
+
 }
 ?>
 	<!-- Footer -->

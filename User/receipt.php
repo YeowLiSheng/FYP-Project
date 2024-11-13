@@ -1,7 +1,7 @@
 <?php
 require('fpdf.php');
 
-function generateReceipt($order_id, $user_id, $user_name, $address, $order_items, $total_payment, $discount_amount, $delivery_charge) {
+function Receipt($order_id, $user_id, $user_name, $address, $order_items, $total_payment, $discount_amount, $delivery_charge) {
     $pdf = new FPDF();
     $pdf->AddPage();
     $pdf->SetFont('Arial', 'B', 16);
