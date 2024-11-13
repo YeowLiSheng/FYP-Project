@@ -648,8 +648,7 @@ if ($paymentSuccess) {
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
 
-	$receipt_file = Receipt($order_id, $user_id, $user['user_name'], $shipping_address, $order_items, $total_payment, $discount_amount, $delivery_charge);
-
+	
 
 }
 ?>
