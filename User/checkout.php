@@ -613,19 +613,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		</div>
 
 	</body>
-<?php
-	if ($paymentSuccess) {
+	<?php
+if ($paymentSuccess) {
     // 获取必要的订单数据
-
     $final_amount = $total_payment; // 总支付金额
-
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
-    // 插入 `orders` 表
+    // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $user_message);
+    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
 
     // 获取插入订单的ID
@@ -650,8 +648,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
-
-
 }
 ?>
 	<!-- Footer -->
