@@ -10,15 +10,23 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch orders based on their statuses
-function fetchOrders($conn, $status) {
-    $sql = "SELECT * FROM orders WHERE order_status = '$status' ORDER BY order_date DESC";
+// Fetch orders based on their statuses with first product info
+function fetchOrdersWithFirstProduct($conn, $status) {
+    $sql = "
+        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
+               p.product_name, p.product_image 
+        FROM orders o
+        JOIN order_details od ON o.order_id = od.order_id
+        JOIN product p ON od.product_id = p.product_id
+        WHERE o.order_status = '$status'
+        GROUP BY o.order_id 
+        ORDER BY o.order_date DESC";
     return $conn->query($sql);
 }
 
-$processing_orders = fetchOrders($conn, 'Processing');
-$shipping_orders = fetchOrders($conn, 'Shipping');
-$completed_orders = fetchOrders($conn, 'Complete');
+$processing_orders = fetchOrdersWithFirstProduct($conn, 'Processing');
+$shipping_orders = fetchOrdersWithFirstProduct($conn, 'Shipping');
+$completed_orders = fetchOrdersWithFirstProduct($conn, 'Complete');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,25 +64,6 @@ $completed_orders = fetchOrders($conn, 'Complete');
         padding: 20px;
         flex: 1;
     }
-    /* Styling for order status progress */
-    .progress-bar {
-        display: flex;
-        align-items: center;
-        margin-top: 20px;
-        font-weight: bold;
-    }
-    .progress-bar .completed {
-        background-color: #4caf50;
-    }
-    .progress-bar .upcoming {
-        background-color: #e0e0e0;
-    }
-    /* Styling for no order message */
-    .no-orders {
-        text-align: center;
-        margin-top: 50px;
-    }
-    /* Tab style */
     .tabs {
         display: flex;
         border-bottom: 2px solid #e0e0e0;
@@ -96,6 +85,18 @@ $completed_orders = fetchOrders($conn, 'Complete');
         padding: 15px;
         margin-bottom: 15px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    .order-summary img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+    .no-orders {
+        text-align: center;
+        margin-top: 50px;
     }
 </style>
 <script>
@@ -141,11 +142,13 @@ $completed_orders = fetchOrders($conn, 'Complete');
         <div class="order-container" id="Processing" style="display: block;">
             <?php if ($processing_orders->num_rows > 0) { ?>
                 <?php while ($order = $processing_orders->fetch_assoc()) { ?>
-                    <div class="order-summary">
-                        <h3>Order #<?php echo $order['order_id']; ?></h3>
-                        <p>Status: <?php echo $order['order_status']; ?></p>
-                        <p>Date: <?php echo $order['order_date']; ?></p>
-                        <button onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">View Details</button>
+                    <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
+                        <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
+                        <div>
+                            <h3>Order #<?php echo $order['order_id']; ?></h3>
+                            <p>Product: <?php echo $order['product_name']; ?></p>
+                            <p>Total Price: $<?php echo $order['final_amount']; ?></p>
+                        </div>
                     </div>
                 <?php } ?>
             <?php } else { ?>
@@ -160,11 +163,13 @@ $completed_orders = fetchOrders($conn, 'Complete');
         <div class="order-container" id="Shipping" style="display: none;">
             <?php if ($shipping_orders->num_rows > 0) { ?>
                 <?php while ($order = $shipping_orders->fetch_assoc()) { ?>
-                    <div class="order-summary">
-                        <h3>Order #<?php echo $order['order_id']; ?></h3>
-                        <p>Status: <?php echo $order['order_status']; ?></p>
-                        <p>Date: <?php echo $order['order_date']; ?></p>
-                        <button onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">View Details</button>
+                    <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
+                        <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
+                        <div>
+                            <h3>Order #<?php echo $order['order_id']; ?></h3>
+                            <p>Product: <?php echo $order['product_name']; ?></p>
+                            <p>Total Price: $<?php echo $order['final_amount']; ?></p>
+                        </div>
                     </div>
                 <?php } ?>
             <?php } else { ?>
@@ -179,11 +184,13 @@ $completed_orders = fetchOrders($conn, 'Complete');
         <div class="order-container" id="Complete" style="display: none;">
             <?php if ($completed_orders->num_rows > 0) { ?>
                 <?php while ($order = $completed_orders->fetch_assoc()) { ?>
-                    <div class="order-summary">
-                        <h3>Order #<?php echo $order['order_id']; ?></h3>
-                        <p>Status: <?php echo $order['order_status']; ?></p>
-                        <p>Date: <?php echo $order['order_date']; ?></p>
-                        <button onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">View Details</button>
+                    <div class="order-summary" onclick="window.location.href='order_details.php?order_id=<?php echo $order['order_id']; ?>'">
+                        <img src="images/<?php echo $order['product_image']; ?>" alt="<?php echo $order['product_name']; ?>">
+                        <div>
+                            <h3>Order #<?php echo $order['order_id']; ?></h3>
+                            <p>Product: <?php echo $order['product_name']; ?></p>
+                            <p>Total Price: $<?php echo $order['final_amount']; ?></p>
+                        </div>
                     </div>
                 <?php } ?>
             <?php } else { ?>
