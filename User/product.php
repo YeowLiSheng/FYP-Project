@@ -313,7 +313,7 @@ body {
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
@@ -967,10 +967,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<div class="rs1-select2 bor8 bg0">
 										<select class="js-select2" name="time">
 											<option>Choose an option</option>
-											<option>Size S</option>
-											<option>Size M</option>
-											<option>Size L</option>
-											<option>Size XL</option>
+											<option><?php echo isset($product['size1']) ? $product['size1'] : 'Size 1 not available'; ?></option>
+											<option><?php echo isset($product['size2']) ? $product['size2'] : 'Size 2 not available'; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -986,10 +984,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<div class="rs1-select2 bor8 bg0">
 										<select class="js-select2" name="time">
 											<option>Choose an option</option>
-											<option>Red</option>
-											<option>Blue</option>
-											<option>White</option>
-											<option>Grey</option>
+											<option><?php echo $product['color1']; ?></option>
+                							<option><?php echo $product['color2']; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
