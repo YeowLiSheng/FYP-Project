@@ -41,24 +41,38 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     body {
         font-family: Arial, sans-serif;
         display: flex;
+        margin: 0;
     }
     .sidebar {
         width: 250px;
-        background-color: #f2f2f2;
+        background-color: #333;
+        color: #fff;
         padding: 20px;
         height: 100vh;
         position: fixed;
+        overflow-y: auto;
     }
     .sidebar ul {
         list-style-type: none;
         padding: 0;
     }
     .sidebar ul li {
-        padding: 10px;
+        padding: 15px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background 0.3s;
+    }
+    .sidebar ul li i {
+        margin-right: 10px;
+        color: #4caf50;
     }
     .sidebar ul li:hover {
-        background-color: #ddd;
+        background-color: #4caf50;
+    }
+    .sidebar ul li ul {
+        margin-top: 10px;
+        margin-left: 20px;
     }
     .content {
         margin-left: 270px;
@@ -76,6 +90,8 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
+        color: #333;
+        outline: none;
     }
     .tabs button.active {
         color: #4caf50;
@@ -88,6 +104,11 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         cursor: pointer;
         display: flex;
         align-items: center;
+        background-color: #fff;
+        transition: box-shadow 0.3s;
+    }
+    .order-summary:hover {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
     .order-summary img {
         width: 60px;
@@ -134,16 +155,14 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li>My account
+            <li><i class="fa fa-user"></i> My Account
                 <ul>
-                    <li>My profile</li>
-                    <li>My address</li>
-                    <li>Change password</li>
+                    <li><i class="fa fa-id-card"></i> My Profile</li>
+                    <li><i class="fa fa-map-marker-alt"></i> My Address</li>
+                    <li><i class="fa fa-key"></i> Change Password</li>
                 </ul>
             </li>
-            <li>My orders</li>
-            <li>My voucher</li>
-            <li>My reward point</li>
+            <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
     </div>
 
