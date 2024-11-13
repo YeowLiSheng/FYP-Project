@@ -32,6 +32,7 @@ $order_result = $conn->query($order_sql);
         background-color: #f2f2f2;
         padding: 20px;
         height: 100vh;
+        position: fixed;
     }
     .sidebar h2 {
         text-align: center;
@@ -47,6 +48,7 @@ $order_result = $conn->query($order_sql);
         cursor: pointer;
         display: flex;
         align-items: center;
+        position: relative;
     }
     .sidebar ul li:hover {
         background-color: #ddd;
@@ -54,9 +56,23 @@ $order_result = $conn->query($order_sql);
     .sidebar ul li i {
         margin-right: 10px;
     }
+    .submenu {
+        list-style-type: none;
+        padding-left: 20px;
+        display: none;
+        flex-direction: column;
+    }
+    .submenu li {
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .submenu li:hover {
+        background-color: #e0e0e0;
+    }
     .content {
-        flex: 1;
+        margin-left: 270px;
         padding: 20px;
+        flex: 1;
     }
     /* 订单详情 */
     .order-summary {
@@ -102,6 +118,17 @@ $order_result = $conn->query($order_sql);
     }
 </style>
 <script>
+// 切换子菜单的显示和隐藏
+function toggleSubmenu(id) {
+    const submenu = document.getElementById(id);
+    if (submenu.style.display === 'block') {
+        submenu.style.display = 'none';
+    } else {
+        submenu.style.display = 'block';
+    }
+}
+
+// 切换订单详情的显示和隐藏
 function toggleDetails(orderId) {
     const detailsContainer = document.getElementById('details-' + orderId);
     detailsContainer.style.display = detailsContainer.style.display === 'none' ? 'block' : 'none';
@@ -113,17 +140,21 @@ function toggleDetails(orderId) {
     <div class="sidebar">
         <h2>Dashboard</h2>
         <ul>
-            <li onclick="location.href='#'"><i class="fa fa-user"></i> My Account</li>
-            <ul>
-                <li onclick="alert('My Profile Clicked')"><i class="fa fa-id-badge"></i> My Profile</li>
-                <li onclick="alert('Edit Profile Clicked')"><i class="fa fa-edit"></i> Edit Profile</li>
-                <li onclick="alert('Change Password Clicked')"><i class="fa fa-key"></i> Change Password</li>
-            </ul>
-            <li onclick="location.href='#'"><i class="fa fa-box"></i> My Order</li>
-            <ul>
-                <li onclick="alert('Order Status Clicked')"><i class="fa fa-clipboard"></i> Order Status</li>
-                <li onclick="alert('Purchase History Clicked')"><i class="fa fa-history"></i> Purchase History</li>
-            </ul>
+            <li onclick="toggleSubmenu('account-submenu')">
+                <i class="fa fa-user"></i> My Account
+                <ul id="account-submenu" class="submenu">
+                    <li onclick="alert('My Profile Clicked')"><i class="fa fa-id-badge"></i> My Profile</li>
+                    <li onclick="alert('Edit Profile Clicked')"><i class="fa fa-edit"></i> Edit Profile</li>
+                    <li onclick="alert('Change Password Clicked')"><i class="fa fa-key"></i> Change Password</li>
+                </ul>
+            </li>
+            <li onclick="toggleSubmenu('order-submenu')">
+                <i class="fa fa-box"></i> My Order
+                <ul id="order-submenu" class="submenu">
+                    <li onclick="alert('Order Status Clicked')"><i class="fa fa-clipboard"></i> Order Status</li>
+                    <li onclick="alert('Purchase History Clicked')"><i class="fa fa-history"></i> Purchase History</li>
+                </ul>
+            </li>
         </ul>
     </div>
     <!-- 内容部分 -->
