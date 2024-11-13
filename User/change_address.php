@@ -1,7 +1,6 @@
 <?php
 session_start(); // Start the session
 
-
 // Include the database connection file
 include("dataconnection.php"); 
 
@@ -19,6 +18,22 @@ if (!isset($connect) || !$connect) {
 // Retrieve the user ID from the session
 $user_id = $_SESSION['id'];
 
+// Check if the delete button was clicked and handle the delete action
+if (isset($_POST['deletebtn'])) {
+    // Delete the address from the database
+    $delete_query = "DELETE FROM user_address WHERE user_id='$user_id'";
+    
+    if (mysqli_query($connect, $delete_query)) {
+        echo "<script type='text/javascript'>
+                alert('Address has been deleted successfully.');
+                window.location.href='edit_profile.php';
+              </script>";
+    } else {
+        echo "Error deleting address: " . mysqli_error($connect);
+    }
+    exit; // Stop further execution
+}
+
 // Fetch the user's address information based on the user ID
 $address_result = mysqli_query($connect, "SELECT * FROM user_address WHERE user_id ='$user_id'");
 
@@ -26,12 +41,12 @@ if ($address_result) {
     if (mysqli_num_rows($address_result) > 0) {
         $address_row = mysqli_fetch_assoc($address_result); // Fetch address data
     } else {
-        // No address found, redirect to profile page with an alert
+        // No address found, redirect to add address page with an alert
         echo "<script type='text/javascript'>
                 alert('No address found. Please add an address before editing.');
                 window.location.href='add_address.php';
               </script>";
-        exit; // Stop further execution
+        exit;
     }
 } else {
     echo "Query failed: " . mysqli_error($connect); // Display query error
@@ -60,116 +75,120 @@ if (isset($_POST['submitbtn'])) {
 }
 ?>
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Edit Address</title>
     <link rel="stylesheet" href="styles.css"> <!-- Link to the CSS file -->
-
     <style>
-                /* General body and form styling */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-}
+        /* General body and form styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-.edit-address-form {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 30px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+        .edit-address-form {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-.edit-address-form h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
-}
+        .edit-address-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
 
-/* Form group styling */
-.form-group {
-    margin-bottom: 15px;
-}
+        /* Form group styling */
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-.form-group label {
-    display: block;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-}
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
 
-.form-group input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    color: #333;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
-}
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
 
-/* Input focus effect */
-.form-group input[type="text"]:focus {
-    border-color: #007bff;
-    outline: none;
-}
+        /* Input focus effect */
+        .form-group input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
 
-/* Error message styling */
-.error-message {
-    color: red;
-    font-size: 12px;
-    margin-top: 5px;
-    display: none; /* Hidden initially */
-}
+        /* Error message styling */
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none; /* Hidden initially */
+        }
 
-/* Submit button styling */
-.submit-btn {
-    background-color: #28a745;
-    color: #fff;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    width: 100%;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        /* Submit and delete button styling */
+        .submit-btn, .delete-btn {
+            background-color: #28a745;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
 
-.submit-btn:hover {
-    background-color: #218838;
-}
+        .delete-btn {
+            background-color: #dc3545;
+        }
 
-/* Responsive design for smaller screens */
-@media (max-width: 480px) {
-    .edit-address-form {
-        width: 90%;
-        padding: 20px;
-    }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
 
-    .submit-btn {
-        font-size: 14px;
-        padding: 8px;
-    }
-}
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
 
+        /* Responsive design for smaller screens */
+        @media (max-width: 480px) {
+            .edit-address-form {
+                width: 90%;
+                padding: 20px;
+            }
 
+            .submit-btn, .delete-btn {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
     </style>
 </head>
 <body>
-<form action="" method="POST" class="edit-address-form" onsubmit="return validateForm()">
+    <form action="" method="POST" class="edit-address-form" onsubmit="return validateForm()">
         <h2>Edit Address</h2>
 
         <div class="form-group">
@@ -196,7 +215,11 @@ body {
             <div class="error-message" id="postcode-error">Postcode must be 5 digits.</div>
         </div>
 
+        <!-- Update Address Button -->
         <input type="submit" name="submitbtn" value="Update Address" class="submit-btn">
+        
+        <!-- Delete Address Button -->
+        <input type="submit" name="deletebtn" value="Delete Address" class="delete-btn">
     </form>
 
     <script>
@@ -250,23 +273,4 @@ body {
             }
         });
 
-        document.getElementById('state').addEventListener('input', function() {
-            if (this.value.trim() !== "") {
-                document.getElementById('state-error').style.display = 'none';
-            }
-        });
-
-        document.getElementById('city').addEventListener('input', function() {
-            if (this.value.trim() !== "") {
-                document.getElementById('city-error').style.display = 'none';
-            }
-        });
-
-        document.getElementById('postcode').addEventListener('input', function() {
-            if (this.value.length === 5 && !isNaN(this.value)) {
-                document.getElementById('postcode-error').style.display = 'none';
-            }
-        });
-    </script>
-</body>
-</html>
+        document.getElement

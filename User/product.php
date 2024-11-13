@@ -911,7 +911,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
 
 							<div class="slick3 gallery-lb">
-								<div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View1']; ?>">
+								<div class="item-slick3" data-thumb="">
 									<div class="wrap-pic-w pos-relative">
 										<img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
 										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View1']; ?>">
@@ -920,7 +920,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									</div>
 								</div>
 
-								<div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View2']; ?>">
+								<div class="item-slick3" data-thumb="">
 									<div class="wrap-pic-w pos-relative">
 										<img src="images/<?php echo $product['Quick_View2']; ?>" alt="IMG-PRODUCT">
 										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View2']; ?>">
@@ -929,7 +929,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									</div>
 								</div>
 
-								<div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View3']; ?>">
+								<div class="item-slick3" data-thumb="">
 									<div class="wrap-pic-w pos-relative">
 										<img src="images/<?php echo $product['Quick_View3']; ?>" alt="IMG-PRODUCT">
 										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View3']; ?>">
