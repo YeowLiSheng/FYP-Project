@@ -73,35 +73,50 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 } else {
 	echo "<p>Your cart is empty.</p>";
 }
+$paymentSuccess = false; 
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-   
-    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
-    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
-    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-        echo "<script>alert('Please fill in all required fields.');</script>";
-    } else {
-        
-        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-        $stmt->execute();
-        $result = $stmt->get_result();
+	$cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+	$expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
 
-        if ($result->num_rows > 0) {
-            echo "<script>confirmPayment()</script>";
-            
-        } else {
+	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+		echo "<script>alert('Please fill in all required fields.');</script>";
+	} else {
+
+		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+		$stmt = $conn->prepare($query);
+		$stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		if ($result->num_rows > 0) {
+            $paymentSuccess = true;
+        } 
+		else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
-        $stmt->close();
-    }
+		$stmt->close();
+	}
+	
+	
+	
 }
+
+
 ?>
+
+<?php if ($paymentSuccess): ?>
+	<script>
+	window.onload = function() {
+	confirmPayment();
+	}
+	</script>
+	<?php endif; ?>			
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -444,11 +459,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</div>
 
 
-
+					
 	<body class="checkout-root checkout-reset">
 
 		<div class="checkout-container">
-		<form action="checkout.php" method="post" onsubmit="handleSubmit(event)">
+			<form action="checkout.php" method="post" onsubmit="return validateForm()">
 
 				<div class="checkout-row">
 					<!-- Billing Address Section -->
@@ -499,7 +514,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span>Card Holder Name :</span>
-							<input type="text" name="cardHolderName" placeholder="Cheong Wei Kit" autocomplete="off" required>
+							<input type="text" name="cardHolderName" placeholder="Cheong Wei Kit" autocomplete="off"
+								required>
 						</div>
 						<div class="checkout-input-box">
 							<span> Card Number :</span>
@@ -522,8 +538,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 							</div>
 							<div class="checkout-input-box">
 								<span>CVV :</span>
-								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3" oninput="validateCVV()"
-									required>
+								<input type="number" name="cvv" id="cvv" placeholder="123" maxlength="3"
+									oninput="validateCVV()" required>
 								<small id="cvv-error" style="color: red; display: none;">Please enter a 3-digit CVV
 									code.</small>
 
@@ -574,13 +590,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
 							<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
-								<span>RM<?php echo number_format($total_payment, 2); ?></span></p>
+								<span>RM<?php echo number_format($total_payment, 2); ?></span>
+							</p>
 						</div>
 
 
 						<!-- Confirm Payment Button -->
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
+									
+						
 						<!-- Payment Processing Popup -->
 						<div class="overlay" id="paymentOverlay">
 							<div class="popup" id="popupContent">
@@ -594,7 +613,47 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		</div>
 
 	</body>
+<?php
+	if ($paymentSuccess) {
+    // 获取必要的订单数据
 
+    $final_amount = $total_payment; // 总支付金额
+    $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
+	
+	
+    // 插入 `orders` 表
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, order_status, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($order_query);
+    $stmt->bind_param("idddssss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $order_status, $shipping_address, $user_message);
+    $stmt->execute();
+
+    // 获取插入订单的ID
+    $order_id = $stmt->insert_id;
+
+    // 插入 `order_details` 表
+    foreach ($cart_result as $item) {
+        $product_id = $item['product_id'];
+        $product_name = $item['product_name'];
+        $quantity = $item['total_qty'];
+        $unit_price = $item['product_price'];
+        $total_price = $item['item_total_price'];
+
+        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
+        $detail_stmt = $conn->prepare($detail_query);
+        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
+        $detail_stmt->execute();
+    }
+
+    // 清空购物车
+    $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
+    $clear_cart_stmt = $conn->prepare($clear_cart_query);
+    $clear_cart_stmt->bind_param("i", $user_id);
+    $clear_cart_stmt->execute();
+
+
+}
+?>
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
@@ -1086,21 +1145,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		}
 
 		document.getElementById("expiry-date").addEventListener("input", function (e) {
-    const input = e.target;
-    let value = input.value.replace(/\D/g, ""); // Remove non-digit characters
+			const input = e.target;
+			let value = input.value.replace(/\D/g, ""); // Remove non-digit characters
 
-    // Insert '/' after the month if exactly two digits are entered
-    if (value.length > 2) {
-        value = value.slice(0, 2) + '/' + value.slice(2, 4);
-    }
+			// Insert '/' after the month if exactly two digits are entered
+			if (value.length > 2) {
+				value = value.slice(0, 2) + '/' + value.slice(2, 4);
+			}
 
-    // Limit to 5 characters (MM/YY)
-    if (value.length > 5) {
-        value = value.slice(0, 5);
-    }
+			// Limit to 5 characters (MM/YY)
+			if (value.length > 5) {
+				value = value.slice(0, 5);
+			}
 
-    input.value = value;
-});
+			input.value = value;
+		});
 		function validateCVV() {
 			const cvvInput = document.getElementById("cvv");
 			const cvvError = document.getElementById("cvv-error");
@@ -1121,82 +1180,77 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		}
 
 		function validateForm() {
-    const fullName = document.querySelector('input[name="cardHolderName"]');
-    const cardNum = document.querySelector('input[name="cardNum"]');
-    const expiryDate = document.getElementById('expiry-date');
-    const cvv = document.getElementById('cvv');
-    const address = document.getElementById('address');
-    const city = document.getElementById('city');
-    const state = document.getElementById('state');
-    const postcode = document.getElementById('postcode');
+			const fullName = document.querySelector('input[name="cardHolderName"]');
+			const cardNum = document.querySelector('input[name="cardNum"]');
+			const expiryDate = document.getElementById('expiry-date');
+			const cvv = document.getElementById('cvv');
+			const address = document.getElementById('address');
+			const city = document.getElementById('city');
+			const state = document.getElementById('state');
+			const postcode = document.getElementById('postcode');
 
-    if (
-        !fullName.value.trim() || 
-        !cardNum.value.trim() || 
-        !expiryDate.value.trim() || 
-        !cvv.value.trim() || 
-        !address.value.trim() ||
-        !city.value.trim() ||
-        !state.value.trim() ||
-        !postcode.value.trim()
-    ) {
-        alert('Please fill in all required fields.');
-        return false;
-    }
+			if (
+				!fullName.value.trim() ||
+				!cardNum.value.trim() ||
+				!expiryDate.value.trim() ||
+				!cvv.value.trim() ||
+				!address.value.trim() ||
+				!city.value.trim() ||
+				!state.value.trim() ||
+				!postcode.value.trim()
+			) {
+				alert('Please fill in all required fields.');
+				return false;
+			}
 
-    const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
-    if (!cardNumberPattern.test(cardNum.value)) {
-        alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
-        return false;
-    }
+			const cardNumberPattern = /^\d{4}\s\d{4}\s\d{4}\s\d{4}$/;
+			if (!cardNumberPattern.test(cardNum.value)) {
+				alert('Please enter a valid 16-digit card number (format: 1111 2222 3333 4444).');
+				return false;
+			}
 
-    if (cvv.value.length !== 3) {
-        alert('Please enter a 3-digit CVV code.');
-        return false;
-    }
+			if (cvv.value.length !== 3) {
+				alert('Please enter a 3-digit CVV code.');
+				return false;
+			}
 
-    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-    if (!datePattern.test(expiryDate.value)) {
-        alert('Please enter a valid expiration date (format: MM/YY).');
-        return false;
-    } else {
-        const [month, year] = expiryDate.value.split('/').map(Number);
-        const currentYear = new Date().getFullYear() % 100;
-        const currentMonth = new Date().getMonth() + 1;
-        if (year < currentYear || (year === currentYear && month < currentMonth)) {
-            alert('Please enter a valid, non-expired expiration date.');
-            return false;
-        }
-    }
+			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+			if (!datePattern.test(expiryDate.value)) {
+				alert('Please enter a valid expiration date (format: MM/YY).');
+				return false;
+			} else {
+				const [month, year] = expiryDate.value.split('/').map(Number);
+				const currentYear = new Date().getFullYear() % 100;
+				const currentMonth = new Date().getMonth() + 1;
+				if (year < currentYear || (year === currentYear && month < currentMonth)) {
+					alert('Please enter a valid, non-expired expiration date.');
+					return false;
+				}
+			}
 
-    return true;
-}
+			return true;
+		}
 
-function handleSubmit(event) {
-    event.preventDefault(); // Prevent form from submitting
+	
 
-    if (validateForm()) {
-        confirmPayment(); // Show payment overlay if valid
-    }
-}
+		
+		function confirmPayment() {
+			const overlay = document.getElementById('paymentOverlay');
+			const popupContent = document.getElementById('popupContent');
+			overlay.classList.add('show');
 
-function confirmPayment() {
-    const overlay = document.getElementById('paymentOverlay');
-    const popupContent = document.getElementById('popupContent');
-    overlay.classList.add('show');
+			setTimeout(() => {
+				popupContent.innerHTML = `
+			<div class="success-icon">✓</div>
+			<h2 class="success-title">Payment Successful</h2>
+			<button class="ok-btn" onclick="goToDashboard()">OK</button>
+		`;
+			}, 2000);
+		}
 
-    setTimeout(() => {
-        popupContent.innerHTML = `
-            <div class="success-icon">✓</div>
-            <h2 class="success-title">Payment Successful</h2>
-            <button class="ok-btn" onclick="goToDashboard()">OK</button>
-        `;
-    }, 2000); 
-}
-
-function goToDashboard() {
-    window.location.href = 'dashboard.php';
-}
+		function goToDashboard() {
+			window.location.href = 'dashboard.php';
+		}
 
 
 

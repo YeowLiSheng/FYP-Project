@@ -132,6 +132,28 @@ if (isset($_POST['submitbtn'])) {
             background-color: #45a049;
         }
 
+        /* Styled Back Button */
+        .back-btn {
+            display: inline-block;
+            width: 95%;
+            text-align: center;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #f44336;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #e53935;
+        }
+
         /* Error Messages */
         .error-message {
             color: red;
@@ -237,7 +259,7 @@ if (isset($_POST['submitbtn'])) {
 <?php if ($hasAddress): ?>
     <script type="text/javascript">
         alert("You already have an address.");
-        window.location.href = 'change_address.php'; // Redirect after alert
+        window.location.href = 'edit_profile.php'; // Redirect after alert
     </script>
 <?php endif; ?>
 
@@ -264,11 +286,13 @@ if (isset($_POST['submitbtn'])) {
 
     <div class="form-group">
         <label for="postcode">Postcode</label>
-        <input type="text" id="postcode" name="postcode" >
-        <div class="error-message" id="postcode-error">Postcode must be 5 digits.</div>
+        <input type="text" id="postcode" name="postcode" maxlength="5" >
+        <div class="error-message" id="postcode-error">Please enter a valid postcode (5 digits).</div>
     </div>
 
-    <input type="submit" name="submitbtn" value="Add Address" class="submit-btn">
+    <button type="submit" name="submitbtn" class="submit-btn">Submit</button>
+    <a href="edit_profile.php" class="back-btn">Back</a>
 </form>
+
 </body>
 </html>
