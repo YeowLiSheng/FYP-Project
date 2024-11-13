@@ -60,6 +60,10 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     .sidebar ul li:hover {
         background-color: #ddd;
     }
+    #account-submenu {
+        display: none;
+        padding-left: 20px;
+    }
     .content {
         margin-left: 270px;
         padding: 20px;
@@ -128,22 +132,24 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         });
         document.getElementById(status + '-tab').classList.add('active');
     }
+
+    function toggleSubmenu(id) {
+        const submenu = document.getElementById(id);
+        submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+    }
 </script>
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li>My account
-                <ul>
-                    <li>My profile</li>
-                    <li>My address</li>
-                    <li>Change password</li>
-                </ul>
-            </li>
+            <li onclick="toggleSubmenu('account-submenu')">My account</li>
+            <ul id="account-submenu">
+                <li>My profile</li>
+                <li>Edit profile</li>
+                <li>Change password</li>
+            </ul>
             <li>My orders</li>
-            <li>My voucher</li>
-            <li>My reward point</li>
         </ul>
     </div>
 
