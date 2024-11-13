@@ -6,30 +6,59 @@ $password = "";
 $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// 检查连接
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// 获取所有订单
+// 获取订单数据
 $order_sql = "SELECT * FROM orders ORDER BY order_date DESC";
 $order_result = $conn->query($order_sql);
-
-// 开始HTML输出
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Order List</title>
-<!-- 使用 Font Awesome CDN 引入图标 -->
+<title>Order History</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
     body {
         font-family: Arial, sans-serif;
+        display: flex;
     }
+    /* 侧边栏样式 */
+    .sidebar {
+        width: 250px;
+        background-color: #f2f2f2;
+        padding: 20px;
+        height: 100vh;
+    }
+    .sidebar h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .sidebar ul li {
+        padding: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    .sidebar ul li:hover {
+        background-color: #ddd;
+    }
+    .sidebar ul li i {
+        margin-right: 10px;
+    }
+    .content {
+        flex: 1;
+        padding: 20px;
+    }
+    /* 订单详情 */
     .order-summary {
         display: flex;
         align-items: center;
@@ -73,7 +102,6 @@ $order_result = $conn->query($order_sql);
     }
 </style>
 <script>
-// JavaScript 用于显示/隐藏订单详情
 function toggleDetails(orderId) {
     const detailsContainer = document.getElementById('details-' + orderId);
     detailsContainer.style.display = detailsContainer.style.display === 'none' ? 'block' : 'none';
@@ -81,68 +109,71 @@ function toggleDetails(orderId) {
 </script>
 </head>
 <body>
-<h1>Order List</h1>
-<?php
-// 显示订单列表
-if ($order_result->num_rows > 0) {
-    while ($order = $order_result->fetch_assoc()) {
-        $order_id = $order["order_id"];
-        $order_status = $order["order_status"];
-        
-        // 获取订单详情，包含产品图片
-        $detail_sql = "SELECT od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image 
-                       FROM order_details od
-                       JOIN product p ON od.product_id = p.product_id
-                       WHERE od.order_id = $order_id";
-        $detail_result = $conn->query($detail_sql);
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li onclick="location.href='#'"><i class="fa fa-user"></i> My Account</li>
+            <ul>
+                <li onclick="alert('My Profile Clicked')"><i class="fa fa-id-badge"></i> My Profile</li>
+                <li onclick="alert('Edit Profile Clicked')"><i class="fa fa-edit"></i> Edit Profile</li>
+                <li onclick="alert('Change Password Clicked')"><i class="fa fa-key"></i> Change Password</li>
+            </ul>
+            <li onclick="location.href='#'"><i class="fa fa-box"></i> My Order</li>
+            <ul>
+                <li onclick="alert('Order Status Clicked')"><i class="fa fa-clipboard"></i> Order Status</li>
+                <li onclick="alert('Purchase History Clicked')"><i class="fa fa-history"></i> Purchase History</li>
+            </ul>
+        </ul>
+    </div>
+    <!-- 内容部分 -->
+    <div class="content">
+        <h1>Order History</h1>
+        <?php
+        if ($order_result->num_rows > 0) {
+            while ($order = $order_result->fetch_assoc()) {
+                $order_id = $order["order_id"];
+                $order_status = $order["order_status"];
 
-        echo "<div class='order-summary' onclick='toggleDetails($order_id)'>";
-        
-        // 显示订单中的第一张产品图片
-        if ($detail_result->num_rows > 0) {
-            $detail_row = $detail_result->fetch_assoc();
-            $product_image = $detail_row['product_image'];
-            echo "<img src='images/$product_image' alt='Product Image'>";
-        } else {
-            echo "<img src='images/default.png' alt='Default Image'>";
-        }
+                $detail_sql = "SELECT od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image 
+                               FROM order_details od
+                               JOIN product p ON od.product_id = p.product_id
+                               WHERE od.order_id = $order_id";
+                $detail_result = $conn->query($detail_sql);
 
-        echo "<div class='order-info'>";
-        echo "<h3>Order #" . $order["order_id"] . "</h3>";
-        echo "<p><i class='fa fa-calendar'></i> Order Date: " . $order["order_date"] . "</p>";
-        echo "<p class='order-status'><i class='fa fa-info-circle'></i> Status: $order_status</p>";
-        echo "<p class='order-total'><i class='fa fa-money-bill'></i> Total: RM" . $order["final_amount"] . "</p>";
-        echo "</div>";
-        echo "</div>";
+                echo "<div class='order-summary' onclick='toggleDetails($order_id)'>";
+                if ($detail_result->num_rows > 0) {
+                    $detail_row = $detail_result->fetch_assoc();
+                    echo "<img src='images/" . $detail_row['product_image'] . "' alt='Product Image'>";
+                } else {
+                    echo "<img src='images/default.png' alt='Default Image'>";
+                }
+                echo "<div class='order-info'>";
+                echo "<h3>Order #" . $order["order_id"] . "</h3>";
+                echo "<p><i class='fa fa-calendar'></i> Order Date: " . $order["order_date"] . "</p>";
+                echo "<p class='order-status'><i class='fa fa-info-circle'></i> Status: $order_status</p>";
+                echo "<p class='order-total'><i class='fa fa-money-bill'></i> Total: RM" . $order["final_amount"] . "</p>";
+                echo "</div>";
+                echo "</div>";
 
-        // 订单详情部分
-        echo "<div id='details-$order_id' class='details-container'>";
-        if ($detail_result->num_rows > 0) {
-            echo "<table class='details-table'>";
-            echo "<tr><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>";
-            
-            // 重新遍历结果集以显示完整的订单详情
-            $detail_result->data_seek(0);
-            while ($detail_row = $detail_result->fetch_assoc()) {
-                echo "<tr>";
-                echo "<td>" . $detail_row["product_name"] . "</td>";
-                echo "<td>" . $detail_row["quantity"] . "</td>";
-                echo "<td>RM" . $detail_row["unit_price"] . "</td>";
-                echo "<td>RM" . $detail_row["total_price"] . "</td>";
-                echo "</tr>";
+                echo "<div id='details-$order_id' class='details-container'>";
+                if ($detail_result->num_rows > 0) {
+                    $detail_result->data_seek(0);
+                    echo "<table class='details-table'>";
+                    echo "<tr><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>";
+                    while ($detail_row = $detail_result->fetch_assoc()) {
+                        echo "<tr><td>" . $detail_row["product_name"] . "</td><td>" . $detail_row["quantity"] . "</td>";
+                        echo "<td>RM" . $detail_row["unit_price"] . "</td><td>RM" . $detail_row["total_price"] . "</td></tr>";
+                    }
+                    echo "</table>";
+                }
+                echo "</div>";
             }
-            echo "</table>";
         } else {
-            echo "<p>No details available for this order.</p>";
+            echo "<p>No orders found.</p>";
         }
-        echo "</div>";
-    }
-} else {
-    echo "<p>No orders found.</p>";
-}
-
-// 关闭数据库连接
-$conn->close();
-?>
+        $conn->close();
+        ?>
+    </div>
 </body>
 </html>
