@@ -66,6 +66,7 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     }
     exit;
 }
+
 $product_id = $_GET['id']; // Get the product ID from the URL
 
 // Fetch product details based on product_id
@@ -214,11 +215,11 @@ $conn->close();
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="2">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" >
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
 					</div>
@@ -239,11 +240,11 @@ $conn->close();
 					<i class="zmdi zmdi-search"></i>
 				</div>
 
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="2">
+				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" >
 					<i class="zmdi zmdi-shopping-cart"></i>
 				</div>
 
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
+				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" >
 					<i class="zmdi zmdi-favorite-outline"></i>
 				</a>
 			</div>
@@ -1384,11 +1385,38 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		});
 
 		$('.js-addcart-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to cart !", "success");
-			});
-		});
+    var nameProduct = $(this).closest('.p-r-50').find('.js-name-detail').html();
+    var productId = <?php echo json_encode($product['product_id']); ?>; // Fetch product_id from PHP
+    $(this).on('click', function(){
+        var qty = parseInt($(this).closest('.size-204').find('.num-product').val()); // Quantity
+        var price = <?php echo json_encode($product['product_price']); ?>; // Fetch product price from PHP
+        var totalPrice = qty * price;
+
+        // Send AJAX request to add product to cart
+        $.ajax({
+            url: '', // Set URL to your PHP file that handles the add to cart logic
+            type: 'POST',
+            data: {
+                add_to_cart: true,
+                product_id: productId,
+                qty: qty,
+                total_price: totalPrice
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    swal(nameProduct, "is added to cart!", "success");
+                } else {
+                    swal("Error", response.error, "error");
+                }
+            },
+            error: function() {
+                swal("Error", "An error occurred while adding the product to the cart.", "error");
+            }
+        });
+    });
+});
+
 	
 	</script>
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
