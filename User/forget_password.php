@@ -55,7 +55,111 @@ if (isset($_GET["submitbtn"])) {
 <head>
     <title>Forget Password</title>
     <style>
-        /* Style as needed */
+        /* Reset some basic styles for uniformity */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* General body styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Container for the form */
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        /* Heading style */
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Form styling */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        input[type="email"], input[type="submit"] {
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input[type="email"]:focus, input[type="submit"]:hover {
+            border-color: #007BFF;
+            transition: 0.3s;
+        }
+
+        /* Submit button styling */
+        input[type="submit"] {
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Back link styling */
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #007BFF;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        /* Small device styling */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                max-width: 90%;
+            }
+        }
+
     </style>
 </head>
 <body>
