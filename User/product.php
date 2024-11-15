@@ -313,7 +313,7 @@ body {
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
@@ -328,11 +328,11 @@ body {
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="2">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" >
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
 					</div>
@@ -353,11 +353,11 @@ body {
 					<i class="zmdi zmdi-search"></i>
 				</div>
 
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="2">
+				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" >
 					<i class="zmdi zmdi-shopping-cart"></i>
 				</div>
 
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
+				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti">
 					<i class="zmdi zmdi-favorite-outline"></i>
 				</a>
 			</div>
@@ -911,7 +911,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
 
 							<div class="slick3 gallery-lb">
-								<div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View1']; ?>">
+								<div class="item-slick3" data-thumb="">
 									<div class="wrap-pic-w pos-relative">
 										<img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
 										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View1']; ?>">
@@ -920,7 +920,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									</div>
 								</div>
 
-								<div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View2']; ?>">
+								<div class="item-slick3" data-thumb="">
 									<div class="wrap-pic-w pos-relative">
 										<img src="images/<?php echo $product['Quick_View2']; ?>" alt="IMG-PRODUCT">
 										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View2']; ?>">
@@ -929,7 +929,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									</div>
 								</div>
 
-								<div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View3']; ?>">
+								<div class="item-slick3" data-thumb="">
 									<div class="wrap-pic-w pos-relative">
 										<img src="images/<?php echo $product['Quick_View3']; ?>" alt="IMG-PRODUCT">
 										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View3']; ?>">
@@ -967,10 +967,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<div class="rs1-select2 bor8 bg0">
 										<select class="js-select2" name="time">
 											<option>Choose an option</option>
-											<option>Size S</option>
-											<option>Size M</option>
-											<option>Size L</option>
-											<option>Size XL</option>
+											<option><?php echo isset($product['size1']) ? $product['size1'] : 'Size 1 not available'; ?></option>
+											<option><?php echo isset($product['size2']) ? $product['size2'] : 'Size 2 not available'; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -986,10 +984,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									<div class="rs1-select2 bor8 bg0">
 										<select class="js-select2" name="time">
 											<option>Choose an option</option>
-											<option>Red</option>
-											<option>Blue</option>
-											<option>White</option>
-											<option>Grey</option>
+											<option><?php echo $product['color1']; ?></option>
+                							<option><?php echo $product['color2']; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
