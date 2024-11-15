@@ -1,47 +1,121 @@
-<?php 
-// Connect to the database
+<?php
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
+
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+	die("Connection failed: " . $conn->connect_error);
+}
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+	header("Location: login.php"); // Redirect to login page if not logged in
+	exit;
 }
 
-// Fetch current user details (replace with your session logic)
-$current_user_id = 36; // Example user ID, replace with actual session user ID
-$current_user_query = $conn->query("SELECT user_name, user_image FROM user WHERE user_id = $current_user_id");
-$current_user = $current_user_query->fetch_assoc();
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$user_result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id ='$user_id'");
 
-// Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status = null) {
-    $sql = "
-        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
-        FROM orders o
-        JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id";
-        
-    // Add a condition to filter by status if provided
-    if ($status) {
-        $sql .= " WHERE o.order_status = '$status'";
-    }
-
-    $sql .= " GROUP BY o.order_id 
-              ORDER BY o.order_date DESC";
-              
-    return $conn->query($sql);
+// Check if the query was successful and fetch user data
+if ($user_result && mysqli_num_rows($user_result) > 0) {
+	$user = mysqli_fetch_assoc($user_result);
+} else {
+	echo "User not found.";
+	exit;
 }
 
-// Fetch orders for each tab
-$all_orders = fetchOrdersWithProducts($conn);
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+// Fetch the address information if available
+$address = null;
+if ($address_result && mysqli_num_rows($address_result) > 0) {
+	$address = mysqli_fetch_assoc($address_result);
+}
+
+// Retrieve unique products with total quantity and price in the cart for the logged-in user
+$cart_query = "
+    SELECT 
+        p.product_id,
+        p.product_name, 
+        p.product_price, 
+        p.product_image,
+        SUM(sc.qty) AS total_qty, 
+        (p.product_price * SUM(sc.qty)) AS item_total_price
+    FROM 
+        shopping_cart AS sc
+    JOIN 
+        product AS p ON sc.product_id = p.product_id
+    WHERE 
+        sc.user_id = '$user_id'
+    GROUP BY 
+        p.product_id
+";
+
+$cart_result = mysqli_query($conn, $cart_query);
+
+if ($cart_result && mysqli_num_rows($cart_result) > 0) {
+
+
+
+	// Retrieve discount amount for the user from shopping_cart table
+	$discount_query = "SELECT discount_amount FROM shopping_cart WHERE user_id = '$user_id' LIMIT 1";
+	$discount_result = mysqli_query($conn, $discount_query);
+
+	if ($discount_result && mysqli_num_rows($discount_result) > 0) {
+		$discount_row = mysqli_fetch_assoc($discount_result);
+		$discount_amount = $discount_row['discount_amount'];
+	} else {
+		$discount_amount = 0; // Default to 0 if no discount is found
+	}
+} else {
+	echo "<p>Your cart is empty.</p>";
+}
+$paymentSuccess = false; 
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+	$cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+	$expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+
+	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+	} else {
+
+		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+		$stmt = $conn->prepare($query);
+		$stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		if ($result->num_rows > 0) {
+            $paymentSuccess = true;
+        } 
+		else {
+            echo "<script>alert('Invalid card details');</script>";
+        }
+
+		$stmt->close();
+	}
+	
+	
+	
+}
+
+
 ?>
+
+<?php if ($paymentSuccess): ?>
+	<script>
+	window.onload = function() {
+	confirmPayment();
+	}
+	</script>
+	<?php endif; ?>			
+
 
 <!DOCTYPE html>
 <html lang="en">
