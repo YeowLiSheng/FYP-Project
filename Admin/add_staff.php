@@ -78,8 +78,8 @@ include 'dataconnection.php'
         /* Eye icon styling */
         .eye-icon {
             position: absolute;
-            top: 50%;
-            right: 10px;
+            top: 75%;
+            right: 20px;
             transform: translateY(-50%);
             cursor: pointer;
             color: #00796b;
