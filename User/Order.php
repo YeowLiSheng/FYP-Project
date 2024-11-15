@@ -85,10 +85,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 	<style>
     /* General layout styling */
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-    }
+    
     .sidebar {
         width: 250px;
         background-color: #333;
