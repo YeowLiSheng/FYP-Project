@@ -161,13 +161,28 @@ if (isset($_POST["loginbtn"])) {
             display: none; /* Initially hide error messages */
         }
 
-        .eye-icon {
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 35%;
-            user-select: none;
-        }
+		.eye-icon {
+			cursor: pointer;
+			position: absolute;
+			right: 20px;
+			top: 55%;
+			user-select: none;
+			font-size: 18px; /* Increase the size for better visibility */
+			color: #007bff; /* Change color for a nicer look */
+		}
+
+		.eye-icon:hover {
+			color: #0056b3; /* Slight color change on hover */
+		}
+
+		.field {
+			position: relative; /* Ensures the eye icon is correctly positioned */
+		}
+
+		input[type="password"] {
+			padding-right: 30px; /* Add space on the right to avoid icon overlap */
+		}
+
 
         .forgot-password {
             text-align: center;
@@ -498,12 +513,18 @@ if (isset($_POST["loginbtn"])) {
             <span id="emailError" class="error">Please enter a valid email (must include '@' AND '.')</span>
         </div>
 
-        <div class="field">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">👁️</span>
-            <span id="passwordError" class="error">Please enter the correct password.</span>
-        </div>
+		<!-- Include Font Awesome CDN in the <head> of your HTML -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+		<div class="field">
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" required>
+			<span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">
+				<i class="fas fa-eye"></i>
+			</span>
+			<span id="passwordError" class="error">Please enter the correct password.</span>
+		</div>
+
 
         <p>
             <input type="submit" name="loginbtn" value="Log In">
@@ -523,11 +544,23 @@ if (isset($_POST["loginbtn"])) {
             emailError.style.display = validEmail.test(email) ? "none" : "block";
         }
 
-        function togglePassword(inputId, toggleIcon) {
-            const passwordInput = document.getElementById(inputId);
-            const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', inputType);
-        }
+        function togglePassword(inputId, toggleIcon) 
+		{
+			const passwordInput = document.getElementById(inputId);
+			const icon = toggleIcon.querySelector('i');
+			const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+			passwordInput.setAttribute('type', inputType);
+			
+			// Toggle eye icon between open and closed
+			if (inputType === 'password') {
+				icon.classList.remove('fa-eye-slash');
+				icon.classList.add('fa-eye');
+			} else {
+				icon.classList.remove('fa-eye');
+				icon.classList.add('fa-eye-slash');
+			}
+		}
+
 
         function validateForm() {
             let hasError = false;
