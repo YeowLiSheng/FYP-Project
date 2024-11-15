@@ -11,20 +11,28 @@ if ($conn->connect_error) {
 }
 
 // Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status) {
+function fetchOrdersWithProducts($conn, $status = null) {
     $sql = "
         SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
                GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
                MIN(p.product_image) AS product_image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id
-        WHERE o.order_status = '$status'
-        GROUP BY o.order_id 
-        ORDER BY o.order_date DESC";
+        JOIN product p ON od.product_id = p.product_id";
+        
+    // Add a condition to filter by status if provided
+    if ($status) {
+        $sql .= " WHERE o.order_status = '$status'";
+    }
+
+    $sql .= " GROUP BY o.order_id 
+              ORDER BY o.order_date DESC";
+              
     return $conn->query($sql);
 }
 
+// Fetch orders for each tab
+$all_orders = fetchOrdersWithProducts($conn);
 $processing_orders = fetchOrdersWithProducts($conn, 'Processing');
 $shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
 $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
@@ -36,7 +44,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Orders</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-d<style>
+<style>
     /* General layout styling */
     body {
         font-family: Arial, sans-serif;
@@ -158,7 +166,8 @@ d<style>
         <h1>My Orders</h1>
         <!-- Tab Buttons -->
         <div class="tabs">
-            <button id="Processing-tab" onclick="showTab('Processing')" class="active">Processing</button>
+            <button id="All-tab" onclick="showTab('All')" class="active">All</button>
+            <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
             <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
             <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
         </div>
@@ -189,8 +198,13 @@ d<style>
         }
         ?>
 
+        <!-- All Orders -->
+        <div class="order-container" id="All" style="display: block;">
+            <?php renderOrders($all_orders); ?>
+        </div>
+
         <!-- Processing Orders -->
-        <div class="order-container" id="Processing" style="display: block;">
+        <div class="order-container" id="Processing" style="display: none;">
             <?php renderOrders($processing_orders); ?>
         </div>
 
