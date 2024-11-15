@@ -28,7 +28,7 @@ function fetchOrdersWithProducts($conn, $status) {
 $processing_orders = fetchOrdersWithProducts($conn, 'Processing');
 $shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
 $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
-?>d
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
