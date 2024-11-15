@@ -52,25 +52,45 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     }
     .sidebar {
         width: 250px;
-        background-color: #f2f2f2;
+        background-color: #333;
+        color: #fff;
         padding: 20px;
         height: 100vh;
         position: fixed;
+        display: flex;
+        flex-direction: column;
     }
     .sidebar ul {
         list-style-type: none;
         padding: 0;
+        margin: 0;
     }
     .sidebar ul li {
         padding: 10px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    .sidebar ul li i {
+        margin-right: 10px;
     }
     .sidebar ul li:hover {
-        background-color: #ddd;
+        background-color: #444;
     }
-    #account-submenu {
-        display: none;
+    .submenu {
         padding-left: 20px;
+        margin-top: 10px;
+        display: none;
+        flex-direction: column;
+    }
+    .submenu li {
+        padding: 8px;
+        background-color: #444;
+        border-radius: 5px;
+        margin-top: 5px;
+    }
+    .submenu li:hover {
+        background-color: #555;
     }
     .content {
         margin-left: 270px;
@@ -143,7 +163,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
     function toggleSubmenu(id) {
         const submenu = document.getElementById(id);
-        submenu.style.display = submenu.style.display === 'none' ? 'block' : 'none';
+        submenu.style.display = submenu.style.display === 'none' ? 'flex' : 'none';
     }
 </script>
 </head>
@@ -151,13 +171,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     <!-- Sidebar -->
     <div class="sidebar">
         <ul>
-            <li onclick="toggleSubmenu('account-submenu')">My account</li>
-            <ul id="account-submenu">
-                <li>My profile</li>
-                <li>Edit profile</li>
-                <li>Change password</li>
+            <li onclick="toggleSubmenu('account-submenu')">
+                <i class="fa fa-user"></i> My Account
+            </li>
+            <ul id="account-submenu" class="submenu">
+                <li><i class="fa fa-id-card"></i> My Profile</li>
+                <li><i class="fa fa-edit"></i> Edit Profile</li>
+                <li><i class="fa fa-lock"></i> Change Password</li>
             </ul>
-            <li>My orders</li>
+            <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
     </div>
 
