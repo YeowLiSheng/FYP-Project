@@ -10,6 +10,11 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Fetch current user details (replace with your session logic)
+$current_user_id = 36; // Example user ID, replace with actual session user ID
+$current_user_query = $conn->query("SELECT user_name, user_image FROM user WHERE user_id = $current_user_id");
+$current_user = $current_user_query->fetch_assoc();
+
 // Fetch orders with all products for each order
 function fetchOrdersWithProducts($conn, $status = null) {
     $sql = "
@@ -59,6 +64,22 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         position: fixed;
         display: flex;
         flex-direction: column;
+    }
+    .sidebar .user-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .sidebar .user-info img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+    .sidebar .user-info h3 {
+        margin: 0;
+        font-size: 18px;
     }
     .sidebar ul {
         list-style-type: none;
@@ -170,6 +191,11 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-info">
+            <img src="<?= $current_user['user_image'] ?>" alt="User Image">
+            <h3><?= $current_user['user_name'] ?></h3>
+        </div>
         <ul>
             <li onclick="toggleSubmenu('account-submenu')">
                 <i class="fa fa-user"></i> My Account
