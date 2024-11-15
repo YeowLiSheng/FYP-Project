@@ -170,6 +170,10 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         text-align: center;
         margin-top: 50px;
     }
+    /* Adjust the profile items under My Account */
+    .sidebar ul li.profile-item {
+        padding-left: 30px;
+    }
 </style>
 <script>
     function showTab(status) {
@@ -180,11 +184,6 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
             button.classList.remove('active');
         });
         document.getElementById(status + '-tab').classList.add('active');
-    }
-
-    function toggleSubmenu(id) {
-        const submenu = document.getElementById(id);
-        submenu.style.display = submenu.style.display === 'none' ? 'flex' : 'none';
     }
 </script>
 </head>
@@ -197,14 +196,13 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
             <h3><?= $current_user['user_name'] ?></h3>
         </div>
         <ul>
-            <li onclick="toggleSubmenu('account-submenu')">
-                <i class="fa fa-user"></i> My Account
-            </li>
-            <ul id="account-submenu" class="submenu">
-                <li><i class="fa fa-id-card"></i> My Profile</li>
-                <li><i class="fa fa-edit"></i> Edit Profile</li>
-                <li><i class="fa fa-lock"></i> Change Password</li>
-            </ul>
+            <!-- My Account -->
+            <li><i class="fa fa-user"></i> My Account</li>
+            <!-- Profile items directly below My Account with indentation -->
+            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
+            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
+            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+            <!-- My Orders -->
             <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
     </div>
@@ -268,3 +266,5 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     </div>
 </body>
 </html>
+
+
