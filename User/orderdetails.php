@@ -1,21 +1,25 @@
 <?php
-session_start();
+session_start();  // 启动会话
+
+// Connect to the database
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
 
-// 连接数据库
 $conn = new mysqli($servername, $username, $password, $dbname);
+
+// 设置字符集
 $conn->set_charset("utf8mb4");
 
+// 检查连接
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// 检查是否登录
+// Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-    header("Location: login.php");
+    header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
 
@@ -35,6 +39,8 @@ if ($user_result && $user_result->num_rows > 0) {
     echo "User not found.";
     exit;
 }
+
+
 
 // 获取订单 ID
 if (!isset($_GET['order_id'])) {
