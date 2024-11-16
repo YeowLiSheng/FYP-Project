@@ -19,11 +19,31 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+
+// 使用预处理语句来防止 SQL 注入
+$stmt = $conn->prepare("SELECT * FROM user WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user_result = $stmt->get_result();
+
+// 获取用户信息
+if ($user_result && $user_result->num_rows > 0) {
+    $user = $user_result->fetch_assoc();
+} else {
+    echo "User not found.";
+    exit;
+}
+
 // 获取订单 ID
 if (!isset($_GET['order_id'])) {
     echo "Invalid order ID.";
     exit;
 }
+
+
+
 $order_id = intval($_GET['order_id']);
 
 // 使用预处理语句获取订单信息
@@ -64,30 +84,48 @@ $details_result = $details_stmt->get_result();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Order Details</title>
-<!-- 引入 Bootstrap 5 和 Font Awesome -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="styles.css">
 <style>
     body {
-        background-color: #f8f9fa;
-        font-family: 'Arial', sans-serif;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        margin: 0;
+        padding: 20px;
     }
     .order-details-container {
-        max-width: 900px;
-        margin: 20px auto;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .card {
+        background-color: #fff;
         padding: 20px;
-        background: #fff;
-        border-radius: 8px;
+        margin-bottom: 20px;
+        border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .order-summary, .pricing-details, .product-details {
-        margin-bottom: 20px;
+    .card h2 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
     }
-    .order-summary h2, .pricing-details h2, .product-details h2 {
-        font-size: 1.5rem;
-        color: #333;
-        border-bottom: 2px solid #007bff;
-        padding-bottom: 8px;
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 5px 0;
+    }
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .product-table th, .product-table td {
+        padding: 10px;
+        text-align: left;
+    }
+    .product-table th {
+        background-color: #fafafa;
+    }
+    .product-table tr {
+        border-bottom: 1px solid #ddd;
     }
     .product-image {
         width: 50px;
@@ -95,55 +133,63 @@ $details_result = $details_stmt->get_result();
         object-fit: cover;
         border-radius: 5px;
     }
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-    .table th {
-        background-color: #f1f3f5;
-    }
     .back-button {
+        display: inline-block;
         margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
         text-align: center;
+        cursor: pointer;
+    }
+    .back-button:hover {
+        background-color: #0056b3;
+    }
+    .print-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #28a745;
+        color: #fff;
+        padding: 15px;
+        border: none;
+        border-radius: 50%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        font-size: 18px;
+    }
+    .print-button:hover {
+        background-color: #218838;
     }
 </style>
 </head>
 <body>
 <div class="order-details-container">
-    <h1 class="text-center">Order Details <span class="text-muted">#<?= $order['order_id'] ?></span></h1>
-
-    <!-- Order Summary -->
-    <div class="order-summary">
-        <h2><i class="fa fa-info-circle"></i> Order Summary</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong><i class="fa fa-user"></i> User:</strong> <?= $order['user_name'] ?></p>
-                <p><strong><i class="fa fa-calendar"></i> Order Date:</strong> <?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></p>
-                <p><strong><i class="fa fa-shipping-fast"></i> Shipping Method:</strong> <?= $order['shipping_method'] ?></p>
-            </div>
-            <div class="col-md-6">
-                <p><strong><i class="fa fa-map-marker-alt"></i> Shipping Address:</strong> <?= $order['shipping_address'] ?></p>
-                <p><strong><i class="fa fa-comment"></i> User Message:</strong> <?= $order['user_message'] ? $order['user_message'] : 'N/A' ?></p>
-                <p><strong><i class="fa fa-flag"></i> Order Status:</strong> <span class="badge bg-info"><?= $order['order_status'] ?></span></p>
-            </div>
-        </div>
+    <!-- 订单概要 -->
+    <div class="card">
+        <h2>Order Summary</h2>
+        <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
+        <div class="summary-item"><strong>Order Date:</strong> <span><?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></span></div>
+        <div class="summary-item"><strong>Status:</strong> <span><?= $order['order_status'] ?></span></div>
+        <div class="summary-item"><strong>Shipping Address:</strong> <span><?= $order['shipping_address'] ?></span></div>
+        <div class="summary-item"><strong>Shipping Method:</strong> <span><?= $order['shipping_method'] ?></span></div>
     </div>
 
-    <!-- Pricing Details -->
-    <div class="pricing-details">
-        <h2><i class="fa fa-tags"></i> Pricing Details</h2>
-        <div class="row">
-            <div class="col-md-4"><strong>Grand Total:</strong> RM <?= number_format($order['Grand_total'], 2) ?></div>
-            <div class="col-md-4"><strong>Discount:</strong> RM <?= number_format($order['discount_amount'], 2) ?></div>
-            <div class="col-md-4"><strong>Delivery Charge:</strong> RM <?= number_format($order['delivery_charge'], 2) ?></div>
-            <div class="col-md-4"><strong>Final Amount:</strong> <span class="text-success">RM <?= number_format($order['final_amount'], 2) ?></span></div>
-        </div>
+    <!-- 价格明细 -->
+    <div class="card">
+        <h2>Pricing Details</h2>
+        <div class="summary-item"><strong>Grand Total:</strong> <span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
+        <div class="summary-item"><strong>Discount:</strong> <span>RM <?= number_format($order['discount_amount'], 2) ?></span></div>
+        <div class="summary-item"><strong>Delivery Charge:</strong> <span>RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
+        <div class="summary-item"><strong>Final Amount:</strong> <span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
-    <!-- Product Details -->
-    <div class="product-details">
-        <h2><i class="fa fa-box"></i> Product Details</h2>
-        <table class="table table-striped">
+    <!-- 产品明细 -->
+    <div class="card">
+        <h2>Product Details</h2>
+        <table class="product-table">
             <thead>
                 <tr>
                     <th>Image</th>
@@ -167,13 +213,13 @@ $details_result = $details_stmt->get_result();
         </table>
     </div>
 
-    <!-- Back Button -->
-    <div class="back-button">
-        <button class="btn btn-primary" onclick="window.location.href='myaccount.php'"><i class="fa fa-arrow-left"></i> Back to Orders</button>
-    </div>
+    <!-- 返回订单按钮 -->
+    <a href="myaccount.php" class="back-button">Back to Orders</a>
 </div>
 
-<!-- 引入 Bootstrap 5 的 JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- 打印收据按钮 -->
+<button class="print-button" onclick="window.location.href='receipt.php?order_id=<?= $order['order_id'] ?>'">
+    🖨️ Print Receipt
+</button>
 </body>
 </html>
