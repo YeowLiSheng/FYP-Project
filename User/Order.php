@@ -256,6 +256,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     text-align: center;
     margin-top: 50px;
 }
+</style>
 
 </head>
 
