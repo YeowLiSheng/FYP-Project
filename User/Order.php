@@ -126,17 +126,17 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         display: flex;
     }
 
-    .sidebar {
-        width: 250px;
-        padding: 20px;
-        height: 100%;
-        position: sticky;
-        background-color: #fff;
-        border-right: 1px solid #e0e0e0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        overflow-y: auto;
-        flex-shrink: 0;
-    }
+	.sidebar {
+    width: 250px;
+    padding: 20px;
+    height: 100%; /* 自适应容器高度 */
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    flex-shrink: 0;
+    /* 移除 position: sticky，确保它在页面滚动时不会静止 */
+}
 
     .sidebar .user-info {
         display: flex;
