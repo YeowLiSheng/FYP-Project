@@ -123,16 +123,15 @@ $details_result = $details_stmt->get_result();
 	<!--===============================================================================================-->
 <style>
     /* 全局样式 */
-    body {
+
+    .order-details-container {
+        max-width: 900px;
+        margin: 0 auto;
         font-family: 'Arial', sans-serif;
         background-color: #f4f4f9;
         color: #333;
         padding: 20px;
         margin: 0;
-    }
-    .order-details-container {
-        max-width: 900px;
-        margin: 0 auto;
     }
     .card {
         background: #ffffff;
