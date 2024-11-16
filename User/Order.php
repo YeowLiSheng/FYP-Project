@@ -225,11 +225,12 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 12px;
-    background-color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background-color: #f7f9fc; /* 添加浅色背景 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
     cursor: pointer;
+    position: relative; /* 方便定位其他元素 */
 }
 
 .order-summary:hover {
@@ -239,7 +240,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 .order-summary img {
     width: 100%;
-    height: auto;
+    height: 100px; /* 让图片更大以填充空间 */
     border-radius: 10px;
     object-fit: cover;
 }
@@ -248,20 +249,20 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 10px 0;
+    gap: 10px; /* 增加内部间距 */
 }
 
 .order-summary h3 {
-    font-size: 22px;
+    font-size: 20px;
     color: #333;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .order-summary p {
     font-size: 14px;
     color: #555;
-    margin: 4px 0;
-    line-height: 1.6;
+    margin: 3px 0;
+    line-height: 1.4;
 }
 
 .order-summary p span {
@@ -271,12 +272,31 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 .order-summary .order-status {
     font-size: 14px;
     color: #fff;
-    background-color: #4caf50; /* 根据订单状态使用不同颜色 */
-    padding: 3px 8px;
+    background-color: #4caf50;
+    padding: 5px 10px;
     border-radius: 5px;
     display: inline-block;
     align-self: flex-start;
     margin-bottom: 5px;
+}
+
+.order-summary .additional-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.order-summary .additional-info p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.order-summary .price-info {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-left: auto;
 }
 
 .no-orders {
@@ -287,7 +307,6 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
-
 </style>
 
 </head>
