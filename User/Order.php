@@ -219,67 +219,69 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     }
 
 	.order-summary {
-    border: none; /* 去掉旧边框 */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* 更强的阴影效果 */
-    padding: 20px; /* 增加内边距 */
-    margin-bottom: 20px; /* 增加间距 */
-    display: flex;
-    justify-content: space-between; /* 均匀分布 */
-    align-items: center;
-    border-radius: 15px; /* 圆角边框 */
-    background: linear-gradient(135deg, #ffffff, #f9f9f9); /* 渐变背景 */
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* 增加悬停效果 */
+    display: grid;
+    grid-template-columns: 80px 1fr; /* 图片和详细信息并排 */
+    gap: 20px; /* 图片和内容之间的间距 */
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%; /* 填满父容器 */
 }
 
 .order-summary:hover {
-    transform: translateY(-8px); /* 轻微上移 */
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* 加深阴影 */
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .order-summary img {
-    width: 100px; /* 增大图片尺寸 */
-    height: 100px;
-    border-radius: 12px; /* 图片圆角 */
-    margin-right: 20px; /* 更大的间距 */
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
 }
 
 .order-summary div {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; /* 占据可用空间 */
+    justify-content: space-between; /* 垂直空间均匀分布 */
 }
 
 .order-summary h3 {
-    font-size: 22px; /* 更大的标题 */
-    font-weight: bold;
+    font-size: 20px;
     color: #333;
-    margin-bottom: 8px; /* 增加标题和文字的间距 */
+    margin-bottom: 10px; /* 更明显的间距 */
 }
 
 .order-summary p {
-    font-size: 15px; /* 一致的字体大小 */
-    color: #666; /* 更柔和的颜色 */
+    font-size: 15px;
+    color: #555;
     margin: 3px 0;
-}
-
-.order-summary .order-info {
-    display: flex;
-    justify-content: space-between; /* 增加额外信息排列 */
-    align-items: center;
-}
-
-.order-summary .order-info p {
-    font-size: 14px;
-    color: #777;
+    line-height: 1.6; /* 更好的可读性 */
 }
 
 .no-orders {
     background-color: #f1f1f1;
     padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
+/* 更现代的样式调整 */
+.order-summary div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 平均分配列 */
+    gap: 10px;
+    align-items: center;
+}
+
+.order-summary p span {
+    font-weight: bold; /* 让标题文字更突出 */
+}
+
 </style>
 
 </head>
