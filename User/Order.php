@@ -220,21 +220,21 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 	.order-summary {
     display: grid;
-    grid-template-columns: 80px 1fr; /* 图片和详细信息并排 */
-    gap: 20px; /* 图片和内容之间的间距 */
-    border: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    grid-template-columns: 100px 1fr;
+    gap: 20px;
     padding: 20px;
     margin-bottom: 20px;
-    border-radius: 10px;
-    background-color: #ffffff;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 100%; /* 填满父容器 */
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    cursor: pointer;
 }
 
 .order-summary:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .order-summary img {
@@ -247,39 +247,45 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 .order-summary div {
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* 垂直空间均匀分布 */
+    justify-content: space-between;
+    padding: 10px 0;
 }
 
 .order-summary h3 {
-    font-size: 20px;
+    font-size: 22px;
     color: #333;
-    margin-bottom: 10px; /* 更明显的间距 */
+    margin-bottom: 8px;
 }
 
 .order-summary p {
-    font-size: 15px;
+    font-size: 14px;
     color: #555;
-    margin: 3px 0;
-    line-height: 1.6; /* 更好的可读性 */
-}
-
-.no-orders {
-    background-color: #f1f1f1;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* 更现代的样式调整 */
-.order-summary div:last-child {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 平均分配列 */
-    gap: 10px;
-    align-items: center;
+    margin: 4px 0;
+    line-height: 1.6;
 }
 
 .order-summary p span {
-    font-weight: bold; /* 让标题文字更突出 */
+    font-weight: bold;
+}
+
+.order-summary .order-status {
+    font-size: 14px;
+    color: #fff;
+    background-color: #4caf50; /* 根据订单状态使用不同颜色 */
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    align-self: flex-start;
+    margin-bottom: 5px;
+}
+
+.no-orders {
+    text-align: center;
+    margin-top: 50px;
+    background-color: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 </style>
