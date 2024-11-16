@@ -219,46 +219,52 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     }
 
     .order-summary {
-        border: 1px solid #e0e0e0;
-        padding: 15px;
-        margin-bottom: 15px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-    }
+    border: none; /* Remove the old border */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    padding: 20px; /* Increase padding for spaciousness */
+    margin-bottom: 20px; /* Increase margin for better spacing */
+    display: flex;
+    align-items: center;
+    border-radius: 10px; /* Rounded corners for a modern look */
+    background-color: #ffffff; /* Clean background */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add interaction effect */
+}
 
-    .order-summary img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-right: 15px;
-    }
+.order-summary:hover {
+    transform: translateY(-5px); /* Slight upward movement */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* Darker shadow on hover */
+}
 
-    .order-summary h3 {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 0;
-        display: flex;
-        align-items: center;
-    }
+.order-summary img {
+    width: 80px; /* Increase size for better visual impact */
+    height: 80px; /* Keep aspect ratio */
+    border-radius: 10px; /* Match box rounding */
+    margin-right: 20px; /* More space between image and content */
+}
 
-    .order-summary p {
-        margin: 5px 0;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-    }
+.order-summary div {
+    display: flex;
+    flex-direction: column;
+}
 
-    .order-summary i {
-        margin-right: 8px;
-        color: #555;
-    }
+.order-summary h3 {
+    font-size: 20px; /* Slightly larger for emphasis */
+    color: #333; /* Darker text for contrast */
+    margin-bottom: 5px; /* Separate title from the rest */
+}
 
-    .no-orders {
-        text-align: center;
-        margin-top: 50px;
-    }
+.order-summary p {
+    font-size: 15px; /* Uniform size for readability */
+    color: #555; /* Subtle color */
+    margin: 3px 0; /* Space between text lines */
+}
+
+.no-orders {
+    background-color: #f1f1f1; /* Light background */
+    padding: 30px; /* Ample padding */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
 </style>
 
 </head>
