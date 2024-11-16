@@ -10,8 +10,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
-/ Check if the user is logged in
+// Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
@@ -28,6 +27,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+
 
 // Fetch current user details (replace with your session logic)
 $current_user_id = 36; // Example user ID, replace with actual session user ID
