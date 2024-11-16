@@ -595,7 +595,6 @@ $details_result = $details_stmt->get_result();
     </div>
 
 <div class="order-details-container">
-    <!-- Sidebar -->
     
     <!-- 订单概要 -->
     <div class="card">
