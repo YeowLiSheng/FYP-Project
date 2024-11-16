@@ -28,7 +28,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 }
 
 // Fetch current user details (replace with your session logic)
-$current_user_id = 36; // Example user ID, replace with actual session user ID
+$current_user_id = $_SESSION['id']; 
 $current_user_query = $conn->query("SELECT user_name, user_image FROM user WHERE user_id = $current_user_id");
 $current_user = $current_user_query->fetch_assoc();
 
