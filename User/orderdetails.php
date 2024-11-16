@@ -603,6 +603,9 @@ $details_result = $details_stmt->get_result();
 
 <div class="order-details-container">
     
+    <div class="card">
+        <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
+    </div>
     <!-- 订单概要 -->
     <div class="card">
         <h2><span class="icon">📋</span>Order Summary</h2>
@@ -611,6 +614,7 @@ $details_result = $details_stmt->get_result();
         <div class="summary-item"><strong>Status:</strong> <span><?= $order['order_status'] ?></span></div>
         <div class="summary-item"><strong>Shipping Address:</strong> <span><?= $order['shipping_address'] ?></span></div>
         <div class="summary-item"><strong>Shipping Method:</strong> <span><?= $order['shipping_method'] ?></span></div>
+        <div class="summary-item"><strong>User Message:</strong> <span><?= !empty($order['user_message']) ? htmlspecialchars($order['user_message']) : 'N/A' ?></span></div>           
     </div>
 
     <!-- 产品明细 -->
