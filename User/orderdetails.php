@@ -576,10 +576,6 @@ $details_result = $details_stmt->get_result();
 	</div>
 
 
-
-
-<div class="order-details-container">
-    <!-- Sidebar -->
     <div class="sidebar">
         <!-- User Info -->
         <div class="user-info">
@@ -597,6 +593,10 @@ $details_result = $details_stmt->get_result();
             <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
     </div>
+
+<div class="order-details-container">
+    <!-- Sidebar -->
+    
     <!-- 订单概要 -->
     <div class="card">
         <h2><span class="icon">📋</span>Order Summary</h2>
