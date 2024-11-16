@@ -120,22 +120,24 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 	<!--===============================================================================================-->
 
 
-	
-<style>
+	<style>
     /* General layout styling */
-    .my-account-container {
-        display: flex;
-        font-family: 'Arial', sans-serif;
-        color: #333;
-    }
+    /* General layout styling */
+.my-account-container {
+    display: flex;
+}
 
-    .sidebar {
-        width: 250px;
-        padding: 20px;
-        background-color: #2c3e50;
-        color: #ecf0f1;
-        border-right: 2px solid #bdc3c7;
-    }
+.sidebar {
+	width: 250px;
+    padding: 20px;
+    height: 100%;
+    position: static; /* 保持 static */
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+}
 
     .sidebar .user-info {
         display: flex;
@@ -154,109 +156,108 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     .sidebar .user-info h3 {
         margin: 0;
         font-size: 18px;
+        color: #333;
     }
 
     .sidebar ul {
         list-style-type: none;
         padding: 0;
+        margin: 0;
     }
 
     .sidebar ul li {
         padding: 10px 15px;
-        margin-bottom: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        background: #34495e;
         border-radius: 5px;
-        transition: background-color 0.3s;
-    }
-
-    .sidebar ul li:hover {
-        background-color: #1abc9c;
+        transition: background-color 0.3s ease;
+        font-size: 16px;
+        color: #333;
     }
 
     .sidebar ul li i {
         margin-right: 10px;
+        font-size: 18px;
+        color: #555;
+    }
+
+    .sidebar ul li:hover {
+        background-color: #f0f0f0;
     }
 
     .sidebar ul li.profile-item {
         padding-left: 30px;
         font-size: 14px;
-        margin-bottom: 5px;
+        color: #666;
     }
 
     .content {
         flex: 1;
         padding: 20px;
-        background-color: #ecf0f1;
+        background-color: #f9f9f9;
+        min-height: 100vh;
     }
 
     .tabs {
         display: flex;
+        border-bottom: 2px solid #e0e0e0;
         margin-bottom: 20px;
     }
 
     .tabs button {
-        flex: 1;
-        padding: 10px;
+        background: none;
+        border: none;
+        padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
-        background-color: #bdc3c7;
-        border: none;
-        border-radius: 5px;
-        margin-right: 5px;
-        transition: background-color 0.3s;
     }
 
     .tabs button.active {
-        background-color: #1abc9c;
-        color: white;
-    }
-
-    .tabs button:hover {
-        background-color: #2ecc71;
+        color: #4caf50;
+        border-bottom: 2px solid #4caf50;
     }
 
     .order-summary {
-        display: flex;
-        align-items: center;
+        border: 1px solid #e0e0e0;
         padding: 15px;
         margin-bottom: 15px;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        transition: box-shadow 0.3s;
-    }
-
-    .order-summary:hover {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
     }
 
     .order-summary img {
         width: 60px;
         height: 60px;
-        border-radius: 10px;
+        object-fit: cover;
+        border-radius: 8px;
         margin-right: 15px;
     }
 
     .order-summary h3 {
         font-size: 18px;
+        font-weight: bold;
         margin: 0;
+        display: flex;
+        align-items: center;
     }
 
     .order-summary p {
         margin: 5px 0;
         font-size: 14px;
+        display: flex;
+        align-items: center;
+    }
+
+    .order-summary i {
+        margin-right: 8px;
+        color: #555;
     }
 
     .no-orders {
         text-align: center;
         margin-top: 50px;
-    }
-
-    .hidden {
-        display: none;
     }
 </style>
 
@@ -570,14 +571,11 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         </div>
         <ul>
             <!-- My Account -->
-            <li onclick="toggleProfileMenu()">
-                <i class="fa fa-user"></i> My Account
-            </li>
-            <ul id="profile-menu" class="hidden">
-                <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-                <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-                <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
-            </ul>
+            <li><i class="fa fa-user"></i> My Account</li>
+            <!-- Profile items directly below My Account with indentation -->
+            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
+            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
+            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
             <!-- My Orders -->
             <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
@@ -640,7 +638,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
             <?php renderOrders($completed_orders); ?>
         </div>
     </div>
-</div> 
+</div>
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
@@ -1069,24 +1067,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 	<script src="js/main.js"></script>
 
 	<script>
-
-
-	function toggleProfileMenu() {
-        const profileMenu = document.getElementById('profile-menu');
-        profileMenu.classList.toggle('hidden');
+    function showTab(status) {
+        document.querySelectorAll('.order-container').forEach(container => {
+            container.style.display = container.id === status ? 'block' : 'none';
+        });
+        document.querySelectorAll('.tabs button').forEach(button => {
+            button.classList.remove('active');
+        });
+        document.getElementById(status + '-tab').classList.add('active');
     }
-
-    function showTab(tabId) {
-        const containers = document.querySelectorAll('.order-container');
-        containers.forEach(container => container.style.display = 'none');
-        document.getElementById(tabId).style.display = 'block';
-
-        const tabs = document.querySelectorAll('.tabs button');
-        tabs.forEach(tab => tab.classList.remove('active'));
-        document.getElementById(tabId + '-tab').classList.add('active');
-    }
-
-
 	</script>
 
 </body>
