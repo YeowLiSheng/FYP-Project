@@ -45,7 +45,7 @@ if (isset($_POST["admin_login"])) {
                 $_SESSION['admin_id'] = $id;
                 $_SESSION['login_text'] = "Successful login"; // Success message
                 $_SESSION['login_icon'] = "success"; // For success
-                header("location: add_staff.php");
+                header("location: admin_sidebar.php");
                 exit();
             }
         }
