@@ -131,7 +131,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     width: 250px;
     padding: 20px;
     height: 100%;
-    position: relative; /* 改为 relative */
+    position: static; /* 改为 static */
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
