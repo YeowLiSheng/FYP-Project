@@ -333,7 +333,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 							</li>
 
 							<li>
-								<a href="Order.php">About</a>
+								<a href="about.html">About</a>
 							</li>
 
 							<li>
