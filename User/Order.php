@@ -1,21 +1,20 @@
-<?php 
-// Connect to the database
+<?php
+session_start(); 
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -27,7 +26,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
-
 
 // Fetch current user details (replace with your session logic)
 $current_user_id = 36; // Example user ID, replace with actual session user ID
