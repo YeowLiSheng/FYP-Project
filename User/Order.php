@@ -125,19 +125,20 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     
     .sidebar {
         width: 250px;
-        background-color: #333;
-        color: #fff;
         padding: 20px;
         height: 100vh;
         position: fixed;
         display: flex;
         flex-direction: column;
+        border-right: 1px solid #e0e0e0; /* 添加边框分隔效果 */
     }
+
     .sidebar .user-info {
         display: flex;
         align-items: center;
         margin-bottom: 20px;
     }
+
     .sidebar .user-info img {
         width: 50px;
         height: 50px;
@@ -145,46 +146,50 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         object-fit: cover;
         margin-right: 15px;
     }
+
     .sidebar .user-info h3 {
         margin: 0;
         font-size: 18px;
     }
+
     .sidebar ul {
         list-style-type: none;
         padding: 0;
         margin: 0;
     }
+
     .sidebar ul li {
         padding: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;
+        border-radius: 5px; /* 添加圆角 */
+        transition: background-color 0.3s ease; /* 添加鼠标悬停效果 */
     }
-    .sidebar ul li i {
-        margin-right: 10px;
-    }
+
     .sidebar ul li:hover {
-        background-color: #444;
+        background-color: #f0f0f0; /* 悬停时轻微背景变化 */
     }
+
     .submenu {
         padding-left: 20px;
         margin-top: 10px;
         display: none;
         flex-direction: column;
     }
+
     .submenu li {
         padding: 8px;
-        background-color: #444;
+        background-color: #fafafa;
         border-radius: 5px;
         margin-top: 5px;
     }
-    .submenu li:hover {
-        background-color: #555;
-    }
+
     .content {
-        margin-left: 270px;
+        margin-left: 270px; /* 为侧边栏留出空间 */
         padding: 20px;
         flex: 1;
+    
     }
     .tabs {
         display: flex;
