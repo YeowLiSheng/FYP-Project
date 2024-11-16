@@ -122,132 +122,142 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 	<style>
     /* General layout styling */
-    .my-account-container {
+    /* General layout styling */
+.my-account-container {
+    display: flex;
+}
+
+.sidebar {
+	width: 250px;
+    padding: 20px;
+    height: 100%;
+    position: static; /* 保持 static */
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+}
+
+    .sidebar .user-info {
         display: flex;
+        align-items: center;
+        margin-bottom: 20px;
     }
 
-    .sidebar {
-        width: 250px;
-        padding: 20px;
-        background-color: #fff;
-        border-right: 1px solid #e0e0e0;
-        overflow-y: auto;
-        flex-shrink: 0;
+    .sidebar .user-info img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+
+    .sidebar .user-info h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar ul li {
+        padding: 10px 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .sidebar ul li i {
+        margin-right: 10px;
+        font-size: 18px;
+        color: #555;
+    }
+
+    .sidebar ul li:hover {
+        background-color: #f0f0f0;
+    }
+
+    .sidebar ul li.profile-item {
+        padding-left: 30px;
+        font-size: 14px;
+        color: #666;
     }
 
     .content {
         flex: 1;
         padding: 20px;
         background-color: #f9f9f9;
+        min-height: 100vh;
     }
 
-    /* Tab Buttons */
     .tabs {
         display: flex;
-        justify-content: start;
-        gap: 10px;
+        border-bottom: 2px solid #e0e0e0;
         margin-bottom: 20px;
-        overflow-x: auto;
     }
 
     .tabs button {
+        background: none;
         border: none;
-        background-color: #fff;
         padding: 10px 20px;
-        border-radius: 20px;
+        font-size: 16px;
         cursor: pointer;
-        font-size: 14px;
-        color: #666;
-        transition: all 0.3s ease;
-        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .tabs button.active {
-        background-color: #4caf50;
-        color: #fff;
-        font-weight: bold;
-        box-shadow: none;
+        color: #4caf50;
+        border-bottom: 2px solid #4caf50;
     }
 
-    /* Order Summary */
     .order-summary {
-        display: grid;
-        grid-template-columns: 100px 1fr auto;
-        gap: 15px;
+        border: 1px solid #e0e0e0;
         padding: 15px;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
         margin-bottom: 15px;
-        align-items: center;
         cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-
-    .order-summary:hover {
-        transform: translateY(-5px);
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
     }
 
     .order-summary img {
-        width: 100px;
-        height: 100px;
-        border-radius: 10px;
+        width: 60px;
+        height: 60px;
         object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
     }
 
-    .order-summary .details {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .order-summary .details h3 {
+    .order-summary h3 {
         font-size: 18px;
+        font-weight: bold;
         margin: 0;
-        color: #333;
+        display: flex;
+        align-items: center;
     }
 
-    .order-summary .details p {
+    .order-summary p {
         margin: 5px 0;
         font-size: 14px;
-        color: #666;
+        display: flex;
+        align-items: center;
     }
 
-    .order-summary .details p i {
+    .order-summary i {
         margin-right: 8px;
-        color: #4caf50;
-    }
-
-    .order-summary .price {
-        text-align: right;
-        font-size: 16px;
-        font-weight: bold;
-        color: #333;
+        color: #555;
     }
 
     .no-orders {
         text-align: center;
-        padding: 50px;
-        color: #888;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .no-orders button {
-        background-color: #4caf50;
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .no-orders button:hover {
-        background-color: #3e8e41;
+        margin-top: 50px;
     }
 </style>
 
@@ -550,63 +560,86 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 
 					
-	<div class="content">
-    <h1>My Orders</h1>
-
-    <!-- Tab Buttons -->
-    <div class="tabs">
-        <button id="All-tab" onclick="showTab('All')" class="active">All</button>
-        <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
-        <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
-        <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
+	<!-- Main Container -->
+<div class="my-account-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-info">
+            <img src="<?= $current_user['user_image'] ?>" alt="User Image">
+            <h3><?= $current_user['user_name'] ?></h3>
+        </div>
+        <ul>
+            <!-- My Account -->
+            <li><i class="fa fa-user"></i> My Account</li>
+            <!-- Profile items directly below My Account with indentation -->
+            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
+            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
+            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+            <!-- My Orders -->
+            <li><i class="fa fa-box"></i> My Orders</li>
+        </ul>
     </div>
 
-    <!-- Order Containers for Each Status -->
-    <?php
-    function renderOrders($orders) {
-        if ($orders->num_rows > 0) {
-            while ($order = $orders->fetch_assoc()) {
+    <!-- Content Area -->
+    <div class="content">
+        <h1>My Orders</h1>
+        <!-- Tab Buttons -->
+        <div class="tabs">
+            <button id="All-tab" onclick="showTab('All')" class="active">All</button>
+            <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
+            <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
+            <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
+        </div>
+
+        <!-- Order Containers for Each Status -->
+        <?php
+        function renderOrders($orders) {
+            if ($orders->num_rows > 0) {
+                while ($order = $orders->fetch_assoc()) {
+                    echo '
+                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
+                        <img src="images/' . $order['product_image'] . '" alt="Product Image">
+                        <div>
+                            <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+                            <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
+                            <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
+                            <p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>
+                        </div>
+                    </div>';
+                }
+            } else {
                 echo '
-                <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-                    <img src="images/' . $order['product_image'] . '" alt="Product Image">
-                    <div class="details">
-                        <h3>Order #' . $order['order_id'] . '</h3>
-                        <p><i class="fa fa-calendar-alt"></i> ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-                        <p><i class="fa fa-box"></i> ' . $order['products'] . '</p>
-                    </div>
-                    <div class="price">RM ' . number_format($order['final_amount'], 2) . '</div>
+                <div class="no-orders">
+                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+                    <button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
                 </div>';
             }
-        } else {
-            echo '
-            <div class="no-orders">
-                <p><i class="fa fa-ice-cream"></i> No orders to show yet.</p>
-                <button onclick="window.location.href=\'shop.php\'">Start Shopping</button>
-            </div>';
         }
-    }
-    ?>
+        ?>
 
-    <!-- All Orders -->
-    <div class="order-container" id="All" style="display: block;">
-        <?php renderOrders($all_orders); ?>
-    </div>
+        <!-- All Orders -->
+        <div class="order-container" id="All" style="display: block;">
+            <?php renderOrders($all_orders); ?>
+        </div>
 
-    <!-- Processing Orders -->
-    <div class="order-container" id="Processing" style="display: none;">
-        <?php renderOrders($processing_orders); ?>
-    </div>
+        <!-- Processing Orders -->
+        <div class="order-container" id="Processing" style="display: none;">
+            <?php renderOrders($processing_orders); ?>
+        </div>
 
-    <!-- Shipping Orders -->
-    <div class="order-container" id="Shipping" style="display: none;">
-        <?php renderOrders($shipping_orders); ?>
-    </div>
+        <!-- Shipping Orders -->
+        <div class="order-container" id="Shipping" style="display: none;">
+            <?php renderOrders($shipping_orders); ?>
+        </div>
 
-    <!-- Completed Orders -->
-    <div class="order-container" id="Complete" style="display: none;">
-        <?php renderOrders($completed_orders); ?>
+        <!-- Completed Orders -->
+        <div class="order-container" id="Complete" style="display: none;">
+            <?php renderOrders($completed_orders); ?>
+        </div>
     </div>
 </div>
+
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
