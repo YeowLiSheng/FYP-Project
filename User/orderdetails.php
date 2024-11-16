@@ -84,97 +84,112 @@ $details_result = $details_stmt->get_result();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Order Details</title>
-<link rel="stylesheet" href="styles.css">
 <style>
+    /* 全局样式 */
     body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-        margin: 0;
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
         padding: 20px;
+        margin: 0;
     }
     .order-details-container {
-        max-width: 800px;
-        margin: auto;
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        max-width: 900px;
+        margin: 0 auto;
     }
-    .order-summary, .product-details, .pricing-details {
+    .card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
-    .order-summary h2, .product-details h2, .pricing-details h2 {
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 5px;
+    .card h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
     }
-    table {
+    .icon {
+        font-size: 1.2em;
+        margin-right: 10px;
+        color: #007bff;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+        font-size: 0.95em;
+    }
+    .product-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px;
     }
-    th, td {
-        padding: 10px;
+    .product-table th, .product-table td {
+        padding: 12px;
         text-align: left;
         border-bottom: 1px solid #ddd;
     }
-    th {
-        background-color: #f8f8f8;
+    .product-table th {
+        background-color: #f9f9f9;
+        color: #333;
     }
-    img {
+    .product-image {
         width: 60px;
         height: 60px;
         object-fit: cover;
         border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    .rate-comment {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-    }
-    .stars {
+    .back-button, .print-button {
+        display: inline-block;
+        padding: 10px 25px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
         cursor: pointer;
-        color: #ffcc00;
+        transition: 0.3s;
+    }
+    .back-button {
+        background: #007bff;
         margin-right: 10px;
     }
-    .stars span {
-        font-size: 20px;
+    .back-button:hover {
+        background: #0056b3;
     }
-    .comment-box {
-        width: calc(100% - 120px);
-        padding: 5px;
-        margin-right: 5px;
+    .print-button {
+        background: #28a745;
+        float: right;
     }
-    .submit-review {
-        padding: 5px 10px;
-        background-color: #28a745;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
+    .print-button:hover {
+        background: #218838;
     }
-    .submit-review:hover {
-        background-color: #218838;
+    .pricing-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+        font-weight: bold;
     }
 </style>
 </head>
 <body>
 <div class="order-details-container">
-    <h1>Order Details #<?= $order['order_id'] ?></h1>
-
-    <!-- Order Summary -->
-    <div class="order-summary">
-        <h2>Order Summary</h2>
-        <p><strong>User:</strong> <?= $order['user_name'] ?></p>
-        <p><strong>Order Date:</strong> <?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></p>
-        <p><strong>Order Status:</strong> <?= $order['order_status'] ?></p>
-        <p><strong>Shipping Address:</strong> <?= $order['shipping_address'] ?></p>
-        <p><strong>Shipping Method:</strong> <?= $order['shipping_method'] ?></p>
+    <!-- 订单概要 -->
+    <div class="card">
+        <h2><span class="icon">📋</span>Order Summary</h2>
+        <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
+        <div class="summary-item"><strong>Order Date:</strong> <span><?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></span></div>
+        <div class="summary-item"><strong>Status:</strong> <span><?= $order['order_status'] ?></span></div>
+        <div class="summary-item"><strong>Shipping Address:</strong> <span><?= $order['shipping_address'] ?></span></div>
+        <div class="summary-item"><strong>Shipping Method:</strong> <span><?= $order['shipping_method'] ?></span></div>
     </div>
 
-    <!-- Product Details -->
-    <div class="product-details">
-        <h2>Product Details</h2>
-        <table>
+    <!-- 产品明细 -->
+    <div class="card">
+        <h2><span class="icon">🛒</span>Product Details</h2>
+        <table class="product-table">
             <thead>
                 <tr>
                     <th>Image</th>
@@ -187,70 +202,29 @@ $details_result = $details_stmt->get_result();
             <tbody>
                 <?php while ($detail = $details_result->fetch_assoc()) { ?>
                 <tr>
-                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>"></td>
+                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
                     <td><?= $detail['product_name'] ?></td>
                     <td><?= $detail['quantity'] ?></td>
                     <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
                     <td>RM <?= number_format($detail['total_price'], 2) ?></td>
-                </tr>
-                <tr>
-                    <td colspan="5">
-                        <div class="rate-comment">
-                            <div class="stars" data-product-id="<?= $detail['product_id'] ?>">
-                                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-                            </div>
-                            <input type="text" class="comment-box" placeholder="Leave a comment">
-                            <button class="submit-review" onclick="submitReview(<?= $detail['product_id'] ?>)">Submit Review</button>
-                        </div>
-                    </td>
                 </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
 
-    <!-- Pricing Details -->
-    <div class="pricing-details">
-        <h2>Pricing Details</h2>
-        <p><strong>Grand Total:</strong> RM <?= number_format($order['Grand_total'], 2) ?></p>
-        <p><strong>Discount:</strong> RM <?= number_format($order['discount_amount'], 2) ?></p>
-        <p><strong>Delivery Charge:</strong> RM <?= number_format($order['delivery_charge'], 2) ?></p>
-        <p><strong>Final Amount:</strong> RM <?= number_format($order['final_amount'], 2) ?></p>
+    <!-- 价格明细 -->
+    <div class="card">
+        <h2><span class="icon">💰</span>Pricing Details</h2>
+        <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
+        <div class="pricing-item"><span>Discount:</span><span>- RM <?= number_format($order['discount_amount'], 2) ?></span></div>
+        <div class="pricing-item"><span>Delivery Charge:</span><span>+ RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
+        <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
-    <!-- Print Receipt Button -->
-    <button onclick="window.location.href='receipt.php?order_id=<?= $order['order_id'] ?>'">Print Receipt</button>
+    <!-- 操作按钮 -->
+    <a href="myaccount.php" class="back-button">Back to Orders</a>
+    <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 </div>
-
-<script>
-    // 提交评分和评论
-    function submitReview(productId) {
-        const stars = document.querySelector(`.stars[data-product-id="${productId}"]`);
-        const commentBox = stars.nextElementSibling;
-        const comment = commentBox.value.trim();
-        
-        if (comment === "") {
-            alert("Please leave a comment.");
-            return;
-        }
-
-        const rating = stars.querySelectorAll(".selected").length;
-        alert(`Review submitted for product ${productId} with rating ${rating} and comment: ${comment}`);
-        
-        // 这里可以添加 AJAX 提交评论功能
-    }
-
-    // 星级评分交互
-    document.querySelectorAll('.stars').forEach(starContainer => {
-        const stars = starContainer.querySelectorAll('span');
-        stars.forEach((star, index) => {
-            star.addEventListener('click', () => {
-                stars.forEach((s, i) => {
-                    s.classList.toggle('selected', i <= index);
-                });
-            });
-        });
-    });
-</script>
 </body>
 </html>
