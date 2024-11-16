@@ -1,5 +1,7 @@
 <?php
-session_start();
+session_start();  // 启动会话
+
+// Connect to the database
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -7,27 +9,75 @@ $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
+// 设置字符集
+$conn->set_charset("utf8mb4");
+
+// 检查连接
 if ($conn->connect_error) {
-	die("Connection failed: " . $conn->connect_error);
+    die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-	header("Location: login.php"); // Redirect to login page if not logged in
-	exit;
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
 }
 
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$user_result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
-$address_result = mysqli_query($conn, "SELECT * FROM user_address WHERE user_id ='$user_id'");
 
-// Check if the query was successful and fetch user data
-if ($user_result && mysqli_num_rows($user_result) > 0) {
-	$user = mysqli_fetch_assoc($user_result);
+// 使用预处理语句来防止 SQL 注入
+$stmt = $conn->prepare("SELECT * FROM user WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user_result = $stmt->get_result();
+
+// 获取用户信息
+if ($user_result && $user_result->num_rows > 0) {
+    $user = $user_result->fetch_assoc();
 } else {
-	echo "User not found.";
-	exit;
+    echo "User not found.";
+    exit;
 }
+
+// 获取当前用户的详细信息（动态获取用户ID）
+$current_user_id = $_SESSION['id']; 
+$current_user_query = $conn->prepare("SELECT user_name, user_image FROM user WHERE user_id = ?");
+$current_user_query->bind_param("i", $current_user_id);
+$current_user_query->execute();
+$current_user = $current_user_query->get_result()->fetch_assoc();
+
+// Fetch orders with all products for each order
+function fetchOrdersWithProducts($conn, $status = null) {
+    $sql = "
+        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
+               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
+               MIN(p.product_image) AS product_image
+        FROM orders o
+        JOIN order_details od ON o.order_id = od.order_id
+        JOIN product p ON od.product_id = p.product_id";
+        
+    // Add a condition to filter by status if provided
+    if ($status) {
+        $sql .= " WHERE o.order_status = ?";
+    }
+
+    $sql .= " GROUP BY o.order_id 
+              ORDER BY o.order_date DESC";
+    
+    $stmt = $conn->prepare($sql);
+    if ($status) {
+        $stmt->bind_param("s", $status);  // Bind the status parameter
+    }
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Fetch orders for each tab
+$all_orders = fetchOrdersWithProducts($conn);
+$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
+$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
+$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 ?>
 
 <!DOCTYPE html>
