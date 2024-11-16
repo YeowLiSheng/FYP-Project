@@ -121,33 +121,30 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 
 	<style>
-    /* General layout styling */
-    /* General layout styling */
-.my-account-container {
-    display: flex;
-}
+    /* General Layout */
+    .my-account-container {
+        display: flex;
+        font-family: 'Arial', sans-serif;
+    }
 
-.sidebar {
-	width: 250px;
-    padding: 20px;
-    height: 100%;
-    position: static; /* 保持 static */
-    background-color: #fff;
-    border-right: 1px solid #e0e0e0;
-    overflow-y: auto;
-    flex-shrink: 0;
-    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
-}
+    /* Sidebar */
+    .sidebar {
+        width: 250px;
+        padding: 20px;
+        height: 100vh;
+        background-color: #f8f9fa;
+        border-right: 1px solid #e0e0e0;
+    }
 
     .sidebar .user-info {
         display: flex;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
 
     .sidebar .user-info img {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         object-fit: cover;
         margin-right: 15px;
@@ -155,12 +152,12 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
     .sidebar .user-info h3 {
         margin: 0;
-        font-size: 18px;
+        font-size: 20px;
         color: #333;
     }
 
     .sidebar ul {
-        list-style-type: none;
+        list-style: none;
         padding: 0;
         margin: 0;
     }
@@ -168,96 +165,134 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     .sidebar ul li {
         padding: 10px 15px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
         border-radius: 5px;
         transition: background-color 0.3s ease;
-        font-size: 16px;
         color: #333;
-    }
-
-    .sidebar ul li i {
-        margin-right: 10px;
-        font-size: 18px;
-        color: #555;
+        font-size: 16px;
     }
 
     .sidebar ul li:hover {
-        background-color: #f0f0f0;
+        background-color: #e9ecef;
     }
 
-    .sidebar ul li.profile-item {
-        padding-left: 30px;
-        font-size: 14px;
-        color: #666;
+    .sidebar ul li.active {
+        background-color: #4caf50;
+        color: white;
     }
 
+    /* Content */
     .content {
         flex: 1;
         padding: 20px;
-        background-color: #f9f9f9;
+        background-color: #f4f6f9;
         min-height: 100vh;
     }
 
-    .tabs {
-        display: flex;
-        border-bottom: 2px solid #e0e0e0;
+    .content h1 {
+        font-size: 24px;
         margin-bottom: 20px;
     }
 
+    /* Tabs */
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+    }
+
     .tabs button {
+        flex: 1;
+        padding: 10px;
         background: none;
         border: none;
-        padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
+        text-align: center;
+        color: #555;
+        transition: color 0.3s;
     }
 
     .tabs button.active {
+        font-weight: bold;
         color: #4caf50;
         border-bottom: 2px solid #4caf50;
     }
 
-    .order-summary {
-        border: 1px solid #e0e0e0;
-        padding: 15px;
+    /* Orders Section */
+    .order-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
         margin-bottom: 15px;
-        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
     }
 
-    .order-summary img {
-        width: 60px;
-        height: 60px;
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .order-card img {
+        width: 80px;
+        height: 80px;
         object-fit: cover;
         border-radius: 8px;
-        margin-right: 15px;
+        margin-right: 20px;
     }
 
-    .order-summary h3 {
+    .order-card-content {
+        flex: 1;
+    }
+
+    .order-card-content h3 {
         font-size: 18px;
-        font-weight: bold;
         margin: 0;
-        display: flex;
-        align-items: center;
+        margin-bottom: 5px;
+        color: #333;
     }
 
-    .order-summary p {
+    .order-card-content p {
         margin: 5px 0;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-    }
-
-    .order-summary i {
-        margin-right: 8px;
         color: #555;
+        font-size: 14px;
     }
 
-    .no-orders {
-        text-align: center;
-        margin-top: 50px;
+    .order-card-content p i {
+        margin-right: 8px;
+        color: #888;
+    }
+
+    .order-card-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .order-card-actions .status {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .status.processing {
+        background: #f0ad4e;
+        color: white;
+    }
+
+    .status.shipping {
+        background: #5bc0de;
+        color: white;
+    }
+
+    .status.complete {
+        background: #5cb85c;
+        color: white;
     }
 </style>
 
