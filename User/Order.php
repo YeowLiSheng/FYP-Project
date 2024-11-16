@@ -525,24 +525,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 					
 	<body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- User Info -->
-        <div class="user-info">
-            <img src="<?= $current_user['user_image'] ?>" alt="User Image">
-            <h3><?= $current_user['user_name'] ?></h3>
-        </div>
-        <ul>
-            <!-- My Account -->
-            <li><i class="fa fa-user"></i> My Account</li>
-            <!-- Profile items directly below My Account with indentation -->
-            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
-            <!-- My Orders -->
-            <li><i class="fa fa-box"></i> My Orders</li>
-        </ul>
-    </div>
+    
 
     <!-- Content Area -->
     <div class="content">
