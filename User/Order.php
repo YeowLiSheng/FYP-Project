@@ -134,7 +134,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     position: static; /* 改为 static */
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+ 
     overflow-y: auto;
     flex-shrink: 0;
 }
