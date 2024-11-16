@@ -128,13 +128,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     padding: 20px;
     height: 100vh;
     position: fixed;
+    top: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
-    background-color: #fff; /* 设置背景颜色 */
-    border-right: 1px solid #e0e0e0; /* 添加边框分隔效果 */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 添加轻微阴影 */
-    z-index: 1000; /* 确保侧边栏在其他内容之上 */
-    overflow-y: auto; /* 防止内容溢出 */
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow-y: auto;
 }
 
 .sidebar .user-info {
@@ -154,6 +156,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 .sidebar .user-info h3 {
     margin: 0;
     font-size: 18px;
+    color: #333;
 }
 
 .sidebar ul {
@@ -163,40 +166,38 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 }
 
 .sidebar ul li {
-    padding: 10px;
+    padding: 10px 15px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    border-radius: 5px; /* 添加圆角 */
-    transition: background-color 0.3s ease; /* 添加鼠标悬停效果 */
-    font-size: 16px; /* 调整字体大小 */
-    color: #333; /* 设置字体颜色 */
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+    color: #333;
+}
+
+.sidebar ul li i {
+    margin-right: 10px;
+    font-size: 18px;
+    color: #555;
 }
 
 .sidebar ul li:hover {
-    background-color: #f0f0f0; /* 悬停时轻微背景变化 */
+    background-color: #f0f0f0;
 }
 
-.submenu {
-    padding-left: 20px;
-    margin-top: 10px;
-    display: none;
-    flex-direction: column;
-}
-
-.submenu li {
-    padding: 8px;
-    background-color: #fafafa;
-    border-radius: 5px;
-    margin-top: 5px;
+.sidebar ul li.profile-item {
+    padding-left: 30px;
+    font-size: 14px;
+    color: #666;
 }
 
 .content {
-    margin-left: 270px; /* 为侧边栏留出空间 */
+    margin-left: 270px;
     padding: 20px;
     flex: 1;
-    background-color: #f9f9f9; /* 内容区背景色 */
-    min-height: 100vh; /* 确保内容区至少占满屏幕 */
+    background-color: #f9f9f9;
+    min-height: 100vh;
 }
     .tabs {
         display: flex;
