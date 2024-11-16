@@ -128,6 +128,10 @@ $details_result = $details_stmt->get_result();
 	<!--===============================================================================================-->
 <style>
     /* 全局样式 */
+    .main-container {
+    display: flex;
+    flex-direction: row;
+}
     .sidebar {
 	width: 250px;
     padding: 20px;
@@ -575,7 +579,7 @@ $details_result = $details_stmt->get_result();
 		</div>
 	</div>
 
-
+<div class="main-container">
     <div class="sidebar">
         <!-- User Info -->
         <div class="user-info">
@@ -645,6 +649,7 @@ $details_result = $details_stmt->get_result();
     <!-- 操作按钮 -->
     <a href="myaccount.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+</div>
 </div>
 
 <!-- Footer -->
