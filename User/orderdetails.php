@@ -47,48 +47,56 @@ $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
-// Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status = null) {
-    $sql = "
-        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
-        FROM orders o
-        JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id";
-        
-    // Add a condition to filter by status if provided
-    if ($status) {
-        $sql .= " WHERE o.order_status = ?";
-    }
-
-    $sql .= " GROUP BY o.order_id 
-              ORDER BY o.order_date DESC";
-    
-    $stmt = $conn->prepare($sql);
-    if ($status) {
-        $stmt->bind_param("s", $status);  // Bind the status parameter
-    }
-    $stmt->execute();
-    return $stmt->get_result();
+// 获取订单 ID
+if (!isset($_GET['order_id'])) {
+    echo "Invalid order ID.";
+    exit;
 }
 
-// Fetch orders for each tab
-$all_orders = fetchOrdersWithProducts($conn);
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+
+
+$order_id = intval($_GET['order_id']);
+
+// 使用预处理语句获取订单信息
+$order_stmt = $conn->prepare("
+    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount, o.delivery_charge,
+           o.final_amount, o.order_status, o.shipping_address, o.shipping_method, o.user_message,
+           u.user_name
+    FROM orders o
+    JOIN user u ON o.user_id = u.user_id
+    WHERE o.order_id = ?
+");
+$order_stmt->bind_param("i", $order_id);
+$order_stmt->execute();
+$order_result = $order_stmt->get_result();
+
+if ($order_result->num_rows === 0) {
+    echo "Order not found.";
+    exit;
+}
+
+$order = $order_result->fetch_assoc();
+
+// 获取订单详情
+$details_stmt = $conn->prepare("
+    SELECT od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image
+    FROM order_details od
+    JOIN product p ON od.product_id = p.product_id
+    WHERE od.order_id = ?
+");
+$details_stmt->bind_param("i", $order_id);
+$details_stmt->execute();
+$details_result = $details_stmt->get_result();
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh">
 <head>
-	<title>Home</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!--===============================================================================================-->
-	<link rel="icon" type="image/png" href="images/icons/favicon.png" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Details</title>
+<!--===============================================================================================-->
+<link rel="icon" type="image/png" href="images/icons/favicon.png" />
 	<!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
 	<!--===============================================================================================-->
@@ -118,16 +126,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<!--===============================================================================================-->
-
-
-	<style>
-    /* General layout styling */
-    /* General layout styling */
-.my-account-container {
+<style>
+    /* 全局样式 */
+    .main-container {
     display: flex;
-}
+    flex-direction: row;
+    width: 100%; /* 确保容器宽度为全屏 */
 
-.sidebar {
+}
+    .sidebar {
 	width: 250px;
     padding: 20px;
     height: 100%;
@@ -192,125 +199,94 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         color: #666;
     }
 
-    .content {
-        flex: 1;
+    .order-details-container {
+       
+        margin: 0 auto;
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
         padding: 20px;
-        background-color: #f9f9f9;
-        min-height: 100vh;
-    }
+        margin: 0;
+        flex: 1; /* 让容器填满 sidebar 旁边的剩余空间 */
 
-    .tabs {
-        display: flex;
-        border-bottom: 2px solid #e0e0e0;
+    }
+    .card {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
-
-    .tabs button {
-        background: none;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
+    .card h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    .icon {
+        font-size: 1.2em;
+        margin-right: 10px;
+        color: #007bff;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+        font-size: 0.95em;
+    }
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .product-table th, .product-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .product-table th {
+        background-color: #f9f9f9;
+        color: #333;
+    }
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .back-button, .print-button {
+        display: inline-block;
+        padding: 10px 25px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
         cursor: pointer;
+        transition: 0.3s;
     }
-
-    .tabs button.active {
-        color: #4caf50;
-        border-bottom: 2px solid #4caf50;
+    .back-button {
+        background: #007bff;
+        margin-right: 10px;
     }
-
-	.order-summary {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 12px;
-    background-color: #f7f9fc; /* 添加浅色背景 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 100%;
-    cursor: pointer;
-    position: relative; /* 方便定位其他元素 */
-}
-
-.order-summary:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.order-summary img {
-    width: 100%;
-    height: 100px; /* 让图片更大以填充空间 */
-    border-radius: 10px;
-    object-fit: cover;
-}
-
-.order-summary div {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 10px; /* 增加内部间距 */
-}
-
-.order-summary h3 {
-    font-size: 20px;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.order-summary p {
-    font-size: 14px;
-    color: #555;
-    margin: 3px 0;
-    line-height: 1.4;
-}
-
-.order-summary p span {
-    font-weight: bold;
-}
-
-.order-summary .order-status {
-    font-size: 14px;
-    color: #fff;
-    background-color: #4caf50;
-    padding: 5px 10px;
-    border-radius: 5px;
-    display: inline-block;
-    align-self: flex-start;
-    margin-bottom: 5px;
-}
-
-.order-summary .additional-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.order-summary .additional-info p {
-    margin: 0;
-    font-size: 14px;
-}
-
-.order-summary .price-info {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    margin-left: auto;
-}
-
-.no-orders {
-    text-align: center;
-    margin-top: 50px;
-    background-color: #f9f9f9;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
+    .back-button:hover {
+        background: #0056b3;
+    }
+    .print-button {
+        background: #28a745;
+        float: right;
+    }
+    .print-button:hover {
+        background: #218838;
+    }
+    .pricing-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+        font-weight: bold;
+    }
 </style>
-
 </head>
-
 <body class="animsition">
 
 
@@ -606,11 +582,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 		</div>
 	</div>
 
-
-					
-	<!-- Main Container -->
-<div class="my-account-container">
-    <!-- Sidebar -->
+<div class="main-container">
     <div class="sidebar">
         <!-- User Info -->
         <div class="user-info">
@@ -629,67 +601,66 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         </ul>
     </div>
 
-    <!-- Content Area -->
-    <div class="content">
-        <h1>My Orders</h1>
-        <!-- Tab Buttons -->
-        <div class="tabs">
-            <button id="All-tab" onclick="showTab('All')" class="active">All</button>
-            <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
-            <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
-            <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
-        </div>
-
-        <!-- Order Containers for Each Status -->
-        <?php
-        function renderOrders($orders) {
-            if ($orders->num_rows > 0) {
-                while ($order = $orders->fetch_assoc()) {
-                    echo '
-                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-                        <img src="images/' . $order['product_image'] . '" alt="Product Image">
-                        <div>
-                            <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-                            <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-                            <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>
-                        </div>
-                    </div>';
-                }
-            } else {
-                echo '
-                <div class="no-orders">
-                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-                    <button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
-                </div>';
-            }
-        }
-        ?>
-
-        <!-- All Orders -->
-        <div class="order-container" id="All" style="display: block;">
-            <?php renderOrders($all_orders); ?>
-        </div>
-
-        <!-- Processing Orders -->
-        <div class="order-container" id="Processing" style="display: none;">
-            <?php renderOrders($processing_orders); ?>
-        </div>
-
-        <!-- Shipping Orders -->
-        <div class="order-container" id="Shipping" style="display: none;">
-            <?php renderOrders($shipping_orders); ?>
-        </div>
-
-        <!-- Completed Orders -->
-        <div class="order-container" id="Complete" style="display: none;">
-            <?php renderOrders($completed_orders); ?>
-        </div>
+<div class="order-details-container">
+    
+    <div class="card">
+        <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
     </div>
+    <!-- 订单概要 -->
+    <div class="card">
+        <h2><span class="icon">📋</span>Order Summary</h2>
+        <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
+        <div class="summary-item"><strong>Order Date:</strong> <span><?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></span></div>
+        <div class="summary-item"><strong>Status:</strong> <span><?= $order['order_status'] ?></span></div>
+        <div class="summary-item"><strong>Shipping Address:</strong> <span><?= $order['shipping_address'] ?></span></div>
+        <div class="summary-item"><strong>Shipping Method:</strong> <span><?= $order['shipping_method'] ?></span></div>
+        <div class="summary-item"><strong>User Message:</strong> <span><?= !empty($order['user_message']) ? htmlspecialchars($order['user_message']) : 'N/A' ?></span></div>           
+    </div>
+
+    <!-- 产品明细 -->
+    <div class="card">
+        <h2><span class="icon">🛒</span>Product Details</h2>
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($detail = $details_result->fetch_assoc()) { ?>
+                <tr>
+                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
+                    <td><?= $detail['product_name'] ?></td>
+                    <td><?= $detail['quantity'] ?></td>
+                    <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
+                    <td>RM <?= number_format($detail['total_price'], 2) ?></td>
+                </tr>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 价格明细 -->
+    <div class="card">
+        <h2><span class="icon">💰</span>Pricing Details</h2>
+        <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
+        <div class="pricing-item"><span>Discount:</span><span>- RM <?= number_format($order['discount_amount'], 2) ?></span></div>
+        <div class="pricing-item"><span>Delivery Charge:</span><span>+ RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
+        <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <a href="order.php" class="back-button">Back to Orders</a>
+    <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+</div>
 </div>
 
-	<!-- Footer -->
-	<footer class="bg3 p-t-75 p-b-32">
+<!-- Footer -->
+<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
 			<div class="row">
 				<div class="col-sm-6 col-lg-3 p-b-50">
@@ -1113,19 +1084,5 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-
-	<script>
-    function showTab(status) {
-        document.querySelectorAll('.order-container').forEach(container => {
-            container.style.display = container.id === status ? 'block' : 'none';
-        });
-        document.querySelectorAll('.tabs button').forEach(button => {
-            button.classList.remove('active');
-        });
-        document.getElementById(status + '-tab').classList.add('active');
-    }
-	</script>
-
 </body>
-
 </html>
