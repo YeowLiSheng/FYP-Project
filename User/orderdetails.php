@@ -40,7 +40,12 @@ if ($user_result && $user_result->num_rows > 0) {
     exit;
 }
 
-
+// 获取当前用户的详细信息（动态获取用户ID）
+$current_user_id = $_SESSION['id']; 
+$current_user_query = $conn->prepare("SELECT user_name, user_image FROM user WHERE user_id = ?");
+$current_user_query->bind_param("i", $current_user_id);
+$current_user_query->execute();
+$current_user = $current_user_query->get_result()->fetch_assoc();
 
 // 获取订单 ID
 if (!isset($_GET['order_id'])) {
