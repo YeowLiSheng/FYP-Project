@@ -122,21 +122,22 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 	<style>
     /* General layout styling */
-    .my-account-container {
-        display: flex;
-    }
+    /* General layout styling */
+.my-account-container {
+    display: flex;
+}
 
-    .sidebar {
-        width: 250px;
-        padding: 20px;
-        height: 100%;
-        position: sticky;
-        background-color: #fff;
-        border-right: 1px solid #e0e0e0;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        overflow-y: auto;
-        flex-shrink: 0;
-    }
+.sidebar {
+    width: 250px;
+    padding: 20px;
+    height: 100%;
+    position: relative; /* 改为 relative */
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    flex-shrink: 0;
+}
 
     .sidebar .user-info {
         display: flex;
