@@ -89,107 +89,92 @@ $details_result = $details_stmt->get_result();
     body {
         font-family: Arial, sans-serif;
         background-color: #f5f5f5;
-        color: #333;
         margin: 0;
         padding: 20px;
     }
     .order-details-container {
         max-width: 800px;
-        margin: 0 auto;
-    }
-    .card {
-        background-color: #fff;
+        margin: auto;
+        background: #fff;
         padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .order-summary, .product-details, .pricing-details {
         margin-bottom: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .card h2 {
-        font-size: 1.5em;
-        margin-bottom: 10px;
+    .order-summary h2, .product-details h2, .pricing-details h2 {
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 5px;
     }
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        margin: 5px 0;
-    }
-    .product-table {
+    table {
         width: 100%;
         border-collapse: collapse;
+        margin-bottom: 10px;
     }
-    .product-table th, .product-table td {
+    th, td {
         padding: 10px;
         text-align: left;
-    }
-    .product-table th {
-        background-color: #fafafa;
-    }
-    .product-table tr {
         border-bottom: 1px solid #ddd;
     }
-    .product-image {
-        width: 50px;
-        height: 50px;
+    th {
+        background-color: #f8f8f8;
+    }
+    img {
+        width: 60px;
+        height: 60px;
         object-fit: cover;
         border-radius: 5px;
     }
-    .back-button {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 5px;
-        text-align: center;
+    .rate-comment {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+    }
+    .stars {
         cursor: pointer;
+        color: #ffcc00;
+        margin-right: 10px;
     }
-    .back-button:hover {
-        background-color: #0056b3;
+    .stars span {
+        font-size: 20px;
     }
-    .print-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
+    .comment-box {
+        width: calc(100% - 120px);
+        padding: 5px;
+        margin-right: 5px;
+    }
+    .submit-review {
+        padding: 5px 10px;
         background-color: #28a745;
         color: #fff;
-        padding: 15px;
         border: none;
-        border-radius: 50%;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
         cursor: pointer;
-        font-size: 18px;
     }
-    .print-button:hover {
+    .submit-review:hover {
         background-color: #218838;
     }
 </style>
 </head>
 <body>
 <div class="order-details-container">
-    <!-- 订单概要 -->
-    <div class="card">
+    <h1>Order Details #<?= $order['order_id'] ?></h1>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
         <h2>Order Summary</h2>
-        <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
-        <div class="summary-item"><strong>Order Date:</strong> <span><?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></span></div>
-        <div class="summary-item"><strong>Status:</strong> <span><?= $order['order_status'] ?></span></div>
-        <div class="summary-item"><strong>Shipping Address:</strong> <span><?= $order['shipping_address'] ?></span></div>
-        <div class="summary-item"><strong>Shipping Method:</strong> <span><?= $order['shipping_method'] ?></span></div>
+        <p><strong>User:</strong> <?= $order['user_name'] ?></p>
+        <p><strong>Order Date:</strong> <?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></p>
+        <p><strong>Order Status:</strong> <?= $order['order_status'] ?></p>
+        <p><strong>Shipping Address:</strong> <?= $order['shipping_address'] ?></p>
+        <p><strong>Shipping Method:</strong> <?= $order['shipping_method'] ?></p>
     </div>
 
-    <!-- 价格明细 -->
-    <div class="card">
-        <h2>Pricing Details</h2>
-        <div class="summary-item"><strong>Grand Total:</strong> <span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
-        <div class="summary-item"><strong>Discount:</strong> <span>RM <?= number_format($order['discount_amount'], 2) ?></span></div>
-        <div class="summary-item"><strong>Delivery Charge:</strong> <span>RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
-        <div class="summary-item"><strong>Final Amount:</strong> <span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
-    </div>
-
-    <!-- 产品明细 -->
-    <div class="card">
+    <!-- Product Details -->
+    <div class="product-details">
         <h2>Product Details</h2>
-        <table class="product-table">
+        <table>
             <thead>
                 <tr>
                     <th>Image</th>
@@ -202,24 +187,70 @@ $details_result = $details_stmt->get_result();
             <tbody>
                 <?php while ($detail = $details_result->fetch_assoc()) { ?>
                 <tr>
-                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
+                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>"></td>
                     <td><?= $detail['product_name'] ?></td>
                     <td><?= $detail['quantity'] ?></td>
                     <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
                     <td>RM <?= number_format($detail['total_price'], 2) ?></td>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <div class="rate-comment">
+                            <div class="stars" data-product-id="<?= $detail['product_id'] ?>">
+                                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                            </div>
+                            <input type="text" class="comment-box" placeholder="Leave a comment">
+                            <button class="submit-review" onclick="submitReview(<?= $detail['product_id'] ?>)">Submit Review</button>
+                        </div>
+                    </td>
                 </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
 
-    <!-- 返回订单按钮 -->
-    <a href="myaccount.php" class="back-button">Back to Orders</a>
+    <!-- Pricing Details -->
+    <div class="pricing-details">
+        <h2>Pricing Details</h2>
+        <p><strong>Grand Total:</strong> RM <?= number_format($order['Grand_total'], 2) ?></p>
+        <p><strong>Discount:</strong> RM <?= number_format($order['discount_amount'], 2) ?></p>
+        <p><strong>Delivery Charge:</strong> RM <?= number_format($order['delivery_charge'], 2) ?></p>
+        <p><strong>Final Amount:</strong> RM <?= number_format($order['final_amount'], 2) ?></p>
+    </div>
+
+    <!-- Print Receipt Button -->
+    <button onclick="window.location.href='receipt.php?order_id=<?= $order['order_id'] ?>'">Print Receipt</button>
 </div>
 
-<!-- 打印收据按钮 -->
-<button class="print-button" onclick="window.location.href='receipt.php?order_id=<?= $order['order_id'] ?>'">
-    🖨️ Print Receipt
-</button>
+<script>
+    // 提交评分和评论
+    function submitReview(productId) {
+        const stars = document.querySelector(`.stars[data-product-id="${productId}"]`);
+        const commentBox = stars.nextElementSibling;
+        const comment = commentBox.value.trim();
+        
+        if (comment === "") {
+            alert("Please leave a comment.");
+            return;
+        }
+
+        const rating = stars.querySelectorAll(".selected").length;
+        alert(`Review submitted for product ${productId} with rating ${rating} and comment: ${comment}`);
+        
+        // 这里可以添加 AJAX 提交评论功能
+    }
+
+    // 星级评分交互
+    document.querySelectorAll('.stars').forEach(starContainer => {
+        const stars = starContainer.querySelectorAll('span');
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                stars.forEach((s, i) => {
+                    s.classList.toggle('selected', i <= index);
+                });
+            });
+        });
+    });
+</script>
 </body>
 </html>
