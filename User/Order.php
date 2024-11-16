@@ -119,21 +119,26 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<!--===============================================================================================-->
 
-<style>
-	/* General layout styling */
-.my-account-container {
-    display: flex;
-    align-items: flex-start; /* 保证两个元素从顶部对齐 */
-}
 
-.sidebar {
+	<style>
+    /* General layout styling */
+    
+	.sidebar {
     width: 250px;
     padding: 20px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    overflow-y: auto; /* 使侧边栏在内容超出时滚动 */
-    height: auto; /* 高度根据内容自动调整 */
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.my-account-container {
+    display: flex;
 }
 
 .sidebar .user-info {
@@ -190,73 +195,70 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 }
 
 .content {
-    flex: 1;
+    margin-left: 270px; /* 确保内容区域从侧边栏右边开始 */
     padding: 20px;
+    flex: 1;
     background-color: #f9f9f9;
     min-height: 100vh;
 }
-
-.tabs {
-    display: flex;
-    border-bottom: 2px solid #e0e0e0;
-    margin-bottom: 20px;
-}
-
-.tabs button {
-    background: none;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.tabs button.active {
-    color: #4caf50;
-    border-bottom: 2px solid #4caf50;
-}
-
-.order-summary {
-    border: 1px solid #e0e0e0;
-    padding: 15px;
-    margin-bottom: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-}
-
-.order-summary img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-right: 15px;
-}
-
-.order-summary h3 {
-    font-size: 18px;
-    font-weight: bold;
-    margin: 0;
-    display: flex;
-    align-items: center;
-}
-
-.order-summary p {
-    margin: 5px 0;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-}
-
-.order-summary i {
-    margin-right: 8px;
-    color: #555;
-}
-
-.no-orders {
-    text-align: center;
-    margin-top: 50px;
-}
+    .tabs {
+        display: flex;
+        border-bottom: 2px solid #e0e0e0;
+        margin-bottom: 20px;
+    }
+    .tabs button {
+        background: none;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .tabs button.active {
+        color: #4caf50;
+        border-bottom: 2px solid #4caf50;
+    }
+    .order-summary {
+        border: 1px solid #e0e0e0;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    .order-summary img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+    }
+    .order-summary h3 {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    .order-summary p {
+        margin: 5px 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+    }
+    .order-summary i {
+        margin-right: 8px;
+        color: #555;
+    }
+    .no-orders {
+        text-align: center;
+        margin-top: 50px;
+    }
+    /* Adjust the profile items under My Account */
+    .sidebar ul li.profile-item {
+        padding-left: 30px;
+    }
 </style>
+
 
 </head>
 
