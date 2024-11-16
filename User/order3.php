@@ -1,3 +1,41 @@
+<?php
+session_start();
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "fyp";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Check if the user is logged in
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
+}
+
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_assoc($result);
+} else {
+    echo "User not found.";
+    exit;
+}
+
+?>
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
