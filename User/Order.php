@@ -321,7 +321,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 							</li>
 
 							<li class="active-menu">
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -333,7 +333,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="Order.php">About</a>
 							</li>
 
 							<li>
