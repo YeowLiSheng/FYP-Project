@@ -123,6 +123,70 @@ $details_result = $details_stmt->get_result();
 	<!--===============================================================================================-->
 <style>
     /* 全局样式 */
+    .sidebar {
+	width: 250px;
+    padding: 20px;
+    height: 100%;
+    position: static; /* 保持 static */
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    flex-shrink: 0;
+    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+}
+
+    .sidebar .user-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .sidebar .user-info img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+
+    .sidebar .user-info h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar ul li {
+        padding: 10px 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .sidebar ul li i {
+        margin-right: 10px;
+        font-size: 18px;
+        color: #555;
+    }
+
+    .sidebar ul li:hover {
+        background-color: #f0f0f0;
+    }
+
+    .sidebar ul li.profile-item {
+        padding-left: 30px;
+        font-size: 14px;
+        color: #666;
+    }
 
     .order-details-container {
         max-width: 900px;
@@ -510,6 +574,24 @@ $details_result = $details_stmt->get_result();
 
 
 <div class="order-details-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-info">
+            <img src="<?= $current_user['user_image'] ?>" alt="User Image">
+            <h3><?= $current_user['user_name'] ?></h3>
+        </div>
+        <ul>
+            <!-- My Account -->
+            <li><i class="fa fa-user"></i> My Account</li>
+            <!-- Profile items directly below My Account with indentation -->
+            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
+            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
+            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+            <!-- My Orders -->
+            <li><i class="fa fa-box"></i> My Orders</li>
+        </ul>
+    </div>
     <!-- 订单概要 -->
     <div class="card">
         <h2><span class="icon">📋</span>Order Summary</h2>
