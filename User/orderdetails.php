@@ -602,25 +602,20 @@ $details_result = $details_stmt->get_result();
     </div>
 
 <div class="order-details-container">
-    <!-- 订单ID -->
-    <div class="card">
-        <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
-    </div>
-
+    
     <!-- 订单概要 -->
     <div class="card">
-        <h2><span class="icon">📋</span> Order Summary</h2>
+        <h2><span class="icon">📋</span>Order Summary</h2>
         <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
         <div class="summary-item"><strong>Order Date:</strong> <span><?= date("Y-m-d H:i:s", strtotime($order['order_date'])) ?></span></div>
         <div class="summary-item"><strong>Status:</strong> <span><?= $order['order_status'] ?></span></div>
         <div class="summary-item"><strong>Shipping Address:</strong> <span><?= $order['shipping_address'] ?></span></div>
         <div class="summary-item"><strong>Shipping Method:</strong> <span><?= $order['shipping_method'] ?></span></div>
-        <div class="summary-item"><strong>User Message:</strong> <span><?= !empty($order['user_message']) ? htmlspecialchars($order['user_message']) : 'N/A' ?></span></div>
     </div>
 
     <!-- 产品明细 -->
     <div class="card">
-        <h2><span class="icon">🛒</span> Product Details</h2>
+        <h2><span class="icon">🛒</span>Product Details</h2>
         <table class="product-table">
             <thead>
                 <tr>
@@ -647,7 +642,7 @@ $details_result = $details_stmt->get_result();
 
     <!-- 价格明细 -->
     <div class="card">
-        <h2><span class="icon">💰</span> Pricing Details</h2>
+        <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
         <div class="pricing-item"><span>Discount:</span><span>- RM <?= number_format($order['discount_amount'], 2) ?></span></div>
         <div class="pricing-item"><span>Delivery Charge:</span><span>+ RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
@@ -657,6 +652,7 @@ $details_result = $details_stmt->get_result();
     <!-- 操作按钮 -->
     <a href="myaccount.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+</div>
 </div>
 
 <!-- Footer -->
