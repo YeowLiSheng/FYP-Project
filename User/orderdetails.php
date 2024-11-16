@@ -200,7 +200,7 @@ $details_result = $details_stmt->get_result();
     }
 
     .order-details-container {
-        max-width: 900px;
+       
         margin: 0 auto;
         font-family: 'Arial', sans-serif;
         background-color: #f4f4f9;
