@@ -137,6 +137,10 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     z-index: 1000;
 }
 
+.my-account-container {
+    display: flex;
+}
+
 .sidebar .user-info {
     display: flex;
     align-items: center;
@@ -555,7 +559,8 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 
 					
-	<body>
+	<!-- Main Container -->
+<div class="my-account-container">
     <!-- Sidebar -->
     <div class="sidebar">
         <!-- User Info -->
@@ -632,7 +637,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
             <?php renderOrders($completed_orders); ?>
         </div>
     </div>
-</body>
+</div>
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
