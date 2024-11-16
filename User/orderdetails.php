@@ -132,6 +132,8 @@ $details_result = $details_stmt->get_result();
         color: #333;
         padding: 20px;
         margin: 0;
+        display: flex;
+
     }
     .card {
         background: #ffffff;
