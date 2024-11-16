@@ -128,15 +128,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 }
 
 .sidebar {
-    width: 250px;
+	width: 250px;
     padding: 20px;
     height: 100%;
-    position: static; /* 改为 static */
+    position: static; /* 保持 static */
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
- 
     overflow-y: auto;
     flex-shrink: 0;
+    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
 }
 
     .sidebar .user-info {
