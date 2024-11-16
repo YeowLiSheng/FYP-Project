@@ -604,7 +604,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
                             <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
                             <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
                             <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: RM' . $order['final_amount'] . '</p>
+                            <p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>
                         </div>
                     </div>';
                 }
