@@ -83,6 +83,10 @@ if (isset($_POST['submitbtn'])) {
 
 
 
+<!-- eye icon-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+
 <!--===============================================================================================-->	
 	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
 <!--===============================================================================================-->
@@ -183,13 +187,43 @@ body {
     object-fit: cover; /* Cover image within the frame */
 }
 
-.eye-icon {
-    position: absolute; /* Position the eye icon inside the input */
-    right: 10px; /* Space from the right edge */
-    top: 50%; /* Center vertically */
-    transform: translateY(-50%); /* Adjust to center */
-    cursor: pointer; /* Pointer cursor for the eye icon */
+.password-wrapper {
+    position: relative;
+    width: 100%;
 }
+
+input[type="password"] {
+    padding-right: 40px; /* Make space for the icon */
+}
+
+.eye-icon {
+    position: absolute;
+    right: 10px; /* Space from the right edge */
+    top: 25px;
+    transform: translateY(-50%); /* Center vertically */
+    cursor: pointer; /* Pointer cursor for the eye icon */
+    font-size: 18px; /* Increase the font size */
+    color: #888; /* Default color */
+    transition: color 0.3s ease; /* Smooth transition */
+}
+
+.eye-icon:hover {
+    color: #333; /* Darker color on hover */
+}
+
+.eye-icon i {
+    font-size: 20px; /* Adjust size if necessary */
+    transition: transform 0.3s ease; /* Smooth transformation */
+}
+
+.eye-icon.clicked i {
+    transform: rotate(180deg); /* Flip the eye icon when clicked */
+}
+
+input[type="password"]:focus + .eye-icon {
+    color: #0056b3; /* Color change on focus */
+}
+
 
 .submit-btn {
     width: 100%; /* Full width button */
@@ -597,12 +631,18 @@ body {
     </div>
 
     <!-- Password -->
-    <div class="form-group">
-        <label for="password">Password</label>
+	<div class="form-group">
+    <label for="password">Password</label>
+    <div class="password-wrapper">
         <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
-        <span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
-        <small class="error-message" id="passwordError" style="display: none; color: red;">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</small>
+        <span class="eye-icon" onclick="togglePasswordVisibility()">
+            <i class="fas fa-eye"></i> <!-- Default eye icon -->
+        </span>
+        <small class="error-message" id="passwordError" style="display: none; color: red;">
+            Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.
+        </small>
     </div>
+</div>
 
     <!-- Contact Number -->
     <div class="form-group">
@@ -669,10 +709,20 @@ body {
         reader.readAsDataURL(event.target.files[0]);
     }
 
-    function togglePasswordVisibility() {
-        const passwordField = document.getElementById('password');
-        passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+	function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.querySelector('.eye-icon');
+    
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        eyeIcon.innerHTML = '<i class="fas fa-eye-slash"></i>'; // Change icon to eye-slash
+        eyeIcon.classList.add('clicked');
+    } else {
+        passwordInput.type = "password";
+        eyeIcon.innerHTML = '<i class="fas fa-eye"></i>'; // Change icon back to eye
+        eyeIcon.classList.remove('clicked');
     }
+}
 
     function validateName() {
         const nameField = document.getElementById('name');

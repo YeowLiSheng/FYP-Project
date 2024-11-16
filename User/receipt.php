@@ -6,18 +6,18 @@ function Receipt($order_id, $user_id, $user_name, $address, $order_items, $total
     $pdf->AddPage();
     $pdf->SetFont('Arial', 'B', 16);
 
-    // 标题
+    
     $pdf->Cell(0, 10, 'E-COMMERCE RECEIPT', 0, 1, 'C');
     $pdf->Ln(10);
 
-    // 订单信息
+    // Order details
     $pdf->SetFont('Arial', '', 12);
     $pdf->Cell(0, 10, "Order ID: #$order_id", 0, 1);
     $pdf->Cell(0, 10, "Customer: $user_name", 0, 1);
     $pdf->Cell(0, 10, "Shipping Address: $address", 0, 1);
     $pdf->Ln(10);
 
-    // 订单摘要
+    
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell(70, 10, 'Product', 1);
     $pdf->Cell(30, 10, 'Quantity', 1);
@@ -25,7 +25,7 @@ function Receipt($order_id, $user_id, $user_name, $address, $order_items, $total
     $pdf->Cell(40, 10, 'Total', 1);
     $pdf->Ln();
 
-    // 产品详情
+   
     $pdf->SetFont('Arial', '', 12);
     foreach ($order_items as $item) {
         $pdf->Cell(70, 10, $item['product_name'], 1);
@@ -35,7 +35,7 @@ function Receipt($order_id, $user_id, $user_name, $address, $order_items, $total
         $pdf->Ln();
     }
 
-    // 总计
+  
     $pdf->Ln(10);
     $pdf->Cell(0, 10, "Sub-Total: RM" . number_format($total_payment + $discount_amount - $delivery_charge, 2), 0, 1);
     $pdf->Cell(0, 10, "Discount: -RM" . number_format($discount_amount, 2), 0, 1);

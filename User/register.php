@@ -37,6 +37,10 @@
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 
+
+<!--eye icon-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     
     <style>
         body {
@@ -63,6 +67,7 @@
         .field {
             margin-bottom: 15px;
             position: relative;
+			display: fixed;
         }
 
         label {
@@ -110,13 +115,32 @@
             margin-right: 10px;
         }
 
-        .eye-icon {
-            cursor: pointer;
-            position: absolute;
-            right: 10px;
-            top: 35%;
-            user-select: none;
-        }
+		.eye-icon {
+			cursor: pointer;
+			position: absolute;
+			right: 15px;
+			top: 35%;
+			font-size: 20px; /* Increase icon size */
+			color: #007bff; /* Set a pleasant color */
+			transition: transform 0.3s ease, color 0.3s ease;
+		}
+
+		.eye-icon:hover {
+			color: #0056b3; /* Change color on hover */
+			transform: scale(1.2); /* Add a slight zoom effect */
+		}
+
+		input[type="password"]:focus + .eye-icon, 
+		input[type="text"]:focus + .eye-icon {
+			color: #28a745; /* Green color when input is focused */
+		}
+
+
+
+		input[type="password"], input[type="text"] {
+			padding-right: 35px; /* Space for the eye icon */
+		}
+
     </style>
 </head>
 <body class="animsition">
@@ -460,19 +484,24 @@
             <span id="dobFutureError" class="error">Date of birth cannot be in the future.</span>
         </div>
 
-        <div class="field">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required oninput="checkPassword()">
-            <span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">👁️</span>
-            <span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</span>
-        </div>
+		<div class="field">
+			<label for="password">Password:</label>
+			<input type="password" id="password" name="password" required oninput="checkPassword()">
+			<span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">
+				<i class="fas fa-eye"></i> <!-- Visible Eye Icon -->
+			</span>
+			<span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</span>
+		</div>
 
-        <div class="field">
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
-            <span id="confirmPasswordToggle" class="eye-icon" onclick="togglePassword('confirmPassword', this)">👁️</span>
-            <span id="confirmPasswordError" class="error">Passwords do not match.</span>
-        </div>
+		<div class="field">
+			<label for="confirmPassword">Confirm Password:</label>
+			<input type="password" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
+			<span id="confirmPasswordToggle" class="eye-icon" onclick="togglePassword('confirmPassword', this)">
+				<i class="fas fa-eye"></i> <!-- Visible Eye Icon -->
+			</span>
+			<span id="confirmPasswordError" class="error">Passwords do not match.</span>
+		</div>
+
 
         <p>
             <input type="submit" name="signupbtn" value="Sign Up">
@@ -546,11 +575,23 @@
         confirmPasswordError.style.display = password === confirmPassword ? "none" : "block";
     }
 
-    function togglePassword(inputId, toggleIcon) {
-        const passwordInput = document.getElementById(inputId);
-        const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', inputType);
-    }
+	function togglePassword(inputId, toggleIcon) 
+	{
+		const passwordInput = document.getElementById(inputId);
+		const inputType = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+		passwordInput.setAttribute('type', inputType);
+
+		// Toggle eye icon
+		const icon = toggleIcon.querySelector('i');
+		if (inputType === 'password') {
+			icon.classList.remove('fa-eye-slash');
+			icon.classList.add('fa-eye');
+		} else {
+			icon.classList.remove('fa-eye');
+			icon.classList.add('fa-eye-slash');
+		}
+	}
+
 
     function setMaxDate() {
         const today = new Date().toISOString().split('T')[0];

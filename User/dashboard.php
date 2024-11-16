@@ -109,7 +109,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 
 
-                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
                             <?php
                                 echo "HI '" . htmlspecialchars($row["user_name"]) ;
                             ?>
