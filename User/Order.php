@@ -218,52 +218,67 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         border-bottom: 2px solid #4caf50;
     }
 
-    .order-summary {
-    border: none; /* Remove the old border */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-    padding: 20px; /* Increase padding for spaciousness */
-    margin-bottom: 20px; /* Increase margin for better spacing */
+	.order-summary {
+    border: none; /* 去掉旧边框 */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* 更强的阴影效果 */
+    padding: 20px; /* 增加内边距 */
+    margin-bottom: 20px; /* 增加间距 */
     display: flex;
+    justify-content: space-between; /* 均匀分布 */
     align-items: center;
-    border-radius: 10px; /* Rounded corners for a modern look */
-    background-color: #ffffff; /* Clean background */
-    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add interaction effect */
+    border-radius: 15px; /* 圆角边框 */
+    background: linear-gradient(135deg, #ffffff, #f9f9f9); /* 渐变背景 */
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* 增加悬停效果 */
 }
 
 .order-summary:hover {
-    transform: translateY(-5px); /* Slight upward movement */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* Darker shadow on hover */
+    transform: translateY(-8px); /* 轻微上移 */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* 加深阴影 */
 }
 
 .order-summary img {
-    width: 80px; /* Increase size for better visual impact */
-    height: 80px; /* Keep aspect ratio */
-    border-radius: 10px; /* Match box rounding */
-    margin-right: 20px; /* More space between image and content */
+    width: 100px; /* 增大图片尺寸 */
+    height: 100px;
+    border-radius: 12px; /* 图片圆角 */
+    margin-right: 20px; /* 更大的间距 */
 }
 
 .order-summary div {
     display: flex;
     flex-direction: column;
+    flex-grow: 1; /* 占据可用空间 */
 }
 
 .order-summary h3 {
-    font-size: 20px; /* Slightly larger for emphasis */
-    color: #333; /* Darker text for contrast */
-    margin-bottom: 5px; /* Separate title from the rest */
+    font-size: 22px; /* 更大的标题 */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px; /* 增加标题和文字的间距 */
 }
 
 .order-summary p {
-    font-size: 15px; /* Uniform size for readability */
-    color: #555; /* Subtle color */
-    margin: 3px 0; /* Space between text lines */
+    font-size: 15px; /* 一致的字体大小 */
+    color: #666; /* 更柔和的颜色 */
+    margin: 3px 0;
+}
+
+.order-summary .order-info {
+    display: flex;
+    justify-content: space-between; /* 增加额外信息排列 */
+    align-items: center;
+}
+
+.order-summary .order-info p {
+    font-size: 14px;
+    color: #777;
 }
 
 .no-orders {
-    background-color: #f1f1f1; /* Light background */
-    padding: 30px; /* Ample padding */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    background-color: #f1f1f1;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 </style>
 
