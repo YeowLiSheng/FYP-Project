@@ -126,11 +126,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 	.sidebar {
     width: 250px;
     padding: 20px;
-    height: auto; /* 确保高度自动适应内容 */
-    display: inline-block; /* 改为 inline-block 使其与内容部分平行 */
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 1000;
 }
 
 .sidebar .user-info {
@@ -187,11 +191,11 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 }
 
 .content {
-    display: inline-block; /* 改为 inline-block */
-    vertical-align: top; /* 保持垂直对齐 */
-    width: calc(100% - 270px); /* 确保内容不会溢出 */
+    margin-left: 270px; /* 确保内容区域从侧边栏右边开始 */
     padding: 20px;
+    flex: 1;
     background-color: #f9f9f9;
+    min-height: 100vh;
 }
     .tabs {
         display: flex;
