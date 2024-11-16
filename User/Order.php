@@ -1,20 +1,21 @@
-<?php
-session_start(); 
+<?php 
+// Connect to the database
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -27,8 +28,9 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
+
 // Fetch current user details (replace with your session logic)
-$current_user_id = $_SESSION['id']; 
+$current_user_id = 36; // Example user ID, replace with actual session user ID
 $current_user_query = $conn->query("SELECT user_name, user_image FROM user WHERE user_id = $current_user_id");
 $current_user = $current_user_query->fetch_assoc();
 
@@ -525,7 +527,24 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
 					
 	<body>
-    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Info -->
+        <div class="user-info">
+            <img src="<?= $current_user['user_image'] ?>" alt="User Image">
+            <h3><?= $current_user['user_name'] ?></h3>
+        </div>
+        <ul>
+            <!-- My Account -->
+            <li><i class="fa fa-user"></i> My Account</li>
+            <!-- Profile items directly below My Account with indentation -->
+            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
+            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
+            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+            <!-- My Orders -->
+            <li><i class="fa fa-box"></i> My Orders</li>
+        </ul>
+    </div>
 
     <!-- Content Area -->
     <div class="content">
