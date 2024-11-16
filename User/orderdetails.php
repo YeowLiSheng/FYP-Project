@@ -601,7 +601,7 @@ $details_result = $details_stmt->get_result();
         </ul>
     </div>
 
-    <div class="order-details-container">
+<div class="order-details-container">
     <!-- 订单ID -->
     <div class="card">
         <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
