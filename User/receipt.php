@@ -50,22 +50,19 @@ $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 12);
 
-// 设置配色
-$pdf->SetFillColor(240, 240, 240); // 灰色填充
-$pdf->SetDrawColor(200, 200, 200); // 边框颜色
+// 配色
+$pdf->SetFillColor(240, 240, 240);
+$pdf->SetDrawColor(200, 200, 200);
 
-// 添加标题
+// 标题
 $pdf->SetFont('Arial', 'B', 18);
-$pdf->SetTextColor(50, 50, 50);
 $pdf->Cell(0, 10, 'Order Receipt', 0, 1, 'C');
 $pdf->SetFont('Arial', '', 10);
-$pdf->SetTextColor(100, 100, 100);
 $pdf->Cell(0, 6, 'Thank you for shopping with us!', 0, 1, 'C');
 $pdf->Ln(5);
 
-// 添加订单信息块
+// 订单信息
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->SetTextColor(0, 0, 0);
 $pdf->Cell(0, 8, 'Order Information', 0, 1, 'L');
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(95, 8, 'Order ID: ' . $order['order_id'], 0, 0, 'L');
@@ -75,7 +72,7 @@ $pdf->Cell(95, 8, 'Shipping Method: ' . $order['shipping_method'], 0, 1, 'R');
 $pdf->Cell(0, 8, 'Shipping Address: ' . $order['shipping_address'], 0, 1, 'L');
 $pdf->Ln(5);
 
-// 产品明细表格
+// 产品表格
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->SetFillColor(220, 220, 220);
 $pdf->Cell(80, 8, 'Product Name', 1, 0, 'C', true);
@@ -84,12 +81,11 @@ $pdf->Cell(40, 8, 'Unit Price (RM)', 1, 0, 'C', true);
 $pdf->Cell(40, 8, 'Total Price (RM)', 1, 1, 'C', true);
 
 $pdf->SetFont('Arial', '', 10);
-$pdf->SetFillColor(255, 255, 255);
 while ($detail = $details_result->fetch_assoc()) {
-    $pdf->Cell(80, 8, $detail['product_name'], 1, 0, 'L', true);
-    $pdf->Cell(30, 8, $detail['quantity'], 1, 0, 'C', true);
-    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C', true);
-    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C', true);
+    $pdf->Cell(80, 8, $detail['product_name'], 1, 0, 'L');
+    $pdf->Cell(30, 8, $detail['quantity'], 1, 0, 'C');
+    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
+    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
 }
 $pdf->Ln(5);
 
@@ -97,7 +93,8 @@ $pdf->Ln(5);
 $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
 $pdf->Ln(5);
 
-// 价格明细块
+// 价格信息块
+$pdf->SetY(-60); // 将价格信息固定在底部
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(95, 8, 'Grand Total:', 0, 0, 'L');
 $pdf->Cell(95, 8, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
@@ -113,7 +110,6 @@ $pdf->Ln(10);
 
 // 底部感谢信息
 $pdf->SetFont('Arial', 'I', 10);
-$pdf->SetTextColor(50, 50, 50);
 $pdf->Cell(0, 10, 'We hope to see you again soon!', 0, 1, 'C');
 
 // 输出 PDF
