@@ -1,6 +1,6 @@
 <?php
 session_start();
-require('fpdf.php'); // 引入 FPDF 库
+require('fpdf.php');
 
 $servername = "localhost";
 $username = "root";
