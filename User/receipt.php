@@ -3,18 +3,15 @@ require('fpdf/fpdf.php'); // 确保你已经安装并包含 FPDF
 
 session_start();  // 启动会话
 
-// Connect to the database
+// 数据库连接
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-// 设置字符集
 $conn->set_charset("utf8mb4");
 
-// 检查连接
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -25,7 +22,6 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// 获取订单 ID
 if (!isset($_GET['order_id'])) {
     die("Invalid order ID.");
 }
@@ -63,60 +59,71 @@ $details_result = $details_stmt->get_result();
 // 创建 PDF
 $pdf = new FPDF();
 $pdf->AddPage();
+$pdf->SetFont('Arial', '', 12);
+
+// 添加 Logo 和公司信息
+$pdf->Image('logo.png', 10, 10, 30); // 替换为你的 Logo 图片路径
 $pdf->SetFont('Arial', 'B', 16);
+$pdf->Cell(0, 10, 'E-Commerce Shop', 0, 1, 'C');
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(0, 6, '123 Modern Ave, CityName, Country', 0, 1, 'C');
+$pdf->Cell(0, 6, 'Phone: (123) 456-7890 | Email: support@shop.com', 0, 1, 'C');
+$pdf->Ln(10);
 
-// 标题
-$pdf->SetFillColor(240, 240, 240);
-$pdf->Cell(0, 10, 'Receipt', 0, 1, 'C', true);
-$pdf->Ln(5);
+// 分隔线
+$pdf->SetDrawColor(200, 200, 200);
+$pdf->Line(10, 40, 200, 40);
+$pdf->Ln(10);
 
-// 商家信息
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 8, 'E-Commerce Shop', 0, 1, 'L');
-$pdf->Cell(0, 8, '123 Modern Ave, CityName, Country', 0, 1, 'L');
-$pdf->Cell(0, 8, 'Phone: (123) 456-7890 | Email: support@shop.com', 0, 1, 'L');
-$pdf->Ln(5);
-
-// 订单信息
-$pdf->SetFont('Arial', 'B', 14);
-$pdf->Cell(0, 10, 'Order Details', 0, 1, 'L');
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 8, 'Order ID: ' . $order['order_id'], 0, 1, 'L');
-$pdf->Cell(0, 8, 'Order Date: ' . $order['order_date'], 0, 1, 'L');
-$pdf->Cell(0, 8, 'Customer: ' . $order['user_name'], 0, 1, 'L');
+// 订单基本信息
+$pdf->SetFont('Arial', 'B', 12);
+$pdf->Cell(0, 8, 'Order Receipt', 0, 1, 'L');
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(95, 8, 'Order ID: ' . $order['order_id'], 0, 0, 'L');
+$pdf->Cell(95, 8, 'Order Date: ' . date('Y-m-d H:i', strtotime($order['order_date'])), 0, 1, 'R');
+$pdf->Cell(95, 8, 'Customer: ' . $order['user_name'], 0, 0, 'L');
+$pdf->Cell(95, 8, 'Shipping Method: ' . $order['shipping_method'], 0, 1, 'R');
 $pdf->Cell(0, 8, 'Shipping Address: ' . $order['shipping_address'], 0, 1, 'L');
 $pdf->Ln(5);
 
 // 产品明细表格
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->SetFillColor(230, 230, 230);
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->SetFillColor(240, 240, 240);
 $pdf->Cell(80, 8, 'Product Name', 1, 0, 'C', true);
-$pdf->Cell(20, 8, 'Qty', 1, 0, 'C', true);
+$pdf->Cell(30, 8, 'Quantity', 1, 0, 'C', true);
 $pdf->Cell(40, 8, 'Unit Price (RM)', 1, 0, 'C', true);
 $pdf->Cell(40, 8, 'Total Price (RM)', 1, 1, 'C', true);
 
-$pdf->SetFont('Arial', '', 12);
+$pdf->SetFont('Arial', '', 10);
+$pdf->SetFillColor(255, 255, 255);
 while ($detail = $details_result->fetch_assoc()) {
-    $pdf->Cell(80, 8, $detail['product_name'], 1);
-    $pdf->Cell(20, 8, $detail['quantity'], 1, 0, 'C');
-    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
-    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
+    $pdf->Cell(80, 8, $detail['product_name'], 1, 0, 'L', true);
+    $pdf->Cell(30, 8, $detail['quantity'], 1, 0, 'C', true);
+    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C', true);
+    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C', true);
 }
+$pdf->Ln(5);
+
+// 分隔线
+$pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
 $pdf->Ln(5);
 
 // 价格明细
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Pricing Summary', 0, 1, 'L');
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 8, 'Grand Total: RM ' . number_format($order['Grand_total'], 2), 0, 1, 'L');
-$pdf->Cell(0, 8, 'Discount: - RM ' . number_format($order['discount_amount'], 2), 0, 1, 'L');
-$pdf->Cell(0, 8, 'Delivery Charge: + RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'L');
+$pdf->Cell(95, 8, 'Grand Total:', 0, 0, 'L');
+$pdf->Cell(95, 8, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell(95, 8, 'Discount:', 0, 0, 'L');
+$pdf->Cell(95, 8, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
+$pdf->Cell(95, 8, 'Delivery Charge:', 0, 0, 'L');
+$pdf->Cell(95, 8, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'R');
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 8, 'Final Amount: RM ' . number_format($order['final_amount'], 2), 0, 1, 'L');
-$pdf->Ln(5);
+$pdf->Cell(95, 8, 'Final Amount:', 0, 0, 'L');
+$pdf->Cell(95, 8, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
+$pdf->Ln(10);
 
 // 感谢信息
-$pdf->SetFont('Arial', 'I', 12);
+$pdf->SetFont('Arial', 'I', 10);
 $pdf->Cell(0, 10, 'Thank you for shopping with us!', 0, 1, 'C');
 
 // 输出 PDF
