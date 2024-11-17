@@ -61,8 +61,7 @@ $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 12);
 
-// 添加 Logo 和公司信息
-$pdf->Image('logo.png', 10, 10, 30); // 替换为你的 Logo 图片路径
+// 添加公司信息
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->Cell(0, 10, 'E-Commerce Shop', 0, 1, 'C');
 $pdf->SetFont('Arial', '', 10);
