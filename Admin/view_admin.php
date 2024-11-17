@@ -1,16 +1,11 @@
 <?php
-
 // Database connection
 include("dataconnection.php"); 
 include 'admin_sidebar.php';
 
-
-
-
 $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 ?>
 
-<!-- Main Dashboard Page (dashboard.php) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,37 +14,32 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     <title>Admin Dashboard</title>
 
     <style>
-        /* Reset some default styles */
+        /* Reset and Layout Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Body and layout */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
-            line-height: 1.6;
             color: #333;
         }
 
-        /* Main content */
         main {
             padding: 100px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* Admin content layout */
         .admin-content {
             display: flex;
             flex-direction: column;
             gap: 30px;
         }
 
-        /* View Admin Section */
-        .view-admin {
+        .view-admin, .recent-activity {
             background-color: white;
             padding: 20px;
             border-radius: 12px;
@@ -57,14 +47,13 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             transition: transform 0.3s ease-in-out;
         }
 
-        .view-admin:hover {
+        .view-admin:hover, .recent-activity:hover {
             transform: translateY(-5px);
         }
 
-        .view-admin h2 {
+        .view-admin h2, .recent-activity h2 {
             font-size: 1.8em;
             margin-bottom: 15px;
-            color: #333;
         }
 
         .view-admin table {
@@ -105,18 +94,11 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             background-color: #45a049;
         }
 
-        .view-admin button:active {
-            transform: scale(0.98);
-        }
-
-        /* Add Staff Button Style */
         .add-staff-btn {
-            display: inline-block;
             padding: 10px 16px;
             margin-top: 20px;
             background-color: #007BFF;
             color: white;
-            text-align: center;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -128,84 +110,32 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             background-color: #0056b3;
         }
 
-        /* Recent Activity Section */
-        .recent-activity {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .recent-activity:hover {
-            transform: translateY(-5px);
-        }
-
-        .recent-activity h2 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .recent-activity ul {
-            list-style-type: none;
-            padding-left: 20px;
-        }
-
-        .recent-activity li {
-            font-size: 1.1em;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .recent-activity li:last-child {
-            border-bottom: none;
-        }
-
-        .recent-activity li:nth-child(odd) {
-            background-color: #f9f9f9;
-        }
-
-        .recent-activity li:nth-child(even) {
-            background-color: #f1f1f1;
-        }
-
-        /* Mobile responsive design */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .admin-content {
-                flex-direction: column;
                 gap: 20px;
-            }
-
-            .view-admin, .recent-activity {
-                width: 100%;
             }
         }
     </style>
+    <script>
+        function noPermission() {
+            alert("You do not have permission to perform this action.");
+        }
+    </script>
 </head>
 <body>
-    <?php include 'dataconnection.php'; ?>
-
     <main>
         <section class="admin-content">
             <!-- View Admin Section -->
             <div class="view-admin">
                 <h2>Admin Management</h2>
-                
 
-
-
-<!-- Check if the admin is superadmin -->
-<?php if($admin_id === 'superadmin'): ?>
-    <!-- Display the button for superadmin -->
-    <button class="add-staff-btn" onclick="location.href='add_staff.php'">Add Staff</button>
-<?php else: ?>
-    <!-- Display the message if not superadmin -->
-    <p>You do not have permission to add staff.</p>
-<?php endif; ?>
-
-
+                <!-- Conditionally display the Add Staff button based on superadmin status -->
+                <?php if($admin_id === 'superadmin'): ?>
+                    <button class="add-staff-btn" onclick="location.href='add_staff.php'">Add Staff</button>
+                <?php else: ?>
+                    <button class="add-staff-btn" onclick="noPermission()">Add Staff</button>
+                <?php endif; ?>
 
                 <table>
                     <thead>
@@ -232,7 +162,29 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 echo "<td>" . $row['admin_id'] . "</td>";
                                 echo "<td>" . $row['admin_name'] . "</td>";
                                 echo "<td>" . $row['admin_email'] . "</td>";
-                                echo "<td><button>View Details</button> <button>Delete</button></td>";
+
+
+
+                                // Add Delete button with confirmation for superadmins
+                                echo "<td>";
+                                echo "<button>View Details</button>";
+                                
+                                if ($admin_id === 'superadmin') {
+                                    // Check if the staff_id is not the same as the logged-in admin's ID
+                                    if ($row['staff_id'] !== $admin_id) {
+                                        echo "<button onclick=\"if(confirm('Are you sure you want to delete this staff?')) location.href='deleted_staff.php?staff_id=" . $row['staff_id'] . "'\">Delete</button>";
+                                    } else {
+                                        // Disable the delete button if the superadmin tries to delete themselves
+                                        echo "<button disabled>Delete</button>";
+                                    }
+                                } else {
+                                    echo "<button onclick=\"noPermission()\">Delete</button>";
+                                }
+                                echo "</td>";
+                                
+
+
+                                
                                 echo "</tr>";
                             }
                         } else {
@@ -256,3 +208,4 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     </main>
 </body>
 </html>
+
