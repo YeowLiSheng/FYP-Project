@@ -117,7 +117,6 @@ $pdf->SetFont('Arial', 'I', 10);
 $pdf->Cell(0, 6, 'Terms & Conditions', 0, 1, 'L');
 $pdf->Cell(0, 6, 'Payment is due within 15 days.', 0, 1, 'L');
 $pdf->Cell(0, 10, '', 0, 1, 'L');
-$pdf->Image('signature.png', 150, $pdf->GetY(), 30, 10);
 
 $pdf->Output('D', 'Receipt_Order_' . $order['order_id'] . '.pdf');
 ?>
