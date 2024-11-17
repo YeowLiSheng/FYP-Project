@@ -1,5 +1,5 @@
 <?php
-require('fpdf/fpdf.php'); 
+require('fpdf/fpdf.php');
 
 session_start();
 
@@ -72,7 +72,7 @@ $pdf->Cell(95, 8, 'Shipping Method: ' . $order['shipping_method'], 0, 1, 'R');
 $pdf->Cell(0, 8, 'Shipping Address: ' . $order['shipping_address'], 0, 1, 'L');
 $pdf->Ln(5);
 
-// 产品表格
+// 产品明细表格
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->SetFillColor(220, 220, 220);
 $pdf->Cell(80, 8, 'Product Name', 1, 0, 'C', true);
@@ -81,20 +81,17 @@ $pdf->Cell(40, 8, 'Unit Price (RM)', 1, 0, 'C', true);
 $pdf->Cell(40, 8, 'Total Price (RM)', 1, 1, 'C', true);
 
 $pdf->SetFont('Arial', '', 10);
+$pdf->SetFillColor(255, 255, 255);
 while ($detail = $details_result->fetch_assoc()) {
-    $pdf->Cell(80, 8, $detail['product_name'], 1, 0, 'L');
-    $pdf->Cell(30, 8, $detail['quantity'], 1, 0, 'C');
-    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
-    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
+    $pdf->Cell(80, 8, $detail['product_name'], 1, 0, 'L', true);
+    $pdf->Cell(30, 8, $detail['quantity'], 1, 0, 'C', true);
+    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C', true);
+    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C', true);
 }
 $pdf->Ln(5);
 
-// 分隔线
-$pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
-$pdf->Ln(5);
-
-// 价格信息块
-$pdf->SetY(-60); // 将价格信息固定在底部
+// 价格明细
+$pdf->SetY(-60); // 将价格明细部分固定到页面底部的上方一点
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(95, 8, 'Grand Total:', 0, 0, 'L');
 $pdf->Cell(95, 8, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
@@ -106,9 +103,9 @@ $pdf->Cell(95, 8, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, '
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(95, 8, 'Final Amount:', 0, 0, 'L');
 $pdf->Cell(95, 8, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
-$pdf->Ln(10);
 
-// 底部感谢信息
+// 感谢信息
+$pdf->Ln(5);
 $pdf->SetFont('Arial', 'I', 10);
 $pdf->Cell(0, 10, 'We hope to see you again soon!', 0, 1, 'C');
 
