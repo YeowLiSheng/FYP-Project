@@ -50,16 +50,16 @@ $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', '', 12);
 
-// 配色
-$pdf->SetFillColor(240, 240, 240);
-$pdf->SetDrawColor(200, 200, 200);
+// 设置全局边距
+$pdf->SetMargins(10, 20, 10);
+$pdf->SetAutoPageBreak(true, 20);
 
 // 标题
 $pdf->SetFont('Arial', 'B', 18);
 $pdf->Cell(0, 10, 'Order Receipt', 0, 1, 'C');
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(0, 6, 'Thank you for shopping with us!', 0, 1, 'C');
-$pdf->Ln(5);
+$pdf->Ln(10);
 
 // 订单信息
 $pdf->SetFont('Arial', 'B', 12);
@@ -70,32 +70,42 @@ $pdf->Cell(95, 8, 'Order Date: ' . date('Y-m-d H:i', strtotime($order['order_dat
 $pdf->Cell(95, 8, 'Customer: ' . $order['user_name'], 0, 0, 'L');
 $pdf->Cell(95, 8, 'Shipping Method: ' . $order['shipping_method'], 0, 1, 'R');
 $pdf->Cell(0, 8, 'Shipping Address: ' . $order['shipping_address'], 0, 1, 'L');
-$pdf->Ln(5);
+$pdf->Ln(10);
 
-// 产品明细表格
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->SetFillColor(220, 220, 220);
-$pdf->Cell(80, 8, 'Product Name', 1, 0, 'C', true);
-$pdf->Cell(30, 8, 'Quantity', 1, 0, 'C', true);
-$pdf->Cell(40, 8, 'Unit Price (RM)', 1, 0, 'C', true);
-$pdf->Cell(40, 8, 'Total Price (RM)', 1, 1, 'C', true);
+// 表格标题行
+function addTableHeader($pdf) {
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->SetFillColor(220, 220, 220);
+    $pdf->Cell(80, 10, 'Product Name', 1, 0, 'C', true);
+    $pdf->Cell(30, 10, 'Quantity', 1, 0, 'C', true);
+    $pdf->Cell(40, 10, 'Unit Price (RM)', 1, 0, 'C', true);
+    $pdf->Cell(40, 10, 'Total Price (RM)', 1, 1, 'C', true);
+}
 
+// 添加表格内容
 $pdf->SetFont('Arial', '', 10);
 $pdf->SetFillColor(255, 255, 255);
+addTableHeader($pdf);
+
 while ($detail = $details_result->fetch_assoc()) {
-    $pdf->Cell(80, 8, $detail['product_name'], 1, 0, 'L', true);
-    $pdf->Cell(30, 8, $detail['quantity'], 1, 0, 'C', true);
-    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C', true);
-    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C', true);
+    if ($pdf->GetY() > 250) { // 检测是否需要分页
+        $pdf->AddPage();
+        addTableHeader($pdf);
+    }
+    $pdf->Cell(80, 10, $detail['product_name'], 1, 0, 'L', true);
+    $pdf->Cell(30, 10, $detail['quantity'], 1, 0, 'C', true);
+    $pdf->Cell(40, 10, number_format($detail['unit_price'], 2), 1, 0, 'C', true);
+    $pdf->Cell(40, 10, number_format($detail['total_price'], 2), 1, 1, 'C', true);
 }
-$pdf->Ln(5);
 
 // 价格明细
-$pdf->SetY(-60); // 将价格明细部分固定到页面底部的上方一点
+$pdf->Ln(10);
 $pdf->SetFont('Arial', 'B', 12);
+$pdf->Cell(0, 8, 'Pricing Details', 0, 1, 'L');
+
+$pdf->SetFont('Arial', '', 10);
 $pdf->Cell(95, 8, 'Grand Total:', 0, 0, 'L');
 $pdf->Cell(95, 8, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
-$pdf->SetFont('Arial', '', 10);
 $pdf->Cell(95, 8, 'Discount:', 0, 0, 'L');
 $pdf->Cell(95, 8, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
 $pdf->Cell(95, 8, 'Delivery Charge:', 0, 0, 'L');
@@ -105,7 +115,7 @@ $pdf->Cell(95, 8, 'Final Amount:', 0, 0, 'L');
 $pdf->Cell(95, 8, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
 
 // 感谢信息
-$pdf->Ln(5);
+$pdf->Ln(10);
 $pdf->SetFont('Arial', 'I', 10);
 $pdf->Cell(0, 10, 'We hope to see you again soon!', 0, 1, 'C');
 
