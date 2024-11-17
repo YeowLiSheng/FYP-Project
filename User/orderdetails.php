@@ -655,7 +655,7 @@ $details_result = $details_stmt->get_result();
 
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
-    <a href="receipt.php?order_id=<?php echo $order_id; ?>" class="btn btn-primary">🖨️ Print Receipt</a>
+    <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 </div>
 </div>
 
