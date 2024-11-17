@@ -259,7 +259,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 				</li>
 
 				<li>
-					<a href="product.html">Shop</a>
+					<a href="product.php">Shop</a>
 				</li>
 
 				<li>

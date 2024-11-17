@@ -1,6 +1,6 @@
 <?php
 
-include 'dataconnection.php' 
+include 'dataconnection.php' ;
 
 
 ?>
@@ -260,7 +260,7 @@ if (isset($_POST["addstaff"])) {
             VALUES ('$id', '$name', '$contact', '$password', '$email', '$currentDateTime')");
             
             if ($insert_query) {
-                echo "<script>alert('Registration successful.');window.location.href='admin_login.php';</script>";
+                echo "<script>alert('Registration successful.');window.location.href='view_admin.php';</script>";
             } else {
                 echo "Error: " . mysqli_error($connect); // Show the error message
                 echo "<script>alert('Registration failed. Please try again.');window.location.href='add_staff.php';</script>";

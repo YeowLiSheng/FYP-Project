@@ -28,7 +28,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 }
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price,
            SUM(sc.qty) AS total_qty, 
            SUM(sc.total_price) AS total_price 
     FROM shopping_cart sc 
@@ -1132,7 +1132,19 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         $(this).find('.wrap-pic-w a').attr('href', imagePath);
                         $(this).attr('data-thumb', imagePath);
                     });
+					                // Update size options
+									var sizeSelect = $('select[name="time"]');
+                sizeSelect.empty(); // Clear existing options
+                sizeSelect.append('<option>Choose an option</option>'); // Default option
+                if (response.size1) sizeSelect.append('<option>' + response.size1 + '</option>');
+                if (response.size2) sizeSelect.append('<option>' + response.size2 + '</option>');
 
+                // Update color options
+                var colorSelect = $('select[name="color"]');
+                colorSelect.empty(); // Clear existing options
+                colorSelect.append('<option>Choose an option</option>'); // Default option
+                if (response.color1) colorSelect.append('<option>' + response.color1 + '</option>');
+                if (response.color2) colorSelect.append('<option>' + response.color2 + '</option>');
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
                 } else {
