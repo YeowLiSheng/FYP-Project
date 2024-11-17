@@ -2,11 +2,12 @@
 require('fpdf/fpdf.php');
 session_start();
 
-// Database connection
+// Database connection setup
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "fyp";
+
 $conn = new mysqli($servername, $username, $password, $dbname);
 $conn->set_charset("utf8mb4");
 
@@ -14,14 +15,14 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Check if order_id is set
+// Check if the order ID is passed
 if (!isset($_GET['order_id'])) {
     die("Invalid order ID.");
 }
 
 $order_id = intval($_GET['order_id']);
 
-// Fetch order details
+// Prepare and execute statements to fetch order and details
 $order_stmt = $conn->prepare("
     SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount, o.delivery_charge,
            o.final_amount, o.order_status, o.shipping_address, o.shipping_method, o.user_message,
@@ -40,7 +41,6 @@ if ($order_result->num_rows === 0) {
 
 $order = $order_result->fetch_assoc();
 
-// Fetch order items
 $details_stmt = $conn->prepare("
     SELECT od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price
     FROM order_details od
@@ -51,53 +51,58 @@ $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
 // Create PDF
-$pdf = new FPDF('P', 'mm', 'A4');
+$pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
+$pdf->SetFillColor(230, 230, 230);
+$pdf->SetTextColor(50, 50, 50);
 
-// Header
+// Header Section
 $pdf->Cell(0, 10, 'Order Receipt', 0, 1, 'C');
+$pdf->Ln(5);
 $pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 10, 'Order ID: ' . $order['order_id'], 0, 1);
-$pdf->Cell(0, 10, 'Customer: ' . $order['user_name'], 0, 1);
-$pdf->Cell(0, 10, 'Order Date: ' . date("Y-m-d H:i:s", strtotime($order['order_date'])), 0, 1);
 
-// Line break
+// Order Summary Section
+$pdf->Cell(0, 10, "Order ID: " . $order['order_id'], 0, 1, 'L');
+$pdf->Cell(0, 10, "User: " . $order['user_name'], 0, 1, 'L');
+$pdf->Cell(0, 10, "Order Date: " . date("Y-m-d H:i:s", strtotime($order['order_date'])), 0, 1, 'L');
+$pdf->Cell(0, 10, "Status: " . $order['order_status'], 0, 1, 'L');
+$pdf->Cell(0, 10, "Shipping Address: " . $order['shipping_address'], 0, 1, 'L');
+$pdf->Cell(0, 10, "Shipping Method: " . $order['shipping_method'], 0, 1, 'L');
+$pdf->Cell(0, 10, "User Message: " . (!empty($order['user_message']) ? $order['user_message'] : 'N/A'), 0, 1, 'L');
 $pdf->Ln(5);
 
-// Order details
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Products:', 0, 1);
-$pdf->SetFont('Arial', '', 11);
+// Product Details Section
+$pdf->SetFillColor(200, 200, 200);
+$pdf->Cell(50, 10, 'Product Name', 1, 0, 'C', true);
+$pdf->Cell(30, 10, 'Quantity', 1, 0, 'C', true);
+$pdf->Cell(40, 10, 'Unit Price (RM)', 1, 0, 'C', true);
+$pdf->Cell(40, 10, 'Total Price (RM)', 1, 1, 'C', true);
 
-// Table header
-$pdf->Cell(80, 8, 'Product Name', 1);
-$pdf->Cell(30, 8, 'Quantity', 1);
-$pdf->Cell(40, 8, 'Unit Price (RM)', 1);
-$pdf->Cell(40, 8, 'Total Price (RM)', 1);
-$pdf->Ln();
-
-// Table content
 while ($detail = $details_result->fetch_assoc()) {
-    $pdf->Cell(80, 8, $detail['product_name'], 1);
-    $pdf->Cell(30, 8, $detail['quantity'], 1);
-    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1);
-    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1);
-    $pdf->Ln();
+    $pdf->Cell(50, 10, $detail['product_name'], 1);
+    $pdf->Cell(30, 10, $detail['quantity'], 1);
+    $pdf->Cell(40, 10, number_format($detail['unit_price'], 2), 1);
+    $pdf->Cell(40, 10, number_format($detail['total_price'], 2), 1, 1);
 }
 
-// Line break
 $pdf->Ln(5);
 
-// Pricing summary
+// Pricing Details Section
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Pricing Summary:', 0, 1);
-$pdf->SetFont('Arial', '', 11);
-$pdf->Cell(0, 8, 'Grand Total: RM ' . number_format($order['Grand_total'], 2), 0, 1);
-$pdf->Cell(0, 8, 'Discount: - RM ' . number_format($order['discount_amount'], 2), 0, 1);
-$pdf->Cell(0, 8, 'Delivery Charge: + RM ' . number_format($order['delivery_charge'], 2), 0, 1);
-$pdf->Cell(0, 8, 'Final Amount: RM ' . number_format($order['final_amount'], 2), 0, 1);
+$pdf->Cell(0, 10, 'Pricing Details', 0, 1);
+$pdf->SetFont('Arial', '', 12);
+$pdf->Cell(100, 10, 'Grand Total:', 0, 0);
+$pdf->Cell(40, 10, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
+$pdf->Cell(100, 10, 'Discount:', 0, 0);
+$pdf->Cell(40, 10, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
+$pdf->Cell(100, 10, 'Delivery Charge:', 0, 0);
+$pdf->Cell(40, 10, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'R');
+$pdf->Cell(100, 10, 'Final Amount:', 0, 0);
+$pdf->Cell(40, 10, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
 
-// Output PDF for download
-$pdf->Output('D', 'Receipt_Order_' . $order['order_id'] . '.pdf');
+// Output PDF
+$pdf->Output('D', 'receipt_order_' . $order['order_id'] . '.pdf');
+
+$conn->close();
 ?>
