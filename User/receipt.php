@@ -46,18 +46,26 @@ $pdf->AddPage();
 $pdf->SetMargins(10, 20, 10);
 $pdf->SetAutoPageBreak(true, 20);
 
-// Header
+// 添加Logo (假设有一个logo.png文件)
+$pdf->Image('logo.png', 10, 10, 30);
 $pdf->SetFont('Arial', 'B', 16);
-$pdf->SetTextColor(0);
+$pdf->SetTextColor(220, 53, 69);
 $pdf->Cell(0, 10, 'East Asia Trading', 0, 1, 'C');
-$pdf->SetFont('Arial', '', 10);
+$pdf->SetFont('Arial', 'I', 10);
+$pdf->SetTextColor(0);
 $pdf->Cell(0, 6, 'Pasar Pudu Baru 10, Kuala Lumpur 53000', 0, 1, 'C');
 $pdf->Ln(10);
 
-// Bill To & Ship To
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(95, 6, 'Bill To', 0, 0, 'L');
-$pdf->Cell(95, 6, 'Ship To', 0, 1, 'R');
+// 绘制分割线
+$pdf->SetDrawColor(220, 53, 69);
+$pdf->Line(10, 35, 200, 35);
+$pdf->Ln(5);
+
+// Bill To & Ship To 信息
+$pdf->SetFont('Arial', 'B', 12);
+$pdf->SetFillColor(248, 249, 250);
+$pdf->Cell(95, 8, 'Bill To', 0, 0, 'L', true);
+$pdf->Cell(95, 8, 'Ship To', 0, 1, 'R', true);
 
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(95, 6, $order['user_name'], 0, 0, 'L');
@@ -66,47 +74,43 @@ $pdf->Cell(95, 6, $order['shipping_address'], 0, 0, 'L');
 $pdf->Cell(95, 6, $order['shipping_address'], 0, 1, 'R');
 $pdf->Ln(10);
 
-// Order Info
+// 订单信息
+$pdf->SetDrawColor(128, 128, 128);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(95, 6, 'Receipt #', 0, 0, 'L');
 $pdf->Cell(95, 6, 'Order Date:', 0, 1, 'R');
-
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(95, 6, 'MY-' . str_pad($order['order_id'], 3, '0', STR_PAD_LEFT), 0, 0, 'L');
 $pdf->Cell(95, 6, date('Y-m-d', strtotime($order['order_date'])), 0, 1, 'R');
 $pdf->Ln(5);
 
-// Table Header
+// 表格头部
 $pdf->SetFillColor(220, 53, 69);
 $pdf->SetTextColor(255);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(10, 10, 'No.', 1, 0, 'C', true);
-$pdf->Cell(95, 10, 'Description', 1, 0, 'C', true);
-$pdf->Cell(40, 10, 'Unit Price (RM)', 1, 0, 'C', true);
-$pdf->Cell(15, 10, 'Qty', 1, 0, 'C', true);
-$pdf->Cell(40, 10, 'Amount (RM)', 1, 1, 'C', true);
+$pdf->Cell(85, 10, 'Description', 1, 0, 'C', true);
+$pdf->Cell(30, 10, 'Unit Price (RM)', 1, 0, 'C', true);
+$pdf->Cell(20, 10, 'Qty', 1, 0, 'C', true);
+$pdf->Cell(35, 10, 'Amount (RM)', 1, 1, 'C', true);
 
-// Table Content
+// 表格内容
 $pdf->SetFont('Arial', '', 10);
 $pdf->SetTextColor(0);
-$totalAmount = 0;
-$itemNumber = 1; // Counter for No.
+$itemNumber = 1;
 
 while ($detail = $details_result->fetch_assoc()) {
-    $pdf->Cell(10, 8, $itemNumber, 1, 0, 'C'); // No.
-    $pdf->Cell(95, 8, $detail['product_name'], 1, 0, 'L');
-    $pdf->Cell(40, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
-    $pdf->Cell(15, 8, $detail['quantity'], 1, 0, 'C');
-    $pdf->Cell(40, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
-    $itemNumber++; // Increment counter
+    $pdf->Cell(10, 8, $itemNumber, 1, 0, 'C');
+    $pdf->Cell(85, 8, $detail['product_name'], 1, 0, 'L');
+    $pdf->Cell(30, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
+    $pdf->Cell(20, 8, $detail['quantity'], 1, 0, 'C');
+    $pdf->Cell(35, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
+    $itemNumber++;
 }
 
-// Pricing Details
+// 价格明细
 $pdf->Ln(5);
 $pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(0, 6, 'Pricing Details', 0, 1, 'L');
-
-$pdf->SetFont('Arial', '', 10);
 $pdf->Cell(135, 6, 'Subtotal:', 0, 0, 'R');
 $pdf->Cell(40, 6, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
 $pdf->Cell(135, 6, 'Discount:', 0, 0, 'R');
@@ -117,13 +121,12 @@ $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(135, 8, 'Total Amount:', 0, 0, 'R');
 $pdf->Cell(40, 8, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
 
-// Terms and Signature
+// Terms & Signature
 $pdf->Ln(10);
 $pdf->SetFont('Arial', 'I', 10);
-$pdf->Cell(0, 6, 'Terms & Conditions', 0, 1, 'L');
-$pdf->Cell(0, 6, 'Payment is due within 15 days.', 0, 1, 'L');
-$pdf->Cell(0, 10, '', 0, 1, 'L');
+$pdf->SetTextColor(128);
+$pdf->Cell(0, 6, 'Terms & Conditions:', 0, 1, 'L');
+$pdf->Cell(0, 6, 'Payment due within 15 days.', 0, 1, 'L');
 
-// Output PDF
 $pdf->Output('D', 'Receipt_Order_' . $order['order_id'] . '.pdf');
 ?>
