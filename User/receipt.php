@@ -50,7 +50,7 @@ $pdf->SetAutoPageBreak(true, 20);
 
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetTextColor(220, 53, 69);
-$pdf->Cell(0, 10, 'East Asia Trading', 0, 1, 'C');
+$pdf->Cell(0, 10, 'YLS Atelier', 0, 1, 'C');
 $pdf->SetFont('Arial', 'I', 10);
 $pdf->SetTextColor(0);
 $pdf->Cell(0, 6, 'Pasar Pudu Baru 10, Kuala Lumpur 53000', 0, 1, 'C');
