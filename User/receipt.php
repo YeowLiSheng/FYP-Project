@@ -113,7 +113,7 @@ while ($detail = $details_result->fetch_assoc()) {
 // 价格明细部分
 $pdf->Ln(10);
 $pdf->SetFont('Arial', 'B', 10);
-$labelWidth = 135;
+$labelWidth = 145;
 $amountWidth = 35;
 
 $pdf->Cell($labelWidth, 6, 'Subtotal:', 0, 0, 'R');
