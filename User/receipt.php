@@ -47,7 +47,7 @@ $pdf->SetMargins(10, 20, 10);
 $pdf->SetAutoPageBreak(true, 20);
 
 // 添加Logo (假设有一个logo.png文件)
-$pdf->Image('logo.png', 10, 10, 30);
+
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetTextColor(220, 53, 69);
 $pdf->Cell(0, 10, 'East Asia Trading', 0, 1, 'C');
