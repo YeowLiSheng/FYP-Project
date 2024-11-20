@@ -655,7 +655,7 @@ function add_check() {
                                             <!-- Modal body -->
                                             <div class="modal-body">
                                                 <div class="up">
-                                                    <img src="../image/<?php echo $row['image'] ?>"
+                                                    <img src="../images/<?php echo $row['image'] ?>"
                                                         style="max-height:200px; width:auto;display: block;margin-left: auto; margin-right: auto;" />
                                                     <hr>
                                                     <div class="p_info">
@@ -731,27 +731,34 @@ function add_check() {
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <img src="../image/<?php echo $row['image'] ?>" style="max-height:100px; max-width:auto;" />
                                     </td>
+
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <?php echo $row['product_name'] ?>
                                     </td>
+
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <?php echo $row['tags'] ?>
                                     </td>
+
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <?php echo $row['color1'] ?>, <?php echo $row['color2'] ?>
                                     </td>
+
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <?php echo str_replace("_", " ", $row['category']); ?>
                                     </td>
+
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         USD <?php echo $row['price'] ?>
                                     </td>
+
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <?php echo $row['stock'] ?><br>
                                         <div style="font-size:80%; color:<?php echo ($row['stock'] < 1) ? 'red' : 'green'; ?>">
                                             <?php echo ($row['stock'] < 1) ? 'Out of Stock' : 'In Stock'; ?>
                                         </div>
                                     </td>
+
                                     <?php
                                     if ($row['product_status'] == "Available") { ?>
                                         <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>" style="color:#0EAF09;">
@@ -818,10 +825,11 @@ function add_check() {
                                     </script>
                                 <!-- _____________________________________EDIT__________________________________________-->
                                 <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-
                                     <button type="button" class="btn btn-dark" data-bs-toggle="modal"
-                                        data-bs-target="#e<?php echo $row["product_id"]; ?>"
-                                        style="border-right: 1.25px solid white;"><i class="lni lni-pencil-alt"></i></button>
+                                        data-bs-target="#e<?php echo $row["product_id"]; ?>" 
+                                        style="border-right: 1.25px solid white;">
+                                        <i class="lni lni-pencil-alt"></i>
+                                    </button>
 
                                     <div class="modal fade modal-edit" id="e<?php echo $row["product_id"]; ?>" tabindex="-1"
                                         aria-labelledby="exampleModalLabel" aria-hidden="true" style="border:1px solid black;">
@@ -829,258 +837,190 @@ function add_check() {
                                             <div class="modal-content">
                                                 <!-- Modal Header -->
                                                 <div class="modal-header">
-                                                    <h4 class="modal-title">Edit</h4>
+                                                    <h4 class="modal-title">Edit Product</h4>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
-                                                <!-- Modal body -->
-                                                <form id="e_form<?php echo $row['product_id'] ?>"
-                                                    name="e_form<?php echo $row['product_id'] ?>" action="a_product.php"
-                                                    method="POST">
+                                                <!-- Modal Body -->
+                                                <form id="e_form<?php echo $row['product_id']; ?>" 
+                                                    name="e_form<?php echo $row['product_id']; ?>" 
+                                                    action="a_product.php" method="POST" enctype="multipart/form-data">
                                                     <div class="modal-body">
                                                         <div class="row">
-                                                            <!-- product title -->
+                                                            <!-- Product Title -->
                                                             <div class="col-md-12">
                                                                 <div class="form-group mb-4">
-                                                                    <label for="prodcuct_title">Product:</label>
-                                                                    <input type="text" class="form-control"
-                                                                        name="product_name<?php echo $row['product_id'] ?>"
-                                                                        placeholder="product name"
-                                                                        value="<?php echo $row["product_name"] ?>">
-                                                                    <span id="check_name<?php echo $row['product_id'] ?>" style="color: red;
-                                                                    font-size: 0.9em;"></span>
+                                                                    <label for="product_title">Product Name:</label>
+                                                                    <input type="text" class="form-control" 
+                                                                        name="product_name" 
+                                                                        placeholder="Enter product name" 
+                                                                        value="<?php echo $row["product_name"]; ?>">
                                                                 </div>
                                                             </div>
-                                                            <!-- brand -->
+
+                                                            <!-- Description -->
+                                                            <div class="col-md-12">
+                                                                <div class="form-group mb-4">
+                                                                    <label for="product_desc">Description:</label>
+                                                                    <textarea class="form-control" 
+                                                                        name="product_desc" 
+                                                                        placeholder="Enter product description"><?php echo $row["product_des"]; ?></textarea>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Images -->
                                                             <div class="col-md-4">
-                                                                <div class="form-group mb-4">
-                                                                    <label>Brand:</label>
-                                                                    <?php
-                                                                    $selected_brand = $row["brand_name"];
-                                                                    $select = mysqli_query($connect, "SELECT * FROM brand where brand_name = '$selected_brand'");
-                                                                    ?>
-                                                                    <select class="form-select" id="brand"
-                                                                        aria-label="Default select example" name="brand">
-                                                                        <?php
-                                                                        foreach ($select as $rowb) {
-                                                                            ?>
-                                                                            <option value="<?php echo $rowb['brand_id']; ?>"
-                                                                                selected>
-                                                                                <?php echo $rowb['brand_name'];
-                                                                        }
-                                                                        $b = mysqli_query($connect, "SELECT * FROM brand WHERE NOT brand_name = '$selected_brand'");
-                                                                        if (mysqli_num_rows($b) > 0) {
-                                                                            while ($rowb = mysqli_fetch_assoc($b)) {
-                                                                                ?>
-                                                                                <option value="<?php echo $rowb['brand_id'] ?>">
-                                                                                    <?php echo $rowb['brand_name'] ?>
-                                                                                </option>
-                                                                                <?php
-                                                                            }
-                                                                        }
-                                                                        ?>
-                                                                    </select>
-                                                                </div>
+                                                                <label for="Quick_View1">Quick View 1:</label>
+                                                                <input type="file" class="form-control" name="Quick_View1">
+                                                                <input type="hidden" name="old_quick_view1" value="<?php echo $row['Quick_View1']; ?>">
                                                             </div>
-                                                            <!-- select a product category type-->
-                                                            <div class="col-md-3">
-                                                                <div class="form-group mb-4">
-                                                                    <label>Type:</label>
-                                                                    <?php
-                                                                    $selected_type = $row["type"];
-                                                                    $select = mysqli_query($connect, "SELECT * FROM product_type");
-                                                                    while ($rowt = mysqli_fetch_assoc($select)) {
-                                                                        ?>
-                                                                        <div class="form-check">
-                                                                            <input class="form-check-input edit-radio" type="radio"
-                                                                                id="edit-radio<?php echo $row["product_id"]; ?>"
-                                                                                name="edit-radio"
-                                                                                value="<?php echo $rowt['type_id']; ?>" <?php if ($rowt['type'] == $selected_type) {
-                                                                                       echo "checked";
-                                                                                   } ?> />
-                                                                            <label class="form-check-label" for="flexRadioDefault1">
-                                                                                <?php echo $rowt['type']; ?>
-                                                                            </label>
-                                                                        </div>
-                                                                        <?php
-                                                                    }
-                                                                    ?>
-                                                                </div>
+                                                            <div class="col-md-4">
+                                                                <label for="Quick_View2">Quick View 2:</label>
+                                                                <input type="file" class="form-control" name="Quick_View2">
+                                                                <input type="hidden" name="old_quick_view2" value="<?php echo $row['Quick_View2']; ?>">
                                                             </div>
-                                                            <!-- category -->
-                                                            <div class="col-md-5">
-                                                                <div class="form-group mb-4">
-                                                                    <label>Category:</label>
-                                                                    <select class="form-select"
-                                                                        id="edit-category<?php echo $row["product_id"]; ?>"
-                                                                        aria-label="Default select example" name="cate">
-                                                                        <?php
-                                                                        $selected_cate = $row["category"];
-                                                                        $select = mysqli_query($connect, "SELECT * FROM category where category = '$selected_cate'");
-                                                                        while ($rowc = mysqli_fetch_assoc($select)) {
-                                                                            ?>
-                                                                            <option value="<?php echo $rowc['category_id']; ?>"
-                                                                                checked>
-                                                                                <?php echo $rowc['category']; ?>
-                                                                            </option>
-                                                                            <?php
-                                                                        }
-                                                                        ?>
-                                                                    </select>
-                                                                </div>
+                                                            <div class="col-md-4">
+                                                                <label for="Quick_View3">Quick View 3:</label>
+                                                                <input type="file" class="form-control" name="Quick_View3">
+                                                                <input type="hidden" name="old_quick_view3" value="<?php echo $row['Quick_View3']; ?>">
                                                             </div>
 
-                                                            <script>
-                                                                $(document).ready(function () {
-                                                                    $('input[name="edit-radio"]').on('click', function () {
-                                                                        var set = $('input[id="edit-radio' + <?php echo $row["product_id"]; ?> + '"]:checked').val();
-                                                                        $.ajax({
-                                                                            url: 'run_query.php',
-                                                                            method: 'POST',
-                                                                            data: { bid: set },
-                                                                            success: function (data) {
-                                                                                $("#edit-category" + <?php echo $row["product_id"]; ?>).html(data);
-                                                                            }
-                                                                        });
-                                                                    });
-                                                                });
-                                                            </script>
-
-                                                            <div class="col-md-12">
-                                                                <div class="form-group mb-4">
-                                                                    <div class="form-group">
-                                                                        <label
-                                                                            for="exampleFormControlTextarea1">Description</label>
-                                                                        <textarea class="form-control"
-                                                                            id="exampleFormControlTextarea1" rows="3"
-                                                                            placeholder="product description"
-                                                                            name="desc<?php echo $row['product_id'] ?>"><?php echo $row["product_desc"] ?></textarea>
-                                                                        <span id="check_desc<?php echo $row['product_id'] ?>"
-                                                                            style="color: red; font-size: 0.9em;"></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-md-12">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="form-label"
-                                                                        for="imgInput<?php echo $row['image']; ?>">Product
-                                                                        Image
-                                                                    </label>
-                                                                    <input type="file" class="form-control"
-                                                                        id="imgInput<?php echo $row['image']; ?>" name="img">
-                                                                    <input type="hidden" name="old-img"
-                                                                        value="<?php echo $row['image'] ?>">
+                                                            <!-- Price and Stock -->
+                                                            <div class="col-md-6">
+                                                                <label for="product_price">Price:</label>
+                                                                <div class="input-group mb-3">
+                                                                    <span class="input-group-text">RM</span>
+                                                                    <input type="text" class="form-control" 
+                                                                        name="product_price" 
+                                                                        value="<?php echo $row["product_price"]; ?>">
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="form-label" for="price">Price:</label>
-                                                                    <div class="input-group mb-3">
-                                                                        <span class="input-group-text">RM</span>
-                                                                        <input type="text" class="form-control"
-                                                                            id="price<?php echo $row['product_id'] ?>"
-                                                                            name="price<?php echo $row['product_id'] ?>"
-                                                                            value="<?php echo $row["price"] ?>">
-                                                                    </div>
-                                                                    <span id="check_price<?php echo $row['product_id'] ?>"
-                                                                        style="color: red; font-size: 0.9em;"></span>
-                                                                </div>
+                                                                <label for="product_stock">Stock:</label>
+                                                                <input type="text" class="form-control" 
+                                                                    name="product_stock" 
+                                                                    value="<?php echo $row["product_stock"]; ?>">
+                                                            </div>
+
+                                                            <!-- Colors -->
+                                                            <div class="col-md-6">
+                                                                <label for="color1">Color 1:</label>
+                                                                <input type="text" class="form-control" 
+                                                                    name="color1" 
+                                                                    value="<?php echo $row["color1"]; ?>">
                                                             </div>
                                                             <div class="col-md-6">
-                                                                <div class="form-group mb-4">
-                                                                    <label class="form-label" for="qty">Stock:</label>
-                                                                    <div class="input-group mb-3">
-                                                                        <input type="text" class="form-control"
-                                                                            id="qty<?php echo $row['product_id'] ?>"
-                                                                            name="qty<?php echo $row['product_id'] ?>"
-                                                                            value="<?php echo $row["stock"] ?>">
-                                                                        <span class="input-group-text">pcs</span>
-                                                                    </div>
-                                                                    <span id="check_stock<?php echo $row['product_id'] ?>"
-                                                                        style="color: red; font-size: 0.9em;"></span>
-                                                                </div>
+                                                                <label for="color2">Color 2:</label>
+                                                                <input type="text" class="form-control" 
+                                                                    name="color2" 
+                                                                    value="<?php echo $row["color2"]; ?>">
                                                             </div>
-                                                            <input type="hidden" name="product_id"
-                                                                value="<?php echo $row["product_id"]; ?>">
+
+                                                            <!-- Sizes -->
+                                                            <div class="col-md-6">
+                                                                <label for="size1">Size 1:</label>
+                                                                <input type="text" class="form-control" 
+                                                                    name="size1" 
+                                                                    value="<?php echo $row["size1"]; ?>">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label for="size2">Size 2:</label>
+                                                                <input type="text" class="form-control" 
+                                                                    name="size2" 
+                                                                    value="<?php echo $row["size2"]; ?>">
+                                                            </div>
+
+                                                            <!-- Tags -->
+                                                            <div class="col-md-12">
+                                                                <label for="tags">Tags:</label>
+                                                                <input type="text" class="form-control" 
+                                                                    name="tags" 
+                                                                    placeholder="Enter tags (comma-separated)" 
+                                                                    value="<?php echo $row["tags"]; ?>">
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <input type="hidden" name="edit_product">
-                                                    <!-- Modal footer -->
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-primary"
-                                                            onclick="add_check<?php echo $row['product_id'] ?>()"
-                                                            name="edit_product">Update</button>
 
-                                                        <button type="button" class="btn btn-danger"
-                                                            data-bs-dismiss="modal">Cancel</button>
+                                                    <input type="hidden" name="product_id" value="<?php echo $row["product_id"]; ?>">
+                                                    <input type="hidden" name="edit_product">
+
+                                                    <!-- Modal Footer -->
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-success">Update</button>
+                                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                                                     </div>
                                                 </form>
                                             </div>
                                         </div>
-                                    </div><!-- modal end-->
+                                    </div>
+
 
                                     <?php
-                                    if ($row["product_status"] == "Available") {
+                                    if ($row["product_status"] == 1) { // 1 = Available, 0 = Unavailable
                                         ?>
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
                                             data-bs-target="#av<?php echo $row["product_id"]; ?>">
-                                            <i class="lni lni-close"></i></button>
+                                            <i class="lni lni-close"></i>
+                                        </button>
                                         <?php
-                                    } else if ($row["product_status"] == "Unavailable") {
+                                    } else if ($row["product_status"] == 0) {
                                         ?>
-                                            <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                                style="border-left: 1.25px solid white;"
-                                                data-bs-target="#unav<?php echo $row["product_id"]; ?>">
-                                                <i class="lni lni-checkmark" style="margin-top:5px;"></i></button>
+                                        <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                            style="border-left: 1.25px solid white;"
+                                            data-bs-target="#unav<?php echo $row["product_id"]; ?>">
+                                            <i class="lni lni-checkmark" style="margin-top:5px;"></i>
+                                        </button>
                                         <?php
                                     }
                                     ?>
+
 
                                     <div class="modal fade" id="av<?php echo $row["product_id"]; ?>">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title" id="exampleModalLabel">
-                                                        Current status:<b style="color:#0EAF09;">Available</b></h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
+                                                        Current status: <b style="color:#0EAF09;">Available</b>
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
 
                                                 <div class="modal-body">
-                                                    Set this product to status:<b style="color:red;">Unavailable</b>?<br>
-                                                    <img src="../image/<?php echo $row["image"] ?>">
-                                                    <?php echo $row["product_name"] ?>
+                                                    Set this product to status: <b style="color:red;">Unavailable</b>?<br>
+                                                    <img src="../image/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="a_product.php?product_id=<?php echo $row["product_id"] ?>"><button
-                                                            type="button" class="btn btn-primary">Yes</button></a>
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">No</button>
+                                                    <a href="update_status.php?action=unavailable&product_id=<?php echo $row["product_id"]; ?>">
+                                                        <button type="button" class="btn btn-primary">Yes</button>
+                                                    </a>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div><!-- end av modal -->
+                                    </div>
 
+                                    <!-- Modal for setting product to available -->
                                     <div class="modal fade" id="unav<?php echo $row["product_id"]; ?>">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h5 class="modal-title" id="exampleModalLabel">
-                                                        Current status:<b style="color:red;">Unavailable</b></h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
+                                                        Current status: <b style="color:red;">Unavailable</b>
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
 
                                                 <div class="modal-body">
-                                                    Set this product to status:<b style="color:#0EAF09;">Available</b>?<br>
-                                                    <img src="../image/<?php echo $row["image"] ?>">
-                                                    <?php echo $row["product_name"] ?>
+                                                    Set this product to status: <b style="color:#0EAF09;">Available</b>?<br>
+                                                    <img src="../image/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="a_product.php?product_id=<?php echo $row["product_id"] ?>"><button
-                                                            type="button" class="btn btn-primary">Yes</button></a>
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">No</button>
+                                                    <a href="update_status.php?action=available&product_id=<?php echo $row["product_id"]; ?>">
+                                                     <button type="button" class="btn btn-primary">Yes</button>
+                                                    </a>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                                                 </div>
                                             </div>
                                         </div>
