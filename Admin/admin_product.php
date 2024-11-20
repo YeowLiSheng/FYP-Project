@@ -414,52 +414,58 @@ function add_check() {
                                         <span id="check_name"></span>
                                     </div>
                                 </div>
-                                <!-- brand -->
-                                <div class="col-md-4">
+                                <!-- Colors -->
+                                <div class="col-md-6">
                                     <div class="form-group mb-4">
-                                        <label>Brand:</label>
-                                        <select class="form-select" id="brand" aria-label="Default select example"
-                                            name="brand" required>
-                                            <?php
-                                            $b = mysqli_query($connect, "SELECT * FROM brand");
-                                            if (mysqli_num_rows($b) > 0) {
-                                                while ($row = mysqli_fetch_assoc($b)) {
-                                                    ?>
-                                                    <option value="<?php echo $row['brand_id'] ?>">
-                                                        <?php echo $row['brand_name'] ?>
-                                                    </option>
-                                                    <?php
-                                                }
-                                            }
-                                            ?>
-                                        </select>
+                                        <label for="color1">Color 1:</label>
+                                        <input type="text" class="form-control" id="color1" name="color1" placeholder="Primary color">
                                     </div>
                                 </div>
-                                <!-- select a product category type-->
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <div class="form-group mb-4">
-                                        <label>Type:</label>
-                                        <?php
-                                        $type = mysqli_query($connect, "SELECT * FROM product_type");
-                                        if (mysqli_num_rows($type) > 0) {
-                                            while ($row = mysqli_fetch_assoc($type)) {
-                                                ?>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="radio"
-                                                        id="flexRadioDefault1" value="<?php echo $row['type_id'] ?>" />
-                                                    <label class="form-check-label" for="flexRadioDefault1">
-                                                        <?php echo $row['type'] ?>
-                                                    </label>
-                                                </div>
-                                                <?php
-                                            }
-                                            ?>
-                                            <span id="check_type"></span>
-                                            <?php
-                                        }
-                                        ?>
+                                        <label for="color2">Color 2:</label>
+                                    <input type="text" class="form-control" id="color2" name="color2" placeholder="Secondary color">
+                                </div>
+                                </div>
+
+                                <!-- Sizes -->
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="size1">Size 1:</label>
+                                            <input type="text" class="form-control" id="size1" name="size1" placeholder="Primary size">
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-4">
+                                        <label for="size2">Size 2:</label>
+                                        <input type="text" class="form-control" id="size2" name="size2" placeholder="Secondary size">
+                                    </div>
+                                </div>
+
+                                <!-- Tags -->
+                                <div class="col-md-12">
+                                    <div class="form-group mb-4">
+                                        <label for="tags">Tags:</label>
+                                        <input type="text" class="form-control" id="tags" name="tags" placeholder="e.g., electronics, home appliance">
+                                    </div>
+                                </div>
+
+                                <!-- Quick View -->
+                                <div class="col-md-12">
+                                    <div class="form-group mb-4">
+                                        <label for="quick_view1">Quick View 1:</label>
+                                        <input type="text" class="form-control" id="quick_view1" name="Quick_View1" placeholder="Quick View Detail 1">
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label for="quick_view2">Quick View 2:</label>
+                                        <input type="text" class="form-control" id="quick_view2" name="Quick_View2" placeholder="Quick View Detail 2">
+                                    </div>
+                                    <div class="form-group mb-4">
+                                        <label for="quick_view3">Quick View 3:</label>
+                                        <input type="text" class="form-control" id="quick_view3" name="Quick_View3" placeholder="Quick View Detail 3">
+                                    </div>
+                                </div>
+
                                 <!-- category -->
                                 <div class="col-md-5">
                                     <div class="form-group mb-4">
@@ -542,20 +548,20 @@ function add_check() {
         <hr>
         <?php
         $query = "SELECT 
-        product.product_id, 
-        product.product_name, 
-        product.product_des AS product_desc, 
-        product.product_image AS image, 
-        product.product_price AS price, 
-        product.product_stock AS stock,
-        product_status.product_status, 
-        category.category,
-        product.tags,
-        product.color1,
-        product.color2
-        FROM product
-        JOIN category ON product.category_id = category.category_id
-        JOIN product_status ON product.product_status = product_status.p_status_id";
+         product.product_id, 
+         product.product_name, 
+         product.product_des AS product_desc, 
+         product.product_image AS image, 
+         product.product_price AS price, 
+         product.product_stock AS stock,
+         product_status.product_status, 
+         category.category_name,
+         product.tags,
+         product.color1,
+         product.color2
+         FROM product
+         JOIN category ON product.category_id = category.category_id
+         JOIN product_status ON product.product_status = product_status.p_status_id";
 
         if (isset($_POST["search_product"])) {
             $search = $_POST["search"];
