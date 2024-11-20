@@ -1,10 +1,10 @@
 <?php
 
-include 'dataconnection.php' 
+include 'dataconnection.php' ;
+include 'admin_sidebar.php';
 
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,16 +15,29 @@ include 'dataconnection.php'
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
+
+
+a {
+    text-decoration: none;
+}
+
+
+
+.content {
+    margin-left: 250px; /* Adjust this based on sidebar width */
+}
+
         /* Background styling */
         body {
-            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            background-color: #427CA9;
             font-family: Arial, sans-serif;
         }
 
+
         /* Center and style form container */
         .container {
-            max-width: 500px;
-            margin-top: 50px;
+            max-width: 600px;
+            margin-top: 120px;
             padding: 20px;
             background-color: #ffffff;
             border-radius: 10px;
@@ -56,7 +69,7 @@ include 'dataconnection.php'
             box-shadow: 0 0 5px rgba(0, 121, 107, 0.4);
         }
 
-        /* Error message styling with updated font and color */
+        /* Error message styling */
         .text-danger {
             font-size: 0.85rem;
             color: #d32f2f;
@@ -66,23 +79,33 @@ include 'dataconnection.php'
             line-height: 1.2;
             letter-spacing: 0.3px;
             display: none; /* Initially hidden */
-            
-            /* Optional shadow effect for a subtle glow */
-            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
-            
-            /* Slight padding for better readability */
             padding: 2px 0;
         }
 
-
         /* Eye icon styling */
+
         .eye-icon {
             position: absolute;
-            top: 75%;
-            right: 20px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #00796b;
+            right: 25px; /* Space from the right edge */
+            top: 50px;
+            transform: translateY(-50%); /* Center vertically */
+            cursor: pointer; /* Pointer cursor for the eye icon */
+            font-size: 18px; /* Increase the font size */
+            color: #888; /* Default color */
+            transition: color 0.3s ease; /* Smooth transition */
+        }
+
+        .eye-icon:hover {
+            color: #333; /* Darker color on hover */
+        }
+
+        .eye-icon i {
+            font-size: 20px; /* Adjust size if necessary */
+            transition: transform 0.3s ease; /* Smooth transformation */
+        }
+
+        .eye-icon.clicked i {
+            transform: rotate(180deg); /* Flip the eye icon when clicked */
         }
 
         /* Button styling */
@@ -94,46 +117,61 @@ include 'dataconnection.php'
             font-weight: bold;
             transition: background-color 0.3s ease;
         }
+
         .btn-primary:hover {
             background-color: #004d40;
         }
     </style>
 </head>
 <body>
+
+
+
     <div class="container">
         <h2>Add Staff</h2>
         <form action="add_staff.php" method="POST" id="addStaffForm">
-            <div class="mb-3">
-                <label for="adminId" class="form-label">Admin ID (e.g., admin1, admin2)</label>
-                <input type="text" class="form-control" id="adminId" name="adminId">
-                <div id="check_id" class="text-danger" style="display: none;">Admin ID is required</div>
+            <!-- Admin ID and Full Name in grid -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="adminId" class="form-label">Admin ID (e.g., admin1, admin2)</label>
+                    <input type="text" class="form-control" id="adminId" name="adminId">
+                    <div id="check_id" class="text-danger" style="display: none;">Admin ID is required</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" name="fullName">
+                    <div id="check_full" class="text-danger" style="display: none;">Full Name must be at least 5 characters</div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="fullName" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="fullName" name="fullName">
-                <div id="check_full" class="text-danger" style="display: none;">Full Name must be at least 5 characters</div>
+
+            <!-- Password and Confirm Password in grid -->
+            <div class="row mb-3">
+                <div class="col-md-6 position-relative">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                    <span id="passwordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('password')"></span>
+                    <div id="check_pass" class="text-danger" style="display: none;">Password must be at least 8 characters</div>
+                </div>
+                <div class="col-md-6 position-relative">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                    <span id="confirmPasswordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('confirmPassword')"></span>
+                    <div id="check_confirm_pass" class="text-danger" style="display: none;">Passwords must match</div>
+                </div>
             </div>
-            <div class="mb-3 position-relative">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password">
-                <span id="passwordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('password')"></span>
-                <div id="check_pass" class="text-danger" style="display: none;">Password must be at least 8 characters</div>
-            </div>
-            <div class="mb-3 position-relative">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
-                <span id="confirmPasswordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('confirmPassword')"></span>
-                <div id="check_confirm_pass" class="text-danger" style="display: none;">Passwords must match</div>
-            </div>
+
+            <!-- Email on its own line -->
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email">
-                <div id="check_e" class="text-danger" style="display: none;">Enter a valid email address (must contain '@' and end with '.com')</div>
+                <div id="check_e" class="text-danger" style="display: none;">Enter a valid email address</div>
             </div>
+
+            <!-- Contact Number on its own line -->
             <div class="mb-3">
                 <label for="contactNumber" class="form-label">Contact Number</label>
                 <input type="text" class="form-control" id="contactNumber" name="contactNumber">
-                <div id="check_num" class="text-danger" style="display: none;">Enter a valid contact number (xxx-xxxxxxx or xxx-xxxxxxxx)</div>
+                <div id="check_num" class="text-danger" style="display: none;">Enter a valid contact number</div>
             </div>
             
             <input type="submit" class="btn btn-primary" name="addstaff" value="Add Staff">
@@ -175,7 +213,7 @@ include 'dataconnection.php'
             }
 
             // Password validation
-            if (password.value.length < 8) {
+            if (password.value.length < 5) {
                 isValid = false;
                 document.getElementById('check_pass').style.display = 'block';
             } else {
@@ -191,7 +229,7 @@ include 'dataconnection.php'
             }
 
             // Email validation
-            const emailRegex = /^[^@]+@[^@]+\.[a-z]{2,}$/; // Must contain '@' and end with '.com'
+            const emailRegex = /^[^@]+@[^@]+\.[a-z]{2,}$/;
             if (!emailRegex.test(email.value)) {
                 isValid = false;
                 document.getElementById('check_e').style.display = 'block';
@@ -217,8 +255,6 @@ include 'dataconnection.php'
         });
     </script>
 </body>
-
-
 </html>
 
 
@@ -230,7 +266,6 @@ include 'dataconnection.php';
 // Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
 if (isset($_POST["addstaff"])) {
     // Retrieve form data
     $id = mysqli_real_escape_string($connect, $_POST["adminId"]); 
@@ -243,29 +278,36 @@ if (isset($_POST["addstaff"])) {
     $now = new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur'));
     $currentDateTime = $now->format('Y-m-d H:i:s');
 
-    // Check if email already exists
-    $verify_email_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_email='$email'");
-    if (mysqli_num_rows($verify_email_query) > 0) {
-        echo "<script>alert('The email has already been used. Please choose another email.');window.location.href='add_staff.php';</script>";
+    // Check if adminId already exists
+    $verify_id_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_id='$id'");
+    if (mysqli_num_rows($verify_id_query) > 0) {
+        echo "<script>alert('The Admin ID is already taken. Please choose another Admin ID.');window.location.href='add_staff.php';</script>";
     } else {
-        // Check if contact number already exists
-        $verify_contact_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_contact_number='$contact'");
-        if (mysqli_num_rows($verify_contact_query) > 0) {
-            echo "<script>alert('The telephone number is already in use. Please choose another number.');window.location.href='add_staff.php';</script>";
-        } else if ($password != $confirmPassword) {
-            echo "<script>alert('The password and confirm password must match.');window.location.href='add_staff.php';</script>";
+        // Check if email already exists
+        $verify_email_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_email='$email'");
+        if (mysqli_num_rows($verify_email_query) > 0) {
+            echo "<script>alert('The email has already been used. Please choose another email.');window.location.href='add_staff.php';</script>";
         } else {
-            // Insert data into the database without encryption
-            $insert_query = mysqli_query($connect, "INSERT INTO admin (admin_id, admin_name, admin_contact_number, admin_password, admin_email, admin_joined_date) 
-            VALUES ('$id', '$name', '$contact', '$password', '$email', '$currentDateTime')");
-            
-            if ($insert_query) {
-                echo "<script>alert('Registration successful.');window.location.href='admin_login.php';</script>";
+            // Check if contact number already exists
+            $verify_contact_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_contact_number='$contact'");
+            if (mysqli_num_rows($verify_contact_query) > 0) {
+                echo "<script>alert('The telephone number is already in use. Please choose another number.');window.location.href='add_staff.php';</script>";
+            } else if ($password != $confirmPassword) {
+                echo "<script>alert('The password and confirm password must match.');window.location.href='add_staff.php';</script>";
             } else {
-                echo "Error: " . mysqli_error($connect); // Show the error message
-                echo "<script>alert('Registration failed. Please try again.');window.location.href='add_staff.php';</script>";
+                // Insert data into the database without encryption
+                $insert_query = mysqli_query($connect, "INSERT INTO admin (admin_id, admin_name, admin_contact_number, admin_password, admin_email, admin_joined_date) 
+                VALUES ('$id', '$name', '$contact', '$password', '$email', '$currentDateTime')");
+                
+                if ($insert_query) {
+                    echo "<script>alert('Registration successful.');window.location.href='view_admin.php';</script>";
+                } else {
+                    echo "Error: " . mysqli_error($connect); // Show the error message
+                    echo "<script>alert('Registration failed. Please try again.');window.location.href='add_staff.php';</script>";
+                }
             }
         }
     }
 }
+
 ?>
