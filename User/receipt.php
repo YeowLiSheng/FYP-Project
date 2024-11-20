@@ -113,14 +113,14 @@ while ($detail = $details_result->fetch_assoc()) {
 // 价格明细 (往下调整)
 $pdf->Ln(10);
 $pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(153, 6, 'Grand Total:', 0, 0, 'R');
+$pdf->Cell(151, 6, 'Grand Total:', 0, 0, 'R');
 $pdf->Cell(40, 6, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
-$pdf->Cell(153, 6, 'Discount:', 0, 0, 'R');
+$pdf->Cell(151, 6, 'Discount:', 0, 0, 'R');
 $pdf->Cell(40, 6, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
-$pdf->Cell(153, 6, 'Delivery Charge:', 0, 0, 'R');
+$pdf->Cell(151, 6, 'Delivery Charge:', 0, 0, 'R');
 $pdf->Cell(40, 6, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'R');
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(153, 8, 'Total Amount:', 0, 0, 'R');
+$pdf->Cell(151, 8, 'Total Amount:', 0, 0, 'R');
 $pdf->Cell(40, 8, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
 
 // 感谢语句
