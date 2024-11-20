@@ -308,64 +308,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    justify-content: center;
-    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
 }
 
 .popup-content {
-    background: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
     padding: 20px;
     border-radius: 10px;
-    width: 60%;
-    max-width: 500px;
-    position: relative;
-    animation: fadeIn 0.3s;
-}
-
-.popup-content h2 {
-    margin: 0 0 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
     text-align: center;
 }
 
-.popup-content .close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
+.popup-content h2 {
     font-size: 24px;
-    cursor: pointer;
+    margin-bottom: 20px;
+    color: #333;
 }
 
-.rating-item {
+.product-rating {
     display: flex;
-    margin-bottom: 15px;
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
-.rating-info {
-    margin-left: 15px;
-    flex: 1;
-}
-
-.product-image-small {
-    width: 50px;
-    height: 50px;
+.product-rating img {
+    width: 80px;
+    height: 80px;
+    margin-right: 15px;
+    border-radius: 8px;
     object-fit: cover;
-    border-radius: 5px;
+}
+
+.product-info label {
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+    color: #666;
 }
 
 .submit-button {
-    background: #007bff;
-    color: white;
-    padding: 10px 20px;
+    background: #28a745;
+    color: #fff;
     border: none;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 5px;
     cursor: pointer;
-    width: 100%;
+    transition: background-color 0.3s;
 }
 
 .submit-button:hover {
-    background: #0056b3;
+    background: #218838;
+}
+
+.close-popup {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.close-popup:hover {
+    background: #c82333;
 }
 
 
@@ -739,40 +753,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
 
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
-	<button class="rate-button" onclick="showRatingPopup()">⭐ Rate Order</button>
+    <button class="rating-button">🌟 Rate Products</button>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 </div>
 </div>
 
+<!-- Rating Popup -->
 <div id="ratingPopup" class="popup">
     <div class="popup-content">
-        <h2>Rate Your Products</h2>
-        <span class="close" onclick="closeRatingPopup()">&times;</span>
-        <form method="POST" action="">
+        <h2>Rate Products</h2>
+        <form method="post" enctype="multipart/form-data">
             <?php
-            $details_result->data_seek(0); // 重置结果集游标
+            // 重置订单详情的游标
+            $details_result->data_seek(0);
             while ($detail = $details_result->fetch_assoc()) { ?>
-                <div class="rating-item">
-                    <img src="images/<?= $detail['product_image'] ?>" class="product-image-small">
-                    <div class="rating-info">
-                        <h4><?= $detail['product_name'] ?></h4>
-                        <label>Rating:</label>
-                        <select name="rating[<?= $detail['product_id'] ?>]" required>
-                            <option value="" disabled selected>Choose...</option>
-                            <option value="1">⭐</option>
-                            <option value="2">⭐⭐</option>
-                            <option value="3">⭐⭐⭐</option>
-                            <option value="4">⭐⭐⭐⭐</option>
-                            <option value="5">⭐⭐⭐⭐⭐</option>
+                <div class="product-rating">
+                    <img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image">
+                    <div class="product-info">
+                        <h3><?= $detail['product_name'] ?></h3>
+                        <label for="rating-<?= $detail['product_id'] ?>">Rating:</label>
+                        <select name="rating[<?= $detail['product_id'] ?>]" id="rating-<?= $detail['product_id'] ?>">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
                         </select>
-                        <textarea name="comment[<?= $detail['product_id'] ?>]" placeholder="Leave a comment"></textarea>
+                        <label for="comment-<?= $detail['product_id'] ?>">Comment:</label>
+                        <textarea name="comment[<?= $detail['product_id'] ?>]" id="comment-<?= $detail['product_id'] ?>" rows="2"></textarea>
+                        <label for="image-<?= $detail['product_id'] ?>">Upload Image:</label>
+                        <input type="file" name="image[<?= $detail['product_id'] ?>]" id="image-<?= $detail['product_id'] ?>" accept="image/*">
                     </div>
                 </div>
             <?php } ?>
-            <button type="submit" class="submit-button">Submit Ratings</button>
+            <button type="submit" name="submit_rating" class="submit-button">Submit Rating</button>
         </form>
+        <button class="close-popup">Close</button>
     </div>
 </div>
+
+<?php
+// 处理评分提交
+if (isset($_POST['submit_rating'])) {
+    foreach ($_POST['rating'] as $product_id => $rating) {
+        $comment = $_POST['comment'][$product_id];
+        $image_name = "";
+
+        if (!empty($_FILES['image']['name'][$product_id])) {
+            $image_name = time() . "_" . $_FILES['image']['name'][$product_id];
+            move_uploaded_file($_FILES['image']['tmp_name'][$product_id], "uploads/" . $image_name);
+        }
+
+        $feedback_stmt = $conn->prepare("INSERT INTO feedback (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
+        $feedback_stmt->bind_param("issiii", $rating, $comment, $image_name, $current_user_id, $product_id, $order_id);
+        $feedback_stmt->execute();
+    }
+    echo "<script>alert('Thank you for your feedback!');</script>";
+}
+?>
 
 <!-- Footer -->
 <footer class="bg3 p-t-75 p-b-32">
@@ -1200,13 +1238,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-function showRatingPopup() {
-    document.getElementById("ratingPopup").style.display = "flex";
-}
+document.querySelector('.rating-button').addEventListener('click', () => {
+    document.getElementById('ratingPopup').style.display = 'block';
+});
 
-function closeRatingPopup() {
-    document.getElementById("ratingPopup").style.display = "none";
-}
+document.querySelector('.close-popup').addEventListener('click', () => {
+    document.getElementById('ratingPopup').style.display = 'none';
+});
 </script>
 
 </body>
