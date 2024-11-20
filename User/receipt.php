@@ -18,7 +18,7 @@ if (!isset($_SESSION['id']) || !isset($_GET['order_id'])) {
     header("Location: login.php");
     exit;
 }
-d
+
 $order_id = intval($_GET['order_id']);
 
 $order_stmt = $conn->prepare("
