@@ -285,82 +285,6 @@ $details_result = $details_stmt->get_result();
         margin: 8px 0;
         font-weight: bold;
     }
-	.popup-form {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
-.popup-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    animation: fadeIn 0.3s ease-out;
-}
-.popup-content h2 {
-    margin: 0 0 15px;
-    font-size: 24px;
-    text-align: center;
-}
-.product-rating {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 15px;
-}
-.product-rating img {
-    width: 50px;
-    height: 50px;
-    margin-right: 15px;
-    border-radius: 5px;
-    object-fit: cover;
-}
-.product-rating label {
-    display: block;
-    margin-bottom: 5px;
-}
-.product-rating input,
-.product-rating textarea {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-}
-.submit-rating {
-    background: #28a745;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background 0.3s ease;
-}
-.submit-rating:hover {
-    background: #218838;
-}
-.close-button {
-    background: #dc3545;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-.close-button:hover {
-    background: #c82333;
-}
 </style>
 </head>
 <body class="animsition">
@@ -731,39 +655,7 @@ $details_result = $details_stmt->get_result();
 
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
-	<button class="rate-button" onclick="openRatingForm()">⭐ Rate Products</button>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
-
-	<div id="ratingForm" class="popup-form">
-    <div class="popup-content">
-        <h2>Rate Products</h2>
-        <form id="ratingFormContent" method="post" action="submit_rating.php">
-            <?php
-            // 为每个产品生成评价输入
-            $details_result->data_seek(0); // 重置结果指针
-            while ($detail = $details_result->fetch_assoc()) {
-                ?>
-                <div class="product-rating">
-                    <img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image">
-                    <div>
-                        <h4><?= $detail['product_name'] ?></h4>
-                        <label for="rating_<?= $detail['product_id'] ?>">Rating (1-5):</label>
-                        <input type="number" name="rating[<?= $detail['product_id'] ?>]" id="rating_<?= $detail['product_id'] ?>" min="1" max="5" required>
-                        <label for="comment_<?= $detail['product_id'] ?>">Comment:</label>
-                        <textarea name="comment[<?= $detail['product_id'] ?>]" id="comment_<?= $detail['product_id'] ?>" rows="3" required></textarea>
-                    </div>
-                </div>
-                <hr>
-                <?php
-            }
-            ?>
-            <input type="hidden" name="order_id" value="<?= $order_id ?>">
-            <button type="submit" class="submit-rating">Submit Rating</button>
-            <button type="button" class="close-button" onclick="closeRatingForm()">Cancel</button>
-        </form>
-    </div>
-</div>
-				
 </div>
 </div>
 
@@ -1192,15 +1084,5 @@ $details_result = $details_stmt->get_result();
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-
-	<script>
-function openRatingForm() {
-    document.getElementById("ratingForm").style.display = "flex";
-}
-function closeRatingForm() {
-    document.getElementById("ratingForm").style.display = "none";
-}
-</script>
-
 </body>
 </html>
