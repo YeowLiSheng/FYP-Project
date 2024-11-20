@@ -94,7 +94,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: beige;
+    background-color: #427CA9;
 }
 
 /* Center the form in the page */
