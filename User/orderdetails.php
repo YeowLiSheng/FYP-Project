@@ -301,73 +301,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
         font-weight: bold;
     }
 
-	.popup {
-    display: none;
+	.rate-popup {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    justify-content: center;
-    align-items: center;
-}
-
-.popup-content {
-    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    width: 80%;
+    max-width: 600px;
+    z-index: 9999;
     padding: 20px;
-    border-radius: 10px;
-    width: 60%;
-    max-width: 500px;
-    position: relative;
-    animation: fadeIn 0.3s;
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
 }
-
-.popup-content h2 {
-    margin: 0 0 20px;
+.rate-popup h2 {
     text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.8rem;
 }
-
-.popup-content .close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
+.rate-popup p {
+    text-align: center;
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 1rem;
 }
-
-.rating-item {
+.rate-popup-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px;
+}
+.popup-footer {
     display: flex;
-    margin-bottom: 15px;
+    justify-content: space-between;
+    margin-top: 20px;
 }
-
-.rating-info {
-    margin-left: 15px;
-    flex: 1;
-}
-
-.product-image-small {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 5px;
-}
-
-.submit-button {
-    background: #007bff;
-    color: white;
+.btn-submit, .btn-close {
     padding: 10px 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     cursor: pointer;
-    width: 100%;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+.btn-submit {
+    background: #28a745;
+    color: #fff;
+}
+.btn-submit:hover {
+    background: #218838;
+}
+.btn-close {
+    background: #dc3545;
+    color: #fff;
+}
+.btn-close:hover {
+    background: #c82333;
 }
 
-.submit-button:hover {
-    background: #0056b3;
+/* Product Rating Section */
+.rating-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #f1f1f1;
 }
-
+.rating-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+.rating-item .product-info {
+    flex: 1;
+}
+.rating-item h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+.rating-item .stars {
+    display: flex;
+    gap: 5px;
+    margin: 5px 0;
+}
+.rating-item .stars i {
+    font-size: 1.5rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+.rating-item .stars i.active,
+.rating-item .stars i:hover ~ i {
+    color: #ffc107;
+}
 
 </style>
 </head>
@@ -744,33 +775,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
 </div>
 </div>
 
-<div id="ratingPopup" class="popup">
-    <div class="popup-content">
+<div class="rate-popup" id="ratePopup">
+    <div class="rate-popup-content">
         <h2>Rate Your Products</h2>
-        <span class="close" onclick="closeRatingPopup()">&times;</span>
-        <form method="POST" action="">
-            <?php
-            $details_result->data_seek(0); // 重置结果集游标
-            while ($detail = $details_result->fetch_assoc()) { ?>
-                <div class="rating-item">
-                    <img src="images/<?= $detail['product_image'] ?>" class="product-image-small">
-                    <div class="rating-info">
-                        <h4><?= $detail['product_name'] ?></h4>
-                        <label>Rating:</label>
-                        <select name="rating[<?= $detail['product_id'] ?>]" required>
-                            <option value="" disabled selected>Choose...</option>
-                            <option value="1">⭐</option>
-                            <option value="2">⭐⭐</option>
-                            <option value="3">⭐⭐⭐</option>
-                            <option value="4">⭐⭐⭐⭐</option>
-                            <option value="5">⭐⭐⭐⭐⭐</option>
-                        </select>
-                        <textarea name="comment[<?= $detail['product_id'] ?>]" placeholder="Leave a comment"></textarea>
-                    </div>
-                </div>
-            <?php } ?>
-            <button type="submit" class="submit-button">Submit Ratings</button>
-        </form>
+        <p>Your feedback helps us improve!</p>
+        <div id="productRatingContainer"></div>
+        <div class="popup-footer">
+            <button id="submitRating" class="btn-submit">Submit</button>
+            <button id="closePopup" class="btn-close">Close</button>
+        </div>
     </div>
 </div>
 
@@ -1200,13 +1213,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-function showRatingPopup() {
-    document.getElementById("ratingPopup").style.display = "flex";
-}
+document.addEventListener("DOMContentLoaded", () => {
+    const ratePopup = document.getElementById("ratePopup");
+    const productRatingContainer = document.getElementById("productRatingContainer");
+    const submitRating = document.getElementById("submitRating");
+    const closePopup = document.getElementById("closePopup");
 
-function closeRatingPopup() {
-    document.getElementById("ratingPopup").style.display = "none";
-}
+    // Sample product data (replace with PHP dynamic data)
+    const products = [
+        { id: 1, name: "Product A", image: "images/product_a.jpg" },
+        { id: 2, name: "Product B", image: "images/product_b.jpg" },
+    ];
+
+    // Populate products for rating
+    products.forEach((product) => {
+        const productDiv = document.createElement("div");
+        productDiv.className = "rating-item";
+        productDiv.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <div class="product-info">
+                <h4>${product.name}</h4>
+                <div class="stars" data-product-id="${product.id}">
+                    ${[...Array(5)].map(() => '<i class="fa fa-star"></i>').join("")}
+                </div>
+            </div>
+        `;
+        productRatingContainer.appendChild(productDiv);
+    });
+
+    // Star click event
+    productRatingContainer.addEventListener("click", (event) => {
+        if (event.target.classList.contains("fa-star")) {
+            const stars = event.target.parentElement.children;
+            const index = Array.from(stars).indexOf(event.target);
+            for (let i = 0; i < stars.length; i++) {
+                stars[i].classList.toggle("active", i <= index);
+            }
+        }
+    });
+
+    // Submit Ratings
+    submitRating.addEventListener("click", () => {
+        // Collect data and submit via PHP (AJAX or Form)
+        alert("Ratings submitted successfully!");
+        ratePopup.style.display = "none";
+    });
+
+    // Close Popup
+    closePopup.addEventListener("click", () => {
+        ratePopup.style.display = "none";
+    });
+
+    // Open Popup (add this to your button event)
+    ratePopup.style.display = "block";
+});
 </script>
 
 </body>
