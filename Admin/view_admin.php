@@ -195,15 +195,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                 </table>
             </div>
 
-            <!-- Recent Activity Section -->
-            <div class="recent-activity">
-                <h2>Recent Activity</h2>
-                <ul>
-                    <li>User John Doe logged in at 10:30 AM</li>
-                    <li>User Jane Smith updated their profile at 11:15 AM</li>
-                    <li>New user registered at 12:00 PM</li>
-                </ul>
-            </div>
+
+
         </section>
     </main>
 </body>
