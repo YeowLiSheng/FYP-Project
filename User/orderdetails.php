@@ -368,116 +368,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
     background: #0056b3;
 }
 
-.rating-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none; /* 默认隐藏 */
-    justify-content: center;
-    align-items: center;
-}
-
-/* 弹窗容器 */
-.rating-popup {
-    background: #ffffff;
-    width: 500px;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
-    position: relative;
-    animation: fadeIn 0.3s ease-in-out;
-    text-align: center;
-}
-
-/* 关闭按钮 */
-.rating-popup .close-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 20px;
-    cursor: pointer;
-    color: #888;
-    transition: color 0.3s ease;
-}
-
-.rating-popup .close-btn:hover {
-    color: #333;
-}
-
-/* 标题样式 */
-.rating-popup h2 {
-    margin: 0;
-    margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
-}
-
-/* 星星评分 */
-.stars {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-}
-
-.stars i {
-    font-size: 30px;
-    margin: 0 5px;
-    color: #ccc;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.stars i:hover,
-.stars i.active {
-    color: #ffc107;
-}
-
-/* 文本框样式 */
-.rating-popup textarea {
-    width: 100%;
-    height: 100px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 14px;
-    resize: none;
-    outline: none;
-    margin-bottom: 20px;
-}
-
-/* 提交按钮 */
-.rating-popup .submit-rating {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.rating-popup .submit-rating:hover {
-    background: #0056b3;
-}
-
-/* 弹窗动画 */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
 </style>
 </head>
@@ -849,34 +739,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
 
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
-	<a href="#" class="print-button" onclick="openRatingPopup()">⭐ Rate Your Product</a>
+	<button class="rate-button" onclick="showRatingPopup()">⭐ Rate Order</button>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 </div>
 </div>
 
-<div class="rating-overlay" id="ratingOverlay">
-    <div class="rating-popup">
-        <span class="close-btn" onclick="closeRatingPopup()">×</span>
-        <h2>Rate Your Product</h2>
-        <p>Please provide your feedback for <strong id="productName">Product Name</strong></p>
-
-        <!-- 星星评分 -->
-        <div class="stars" id="ratingStars">
-            <i class="fa fa-star" data-rating="1"></i>
-            <i class="fa fa-star" data-rating="2"></i>
-            <i class="fa fa-star" data-rating="3"></i>
-            <i class="fa fa-star" data-rating="4"></i>
-            <i class="fa fa-star" data-rating="5"></i>
-        </div>
-
-        <!-- 评论 -->
-        <textarea placeholder="Write your review here..."></textarea>
-
-        <!-- 提交按钮 -->
-        <button class="submit-rating" onclick="submitRating()">Submit</button>
+<div id="ratingPopup" class="popup">
+    <div class="popup-content">
+        <h2>Rate Your Products</h2>
+        <span class="close" onclick="closeRatingPopup()">&times;</span>
+        <form method="POST" action="">
+            <?php
+            $details_result->data_seek(0); // 重置结果集游标
+            while ($detail = $details_result->fetch_assoc()) { ?>
+                <div class="rating-item">
+                    <img src="images/<?= $detail['product_image'] ?>" class="product-image-small">
+                    <div class="rating-info">
+                        <h4><?= $detail['product_name'] ?></h4>
+                        <label>Rating:</label>
+                        <select name="rating[<?= $detail['product_id'] ?>]" required>
+                            <option value="" disabled selected>Choose...</option>
+                            <option value="1">⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                        </select>
+                        <textarea name="comment[<?= $detail['product_id'] ?>]" placeholder="Leave a comment"></textarea>
+                    </div>
+                </div>
+            <?php } ?>
+            <button type="submit" class="submit-button">Submit Ratings</button>
+        </form>
     </div>
 </div>
-
 
 <!-- Footer -->
 <footer class="bg3 p-t-75 p-b-32">
@@ -1304,41 +1200,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-// 打开弹窗
-function openRatingPopup() {
-    document.getElementById('ratingOverlay').style.display = 'flex';
+function showRatingPopup() {
+    document.getElementById("ratingPopup").style.display = "flex";
 }
 
-// 关闭弹窗
 function closeRatingPopup() {
-    document.getElementById('ratingOverlay').style.display = 'none';
-}
-
-// 星星评分逻辑
-const stars = document.querySelectorAll('.stars i');
-stars.forEach(star => {
-    star.addEventListener('click', () => {
-        stars.forEach(s => s.classList.remove('active'));
-        star.classList.add('active');
-        for (let i = 0; i < star.dataset.rating; i++) {
-            stars[i].classList.add('active');
-        }
-    });
-});
-
-// 提交逻辑
-function submitRating() {
-    const rating = document.querySelectorAll('.stars i.active').length;
-    const review = document.querySelector('.rating-popup textarea').value;
-
-    if (rating === 0) {
-        alert('Please select a rating.');
-        return;
-    }
-
-    // 模拟表单提交，或者使用 Ajax 提交数据到服务器
-    alert(`Thank you for rating ${rating} stars and your review: "${review}"!`);
-    closeRatingPopup();
+    document.getElementById("ratingPopup").style.display = "none";
 }
 </script>
 
