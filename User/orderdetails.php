@@ -87,6 +87,21 @@ $details_stmt = $conn->prepare("
 $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'])) {
+    foreach ($_POST['rating'] as $product_id => $rating) {
+        $comment = $_POST['comment'][$product_id] ?? '';
+        $stmt = $conn->prepare("
+            INSERT INTO feedback (rating, comment, user_id, product_id, order_id)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->bind_param("isiii", $rating, $comment, $user_id, $product_id, $order_id);
+        $stmt->execute();
+    }
+    echo "<script>alert('Thank you for your feedback!');</script>";
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -285,6 +300,75 @@ $details_result = $details_stmt->get_result();
         margin: 8px 0;
         font-weight: bold;
     }
+
+	.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 60%;
+    max-width: 500px;
+    position: relative;
+    animation: fadeIn 0.3s;
+}
+
+.popup-content h2 {
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.popup-content .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.rating-item {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.rating-info {
+    margin-left: 15px;
+    flex: 1;
+}
+
+.product-image-small {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.submit-button {
+    background: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.submit-button:hover {
+    background: #0056b3;
+}
+
+
 </style>
 </head>
 <body class="animsition">
@@ -655,8 +739,39 @@ $details_result = $details_stmt->get_result();
 
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
+	<button class="rate-button" onclick="showRatingPopup()">⭐ Rate Order</button>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 </div>
+</div>
+
+<div id="ratingPopup" class="popup">
+    <div class="popup-content">
+        <h2>Rate Your Products</h2>
+        <span class="close" onclick="closeRatingPopup()">&times;</span>
+        <form method="POST" action="">
+            <?php
+            $details_result->data_seek(0); // 重置结果集游标
+            while ($detail = $details_result->fetch_assoc()) { ?>
+                <div class="rating-item">
+                    <img src="images/<?= $detail['product_image'] ?>" class="product-image-small">
+                    <div class="rating-info">
+                        <h4><?= $detail['product_name'] ?></h4>
+                        <label>Rating:</label>
+                        <select name="rating[<?= $detail['product_id'] ?>]" required>
+                            <option value="" disabled selected>Choose...</option>
+                            <option value="1">⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                        </select>
+                        <textarea name="comment[<?= $detail['product_id'] ?>]" placeholder="Leave a comment"></textarea>
+                    </div>
+                </div>
+            <?php } ?>
+            <button type="submit" class="submit-button">Submit Ratings</button>
+        </form>
+    </div>
 </div>
 
 <!-- Footer -->
@@ -1084,5 +1199,15 @@ $details_result = $details_stmt->get_result();
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script>
+function showRatingPopup() {
+    document.getElementById("ratingPopup").style.display = "flex";
+}
+
+function closeRatingPopup() {
+    document.getElementById("ratingPopup").style.display = "none";
+}
+</script>
+
 </body>
 </html>
