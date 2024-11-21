@@ -87,6 +87,42 @@ $details_stmt = $conn->prepare("
 $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
+
+
+if (isset($_POST['submit_feedback'])) {
+    $product_id = intval($_POST['product_id']);
+    $order_id = intval($_POST['order_id']);
+    $rating = intval($_POST['rating']);
+    $comment = $_POST['comment'];
+    $image = "";
+
+    // 处理图片上传
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $image = 'uploads/' . basename($_FILES['image']['name']);
+        move_uploaded_file($_FILES['image']['tmp_name'], $image);
+    }
+
+    // 检查是否已有反馈记录
+    $check_stmt = $conn->prepare("SELECT feedback_id FROM feedback WHERE user_id = ? AND product_id = ? AND order_id = ?");
+    $check_stmt->bind_param("iii", $user_id, $product_id, $order_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+
+    if ($check_result->num_rows > 0) {
+        // 更新反馈
+        $update_stmt = $conn->prepare("UPDATE feedback SET rating = ?, comment = ?, image = ? WHERE user_id = ? AND product_id = ? AND order_id = ?");
+        $update_stmt->bind_param("issiii", $rating, $comment, $image, $user_id, $product_id, $order_id);
+        $update_stmt->execute();
+    } else {
+        // 插入新反馈
+        $insert_stmt = $conn->prepare("INSERT INTO feedback (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
+        $insert_stmt->bind_param("issiii", $rating, $comment, $image, $user_id, $product_id, $order_id);
+        $insert_stmt->execute();
+    }
+
+    echo "<script>alert('Feedback submitted successfully!');</script>";
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -631,20 +667,60 @@ $details_result = $details_stmt->get_result();
                 </tr>
             </thead>
             <tbody>
-                <?php while ($detail = $details_result->fetch_assoc()) { ?>
+				<?php while ($detail = $details_result->fetch_assoc()) { 
+        		// 检查当前用户是否已经对该产品评价
+        		$feedback_stmt = $conn->prepare("
+            	SELECT rating, comment, image FROM feedback
+            	WHERE user_id = ? AND product_id = ? AND order_id = ?
+        		");
+        		$feedback_stmt->bind_param("iii", $user_id, $detail['product_id'], $order_id);
+        		$feedback_stmt->execute();
+        		$feedback_result = $feedback_stmt->get_result();
+        		$feedback = $feedback_result->fetch_assoc();
+    			?>
                 <tr>
                     <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
                     <td><?= $detail['product_name'] ?></td>
                     <td><?= $detail['quantity'] ?></td>
                     <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
                     <td>RM <?= number_format($detail['total_price'], 2) ?></td>
+					<td>
+            		<?php if ($feedback) { ?>
+                	<!-- 已评价 -->
+                	<a href="javascript:void(0)" onclick="showFeedbackForm(<?= $detail['product_id'] ?>, <?= $order_id ?>, 'edit')">View Comment</a>
+            		<?php } else { ?>
+                	<!-- 未评价 -->
+                	<a href="javascript:void(0)" onclick="showFeedbackForm(<?= $detail['product_id'] ?>, <?= $order_id ?>, 'rate')">Rate</a>
+            		<?php } ?>
+        			</td>
                 </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
 
-    <!-- 价格明细 -->
+
+	<div id="feedbackModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); z-index:1000;">
+    <form method="post" enctype="multipart/form-data">
+        <h3 id="feedbackTitle">Rate Product</h3>
+        <input type="hidden" name="product_id" id="feedbackProductId">
+        <input type="hidden" name="order_id" id="feedbackOrderId">
+        <label for="rating">Rating (1-5):</label>
+        <input type="number" id="rating" name="rating" min="1" max="5" required>
+        <br><br>
+        <label for="comment">Comment:</label><br>
+        <textarea id="comment" name="comment" rows="4" cols="30" required></textarea>
+        <br><br>
+        <label for="image">Upload Image:</label>
+        <input type="file" id="image" name="image" accept="image/*">
+        <br><br>
+        <button type="submit" name="submit_feedback">Submit</button>
+        <button type="button" onclick="closeFeedbackForm()">Cancel</button>
+    </form>
+	</div>
+	<div id="modalBackdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>	
+    
+	<!-- 价格明细 -->
     <div class="card">
         <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
@@ -1084,5 +1160,19 @@ $details_result = $details_stmt->get_result();
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+<script>
+	function showFeedbackForm(productId, orderId, mode) {
+    document.getElementById('feedbackModal').style.display = 'block';
+    document.getElementById('modalBackdrop').style.display = 'block';
+    document.getElementById('feedbackProductId').value = productId;
+    document.getElementById('feedbackOrderId').value = orderId;
+    document.getElementById('feedbackTitle').textContent = mode === 'rate' ? 'Rate Product' : 'Edit Comment';
+}
+
+function closeFeedbackForm() {
+    document.getElementById('feedbackModal').style.display = 'none';
+    document.getElementById('modalBackdrop').style.display = 'none';
+}
+</script>
 </body>
 </html>
