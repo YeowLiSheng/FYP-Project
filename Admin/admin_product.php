@@ -446,7 +446,7 @@ function add_check() {
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
                                         <label for="tags">Tags:</label>
-                                        <input type="text" class="form-control" id="tags" name="tags" placeholder="e.g., electronics, home appliance">
+                                        <input type="text" class="form-control" id="tags" name="tags" placeholder="e.g., Fashion, Lifestyle">
                                     </div>
                                 </div>
 
@@ -514,7 +514,7 @@ function add_check() {
                                     <div class="form-group mb-4">
                                         <label class="form-label" for="price">Price:</label>
                                         <div class="input-group mb-3">
-                                            <span class="input-group-text">RM</span>
+                                            <span class="input-group-text">USD</span>
                                             <input type="text" class="form-control" id="price" name="price"
                                                 placeholder="00.00">
                                         </div>
@@ -549,7 +549,10 @@ function add_check() {
         <?php
         $query = "SELECT 
          product.product_id, 
-         product.product_name, 
+         product.product_name,
+         product.Quick_view1,
+         product.Quick_view2,
+         product.Quick_view3,
          product.product_des AS product_desc, 
          product.product_image AS image, 
          product.product_price AS price, 
@@ -661,7 +664,7 @@ function add_check() {
                                             <!-- Modal body -->
                                             <div class="modal-body">
                                                 <div class="up">
-                                                    <img src="../images/<?php echo $row['image'] ?>"
+                                                    <img src="../User/images/?php echo $row['image'] ?>"
                                                         style="max-height:200px; width:auto;display: block;margin-left: auto; margin-right: auto;" />
                                                     <hr>
                                                     <div class="p_info">
@@ -689,7 +692,7 @@ function add_check() {
                                                                     <label style="margin-right:5px;">
                                                                         <b>Category</b>
                                                                     </label>
-                                                                    <?php echo str_replace("_", " ", $row['category']); ?>
+                                                                    <?php echo str_replace("_", " ", $row['category_name']); ?>
                                                                 </div>
                                                             </div>
                                                             <div class="v_right" style="margin-left:22px;">
@@ -735,7 +738,7 @@ function add_check() {
 
                                     <!-- First table row -->
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
-                                        <img src="../image/<?php echo $row['image'] ?>" style="max-height:100px; max-width:auto;" />
+                                        <img src="../User/images/?php echo $row['image'] ?>" style="max-height:100px; max-width:auto;" />
                                     </td>
 
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
@@ -751,7 +754,7 @@ function add_check() {
                                     </td>
 
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
-                                        <?php echo str_replace("_", " ", $row['category']); ?>
+                                        <?php echo str_replace("_", " ", $row['category_name']); ?>
                                     </td>
 
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">

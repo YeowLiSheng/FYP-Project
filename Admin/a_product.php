@@ -5,8 +5,6 @@ session_start();
 //add product
 if (isset($_POST["save_product"])) {
     $pd = $_POST["product_name"];
-    $b = $_POST["brand"];
-    $type = $_POST["radio"];
     $c = $_POST["cate"];
     $d = $_POST["desc"];
     $img = $_POST["img"];
