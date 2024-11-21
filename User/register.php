@@ -115,20 +115,30 @@
             margin-right: 10px;
         }
 
-		.eye-icon {
-			cursor: pointer;
-			position: absolute;
-			right: 15px;
-			top: 35%;
-			font-size: 20px; /* Increase icon size */
-			color: #007bff; /* Set a pleasant color */
-			transition: transform 0.3s ease, color 0.3s ease;
-		}
+	
+.eye-icon {
+    position: absolute;
+    right: 10px; /* Space from the right edge */
+    top: 50px;
+    transform: translateY(-50%); /* Center vertically */
+    cursor: pointer; /* Pointer cursor for the eye icon */
+    font-size: 18px; /* Increase the font size */
+    color: #888; /* Default color */
+    transition: color 0.3s ease; /* Smooth transition */
+}
 
-		.eye-icon:hover {
-			color: #0056b3; /* Change color on hover */
-			transform: scale(1.2); /* Add a slight zoom effect */
-		}
+.eye-icon:hover {
+    color: #333; /* Darker color on hover */
+}
+
+.eye-icon i {
+    font-size: 20px; /* Adjust size if necessary */
+    transition: transform 0.3s ease; /* Smooth transformation */
+}
+
+.eye-icon.clicked i {
+    transform: rotate(180deg); /* Flip the eye icon when clicked */
+}
 
 		input[type="password"]:focus + .eye-icon, 
 		input[type="text"]:focus + .eye-icon {

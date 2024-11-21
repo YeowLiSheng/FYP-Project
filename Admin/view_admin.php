@@ -163,11 +163,9 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 echo "<td>" . $row['admin_name'] . "</td>";
                                 echo "<td>" . $row['admin_email'] . "</td>";
 
-
-
-                                // Add Delete button with confirmation for superadmins
+                                // Add View button linking to admin_detail.php
                                 echo "<td>";
-                                echo "<button>View Details</button>";
+                                echo "<button onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\">View Details</button>";
                                 
                                 if ($admin_id === 'superadmin') {
                                     // Check if the staff_id is not the same as the logged-in admin's ID
@@ -182,9 +180,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 }
                                 echo "</td>";
                                 
-
-
-                                
                                 echo "</tr>";
                             }
                         } else {
@@ -194,11 +189,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                     </tbody>
                 </table>
             </div>
-
-
-
         </section>
     </main>
 </body>
 </html>
-

@@ -83,13 +83,29 @@ a {
         }
 
         /* Eye icon styling */
+
         .eye-icon {
             position: absolute;
-            top: 60%;
-            right: 20px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #00796b;
+            right: 25px; /* Space from the right edge */
+            top: 50px;
+            transform: translateY(-50%); /* Center vertically */
+            cursor: pointer; /* Pointer cursor for the eye icon */
+            font-size: 18px; /* Increase the font size */
+            color: #888; /* Default color */
+            transition: color 0.3s ease; /* Smooth transition */
+        }
+
+        .eye-icon:hover {
+            color: #333; /* Darker color on hover */
+        }
+
+        .eye-icon i {
+            font-size: 20px; /* Adjust size if necessary */
+            transition: transform 0.3s ease; /* Smooth transformation */
+        }
+
+        .eye-icon.clicked i {
+            transform: rotate(180deg); /* Flip the eye icon when clicked */
         }
 
         /* Button styling */
