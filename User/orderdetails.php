@@ -89,40 +89,32 @@ $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
 
-if (isset($_POST['submit_feedback'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $user_id = $_SESSION['id'];
     $product_id = intval($_POST['product_id']);
     $order_id = intval($_POST['order_id']);
     $rating = intval($_POST['rating']);
     $comment = $_POST['comment'];
-    $image = "";
+    $image_path = "";
 
-    // 处理图片上传
-    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $image = 'uploads/' . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $image);
+    if (!empty($_FILES['image']['name'])) {
+        $image_path = "uploads/" . basename($_FILES['image']['name']);
+        move_uploaded_file($_FILES['image']['tmp_name'], $image_path);
     }
 
-    // 检查是否已有反馈记录
-    $check_stmt = $conn->prepare("SELECT feedback_id FROM feedback WHERE user_id = ? AND product_id = ? AND order_id = ?");
-    $check_stmt->bind_param("iii", $user_id, $product_id, $order_id);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
-
-    if ($check_result->num_rows > 0) {
-        // 更新反馈
-        $update_stmt = $conn->prepare("UPDATE feedback SET rating = ?, comment = ?, image = ? WHERE user_id = ? AND product_id = ? AND order_id = ?");
-        $update_stmt->bind_param("issiii", $rating, $comment, $image, $user_id, $product_id, $order_id);
-        $update_stmt->execute();
+    $stmt = $conn->prepare("
+        INSERT INTO feedback (rating, comment, image, user_id, product_id, order_id) 
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE rating = ?, comment = ?, image = ?
+    ");
+    $stmt->bind_param("isssiiiis", $rating, $comment, $image_path, $user_id, $product_id, $order_id, $rating, $comment, $image_path);
+    if ($stmt->execute()) {
+        echo "Feedback submitted successfully!";
     } else {
-        // 插入新反馈
-        $insert_stmt = $conn->prepare("INSERT INTO feedback (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("issiii", $rating, $comment, $image, $user_id, $product_id, $order_id);
-        $insert_stmt->execute();
+        echo "Error: " . $stmt->error;
     }
-
-    echo "<script>alert('Feedback submitted successfully!');</script>";
+    $stmt->close();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -321,6 +313,84 @@ if (isset($_POST['submit_feedback'])) {
         margin: 8px 0;
         font-weight: bold;
     }
+	.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: #fff;
+    width: 400px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.star {
+    font-size: 30px;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.star:hover,
+.star.active {
+    color: #ffcc00;
+}
+
+textarea {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 15px;
+    resize: none;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+input[type="file"] {
+    margin-bottom: 15px;
+}
+
+.modal-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+.modal-buttons .submit-btn {
+    background: #28a745;
+    color: #fff;
+}
+
+.modal-buttons .close-btn {
+    background: #dc3545;
+    color: #fff;
+}
 </style>
 </head>
 <body class="animsition">
@@ -667,59 +737,56 @@ if (isset($_POST['submit_feedback'])) {
                 </tr>
             </thead>
             <tbody>
-				<?php while ($detail = $details_result->fetch_assoc()) { 
-        		// 检查当前用户是否已经对该产品评价
-        		$feedback_stmt = $conn->prepare("
-            	SELECT rating, comment, image FROM feedback
-            	WHERE user_id = ? AND product_id = ? AND order_id = ?
-        		");
-        		$feedback_stmt->bind_param("iii", $user_id, $detail['product_id'], $order_id);
-        		$feedback_stmt->execute();
-        		$feedback_result = $feedback_stmt->get_result();
-        		$feedback = $feedback_result->fetch_assoc();
-    			?>
-                <tr>
-                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
-                    <td><?= $detail['product_name'] ?></td>
-                    <td><?= $detail['quantity'] ?></td>
-                    <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
-                    <td>RM <?= number_format($detail['total_price'], 2) ?></td>
-					<td>
-            		<?php if ($feedback) { ?>
-                	<!-- 已评价 -->
-                	<a href="javascript:void(0)" onclick="showFeedbackForm(<?= $detail['product_id'] ?>, <?= $order_id ?>, 'edit')">View Comment</a>
-            		<?php } else { ?>
-                	<!-- 未评价 -->
-                	<a href="javascript:void(0)" onclick="showFeedbackForm(<?= $detail['product_id'] ?>, <?= $order_id ?>, 'rate')">Rate</a>
-            		<?php } ?>
-        			</td>
-                </tr>
-                <?php } ?>
+			<?php while ($detail = $details_result->fetch_assoc()) { ?>
+<tr>
+    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
+    <td><?= $detail['product_name'] ?></td>
+    <td><?= $detail['quantity'] ?></td>
+    <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
+    <td>RM <?= number_format($detail['total_price'], 2) ?></td>
+    <td>
+        <?php
+        // 检查用户是否已评价
+        $feedback_stmt = $conn->prepare("
+            SELECT * FROM feedback 
+            WHERE user_id = ? AND product_id = ? AND order_id = ?
+        ");
+        $feedback_stmt->bind_param("iii", $user_id, $detail['product_id'], $order_id);
+        $feedback_stmt->execute();
+        $feedback = $feedback_stmt->get_result()->fetch_assoc();
+
+        if ($feedback) { ?>
+            <button class="rating-button view-button" onclick="openViewComment(<?= $feedback['feedback_id'] ?>)">View Comment</button>
+        <?php } else { ?>
+            <button class="rating-button rate-button" onclick="openRatingForm(<?= $detail['product_id'] ?>, <?= $order_id ?>)">Rate Product</button>
+        <?php } ?>
+    </td>
+</tr>
+<?php } ?>
             </tbody>
         </table>
     </div>
 
 
-	<div id="feedbackModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.2); z-index:1000;">
-    <form method="post" enctype="multipart/form-data">
-        <h3 id="feedbackTitle">Rate Product</h3>
-        <input type="hidden" name="product_id" id="feedbackProductId">
-        <input type="hidden" name="order_id" id="feedbackOrderId">
-        <label for="rating">Rating (1-5):</label>
-        <input type="number" id="rating" name="rating" min="1" max="5" required>
-        <br><br>
-        <label for="comment">Comment:</label><br>
-        <textarea id="comment" name="comment" rows="4" cols="30" required></textarea>
-        <br><br>
-        <label for="image">Upload Image:</label>
-        <input type="file" id="image" name="image" accept="image/*">
-        <br><br>
-        <button type="submit" name="submit_feedback">Submit</button>
-        <button type="button" onclick="closeFeedbackForm()">Cancel</button>
-    </form>
+	<div class="modal-overlay" id="rating-modal">
+    <div class="modal">
+        <h2>Rate This Product</h2>
+        <div class="star-rating" id="stars">
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="2">&#9733;</span>
+            <span class="star" data-value="3">&#9733;</span>
+            <span class="star" data-value="4">&#9733;</span>
+            <span class="star" data-value="5">&#9733;</span>
+        </div>
+        <textarea id="comment" placeholder="Write your comment here..."></textarea>
+        <input type="file" id="image-upload" accept="image/*">
+        <div class="modal-buttons">
+            <button class="submit-btn" onclick="submitFeedback()">Submit</button>
+            <button class="close-btn" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
 	</div>
-	<div id="modalBackdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>	
-    
+
 	<!-- 价格明细 -->
     <div class="card">
         <h2><span class="icon">💰</span>Pricing Details</h2>
@@ -1161,18 +1228,62 @@ if (isset($_POST['submit_feedback'])) {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 <script>
-	function showFeedbackForm(productId, orderId, mode) {
-    document.getElementById('feedbackModal').style.display = 'block';
-    document.getElementById('modalBackdrop').style.display = 'block';
-    document.getElementById('feedbackProductId').value = productId;
-    document.getElementById('feedbackOrderId').value = orderId;
-    document.getElementById('feedbackTitle').textContent = mode === 'rate' ? 'Rate Product' : 'Edit Comment';
+let selectedRating = 0;
+
+document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function () {
+        selectedRating = this.getAttribute('data-value');
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+        this.classList.add('active');
+        for (let i = 0; i < selectedRating; i++) {
+            document.querySelectorAll('.star')[i].classList.add('active');
+        }
+    });
+});
+
+function openRatingForm(productId, orderId) {
+    document.getElementById('rating-modal').style.display = 'flex';
+    document.getElementById('rating-modal').dataset.productId = productId;
+    document.getElementById('rating-modal').dataset.orderId = orderId;
 }
 
-function closeFeedbackForm() {
-    document.getElementById('feedbackModal').style.display = 'none';
-    document.getElementById('modalBackdrop').style.display = 'none';
+function closeModal() {
+    document.getElementById('rating-modal').style.display = 'none';
+    selectedRating = 0;
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
 }
+
+function submitFeedback() {
+    const productId = document.getElementById('rating-modal').dataset.productId;
+    const orderId = document.getElementById('rating-modal').dataset.orderId;
+    const comment = document.getElementById('comment').value;
+    const imageFile = document.getElementById('image-upload').files[0];
+
+    if (selectedRating === 0) {
+        alert("Please select a rating!");
+        return;
+    }
+
+    // 简单表单提交
+    const formData = new FormData();
+    formData.append('rating', selectedRating);
+    formData.append('comment', comment);
+    formData.append('image', imageFile);
+    formData.append('product_id', productId);
+    formData.append('order_id', orderId);
+
+    fetch('submit_feedback.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert(data);
+        closeModal();
+    })
+    .catch(err => console.error(err));
+}
+
 </script>
 </body>
 </html>
