@@ -87,40 +87,6 @@ $details_stmt = $conn->prepare("
 $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $rating = intval($_POST['rating']);
-    $comment = htmlspecialchars($_POST['comment']);
-    $product_id = intval($_POST['product_id']);
-    $image = '';
-
-    // 处理图片上传
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = 'uploads/';
-        $image = basename($_FILES['image']['name']);
-        $uploadPath = $uploadDir . $image;
-
-        if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
-            echo "Failed to upload image.";
-            exit;
-        }
-    }
-
-    // 插入数据到 feedback 表
-    $feedback_stmt = $conn->prepare("
-        INSERT INTO feedback (rating, comment, image, user_id, product_id, order_id) 
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
-    $feedback_stmt->bind_param("issiii", $rating, $comment, $image, $current_user_id, $product_id, $order_id);
-    
-    if ($feedback_stmt->execute()) {
-        echo "<script>alert('Feedback submitted successfully!');</script>";
-    } else {
-        echo "<script>alert('Failed to submit feedback.');</script>";
-    }
-}
-
-
 ?>
 
 <!DOCTYPE html>
@@ -319,94 +285,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         margin: 8px 0;
         font-weight: bold;
     }
-
-	.rate-button {
-        background-color: #ffca28;
-        color: #fff;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-        margin-right: 10px;
-    }
-
-    .rate-button:hover {
-        background-color: #ff9800;
-    }
-
-    .popup-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .popup {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 30px;
-        width: 400px;
-        max-width: 90%;
-        text-align: center;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .close-popup {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
-        cursor: pointer;
-    }
-
-    .popup h2 {
-        font-size: 1.5rem;
-        margin-bottom: 15px;
-    }
-
-    .popup label {
-        display: block;
-        text-align: left;
-        margin: 10px 0 5px;
-        font-size: 14px;
-        font-weight: bold;
-        color: #555;
-    }
-
-    .popup input, .popup textarea, .popup select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        margin-bottom: 15px;
-        font-size: 14px;
-    }
-
-    .submit-button {
-        background: #4caf50;
-        color: #fff;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    .submit-button:hover {
-        background: #388e3c;
-    }
-
 </style>
 </head>
 <body class="animsition">
@@ -777,39 +655,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
-	<a href="#" class="rate-button" onclick="openRatingPopup()">🌟 Rate & Comment</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 </div>
 </div>
-
-<!-- Rating Popup -->
-<div class="popup-overlay" id="ratingPopup">
-    <div class="popup">
-        <span class="close-popup" onclick="closeRatingPopup()">&times;</span>
-        <h2>Rate & Comment</h2>
-        <p>Please provide your feedback for the product.</p>
-        <form id="ratingForm" method="POST" enctype="multipart/form-data">
-            <label for="productSelect">Select Product:</label>
-            <select id="productSelect" name="product_id" required>
-                <?php foreach ($details_result as $product) { ?>
-                    <option value="<?= $product['product_id'] ?>"><?= $product['product_name'] ?></option>
-                <?php } ?>
-            </select>
-
-            <label for="rating">Rating (1 to 5):</label>
-            <input type="number" id="rating" name="rating" min="1" max="5" required>
-
-            <label for="comment">Comment:</label>
-            <textarea id="comment" name="comment" rows="4" placeholder="Write your comment here..."></textarea>
-
-            <label for="imageUpload">Upload Image:</label>
-            <input type="file" id="imageUpload" name="image" accept="image/*">
-
-            <button type="submit" class="submit-button">Submit Feedback</button>
-        </form>
-    </div>
-</div>
-
 
 <!-- Footer -->
 <footer class="bg3 p-t-75 p-b-32">
@@ -1236,15 +1084,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script>
- function openRatingPopup() {
-        document.getElementById('ratingPopup').style.display = 'flex';
-    }
-
-    function closeRatingPopup() {
-        document.getElementById('ratingPopup').style.display = 'none';
-    }
-</script>
-
 </body>
 </html>
