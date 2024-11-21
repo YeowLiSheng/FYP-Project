@@ -664,7 +664,7 @@ function add_check() {
                                             <!-- Modal body -->
                                             <div class="modal-body">
                                                 <div class="up">
-                                                    <img src="../User/images/?php echo $row['image'] ?>"
+                                                    <img src="../User/images/<?php echo $row['image'] ?>"
                                                         style="max-height:200px; width:auto;display: block;margin-left: auto; margin-right: auto;" />
                                                     <hr>
                                                     <div class="p_info">
@@ -738,7 +738,7 @@ function add_check() {
 
                                     <!-- First table row -->
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
-                                        <img src="../User/images/?php echo $row['image'] ?>" style="max-height:100px; max-width:auto;" />
+                                        <img src="../User/images/<?php echo $row['image'] ?>" style="max-height:100px; max-width:auto;" />
                                     </td>
 
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
