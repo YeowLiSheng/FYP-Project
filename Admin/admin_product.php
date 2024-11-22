@@ -11,6 +11,22 @@
     });
 </script>
 <style>
+    /* Styling for the table headers */
+#myTable th {
+    background-color: #333; /* Dark background color */
+    color: #fff; /* White text color */
+    padding: 10px; /* Add padding for better spacing */
+    text-align: left; /* Align text to the left */
+    font-weight: bold; /* Make the text bold */
+    border-bottom: 2px solid #555; /* Add a border at the bottom */
+}
+
+/* Optional: Add hover effect for better UX */
+#myTable th:hover {
+    background-color: #444; /* Slightly lighter dark color on hover */
+    cursor: pointer; /* Show pointer cursor for interactivity */
+}
+
     .card {
         padding: 16px;
     }
