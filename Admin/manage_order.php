@@ -131,7 +131,7 @@ include  'admin_sidebar.php';
                                 </td>
                                 <td>
                                     <?php echo
-                                     $row_add["shipping_address"]; ?>
+                                     $row["shipping_address"]; ?>
                                 </td>
 
                                 <td>
