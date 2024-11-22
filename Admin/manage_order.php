@@ -101,17 +101,17 @@ include  'admin_sidebar.php';
                 </thead>
                 <tbody id="table-body">
                     <?php
-                    $q = "SELECT *,user_information.user_name 
-                    FROM order_ 
-                    JOIN user_information ON order_.user_id = user_information.ID;                                
+                    $order = "SELECT *,user.user_name 
+                    FROM orders 
+                    JOIN user ON orders.user_id = user.user_id;                                
                     ";
-                    $result = mysqli_query($connect, $q);
+                    $result = mysqli_query($connect, $order);
                     $count = mysqli_num_rows($result);
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
                             $user_id = $row["user_id"];
-                            $user = "SELECT * FROM user_information WHERE ID = '$user_id'";
+                            $user = "SELECT * FROM user WHERE user_id = '$user_id'";
                             $user_run = mysqli_query($connect, $user);
                             $row_user = mysqli_fetch_assoc($user_run);
 
@@ -131,7 +131,7 @@ include  'admin_sidebar.php';
                                     <!-- </div> -->
                                 </td>
                                 <td>
-                                    <?php echo $row["time_status"] ?>
+                                    <?php echo $row["order_date"] ?>
                                 </td>
                                 <td>
                                     <?php echo
@@ -140,11 +140,11 @@ include  'admin_sidebar.php';
                                 </td>
 
                                 <td>
-                                    RM<?php echo number_format($row["total_amount"], 2); ?>
+                                    RM<?php echo number_format($row["final_amount"], 2); ?>
 
                                 </td>
                                 <td>
-                                    <?php echo $row["delivery_status"] ?>
+                                    <?php echo $row["order_status"] ?>
                                 </td>
                             </tr>
                             <?php
