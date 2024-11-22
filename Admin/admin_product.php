@@ -1,4 +1,17 @@
-<?php include 'dataconnection.php' ?>
+<?php 
+    include 'dataconnection.php';
+    $sql = "SELECT category_id FROM product"; 
+    $result = $connect->query($sql);
+
+    $categoryCounts = [1 => 0, 2 => 0, 3 => 0];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            if (isset($categoryCounts[$row['category_id']])) {
+                $categoryCounts[$row['category_id']]++;
+            }
+        }
+    } 
+?>
 <?php include 'admin_sidebar.php' ?>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css" />
@@ -12,20 +25,19 @@
 </script>
 <style>
     /* Styling for the table headers */
-#myTable th {
-    background-color: #333; /* Dark background color */
-    color: #fff; /* White text color */
-    padding: 10px; /* Add padding for better spacing */
-    text-align: left; /* Align text to the left */
-    font-weight: bold; /* Make the text bold */
-    border-bottom: 2px solid #555; /* Add a border at the bottom */
-}
+    #myTable th {
+        background-color: #333; /* Dark background color */
+        color: #fff; /* White text color */
+        padding: 10px; /* Add padding for better spacing */
+        text-align: left; /* Align text to the left */
+        font-weight: bold; /* Make the text bold */
+        border-bottom: 2px solid #555; /* Add a border at the bottom */
+    }
 
-/* Optional: Add hover effect for better UX */
-#myTable th:hover {
-    background-color: #444; /* Slightly lighter dark color on hover */
-    cursor: pointer; /* Show pointer cursor for interactivity */
-}
+    #myTable th:hover {
+        background-color: #444; /* Slightly lighter dark color on hover */
+        cursor: pointer; /* Show pointer cursor for interactivity */
+    }
 
     .card {
         padding: 16px;
@@ -119,6 +131,69 @@
     .filter label {
         margin: 0 10px 0 10px;
     }
+    #category-boxes {
+    display: flex;
+    justify-content: space-around; /* Ensures even spacing between boxes */
+    align-items: center;
+    gap: 20px; /* Adjust space between boxes */
+    padding: 20px;
+}
+
+.category-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 150px; /* Adjust the size to make it square */
+    height: 150px; /* Same as width for a square shape */
+    background-color: #f4f4f4; /* Light gray background */
+    border: 2px solid #ddd; /* Light border */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a shadow */
+    text-align: center;
+    font-family: Arial, sans-serif;
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth hover effect */
+}
+
+.category-box:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+.category-box span.icon-cat {
+    font-size: 38px; /* Icon size */
+    margin-bottom: 2px;
+    margin-top: 10px;
+    color: #333; /* Icon color */
+}
+
+.category-box span {
+    font-size: 18px; /* Count font size */
+    color: #555;
+}
+
+.category-box p {
+    font-size: 20px; /* Category name font size */
+    color: black;
+    margin-top: 5px;
+}
+
+#category-container {
+    text-align: center; /* Center-aligns the title and boxes */
+    padding: 20px;
+    border: 2px solid black;
+    border-radius: 10px;
+    margin-top: 40px;
+}
+
+#category-title {
+    font-size: 24px; /* Adjust the size of the title */
+    font-weight: bold; /* Makes the title bold */
+    color: #333; /* Title color */
+    margin-bottom: 20px; /* Space between title and category boxes */
+    font-family: Arial, sans-serif; /* Consistent font style */
+}
+
 </style>
 
 <script type="text/JavaScript">
@@ -486,7 +561,7 @@ function add_check() {
                                 <div class="col-md-5">
                                     <div class="form-group mb-4">
                                         <label>Category:</label>
-                                        <select class="form-select" id="category" aria-label="Default select example"
+                                        <select class="form-select" id="category_name" aria-label="Default select example"
                                             name="cate" required></select>
                                     </div>
                                     <span id="check_cate"></span>
@@ -561,6 +636,26 @@ function add_check() {
                 </div>
             </div>
         </div><!-- modal end-->
+        <div id="category-container">
+                <h2 id="category-title">Our Categories</h2>
+            <div id="category-boxes">
+                <div class="category-box">
+                    <span class="icon-cat"> <ion-icon name="bag-handle-outline"></ion-icon></span>
+                    <span id="WomenCount">0</span>
+                    <p>Women Bag</p>
+                </div>
+                <div class="category-box">
+                    <span class="icon-cat"><ion-icon name="bag-outline"></ion-icon></span>
+                    <span id="MenCount">0</span>
+                    <p>Men Bag</p>
+                </div>
+                <div class="category-box">
+                    <span class="icon-cat"><ion-icon name="glasses-outline"></ion-icon></span>
+                    <span id="AccessoriesCount">0</span>
+                    <p>Accessories</p>
+                </div>
+            </div>
+        </div>
         <hr>
         <?php
         $query = "SELECT 
@@ -1079,6 +1174,10 @@ function add_check() {
 </body>
 
 <script>
+    const categoryCounts = <?php echo json_encode($categoryCounts); ?>;
+    document.getElementById('WomenCount').innerText = categoryCounts[1];
+    document.getElementById('MenCount').innerText = categoryCounts[2];
+    document.getElementById('AccessoriesCount').innerText = categoryCounts[3];
     const stt = document.querySelector('.status');
     const statusForm = document.getElementById('pd');
 
