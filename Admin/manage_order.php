@@ -115,10 +115,6 @@ include  'admin_sidebar.php';
                             $user_run = mysqli_query($connect, $user);
                             $row_user = mysqli_fetch_assoc($user_run);
 
-                            $address_id = $row["address_id"];
-                            $add = "SELECT * FROM user_address WHERE address_id = '$address_id'";
-                            $add_run = mysqli_query($connect, $add);
-                            $row_add = mysqli_fetch_assoc($add_run);
                             ?>
                             <tr onclick="window.location='order_detail.php?order_id=<?php echo $row['order_id'] ?>';">
                                 <th scope="row">
@@ -135,8 +131,7 @@ include  'admin_sidebar.php';
                                 </td>
                                 <td>
                                     <?php echo
-                                        $row_add["address"] . ", " . $row_add["postcode"] . " " . $row_add["city"]
-                                        . ", " . $row_add["state"]; ?>
+                                     $row_add["shipping_address"]; ?>
                                 </td>
 
                                 <td>
