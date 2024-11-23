@@ -178,10 +178,6 @@ include 'admin_sidebar.php';
         <div class="search-container">
             <ion-icon name="search-outline"></ion-icon>
             <input type="text" id="search-input" placeholder="Search by name">
-            <div class="export-buttons">
-                <button onclick="exportToPDF()">Export to PDF</button>
-                <button onclick="exportToExcel()">Export to Excel</button>
-            </div>
         </div>
 
         <div class="control-bar">
@@ -325,30 +321,6 @@ include 'admin_sidebar.php';
         function viewOrderDetails(orderId) {
             // 跳转到 orderdetails.php 并传递 order_id
             window.location.href = `orderdetails.php?order_id=${orderId}`;
-        }
-
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFontSize(18);
-            doc.text("YLS Atelier", 105, 20, { align: "center" });
-            doc.setFontSize(14);
-            doc.text("Order List", 105, 30, { align: "center" });
-
-            const table = document.querySelector(".table");
-            doc.autoTable({
-                html: table,
-                startY: 40,
-            });
-
-            doc.save("order_list.pdf");
-        }
-
-        function exportToExcel() {
-            const table = document.querySelector(".table");
-            const wb = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(wb, "order_list.xlsx");
         }
     </script>
 </body>
