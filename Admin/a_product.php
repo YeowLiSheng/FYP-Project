@@ -20,8 +20,8 @@ if (isset($_POST["save_product"])) {
     $tags = $_POST["tags"];
 
     $status = "1";
-    $insert = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, Quick_View1, Quick_View2, Quick_View3, product_price, product_stock, color1, color2, size1, size2, tags, product_type) 
-                VALUES ('$c', '$status', '$pd', '$d', '$img', '$quick_view1', '$quick_view2', '$quick_view3', '$price', '$qty', '$color1', '$color2', '$size1', '$size2', '$tags', '$type')";
+    $insert = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, Quick_View1, Quick_View2, Quick_View3, product_price, product_stock, color1, color2, size1, size2, tags) 
+                VALUES ('$c', '$status', '$pd', '$d', '$img', '$quick_view1', '$quick_view2', '$quick_view3', '$price', '$qty', '$color1', '$color2', '$size1', '$size2', '$tags')";
     $run = mysqli_query($connect, $insert);
 
     if ($run) {
