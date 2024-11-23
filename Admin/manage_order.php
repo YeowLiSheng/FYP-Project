@@ -42,7 +42,6 @@ include 'admin_sidebar.php';
             color: #3498db;
         }
 
-        /* Search Bar */
         .search-container {
             margin-bottom: 20px;
             background: #fff;
@@ -69,7 +68,6 @@ include 'admin_sidebar.php';
             color: #7f8c8d;
         }
 
-        /* Control Bar */
         .control-bar {
             display: flex;
             flex-wrap: wrap;
@@ -81,12 +79,6 @@ include 'admin_sidebar.php';
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             gap: 15px;
-        }
-
-        .control-bar .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 20px;
         }
 
         .control-bar select, .control-bar input {
@@ -103,19 +95,6 @@ include 'admin_sidebar.php';
             border-color: #3498db;
         }
 
-        /* Date Range Picker */
-        .date-range {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .date-range label {
-            font-size: 14px;
-            color: #2c3e50;
-        }
-
-        /* Table Styles */
         .card {
             background: white;
             border-radius: 10px;
@@ -127,29 +106,42 @@ include 'admin_sidebar.php';
         .table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            overflow: hidden;
             border-radius: 10px;
-            margin-top: 10px;
+            overflow: hidden;
         }
 
         .table th, .table td {
             padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
         }
 
         .table th {
             background: #3498db;
             color: white;
-            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .table td {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .table tr:nth-child(even) {
+            background: #f8f9fa;
         }
 
         .table tr:hover {
             background: #ecf0f1;
         }
 
-        /* Responsive Styles */
+        .table img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
         @media (max-width: 768px) {
             .control-bar {
                 flex-direction: column;
@@ -167,25 +159,23 @@ include 'admin_sidebar.php';
     <div class="main">
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
         
-        <!-- Search Bar -->
         <div class="search-container">
             <ion-icon name="search-outline"></ion-icon>
             <input type="text" id="search-input" placeholder="Search by name">
         </div>
 
-        <!-- Filters and Sort Options -->
         <div class="control-bar">
-            <div class="filter-group">
-                <label>Filter by:</label>
+            <div>
+                <label for="filter-status">Filter by:</label>
                 <select id="filter-status">
                     <option value="" selected>- General -</option>
-                    <optgroup label="Delivery Status">
-                        <option value="Processing">Processing</option>
-                        <option value="Shipping">Shipping</option>
-                        <option value="Completed">Completed</option>
-                    </optgroup>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipping">Shipping</option>
+                    <option value="Completed">Completed</option>
                 </select>
-                <label>Sort by:</label>
+            </div>
+            <div>
+                <label for="sort-order">Sort by:</label>
                 <select id="sort-order">
                     <option value="" selected>- General -</option>
                     <option value="newest">Newest</option>
@@ -194,15 +184,8 @@ include 'admin_sidebar.php';
                     <option value="lowest">Lowest Total</option>
                 </select>
             </div>
-            <div class="date-range">
-                <label for="start-date">From:</label>
-                <input type="text" id="start-date" placeholder="Start Date">
-                <label for="end-date">To:</label>
-                <input type="text" id="end-date" placeholder="End Date">
-            </div>
         </div>
 
-        <!-- Orders Table -->
         <div class="card">
             <table class="table">
                 <thead>
@@ -233,7 +216,7 @@ include 'admin_sidebar.php';
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="6">No orders found.</td>
+                            <td colspan="6" style="text-align: center;">No orders found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
