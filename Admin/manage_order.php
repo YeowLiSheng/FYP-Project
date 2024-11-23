@@ -42,7 +42,6 @@ include 'admin_sidebar.php';
             color: #3498db;
         }
 
-        /* Search Bar */
         .search-container {
             margin-bottom: 20px;
             background: #fff;
@@ -69,7 +68,6 @@ include 'admin_sidebar.php';
             color: #7f8c8d;
         }
 
-        /* Control Bar */
         .control-bar {
             display: flex;
             flex-wrap: wrap;
@@ -103,7 +101,6 @@ include 'admin_sidebar.php';
             border-color: #3498db;
         }
 
-        /* Date Range Picker */
         .date-range {
             display: flex;
             align-items: center;
@@ -115,7 +112,6 @@ include 'admin_sidebar.php';
             color: #2c3e50;
         }
 
-        /* Table Styles */
         .card {
             background: white;
             border-radius: 10px;
@@ -131,12 +127,14 @@ include 'admin_sidebar.php';
             overflow: hidden;
             border-radius: 10px;
             margin-top: 10px;
+            table-layout: fixed;
         }
 
         .table th, .table td {
             padding: 15px;
             text-align: center;
-            border-bottom: 1px solid #f0f0f0;
+            border: 1px solid #dcdde1;
+            word-wrap: break-word;
         }
 
         .table th {
@@ -149,7 +147,10 @@ include 'admin_sidebar.php';
             background: #ecf0f1;
         }
 
-        /* Responsive Styles */
+        .table th ion-icon {
+            margin-right: 5px;
+        }
+
         @media (max-width: 768px) {
             .control-bar {
                 flex-direction: column;
@@ -160,6 +161,11 @@ include 'admin_sidebar.php';
                 flex-direction: column;
                 gap: 10px;
             }
+
+            .table th, .table td {
+                padding: 10px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -167,13 +173,11 @@ include 'admin_sidebar.php';
     <div class="main">
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
         
-        <!-- Search Bar -->
         <div class="search-container">
             <ion-icon name="search-outline"></ion-icon>
             <input type="text" id="search-input" placeholder="Search by name">
         </div>
 
-        <!-- Filters and Sort Options -->
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
@@ -202,17 +206,16 @@ include 'admin_sidebar.php';
             </div>
         </div>
 
-        <!-- Orders Table -->
         <div class="card">
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Order#</th>
-                        <th>Created by</th>
-                        <th>Created Time</th>
-                        <th>Shipped to</th>
-                        <th>Total</th>
-                        <th>Delivery Status</th>
+                        <th><ion-icon name="cart-outline"></ion-icon> Order#</th>
+                        <th><ion-icon name="person-outline"></ion-icon> Created by</th>
+                        <th><ion-icon name="time-outline"></ion-icon> Created Time</th>
+                        <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
+                        <th><ion-icon name="cash-outline"></ion-icon> Total</th>
+                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -271,39 +274,43 @@ include 'admin_sidebar.php';
         }
 
         function filterTable() {
-            const filter = document.getElementById("filter-status").value.toLowerCase();
+            const status = document.getElementById("filter-status").value;
             const rows = document.querySelectorAll("#table-body tr");
 
             rows.forEach(row => {
-                const status = row.cells[5].textContent.toLowerCase();
-                row.style.display = filter === "" || status.includes(filter) ? "" : "none";
+                const orderStatus = row.cells[5].textContent;
+                row.style.display = orderStatus.includes(status) || status === "" ? "" : "none";
             });
         }
 
         function sortTable() {
-            const sort = document.getElementById("sort-order").value;
             const rows = Array.from(document.querySelectorAll("#table-body tr"));
+            const sortOrder = document.getElementById("sort-order").value;
 
             rows.sort((a, b) => {
-                if (sort === "newest") return new Date(b.cells[2].textContent) - new Date(a.cells[2].textContent);
-                if (sort === "oldest") return new Date(a.cells[2].textContent) - new Date(b.cells[2].textContent);
-                if (sort === "highest") return parseFloat(b.cells[4].textContent.replace("RM", "")) - parseFloat(a.cells[4].textContent.replace("RM", ""));
-                if (sort === "lowest") return parseFloat(a.cells[4].textContent.replace("RM", "")) - parseFloat(b.cells[4].textContent.replace("RM", ""));
+                if (sortOrder === "newest" || sortOrder === "oldest") {
+                    const dateA = new Date(a.cells[2].textContent);
+                    const dateB = new Date(b.cells[2].textContent);
+                    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+                } else if (sortOrder === "highest" || sortOrder === "lowest") {
+                    const totalA = parseFloat(a.cells[4].textContent.replace("RM", ""));
+                    const totalB = parseFloat(b.cells[4].textContent.replace("RM", ""));
+                    return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
+                }
                 return 0;
             });
 
-            const tableBody = document.getElementById("table-body");
-            tableBody.innerHTML = "";
-            rows.forEach(row => tableBody.appendChild(row));
+            const tbody = document.getElementById("table-body");
+            rows.forEach(row => tbody.appendChild(row));
         }
 
         function searchTable() {
-            const search = document.getElementById("search-input").value.toLowerCase();
+            const query = document.getElementById("search-input").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
 
             rows.forEach(row => {
                 const name = row.cells[1].textContent.toLowerCase();
-                row.style.display = name.includes(search) ? "" : "none";
+                row.style.display = name.includes(query) ? "" : "none";
             });
         }
     </script>
