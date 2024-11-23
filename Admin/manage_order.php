@@ -42,6 +42,33 @@ include 'admin_sidebar.php';
             color: #3498db;
         }
 
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdde1;
+            border-radius: 5px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+        }
+
+        .search-container ion-icon {
+            font-size: 20px;
+            color: #7f8c8d;
+        }
+
         /* Control Bar */
         .control-bar {
             display: flex;
@@ -63,7 +90,7 @@ include 'admin_sidebar.php';
         }
 
         .control-bar select, .control-bar input {
-            padding: 8px 10px;
+            padding: 10px 12px;
             border: 1px solid #dcdde1;
             border-radius: 5px;
             outline: none;
@@ -74,17 +101,6 @@ include 'admin_sidebar.php';
 
         .control-bar select:hover, .control-bar input:hover {
             border-color: #3498db;
-        }
-
-        .control-bar .searchbar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .control-bar .searchbar ion-icon {
-            font-size: 20px;
-            color: #7f8c8d;
         }
 
         /* Date Range Picker */
@@ -139,12 +155,25 @@ include 'admin_sidebar.php';
                 flex-direction: column;
                 gap: 15px;
             }
+
+            .search-container {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="main">
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" id="search-input" placeholder="Search by name">
+        </div>
+
+        <!-- Filters and Sort Options -->
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
@@ -170,13 +199,10 @@ include 'admin_sidebar.php';
                 <input type="text" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
                 <input type="text" id="end-date" placeholder="End Date">
-                <button id="filter-date" style="padding: 8px 12px; background: #3498db; color: white; border: none; border-radius: 5px;">Filter</button>
-            </div>
-            <div class="searchbar">
-                <ion-icon name="search-outline"></ion-icon>
-                <input type="text" id="search-input" placeholder="Search by name">
             </div>
         </div>
+
+        <!-- Orders Table -->
         <div class="card">
             <table class="table">
                 <thead>
@@ -216,17 +242,38 @@ include 'admin_sidebar.php';
     </div>
     <script>
         $(function () {
-            $("#start-date, #end-date").datepicker({ dateFormat: "yy-mm-dd" });
+            $("#start-date, #end-date").datepicker({
+                dateFormat: "yy-mm-dd",
+                onSelect: filterByDate
+            });
         });
 
         document.getElementById("filter-status").addEventListener("change", filterTable);
         document.getElementById("sort-order").addEventListener("change", sortTable);
         document.getElementById("search-input").addEventListener("input", searchTable);
-        document.getElementById("filter-date").addEventListener("click", filterByDate);
+
+        function filterByDate() {
+            const startDate = $("#start-date").val();
+            const endDate = $("#end-date").val();
+            const rows = document.querySelectorAll("#table-body tr");
+
+            rows.forEach(row => {
+                const orderDate = new Date(row.cells[2].textContent);
+                const start = startDate ? new Date(startDate) : null;
+                const end = endDate ? new Date(endDate) : null;
+
+                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
 
         function filterTable() {
             const filter = document.getElementById("filter-status").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
                 const status = row.cells[5].textContent.toLowerCase();
                 row.style.display = filter === "" || status.includes(filter) ? "" : "none";
@@ -236,6 +283,7 @@ include 'admin_sidebar.php';
         function sortTable() {
             const sort = document.getElementById("sort-order").value;
             const rows = Array.from(document.querySelectorAll("#table-body tr"));
+
             rows.sort((a, b) => {
                 if (sort === "newest") return new Date(b.cells[2].textContent) - new Date(a.cells[2].textContent);
                 if (sort === "oldest") return new Date(a.cells[2].textContent) - new Date(b.cells[2].textContent);
@@ -243,27 +291,19 @@ include 'admin_sidebar.php';
                 if (sort === "lowest") return parseFloat(a.cells[4].textContent.replace("RM", "")) - parseFloat(b.cells[4].textContent.replace("RM", ""));
                 return 0;
             });
+
             const tableBody = document.getElementById("table-body");
+            tableBody.innerHTML = "";
             rows.forEach(row => tableBody.appendChild(row));
         }
 
         function searchTable() {
-            const query = document.getElementById("search-input").value.toLowerCase();
+            const search = document.getElementById("search-input").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
                 const name = row.cells[1].textContent.toLowerCase();
-                row.style.display = name.includes(query) ? "" : "none";
-            });
-        }
-
-        function filterByDate() {
-            const startDate = new Date(document.getElementById("start-date").value);
-            const endDate = new Date(document.getElementById("end-date").value);
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const orderDate = new Date(row.cells[2].textContent);
-                row.style.display = orderDate >= startDate && orderDate <= endDate ? "" : "none";
+                row.style.display = name.includes(search) ? "" : "none";
             });
         }
     </script>
