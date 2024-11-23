@@ -41,31 +41,26 @@ include 'admin_sidebar.php';
             color: #3498db;
         }
 
-        /* 顶部区域 */
-        .top {
+        /* Filter and Sort Bar */
+        .control-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 10px 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
 
-        .filters {
+        .control-bar .filter-group {
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .filters label {
-            font-size: 14px;
-            color: #34495e;
-            margin-right: 8px;
-        }
-
-        .filters select, .filters input {
-            padding: 8px;
+        .control-bar select, .control-bar input {
+            padding: 8px 10px;
             border: 1px solid #dcdde1;
             border-radius: 5px;
             outline: none;
@@ -74,31 +69,30 @@ include 'admin_sidebar.php';
             transition: all 0.3s;
         }
 
-        .filters select:hover, .filters input:hover {
+        .control-bar select:hover, .control-bar input:hover {
             border-color: #3498db;
         }
 
-        .searchbar {
+        .control-bar .searchbar {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .searchbar ion-icon {
+        .control-bar .searchbar ion-icon {
             font-size: 20px;
             color: #7f8c8d;
         }
 
-        .searchbar input {
+        .control-bar .searchbar input {
             padding: 10px 12px;
             border: 1px solid #dcdde1;
             border-radius: 5px;
             font-size: 14px;
             outline: none;
-            width: 200px;
         }
 
-        /* 表格样式 */
+        /* Table Styles */
         .card {
             background: white;
             border-radius: 10px;
@@ -132,66 +126,22 @@ include 'admin_sidebar.php';
             background: #ecf0f1;
         }
 
-        /* 响应式样式 */
+        /* Responsive Styles */
         @media (max-width: 768px) {
-            .top {
+            .control-bar {
                 flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .filters {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .searchbar input {
-                width: 100%;
+                gap: 15px;
             }
         }
     </style>
-    <script>
-        $(function () {
-            var dateFormat = "yy/mm/dd",
-                from = $("#from")
-                    .datepicker({
-                        defaultDate: "+1w",
-                        changeMonth: true,
-                        numberOfMonths: 1,
-                        dateFormat: 'yy/mm/dd'
-                    })
-                    .on("change", function () {
-                        to.datepicker("option", "minDate", getDate(this));
-                    }),
-                to = $("#to").datepicker({
-                    defaultDate: "+1w",
-                    changeMonth: true,
-                    numberOfMonths: 1,
-                    dateFormat: 'yy/mm/dd'
-                })
-                    .on("change", function () {
-                        from.datepicker("option", "maxDate", getDate(this));
-                    });
-
-            function getDate(element) {
-                var date;
-                try {
-                    date = $.datepicker.parseDate(dateFormat, element.value);
-                } catch (error) {
-                    date = null;
-                }
-
-                return date;
-            }
-        });
-    </script>
 </head>
 <body>
     <div class="main">
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
-        <div class="top">
-            <div class="filters">
+        <div class="control-bar">
+            <div class="filter-group">
                 <label>Filter by:</label>
-                <select name="o_filt">
+                <select id="filter-status">
                     <option value="" selected>- General -</option>
                     <optgroup label="Delivery Status">
                         <option value="Processing">Processing</option>
@@ -200,21 +150,17 @@ include 'admin_sidebar.php';
                     </optgroup>
                 </select>
                 <label>Sort by:</label>
-                <select class="form-select" id="f2" aria-label="Default select example" name="o_sort">
-                    <option selected>- General -</option>
-                    <option value="a">Newest</option>
-                    <option value="b">Oldest</option>
-                    <option value="c">Highest Total</option>
-                    <option value="d">Lowest Total</option>
+                <select id="sort-order">
+                    <option value="" selected>- General -</option>
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="highest">Highest Total</option>
+                    <option value="lowest">Lowest Total</option>
                 </select>
-                <label>From:</label>
-                <input type="text" id="from" placeholder="YYYY/MM/DD">
-                <label>To:</label>
-                <input type="text" id="to" placeholder="YYYY/MM/DD">
             </div>
             <div class="searchbar">
                 <ion-icon name="search-outline"></ion-icon>
-                <input type="text" name="search" placeholder="Search by name">
+                <input type="text" id="search-input" placeholder="Search by name">
             </div>
         </div>
         <div class="card">
@@ -236,7 +182,7 @@ include 'admin_sidebar.php';
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr onclick="window.location='order_detail.php?order_id=<?php echo $row['order_id'] ?>';">
+                            <tr>
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_date"]; ?></td>
@@ -254,5 +200,44 @@ include 'admin_sidebar.php';
             </table>
         </div>
     </div>
+    <script>
+        document.getElementById("filter-status").addEventListener("change", filterTable);
+        document.getElementById("sort-order").addEventListener("change", sortTable);
+        document.getElementById("search-input").addEventListener("input", searchTable);
+
+        function filterTable() {
+            const filter = document.getElementById("filter-status").value.toLowerCase();
+            const rows = document.querySelectorAll("#table-body tr");
+            rows.forEach(row => {
+                const status = row.cells[5].textContent.toLowerCase();
+                row.style.display = filter === "" || status.includes(filter) ? "" : "none";
+            });
+        }
+
+        function sortTable() {
+            const sort = document.getElementById("sort-order").value;
+            const rows = Array.from(document.querySelectorAll("#table-body tr"));
+            rows.sort((a, b) => {
+                if (sort === "newest") return new Date(b.cells[2].textContent) - new Date(a.cells[2].textContent);
+                if (sort === "oldest") return new Date(a.cells[2].textContent) - new Date(b.cells[2].textContent);
+                if (sort === "highest") return parseFloat(b.cells[4].textContent.replace("RM", "")) - parseFloat(a.cells[4].textContent.replace("RM", ""));
+                if (sort === "lowest") return parseFloat(a.cells[4].textContent.replace("RM", "")) - parseFloat(b.cells[4].textContent.replace("RM", ""));
+                return 0;
+            });
+            const tableBody = document.getElementById("table-body");
+            rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        function searchTable() {
+            const query = document.getElementById("search-input").value.toLowerCase();
+            const rows = document.querySelectorAll("#table-body tr");
+            rows.forEach(row => {
+                const name = row.cells[1].textContent.toLowerCase();
+                row.style.display = name.includes(query) ? "" : "none";
+            });
+        }
+   // Initialize search functionality
+   document.getElementById("search-input").addEventListener("input", searchTable);
+    </script>
 </body>
 </html>
