@@ -568,7 +568,7 @@ function add_check() {
                                 <!-- category -->
                                 <div class="col-md-5">
                                     <div class="form-group mb-4">
-                                        <label>Category:</label>
+                                        <label>Categor:</label>
                                         <select class="form-select" id="category" aria-label="Default select example"
                                             name="cate" ></select>
                                     </div>
