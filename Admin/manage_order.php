@@ -6,7 +6,7 @@ include  'admin_sidebar.php';
 ?>
 
 <!DOCTYPE html>
-< lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,131 +51,7 @@ include  'admin_sidebar.php';
         });
     </script>
 </head>
-<style>
-body, h1, h2, h3, p, ul, li {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-/* Body and Container */
-body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(to bottom, #f5f7fa, #c3cfe2);
-    color: #333;
-    padding: 20px;
-}
-
-.main-container {
-    display: grid;
-    grid-template-columns: 250px auto;
-    gap: 20px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-/* Sidebar */
-.sidebar {
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #6a11cb;
-}
-
-.sidebar ul {
-    list-style: none;
-}
-
-.sidebar li {
-    margin: 10px 0;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    color: #333;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.sidebar li i {
-    margin-right: 10px;
-    color: #6a11cb;
-}
-
-.sidebar li:hover {
-    color: #6a11cb;
-}
-
-/* Content */
-.content {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.order-summary h2 {
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-}
-
-.order-summary h2 i {
-    color: #6a11cb;
-    margin-right: 10px;
-}
-
-.order-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.product-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    margin-right: 15px;
-}
-
-.order-item h3 {
-    margin: 0;
-    font-size: 18px;
-    color: #333;
-}
-
-.order-total p {
-    font-size: 16px;
-    margin: 5px 0;
-    font-weight: 500;
-}
-
-/* Buttons */
-.btn {
-    background: linear-gradient(45deg, #6a11cb, #2575fc);
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.btn:hover {
-    background: linear-gradient(45deg, #2575fc, #6a11cb);
-    transform: scale(1.05);
-}
-</>
 <body>
     <div class="main p-3">
         <div class="head" style="display:flex;">
