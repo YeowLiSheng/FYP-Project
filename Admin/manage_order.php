@@ -42,6 +42,33 @@ include 'admin_sidebar.php';
             color: #3498db;
         }
 
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdde1;
+            border-radius: 5px;
+            outline: none;
+            font-size: 14px;
+            background: white;
+        }
+
+        .search-container ion-icon {
+            font-size: 20px;
+            color: #7f8c8d;
+        }
+
         /* Control Bar */
         .control-bar {
             display: flex;
@@ -76,40 +103,16 @@ include 'admin_sidebar.php';
             border-color: #3498db;
         }
 
-        /* Search Engine (New Position) */
-        .search-section {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .searchbar {
+        /* Date Range Picker */
+        .date-range {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .searchbar input {
-            padding: 10px 12px;
-            border: 1px solid #dcdde1;
-            border-radius: 5px;
+        .date-range label {
             font-size: 14px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .searchbar input:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
-        }
-
-        .searchbar ion-icon {
-            font-size: 20px;
-            color: #7f8c8d;
+            color: #2c3e50;
         }
 
         /* Table Styles */
@@ -153,8 +156,9 @@ include 'admin_sidebar.php';
                 gap: 15px;
             }
 
-            .search-section {
-                justify-content: center;
+            .search-container {
+                flex-direction: column;
+                gap: 10px;
             }
         }
     </style>
@@ -162,12 +166,14 @@ include 'admin_sidebar.php';
 <body>
     <div class="main">
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
-        <div class="search-section">
-            <div class="searchbar">
-                <ion-icon name="search-outline"></ion-icon>
-                <input type="text" id="search-input" placeholder="Search by name">
-            </div>
+        
+        <!-- Search Bar -->
+        <div class="search-container">
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" id="search-input" placeholder="Search by name">
         </div>
+
+        <!-- Filters and Sort Options -->
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
@@ -195,6 +201,8 @@ include 'admin_sidebar.php';
                 <input type="text" id="end-date" placeholder="End Date">
             </div>
         </div>
+
+        <!-- Orders Table -->
         <div class="card">
             <table class="table">
                 <thead>
@@ -268,7 +276,7 @@ include 'admin_sidebar.php';
 
             rows.forEach(row => {
                 const status = row.cells[5].textContent.toLowerCase();
-                row.style.display = filter && !status.includes(filter) ? "none" : "";
+                row.style.display = filter === "" || status.includes(filter) ? "" : "none";
             });
         }
 
