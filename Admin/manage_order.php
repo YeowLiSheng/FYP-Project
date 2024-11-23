@@ -1,8 +1,6 @@
 <?php
-
 include 'dataconnection.php';
-include  'admin_sidebar.php';
-
+include 'admin_sidebar.php';
 ?>
 
 <!DOCTYPE html>
@@ -11,67 +9,79 @@ include  'admin_sidebar.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Order</title>
-    <!-- Include Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery and jQuery UI -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #f8f9fa;
         }
-
-        .filter-bar {
+        .main {
+            margin: 20px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .head h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .top {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
-
-        .table-container {
-            margin-top: 20px;
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        table {
-            border-collapse: collapse;
-        }
-
-        th {
-            background-color: #007bff;
-            color: white;
-            text-align: center;
-        }
-
-        tr:hover {
-            background-color: #f1f1f1;
-            cursor: pointer;
-        }
-
-        .form-select, .input {
-            width: auto;
-            min-width: 150px;
-        }
-
-        .searchbar {
+        .filter, .searchbar {
             display: flex;
             align-items: center;
-            gap: 10px;
         }
-
+        .filter label, .searchbar ion-icon {
+            margin-right: 10px;
+            font-size: 1rem;
+            color: #555;
+        }
+        .filter select, .filter input, .searchbar input {
+            margin-right: 15px;
+            padding: 5px 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
         .searchbar input {
-            flex-grow: 1;
+            flex: 1;
             max-width: 300px;
         }
+        .table {
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table th, .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .table th {
+            background-color: #f1f1f1;
+        }
+        .table tbody tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
     </style>
+
     <script>
         $(function () {
             var dateFormat = "yy/mm/dd",
@@ -91,9 +101,9 @@ include  'admin_sidebar.php';
                     numberOfMonths: 1,
                     dateFormat: 'yy/mm/dd'
                 })
-                    .on("change", function () {
-                        from.datepicker("option", "maxDate", getDate(this));
-                    });
+                .on("change", function () {
+                    from.datepicker("option", "maxDate", getDate(this));
+                });
 
             function getDate(element) {
                 var date;
@@ -104,9 +114,7 @@ include  'admin_sidebar.php';
                 }
                 return date;
             }
-        });
 
-        $(document).ready(function () {
             $('#f1, #f2, input[name="search"], #from, #to').on('change keyup', function () {
                 var f1 = $('#f1').val();
                 var f2 = $('#f2').val();
@@ -127,20 +135,25 @@ include  'admin_sidebar.php';
 </head>
 
 <body>
-    <div class="container">
-        <h1 class="mt-4 mb-3">Manage Orders</h1>
-        <div class="filter-bar">
-            <form method="POST" action="" class="d-flex gap-3 align-items-center">
-                <label for="f1" class="form-label">Filter by:</label>
+    <div class="main">
+        <div class="head d-flex align-items-center">
+            <i class="lni lni-list" style="font-size:50px; color:#555;"></i>
+            <h1 class="ms-3">Manage Orders</h1>
+        </div>
+        <hr>
+        <div class="top">
+            <!-- Filter Form -->
+            <form method="POST" class="filter">
+                <label>Filter by:</label>
                 <select class="form-select" id="f1" name="o_filt">
                     <option value="" selected>-General-</option>
                     <optgroup label="Delivery Status:">
                         <option value="Processing">Processing</option>
                         <option value="Shipping">Shipping</option>
                         <option value="Completed">Completed</option>
+                    </optgroup>
                 </select>
-
-                <label for="f2" class="form-label">Sort by:</label>
+                <label>Sort by:</label>
                 <select class="form-select" id="f2" name="o_sort">
                     <option value="" selected>-General-</option>
                     <option value="a">Newest</option>
@@ -148,22 +161,20 @@ include  'admin_sidebar.php';
                     <option value="c">Highest Total</option>
                     <option value="d">Lowest Total</option>
                 </select>
-
-                <label for="from" class="form-label">From</label>
-                <input type="text" id="from" class="form-control" name="from">
-
-                <label for="to" class="form-label">to</label>
-                <input type="text" id="to" class="form-control" name="to">
+                <label for="from">From</label>
+                <input type="text" id="from" class="from" name="from">
+                <label for="to">to</label>
+                <input type="text" id="to" class="to" name="to">
             </form>
-
-            <form method="POST" action="" class="searchbar">
-                <ion-icon class="magni" name="search-outline"></ion-icon>
+            <!-- Search Form -->
+            <form method="POST" class="searchbar">
+                <ion-icon name="search-outline"></ion-icon>
                 <input type="text" class="form-control" placeholder="Search with name" name="search" id="search">
             </form>
         </div>
-
-        <div class="table-container">
-            <table class="table table-bordered table-hover">
+        <hr>
+        <div class="card">
+            <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th scope="col" style="width:1px;">Order#</th>
@@ -176,42 +187,24 @@ include  'admin_sidebar.php';
                 </thead>
                 <tbody id="table-body">
                     <?php
-                    $order = "SELECT *,user.user_name 
-                    FROM orders 
-                    JOIN user ON orders.user_id = user.user_id;";
-
+                    $order = "SELECT *, user.user_name 
+                              FROM orders 
+                              JOIN user ON orders.user_id = user.user_id;";
                     $result = mysqli_query($connect, $order);
+
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
-                            ?>
-                            <tr onclick="window.location='order_detail.php?order_id=<?php echo $row['order_id'] ?>';">
-                                <th scope="row">
-                                    <?php echo $row["order_id"] ?>
-                                </th>
-                                <td>
-                                    <?php echo $row["user_name"] ?>
-                                </td>
-                                <td>
-                                    <?php echo $row["order_date"] ?>
-                                </td>
-                                <td>
-                                    <?php echo $row["shipping_address"] ?>
-                                </td>
-                                <td>
-                                    RM<?php echo number_format($row["final_amount"], 2); ?>
-                                </td>
-                                <td>
-                                    <?php echo $row["order_status"] ?>
-                                </td>
-                            </tr>
-                            <?php
+                            echo "<tr onclick=\"window.location='order_detail.php?order_id={$row['order_id']}';\">
+                                <th scope='row'>{$row['order_id']}</th>
+                                <td>{$row['user_name']}</td>
+                                <td>{$row['order_date']}</td>
+                                <td>{$row['shipping_address']}</td>
+                                <td>RM" . number_format($row["final_amount"], 2) . "</td>
+                                <td>{$row['order_status']}</td>
+                            </tr>";
                         }
                     } else {
-                        ?>
-                        <tr>
-                            <td colspan="6" style="text-align:center">No orders found</td>
-                        </tr>
-                        <?php
+                        echo "<tr><td colspan='6' class='text-center'>No orders found.</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -219,5 +212,4 @@ include  'admin_sidebar.php';
         </div>
     </div>
 </body>
-
 </html>
