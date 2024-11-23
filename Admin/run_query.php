@@ -1,16 +1,16 @@
 <?php
-include 'dataconnection.php';
-if (isset($_POST['bid'])) {
-    $bid = $_POST['bid'];
-    $sql = "SELECT * FROM category WHERE category_type = '$bid'";
-    $result = mysqli_query($connect, $sql);
+include 'databaseconnect.php';
+// No need to check for 'bid' anymore since we fetch all categories
+$sql = "SELECT * FROM category";
+$result = mysqli_query($connect, $sql);
 
-    $out = '';
-    while ($row = mysqli_fetch_assoc($result)) {
-        $out .= '<option value="' . $row['category_id'] . '">' . str_replace("_", " ", $row['category']) . '</option>';
-    }
-    echo $out;
+$out = '';
+while ($row = mysqli_fetch_assoc($result)) {
+    $out .= '<option value="' . $row['category_id'] . '">' . str_replace("_", " ", $row['category_name']) . '</option>';
 }
+
+// Output the generated options for the category dropdown
+echo $out;
 
 if (isset($_POST['cust'])) {
     $s = $_POST['cust'];
@@ -57,7 +57,7 @@ if (isset($_POST['p'])) {
 //check c 
 if (isset($_POST['c'])) {
     $c = $_POST['c'];
-    $c_c = "SELECT * FROM category WHERE category = '$c'";
+    $c_c = "SELECT * FROM category WHERE category_name = '$c'";
     $result = mysqli_query($connect, $c_c);
 
     if (mysqli_num_rows($result) > 0) {
