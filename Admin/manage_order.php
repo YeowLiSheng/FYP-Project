@@ -1,4 +1,4 @@
-<style?php
+<?php
 
 include 'dataconnection.php';
 include  'admin_sidebar.php';
@@ -175,7 +175,7 @@ body {
     background: linear-gradient(45deg, #2575fc, #6a11cb);
     transform: scale(1.05);
 }
-</style>
+</>
 <body>
     <div class="main p-3">
         <div class="head" style="display:flex;">
