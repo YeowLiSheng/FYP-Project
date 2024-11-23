@@ -53,8 +53,9 @@ include 'admin_sidebar.php';
 
         .filters {
             display: flex;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
         }
 
         .filters label {
@@ -69,6 +70,12 @@ include 'admin_sidebar.php';
             border-radius: 5px;
             outline: none;
             font-size: 14px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .filters select:hover, .filters input:hover {
+            border-color: #3498db;
         }
 
         .searchbar {
@@ -132,6 +139,11 @@ include 'admin_sidebar.php';
                 align-items: flex-start;
             }
 
+            .filters {
+                flex-direction: column;
+                gap: 10px;
+            }
+
             .searchbar input {
                 width: 100%;
             }
@@ -186,6 +198,14 @@ include 'admin_sidebar.php';
                         <option value="Shipping">Shipping</option>
                         <option value="Completed">Completed</option>
                     </optgroup>
+                </select>
+                <label>Sort by:</label>
+                <select class="form-select" id="f2" aria-label="Default select example" name="o_sort">
+                    <option selected>- General -</option>
+                    <option value="a">Newest</option>
+                    <option value="b">Oldest</option>
+                    <option value="c">Highest Total</option>
+                    <option value="d">Lowest Total</option>
                 </select>
                 <label>From:</label>
                 <input type="text" id="from" placeholder="YYYY/MM/DD">
