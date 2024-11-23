@@ -877,7 +877,7 @@ function add_check() {
                                 </div><!-- modal end-->
 
 
-                                    <!-- First table row -->
+                                <!-- First table row -->
                                     <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
                                         <img src="../User/images/<?php echo $row['image'] ?>" style="max-height:100px; max-width:auto;" />
                                     </td>
@@ -918,8 +918,11 @@ function add_check() {
                                         <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>" style="color:red;">
                                             <?php echo $row['product_status'] ?>
                                         </td>
-                                    <?php } ?>
-
+                                    <?php 
+                                } 
+                                ?>
+                </form>                
+                <td class="button-action">
                                     <!-- Validation Script -->
                                     <script>
                                         function add_check<?php echo $row['product_id'] ?>() {
