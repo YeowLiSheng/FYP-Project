@@ -63,7 +63,7 @@ include 'admin_sidebar.php';
         }
 
         .control-bar select, .control-bar input {
-            padding: 8px 10px;
+            padding: 10px 12px;
             border: 1px solid #dcdde1;
             border-radius: 5px;
             outline: none;
@@ -170,7 +170,6 @@ include 'admin_sidebar.php';
                 <input type="text" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
                 <input type="text" id="end-date" placeholder="End Date">
-                <button id="filter-date" style="padding: 8px 12px; background: #3498db; color: white; border: none; border-radius: 5px;">Filter</button>
             </div>
             <div class="searchbar">
                 <ion-icon name="search-outline"></ion-icon>
@@ -216,13 +215,33 @@ include 'admin_sidebar.php';
     </div>
     <script>
         $(function () {
-            $("#start-date, #end-date").datepicker({ dateFormat: "yy-mm-dd" });
+            $("#start-date, #end-date").datepicker({
+                dateFormat: "yy-mm-dd",
+                onSelect: filterByDate
+            });
         });
 
         document.getElementById("filter-status").addEventListener("change", filterTable);
         document.getElementById("sort-order").addEventListener("change", sortTable);
         document.getElementById("search-input").addEventListener("input", searchTable);
-        document.getElementById("filter-date").addEventListener("click", filterByDate);
+
+        function filterByDate() {
+            const startDate = $("#start-date").val();
+            const endDate = $("#end-date").val();
+            const rows = document.querySelectorAll("#table-body tr");
+
+            rows.forEach(row => {
+                const orderDate = new Date(row.cells[2].textContent);
+                const start = startDate ? new Date(startDate) : null;
+                const end = endDate ? new Date(endDate) : null;
+
+                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
 
         function filterTable() {
             const filter = document.getElementById("filter-status").value.toLowerCase();
@@ -244,26 +263,16 @@ include 'admin_sidebar.php';
                 return 0;
             });
             const tableBody = document.getElementById("table-body");
+            tableBody.innerHTML = "";
             rows.forEach(row => tableBody.appendChild(row));
         }
 
         function searchTable() {
-            const query = document.getElementById("search-input").value.toLowerCase();
+            const search = document.getElementById("search-input").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
             rows.forEach(row => {
                 const name = row.cells[1].textContent.toLowerCase();
-                row.style.display = name.includes(query) ? "" : "none";
-            });
-        }
-
-        function filterByDate() {
-            const startDate = new Date(document.getElementById("start-date").value);
-            const endDate = new Date(document.getElementById("end-date").value);
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const orderDate = new Date(row.cells[2].textContent);
-                row.style.display = orderDate >= startDate && orderDate <= endDate ? "" : "none";
+                row.style.display = name.includes(search) ? "" : "none";
             });
         }
     </script>
