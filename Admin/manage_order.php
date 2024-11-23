@@ -1,8 +1,6 @@
 <?php
-
 include 'dataconnection.php';
 include 'admin_sidebar.php';
-
 ?>
 
 <!DOCTYPE html>
@@ -151,6 +149,10 @@ include 'admin_sidebar.php';
             margin-right: 5px;
         }
 
+        tr[onclick] {
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .control-bar {
                 flex-direction: column;
@@ -222,18 +224,16 @@ include 'admin_sidebar.php';
                     <?php
                     $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
                     $result = mysqli_query($connect, $order);
-                    
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr>
-                                <td onclick="window.location='order_detail.php?order_id=><?php echo $row["order_id"]; ?></td>
+                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
+                                <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_datetime"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
                                 <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
                                 <td><?php echo $row["order_status"]; ?></td>
-                                
                             </tr>
                         <?php }
                     } else { ?>
@@ -316,6 +316,11 @@ include 'admin_sidebar.php';
                 const name = row.cells[1].textContent.toLowerCase();
                 row.style.display = name.includes(query) ? "" : "none";
             });
+        }
+
+        function viewOrderDetails(orderId) {
+            // 跳转到 orderdetails.php 并传递 order_id
+            window.location.href = `orderdetails.php?order_id=${orderId}`;
         }
     </script>
 </body>
