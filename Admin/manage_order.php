@@ -1,8 +1,6 @@
 <?php
-
 include 'dataconnection.php';
 include 'admin_sidebar.php';
-
 ?>
 
 <!DOCTYPE html>
@@ -25,7 +23,7 @@ include 'admin_sidebar.php';
         }
 
         .main {
-            margin-left: 100px;
+            margin-left: 78px;
             padding: 15px;
         }
 
@@ -151,6 +149,10 @@ include 'admin_sidebar.php';
             margin-right: 5px;
         }
 
+        tr[onclick] {
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .control-bar {
                 flex-direction: column;
@@ -211,24 +213,24 @@ include 'admin_sidebar.php';
                 <thead>
                     <tr>
                         <th><ion-icon name="cart-outline"></ion-icon> Order#</th>
-                        <th><ion-icon name="person-outline"></ion-icon> Created by</th>
-                        <th><ion-icon name="time-outline"></ion-icon> Created Time</th>
+                        <th><ion-icon name="person-outline"></ion-icon> Customers Name</th>
+                        <th><ion-icon name="time-outline"></ion-icon> Order Time</th>
                         <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
                         <th><ion-icon name="cash-outline"></ion-icon> Total</th>
-                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
+                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Order Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <?php
-                    $order = "SELECT *, user.user_name FROM orders JOIN user ON orders.user_id = user.user_id;";
+                    $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
                     $result = mysqli_query($connect, $order);
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr>
+                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
-                                <td><?php echo $row["order_date"]; ?></td>
+                                <td><?php echo $row["order_datetime"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
                                 <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
                                 <td><?php echo $row["order_status"]; ?></td>
@@ -261,9 +263,11 @@ include 'admin_sidebar.php';
             const rows = document.querySelectorAll("#table-body tr");
 
             rows.forEach(row => {
-                const orderDate = new Date(row.cells[2].textContent);
-                const start = startDate ? new Date(startDate) : null;
-                const end = endDate ? new Date(endDate) : null;
+                const orderDateTime = row.cells[2].textContent; 
+                const orderDate = orderDateTime.split(" ")[0]; // 提取日期部分
+
+                const start = startDate || null;
+                const end = endDate || null;
 
                 if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
                     row.style.display = "";
@@ -312,6 +316,11 @@ include 'admin_sidebar.php';
                 const name = row.cells[1].textContent.toLowerCase();
                 row.style.display = name.includes(query) ? "" : "none";
             });
+        }
+
+        function viewOrderDetails(orderId) {
+            // 跳转到 orderdetails.php 并传递 order_id
+            window.location.href = `orderdetails.php?order_id=${orderId}`;
         }
     </script>
 </body>
