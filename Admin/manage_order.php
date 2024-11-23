@@ -16,84 +16,121 @@ include 'admin_sidebar.php';
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
     <style>
-        /* 优化主内容区域样式 */
-        .main {
-            margin-left: 250px; /* 确保不影响sidebar */
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
+        /* 整体布局样式 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
         }
 
-        /* 标题样式 */
-        .head h1 {
-            color: #343a40;
-            font-size: 2.5rem;
+        .main {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
             display: flex;
             align-items: center;
         }
-        .head h1 i {
-            margin-right: 15px;
+
+        h1 ion-icon {
+            font-size: 28px;
+            margin-right: 10px;
             color: #007bff;
         }
 
-        /* 筛选和搜索栏样式 */
+        /* 卡片样式 */
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        /* 筛选和搜索栏 */
         .top {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
-            align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
         }
-        .filter select, .filter input {
-            margin-right: 10px;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
+
+        .filter, .searchbar {
+            flex: 1 1 100%;
+            max-width: 48%;
         }
+
+        .filter label, .searchbar ion-icon {
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .filter select, .filter input, .searchbar input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
         .searchbar {
-            position: relative;
             display: flex;
             align-items: center;
         }
+
         .searchbar ion-icon {
-            position: absolute;
-            left: 10px;
-            color: #6c757d;
+            font-size: 18px;
         }
+
         .searchbar input {
-            padding: 8px 10px 8px 35px;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-            width: 250px;
+            padding-left: 30px;
         }
 
         /* 表格样式 */
         .table {
-            background-color: white;
-            border-radius: 10px;
+            width: 100%;
+            border-collapse: collapse;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .table thead th {
-            background-color: #007bff;
-            color: white;
-            text-align: center;
-        }
-        .table tbody tr:hover {
-            background-color: #f1f1f1;
-            cursor: pointer;
-        }
-        .table td {
-            text-align: center;
+            margin-top: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* 响应式设计 */
+        .table th, .table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table th {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .table tr:hover {
+            background: #f1f1f1;
+        }
+
+        /* 响应式布局 */
         @media (max-width: 768px) {
             .top {
-                flex-wrap: wrap;
-                justify-content: center;
+                flex-direction: column;
+                gap: 10px;
             }
+
             .filter, .searchbar {
-                margin-bottom: 10px;
+                max-width: 100%;
+            }
+
+            .table th, .table td {
+                padding: 10px;
             }
         }
     </style>
@@ -136,50 +173,38 @@ include 'admin_sidebar.php';
 
 <body>
     <div class="main">
-        <div class="head">
-            <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
-        </div>
-        <hr>
+        <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
         <div class="top">
             <form method="POST" action="" class="filter">
                 <label><ion-icon name="filter-outline"></ion-icon> Filter by:</label>
-                <select class="form-select" id="f1" aria-label="Default select example" name="o_filt">
-                    <option value="" selected>-General-</option>
+                <select name="o_filt">
+                    <option value="" selected>- General -</option>
                     <optgroup label="Delivery Status:">
                         <option value="Processing">Processing</option>
                         <option value="Shipping">Shipping</option>
                         <option value="Completed">Completed</option>
                     </optgroup>
                 </select>
-                <label><ion-icon name="sort-outline"></ion-icon> Sort by:</label>
-                <select class="form-select" id="f2" aria-label="Default select example" name="o_sort">
-                    <option selected>-General-</option>
-                    <option value="a">Newest</option>
-                    <option value="b">Oldest</option>
-                    <option value="c">Highest Total</option>
-                    <option value="d">Lowest Total</option>
-                </select>
-                <label for="from"><ion-icon name="calendar-outline"></ion-icon> From</label>
-                <input type="text" id="from" class="from" name="from">
-                <label for="to">to</label>
-                <input type="text" id="to" class="to" name="to">
+                <label><ion-icon name="calendar-outline"></ion-icon> From</label>
+                <input type="text" id="from" name="from" placeholder="YYYY/MM/DD">
+                <label>To</label>
+                <input type="text" id="to" name="to" placeholder="YYYY/MM/DD">
             </form>
             <form method="POST" action="" class="searchbar">
-                <ion-icon class="magni" name="search-outline"></ion-icon>
-                <input type="text" class="input" placeholder="Search by name" name="search" id="search">
+                <ion-icon name="search-outline"></ion-icon>
+                <input type="text" name="search" placeholder="Search by name">
             </form>
         </div>
-        <hr>
         <div class="card">
-            <table class="table table-bordered table-hover">
+            <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">Order#</th>
-                        <th scope="col"><ion-icon name="person-outline"></ion-icon> Created by</th>
-                        <th scope="col"><ion-icon name="time-outline"></ion-icon> Created Time</th>
-                        <th scope="col"><ion-icon name="location-outline"></ion-icon> Shipped to</th>
-                        <th scope="col"><ion-icon name="cash-outline"></ion-icon> Total</th>
-                        <th scope="col"><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
+                        <th>Order#</th>
+                        <th><ion-icon name="person-outline"></ion-icon> Created by</th>
+                        <th><ion-icon name="time-outline"></ion-icon> Created Time</th>
+                        <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
+                        <th><ion-icon name="cash-outline"></ion-icon> Total</th>
+                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -192,7 +217,7 @@ include 'admin_sidebar.php';
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
                             <tr onclick="window.location='order_detail.php?order_id=<?php echo $row['order_id'] ?>';">
-                                <th scope="row"><?php echo $row["order_id"]; ?></th>
+                                <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_date"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
@@ -202,12 +227,12 @@ include 'admin_sidebar.php';
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="6" style="text-align:center"><b>No orders found.</b></td>
+                            <td colspan="6"><b>No orders found.</b></td>
                         </tr>
                     <?php } ?>
                 </tbody>
             </table>
-        </div><!-- end of card-->
+        </div>
     </div>
 </body>
 </html>
