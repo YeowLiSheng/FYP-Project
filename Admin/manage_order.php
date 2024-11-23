@@ -15,6 +15,7 @@ include 'admin_sidebar.php';
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -41,16 +42,18 @@ include 'admin_sidebar.php';
             color: #3498db;
         }
 
-        /* Filter and Sort Bar */
+        /* Control Bar */
         .control-bar {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             background: #fff;
             border-radius: 8px;
-            padding: 10px 20px;
+            padding: 15px 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            gap: 15px;
         }
 
         .control-bar .filter-group {
@@ -84,12 +87,16 @@ include 'admin_sidebar.php';
             color: #7f8c8d;
         }
 
-        .control-bar .searchbar input {
-            padding: 10px 12px;
-            border: 1px solid #dcdde1;
-            border-radius: 5px;
+        /* Date Range Picker */
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-range label {
             font-size: 14px;
-            outline: none;
+            color: #2c3e50;
         }
 
         /* Table Styles */
@@ -158,6 +165,13 @@ include 'admin_sidebar.php';
                     <option value="lowest">Lowest Total</option>
                 </select>
             </div>
+            <div class="date-range">
+                <label for="start-date">From:</label>
+                <input type="text" id="start-date" placeholder="Start Date">
+                <label for="end-date">To:</label>
+                <input type="text" id="end-date" placeholder="End Date">
+                <button id="filter-date" style="padding: 8px 12px; background: #3498db; color: white; border: none; border-radius: 5px;">Filter</button>
+            </div>
             <div class="searchbar">
                 <ion-icon name="search-outline"></ion-icon>
                 <input type="text" id="search-input" placeholder="Search by name">
@@ -201,9 +215,14 @@ include 'admin_sidebar.php';
         </div>
     </div>
     <script>
+        $(function () {
+            $("#start-date, #end-date").datepicker({ dateFormat: "yy-mm-dd" });
+        });
+
         document.getElementById("filter-status").addEventListener("change", filterTable);
         document.getElementById("sort-order").addEventListener("change", sortTable);
         document.getElementById("search-input").addEventListener("input", searchTable);
+        document.getElementById("filter-date").addEventListener("click", filterByDate);
 
         function filterTable() {
             const filter = document.getElementById("filter-status").value.toLowerCase();
@@ -236,8 +255,17 @@ include 'admin_sidebar.php';
                 row.style.display = name.includes(query) ? "" : "none";
             });
         }
-   // Initialize search functionality
-   document.getElementById("search-input").addEventListener("input", searchTable);
+
+        function filterByDate() {
+            const startDate = new Date(document.getElementById("start-date").value);
+            const endDate = new Date(document.getElementById("end-date").value);
+            const rows = document.querySelectorAll("#table-body tr");
+
+            rows.forEach(row => {
+                const orderDate = new Date(row.cells[2].textContent);
+                row.style.display = orderDate >= startDate && orderDate <= endDate ? "" : "none";
+            });
+        }
     </script>
 </body>
 </html>
