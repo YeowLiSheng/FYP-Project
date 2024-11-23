@@ -24,7 +24,7 @@ include 'admin_sidebar.php';
         }
 
         .main {
-            margin-left: 150px;
+            margin-left: 125px;
             padding: 15px;
         }
 
