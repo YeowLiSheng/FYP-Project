@@ -541,6 +541,14 @@ function add_check() {
                                     </div>
                                 </div>
 
+                                <div class="col-md-12">
+                                    <div class="form-group mb-4">
+                                        <label class="form-label" for="customFile">Product Image</label>
+                                        <input type="file" class="form-control" id="customFile" name="img" />
+                                        <span id="check_i"></span>
+                                    </div>
+                                </div>
+                                
                                 <!-- Quick View -->
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
@@ -561,23 +569,29 @@ function add_check() {
                                 <div class="col-md-5">
                                     <div class="form-group mb-4">
                                         <label>Category:</label>
-                                        <select class="form-select" id="category_name" aria-label="Default select example"
-                                            name="cate" required></select>
+                                        <select class="form-select" id="category" aria-label="Default select example"
+                                            name="cate" ></select>
                                     </div>
                                     <span id="check_cate"></span>
                                 </div>
 
                                 <script>
                                     $(document).ready(function () {
+                                        // Trigger the AJAX call on radio button click
                                         $('input[name="radio"]').on('click', function () {
 
-                                            var setvalue = $('input[name="radio"]:checked').val();
+                                            // Trigger an AJAX request to get all categories (no need to send 'bid' anymore)
                                             $.ajax({
-                                                url: 'run_query.php',
+                                                url: 'run_query.php',  // The PHP file that returns the options
                                                 method: 'POST',
-                                                data: { bid: setvalue },
+                                                data: {},  // No data is needed here, as we no longer filter by 'bid'
                                                 success: function (data) {
+                                                    // Populate the category dropdown with the response data
                                                     $('#category').html(data);
+                                                },
+                                                error: function (xhr, status, error) {
+                                                    // Handle AJAX errors (optional)
+                                                    console.error('AJAX Error:', status, error);
                                                 }
                                             });
                                         });
@@ -592,13 +606,6 @@ function add_check() {
                                                 placeholder="product description" name="desc"></textarea>
                                         </div>
                                         <span id="check_desc"></span>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="form-group mb-4">
-                                        <label class="form-label" for="customFile">Product Image</label>
-                                        <input type="file" class="form-control" id="customFile" name="img" />
-                                        <span id="check_i"></span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -636,6 +643,7 @@ function add_check() {
                 </div>
             </div>
         </div><!-- modal end-->
+
         <div id="category-container">
                 <h2 id="category-title">Our Categories</h2>
             <div id="category-boxes">
@@ -656,6 +664,7 @@ function add_check() {
                 </div>
             </div>
         </div>
+
         <hr>
         <?php
         $query = "SELECT 
