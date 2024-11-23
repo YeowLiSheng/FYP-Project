@@ -51,7 +51,99 @@ include  'admin_sidebar.php';
         });
     </script>
 </head>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
 
+        .main {
+            margin-left: 250px; /* Adjust for sidebar */
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .head h1 {
+            color: #333;
+            font-size: 28px;
+            margin-left: 15px;
+        }
+
+        .filter label,
+        .searchbar ion-icon {
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .filter select,
+        .filter input,
+        .searchbar input {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th, .table td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .table thead th {
+            background: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .table tbody tr:hover {
+            background: #f1f1f1;
+            cursor: pointer;
+        }
+
+        .icon {
+            color: #007bff;
+            margin-right: 8px;
+        }
+
+        .card {
+            margin-top: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top .filter,
+        .top .searchbar {
+            display: flex;
+            align-items: center;
+        }
+
+        .top .filter select {
+            margin-right: 10px;
+        }
+
+        .searchbar input {
+            padding: 7px;
+            border-radius: 5px;
+        }
+    </style>
 <body>
     <div class="main p-3">
         <div class="head" style="display:flex;">
