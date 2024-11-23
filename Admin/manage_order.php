@@ -1,7 +1,7 @@
 <?php
 
 include 'dataconnection.php';
-include  'admin_sidebar.php';
+include 'admin_sidebar.php';
 
 ?>
 
@@ -15,6 +15,88 @@ include  'admin_sidebar.php';
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <style>
+        /* 优化主内容区域样式 */
+        .main {
+            margin-left: 250px; /* 确保不影响sidebar */
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* 标题样式 */
+        .head h1 {
+            color: #343a40;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .head h1 i {
+            margin-right: 15px;
+            color: #007bff;
+        }
+
+        /* 筛选和搜索栏样式 */
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .filter select, .filter input {
+            margin-right: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+        .searchbar {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .searchbar ion-icon {
+            position: absolute;
+            left: 10px;
+            color: #6c757d;
+        }
+        .searchbar input {
+            padding: 8px 10px 8px 35px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            width: 250px;
+        }
+
+        /* 表格样式 */
+        .table {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        .table td {
+            text-align: center;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .top {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .filter, .searchbar {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
     <script>
         $(function () {
             var dateFormat = "yy/mm/dd",
@@ -51,118 +133,25 @@ include  'admin_sidebar.php';
         });
     </script>
 </head>
-<style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            margin: 0;
-            padding: 0;
-        }
 
-        .main {
-            margin-left: 250px; /* Adjust for sidebar */
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .head h1 {
-            color: #333;
-            font-size: 28px;
-            margin-left: 15px;
-        }
-
-        .filter label,
-        .searchbar ion-icon {
-            font-size: 14px;
-            margin-right: 10px;
-        }
-
-        .filter select,
-        .filter input,
-        .searchbar input {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 5px;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .table th, .table td {
-            text-align: left;
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-
-        .table thead th {
-            background: #007bff;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .table tbody tr:hover {
-            background: #f1f1f1;
-            cursor: pointer;
-        }
-
-        .icon {
-            color: #007bff;
-            margin-right: 8px;
-        }
-
-        .card {
-            margin-top: 20px;
-            background: #ffffff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .top .filter,
-        .top .searchbar {
-            display: flex;
-            align-items: center;
-        }
-
-        .top .filter select {
-            margin-right: 10px;
-        }
-
-        .searchbar input {
-            padding: 7px;
-            border-radius: 5px;
-        }
-    </style>
 <body>
-    <div class="main p-3">
-        <div class="head" style="display:flex;">
-            <i class="lni lni-list" style="font-size:50px;"></i>
-            <h1 style="margin: 12px 0 0 30px;">Order</h1>
-            <hr>
+    <div class="main">
+        <div class="head">
+            <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
         </div>
         <hr>
         <div class="top">
             <form method="POST" action="" class="filter">
-                <label>Filter by:</label>
+                <label><ion-icon name="filter-outline"></ion-icon> Filter by:</label>
                 <select class="form-select" id="f1" aria-label="Default select example" name="o_filt">
                     <option value="" selected>-General-</option>
                     <optgroup label="Delivery Status:">
                         <option value="Processing">Processing</option>
                         <option value="Shipping">Shipping</option>
                         <option value="Completed">Completed</option>
+                    </optgroup>
                 </select>
-                <label>Sort by:</label>
+                <label><ion-icon name="sort-outline"></ion-icon> Sort by:</label>
                 <select class="form-select" id="f2" aria-label="Default select example" name="o_sort">
                     <option selected>-General-</option>
                     <option value="a">Newest</option>
@@ -170,14 +159,14 @@ include  'admin_sidebar.php';
                     <option value="c">Highest Total</option>
                     <option value="d">Lowest Total</option>
                 </select>
-                <label for="from">From</label>
+                <label for="from"><ion-icon name="calendar-outline"></ion-icon> From</label>
                 <input type="text" id="from" class="from" name="from">
                 <label for="to">to</label>
                 <input type="text" id="to" class="to" name="to">
             </form>
             <form method="POST" action="" class="searchbar">
                 <ion-icon class="magni" name="search-outline"></ion-icon>
-                <input type="text" class="input" placeholder="Search with name" name="search" id="search">
+                <input type="text" class="input" placeholder="Search by name" name="search" id="search">
             </form>
         </div>
         <hr>
@@ -185,89 +174,40 @@ include  'admin_sidebar.php';
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
-                        <th scope="col" style="width:1px;">Order#</th>
-                        <th scope="col">Created by:</th>
-                        <th scope="col">Created Time</th>
-                        <th scope="col">Shipped to</th>
-                        <th scope="col" style="width:1px;">Total</th>
-                        <th scope="col">Delivery Status</th>
+                        <th scope="col">Order#</th>
+                        <th scope="col"><ion-icon name="person-outline"></ion-icon> Created by</th>
+                        <th scope="col"><ion-icon name="time-outline"></ion-icon> Created Time</th>
+                        <th scope="col"><ion-icon name="location-outline"></ion-icon> Shipped to</th>
+                        <th scope="col"><ion-icon name="cash-outline"></ion-icon> Total</th>
+                        <th scope="col"><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <?php
-                    $order = "SELECT *,user.user_name 
-                    FROM orders 
-                    JOIN user ON orders.user_id = user.user_id;                                
-                    ";
+                    $order = "SELECT *, user.user_name 
+                              FROM orders 
+                              JOIN user ON orders.user_id = user.user_id;";
                     $result = mysqli_query($connect, $order);
-                    $count = mysqli_num_rows($result);
 
                     if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            $user_id = $row["user_id"];
-                            $user = "SELECT * FROM user WHERE user_id = '$user_id'";
-                            $user_run = mysqli_query($connect, $user);
-                            $row_user = mysqli_fetch_assoc($user_run);
-
-                            ?>
+                        while ($row = mysqli_fetch_assoc($result)) { ?>
                             <tr onclick="window.location='order_detail.php?order_id=<?php echo $row['order_id'] ?>';">
-                                <th scope="row">
-                                    <?php echo $row["order_id"] ?>
-                                </th>
-                                <td>
-                                    <?php echo $row["user_name"]; ?><br>
-                                    <!-- <div style="font-size:11px;"><i>from </i>
-                                        < ?php echo $row["country"] ?> -->
-                                    <!-- </div> -->
-                                </td>
-                                <td>
-                                    <?php echo $row["order_date"] ?>
-                                </td>
-                                <td>
-                                    <?php echo
-                                     $row["shipping_address"]; ?>
-                                </td>
-
-                                <td>
-                                    RM<?php echo number_format($row["final_amount"], 2); ?>
-
-                                </td>
-                                <td>
-                                    <?php echo $row["order_status"] ?>
-                                </td>
+                                <th scope="row"><?php echo $row["order_id"]; ?></th>
+                                <td><?php echo $row["user_name"]; ?></td>
+                                <td><?php echo $row["order_date"]; ?></td>
+                                <td><?php echo $row["shipping_address"]; ?></td>
+                                <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
+                                <td><?php echo $row["order_status"]; ?></td>
                             </tr>
-                            <?php
-                        }
-                    } else {
-                        ?>
-                        <td colspan="5" style="text-align:center"><b></b></td>
-                        <?php
-                    }
-                    ?>
+                        <?php }
+                    } else { ?>
+                        <tr>
+                            <td colspan="6" style="text-align:center"><b>No orders found.</b></td>
+                        </tr>
+                    <?php } ?>
                 </tbody>
             </table>
-            <script>
-                $(document).ready(function () {
-                    $('#f1, #f2, input[name="search"], #from, #to').on('change keyup', function () {
-                        var f1 = $('#f1').val();
-                        var f2 = $('#f2').val();
-                        var order = $('input[name="search"]').val();
-                        var from = $('#from').val();
-                        var to = $('#to').val();
-                        $.ajax({
-                            url: 'run_query.php',
-                            method: 'POST',
-                            data: { f1: f1, f2: f2, order: order, from: from, to: to },
-                            success: function (response) {
-                                $('#table-body').html(response);
-                            }
-                        });
-                    });
-                });
-
-            </script>
         </div><!-- end of card-->
     </div>
 </body>
-
 </html>
