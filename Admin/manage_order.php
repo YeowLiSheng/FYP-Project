@@ -222,16 +222,18 @@ include 'admin_sidebar.php';
                     <?php
                     $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
                     $result = mysqli_query($connect, $order);
+                    
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
                             <tr>
-                                <td><?php echo $row["order_id"]; ?></td>
+                                <td onclick="window.location='order_detail.php?order_id=><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_datetime"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
                                 <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
                                 <td><?php echo $row["order_status"]; ?></td>
+                                
                             </tr>
                         <?php }
                     } else { ?>
