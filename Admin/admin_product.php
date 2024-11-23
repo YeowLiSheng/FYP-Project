@@ -574,17 +574,17 @@ function add_check() {
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
                                         <label for="quick_view1">Quick View 1:</label>
-                                        <input type="text" class="form-control" id="quick_view1" name="quick_View1" placeholder="Quick View Detail 1">
+                                        <input type="text" class="form-control" id="quick_view1" name="quick_view1" placeholder="Quick View Detail 1">
                                         <span id="check_qv1"></span>
                                     </div>
                                     <div class="form-group mb-4">
                                         <label for="quick_view2">Quick View 2:</label>
-                                        <input type="text" class="form-control" id="quick_view2" name="quick_View2" placeholder="Quick View Detail 2">
+                                        <input type="text" class="form-control" id="quick_view2" name="quick_view2" placeholder="Quick View Detail 2">
                                         <span id="check_qv2"></span>
                                     </div>
                                     <div class="form-group mb-4">
                                         <label for="quick_view3">Quick View 3:</label>
-                                        <input type="text" class="form-control" id="quick_view3" name="quick_View3" placeholder="Quick View Detail 3">
+                                        <input type="text" class="form-control" id="quick_view3" name="quick_view3" placeholder="Quick View Detail 3">
                                         <span id="check_qv3"></span>
                                     </div>
                                 </div>
