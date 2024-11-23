@@ -52,7 +52,7 @@ include 'admin_sidebar.php';
         }
 
         .search-container input {
-            flex-grow: 1;
+            width: 100%;
             padding: 10px 12px;
             border: 1px solid #dcdde1;
             border-radius: 5px;
@@ -64,26 +64,6 @@ include 'admin_sidebar.php';
         .search-container ion-icon {
             font-size: 20px;
             color: #7f8c8d;
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .export-buttons button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background-color: #3498db;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .export-buttons button:hover {
-            background-color: #2980b9;
         }
 
         .control-bar {
@@ -347,14 +327,29 @@ include 'admin_sidebar.php';
             window.location.href = `orderdetails.php?order_id=${orderId}`;
         }
 
-        <div class="search-container">
-            <ion-icon name="search-outline"></ion-icon>
-            <input type="text" id="search-input" placeholder="Search by name">
-            <div class="export-buttons">
-                <button onclick="exportToPDF()">Export to PDF</button>
-                <button onclick="exportToExcel()">Export to Excel</button>
-            </div>
-        </div>
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.text("YLS Atelier", 105, 20, { align: "center" });
+            doc.setFontSize(14);
+            doc.text("Order List", 105, 30, { align: "center" });
+
+            const table = document.querySelector(".table");
+            doc.autoTable({
+                html: table,
+                startY: 40,
+            });
+
+            doc.save("order_list.pdf");
+        }
+
+        function exportToExcel() {
+            const table = document.querySelector(".table");
+            const wb = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(wb, "order_list.xlsx");
+        }
     </script>
 </body>
 </html>
