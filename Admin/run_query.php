@@ -1,33 +1,19 @@
 <?php
-include 'databaseconnect.php';
-// No need to check for 'bid' anymore since we fetch all categories
-$sql = "SELECT * FROM category";
-$result = mysqli_query($connect, $sql);
+include 'dataconnection.php';
+// Fetch all categories for the dropdown
+if (isset($_POST['fetch_categories'])) {
+    $sql = "SELECT * FROM category";
+    $result = mysqli_query($connect, $sql);
 
-$out = '';
-while ($row = mysqli_fetch_assoc($result)) {
-    $out .= '<option value="' . $row['category_id'] . '">' . str_replace("_", " ", $row['category_name']) . '</option>';
-}
-
-// Output the generated options for the category dropdown
-echo $out;
-
-if (isset($_POST['cust'])) {
-    $s = $_POST['cust'];
-    $cust_result = mysqli_query($connect, "SELECT * FROM user_information WHERE user_name LIKE '%$s%'");
-    $data = '';
-
-    while ($row = mysqli_fetch_array($cust_result)) {
-        $data .= '<tr onclick="window.location=\'cust_detail.php?ID=' . $row['ID'] . '\';">
-            <th scope="row">' . $row["ID"] . '</th>
-            <td>' . $row["user_name"] . '<br>
-            </td>
-            <td style="vertical-align: middle;">Telephone.No:' . $row["contactnumber"] . '<br>Email:' . $row["email"] . '</td>
-            <td>' . $row["join_time"] . '</td>
-        </tr>';
+    $out = '';
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $out .= '<option value="' . $row['category_id'] . '">' . htmlspecialchars(str_replace("_", " ", $row['category_name'])) . '</option>';
+        }
+    } else {
+        $out .= '<option value="">No categories available</option>';
     }
-
-    echo $data;
+    echo $out;
 }
 //check staff (admin)id
 if (isset($_POST['id_r'])) {
@@ -57,7 +43,7 @@ if (isset($_POST['p'])) {
 //check c 
 if (isset($_POST['c'])) {
     $c = $_POST['c'];
-    $c_c = "SELECT * FROM category WHERE category_name = '$c'";
+    $c_c = "SELECT * FROM category WHERE category = '$c'";
     $result = mysqli_query($connect, $c_c);
 
     if (mysqli_num_rows($result) > 0) {
