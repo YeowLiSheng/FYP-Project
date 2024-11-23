@@ -141,24 +141,14 @@ include 'admin_sidebar.php';
             background: #3498db;
             color: white;
             font-weight: bold;
-            position: relative;
-        }
-
-        .table th ion-icon {
-            font-size: 18px;
-            color: white;
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .table th span {
-            margin-left: 25px;
         }
 
         .table tr:hover {
             background: #ecf0f1;
+        }
+
+        .table th ion-icon {
+            margin-right: 5px;
         }
 
         @media (max-width: 768px) {
@@ -220,12 +210,12 @@ include 'admin_sidebar.php';
             <table class="table">
                 <thead>
                     <tr>
-                        <th><ion-icon name="receipt-outline"></ion-icon><span>Order#</span></th>
-                        <th><ion-icon name="person-circle-outline"></ion-icon><span>Created by</span></th>
-                        <th><ion-icon name="time-outline"></ion-icon><span>Created Time</span></th>
-                        <th><ion-icon name="location-outline"></ion-icon><span>Shipped to</span></th>
-                        <th><ion-icon name="cash-outline"></ion-icon><span>Total</span></th>
-                        <th><ion-icon name="checkmark-done-outline"></ion-icon><span>Delivery Status</span></th>
+                        <th><ion-icon name="cart-outline"></ion-icon> Order#</th>
+                        <th><ion-icon name="person-outline"></ion-icon> Created by</th>
+                        <th><ion-icon name="time-outline"></ion-icon> Created Time</th>
+                        <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
+                        <th><ion-icon name="cash-outline"></ion-icon> Total</th>
+                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -268,17 +258,28 @@ include 'admin_sidebar.php';
         function filterByDate() {
             const startDate = $("#start-date").val();
             const endDate = $("#end-date").val();
-            if (startDate && endDate) {
-                filterTable();
-            }
+            const rows = document.querySelectorAll("#table-body tr");
+
+            rows.forEach(row => {
+                const orderDate = new Date(row.cells[2].textContent);
+                const start = startDate ? new Date(startDate) : null;
+                const end = endDate ? new Date(endDate) : null;
+
+                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
         }
 
         function filterTable() {
-            const filter = document.getElementById("filter-status").value.toLowerCase();
+            const status = document.getElementById("filter-status").value;
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
-                const status = row.cells[5].textContent.toLowerCase();
-                row.style.display = status.includes(filter) ? "" : "none";
+                const orderStatus = row.cells[5].textContent;
+                row.style.display = orderStatus.includes(status) || status === "" ? "" : "none";
             });
         }
 
