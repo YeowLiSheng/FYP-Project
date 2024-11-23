@@ -211,11 +211,11 @@ include 'admin_sidebar.php';
                 <thead>
                     <tr>
                         <th><ion-icon name="cart-outline"></ion-icon> Order#</th>
-                        <th><ion-icon name="person-outline"></ion-icon> Created by</th>
-                        <th><ion-icon name="time-outline"></ion-icon> Created Time</th>
+                        <th><ion-icon name="person-outline"></ion-icon> Customers Name</th>
+                        <th><ion-icon name="time-outline"></ion-icon> Order Time</th>
                         <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
                         <th><ion-icon name="cash-outline"></ion-icon> Total</th>
-                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Delivery Status</th>
+                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Order Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
