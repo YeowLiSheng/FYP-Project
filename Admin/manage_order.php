@@ -220,7 +220,7 @@ include 'admin_sidebar.php';
                 </thead>
                 <tbody id="table-body">
                     <?php
-                    $order = "SELECT *, user.user_name, DATE(order_date) AS order_date_only FROM orders JOIN user ON orders.user_id = user.user_id;";
+                    $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
                     $result = mysqli_query($connect, $order);
 
                     if (mysqli_num_rows($result) > 0) {
@@ -228,7 +228,7 @@ include 'admin_sidebar.php';
                             <tr>
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
-                                <td><?php echo $row["order_date_only"]; ?></td>
+                                <td><?php echo $row["order_datetime"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
                                 <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
                                 <td><?php echo $row["order_status"]; ?></td>
@@ -261,7 +261,9 @@ include 'admin_sidebar.php';
             const rows = document.querySelectorAll("#table-body tr");
 
             rows.forEach(row => {
-                const orderDate = row.cells[2].textContent;
+                const orderDateTime = row.cells[2].textContent; 
+                const orderDate = orderDateTime.split(" ")[0]; // 提取日期部分
+
                 const start = startDate || null;
                 const end = endDate || null;
 
