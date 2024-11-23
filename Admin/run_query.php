@@ -53,18 +53,6 @@ if (isset($_POST['c'])) {
     }
 }
 
-//check b
-if (isset($_POST['b'])) {
-    $b = $_POST['b'];
-    $c_c = "SELECT * FROM brand WHERE brand_name = '$b'";
-    $result = mysqli_query($connect, $c_c);
-
-    if (mysqli_num_rows($result) > 0) {
-        echo "exists";
-    } else {
-        echo "not_exists";
-    }
-}
 
 //check add_product name
 if (isset($_POST['p_n'])) {

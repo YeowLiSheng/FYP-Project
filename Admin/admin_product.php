@@ -359,6 +359,22 @@ function add_check() {
         document.getElementById("check_qv3").innerHTML = "";
     }
 
+    if (qty == "") {
+        document.getElementById("check_stock").innerHTML =
+            "Stock is required";
+        no_error = false;
+    } else {
+        document.getElementById("check_stock").innerHTML = "";
+    }
+
+    if (price == "") {
+        document.getElementById("check_price").innerHTML =
+            "Price is required";
+        no_error = false;
+    } else {
+        document.getElementById("check_price").innerHTML = "";
+    }
+
     // Submit if no errors
     validate_name()
         .then(() => {
@@ -510,12 +526,14 @@ function add_check() {
                                     <div class="form-group mb-4">
                                         <label for="color1">Color 1:</label>
                                         <input type="text" class="form-control" id="color1" name="color1" placeholder="Primary color">
+                                        <span id="check_color1"></span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="color2">Color 2:</label>
                                     <input type="text" class="form-control" id="color2" name="color2" placeholder="Secondary color">
+                                    <span id="check_color2"></span>
                                 </div>
                                 </div>
 
@@ -523,13 +541,15 @@ function add_check() {
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="size1">Size 1:</label>
-                                            <input type="text" class="form-control" id="size1" name="size1" placeholder="Primary size">
+                                        <input type="text" class="form-control" id="size1" name="size1" placeholder="Primary size">
+                                        <span id="check_size1"></span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="size2">Size 2:</label>
                                         <input type="text" class="form-control" id="size2" name="size2" placeholder="Secondary size">
+                                        <span id="check_size2"></span>
                                     </div>
                                 </div>
 
@@ -538,6 +558,7 @@ function add_check() {
                                     <div class="form-group mb-4">
                                         <label for="tags">Tags:</label>
                                         <input type="text" class="form-control" id="tags" name="tags" placeholder="e.g., Fashion, Lifestyle">
+                                        <span id="check_tags"></span>
                                     </div>
                                 </div>
 
@@ -553,15 +574,18 @@ function add_check() {
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
                                         <label for="quick_view1">Quick View 1:</label>
-                                        <input type="text" class="form-control" id="quick_view1" name="Quick_View1" placeholder="Quick View Detail 1">
+                                        <input type="text" class="form-control" id="quick_view1" name="quick_View1" placeholder="Quick View Detail 1">
+                                        <span id="check_qv1"></span>
                                     </div>
                                     <div class="form-group mb-4">
                                         <label for="quick_view2">Quick View 2:</label>
-                                        <input type="text" class="form-control" id="quick_view2" name="Quick_View2" placeholder="Quick View Detail 2">
+                                        <input type="text" class="form-control" id="quick_view2" name="quick_View2" placeholder="Quick View Detail 2">
+                                        <span id="check_qv2"></span>
                                     </div>
                                     <div class="form-group mb-4">
                                         <label for="quick_view3">Quick View 3:</label>
-                                        <input type="text" class="form-control" id="quick_view3" name="Quick_View3" placeholder="Quick View Detail 3">
+                                        <input type="text" class="form-control" id="quick_view3" name="quick_View3" placeholder="Quick View Detail 3">
+                                        <span id="check_qv3"></span>
                                     </div>
                                 </div>
 
