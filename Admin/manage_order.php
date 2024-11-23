@@ -131,7 +131,7 @@ include 'admin_sidebar.php';
         }
 
         .table th, .table td {
-            padding: 15px;
+            padding: 12px;
             text-align: center;
             border: 1px solid #dcdde1;
             word-wrap: break-word;
@@ -147,32 +147,14 @@ include 'admin_sidebar.php';
             background: #ecf0f1;
         }
 
-        .action-icons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .action-icons ion-icon {
-            cursor: pointer;
-            font-size: 18px;
+        .table td.icon-cell ion-icon {
+            font-size: 20px;
             color: #3498db;
         }
 
-        .action-icons ion-icon:hover {
-            color: #2980b9;
-        }
-
-        .status-processed {
-            color: #f39c12;
-        }
-
-        .status-shipped {
-            color: #2980b9;
-        }
-
-        .status-completed {
-            color: #27ae60;
+        .table td.icon-cell {
+            text-align: center;
+            padding: 8px;
         }
 
         @media (max-width: 768px) {
@@ -189,6 +171,10 @@ include 'admin_sidebar.php';
             .table th, .table td {
                 padding: 10px;
                 font-size: 12px;
+            }
+
+            .table td.icon-cell ion-icon {
+                font-size: 18px;
             }
         }
     </style>
@@ -234,13 +220,13 @@ include 'admin_sidebar.php';
             <table class="table">
                 <thead>
                     <tr>
+                        <th class="icon-cell"><ion-icon name="card-outline"></ion-icon></th>
                         <th>Order#</th>
                         <th>Created by</th>
                         <th>Created Time</th>
                         <th>Shipped to</th>
                         <th>Total</th>
-                        <th>Delivery Status</th>
-                        <th>Actions</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -251,18 +237,20 @@ include 'admin_sidebar.php';
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
                             <tr>
+                                <td class="icon-cell"><ion-icon name="cart-outline"></ion-icon></td>
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_date"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
                                 <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
-                                <td class="status-<?php echo strtolower($row['order_status']); ?>">
-                                    <?php echo $row["order_status"]; ?>
-                                </td>
-                                <td class="action-icons">
-                                    <ion-icon name="eye-outline" title="View Order Details"></ion-icon>
-                                    <ion-icon name="create-outline" title="Edit Order"></ion-icon>
-                                    <ion-icon name="trash-outline" title="Delete Order"></ion-icon>
+                                <td class="icon-cell">
+                                    <?php if ($row["order_status"] == "Completed") { ?>
+                                        <ion-icon name="checkmark-circle-outline" style="color: green;"></ion-icon>
+                                    <?php } elseif ($row["order_status"] == "Shipping") { ?>
+                                        <ion-icon name="time-outline" style="color: orange;"></ion-icon>
+                                    <?php } else { ?>
+                                        <ion-icon name="hourglass-outline" style="color: red;"></ion-icon>
+                                    <?php } ?>
                                 </td>
                             </tr>
                         <?php }
@@ -284,56 +272,56 @@ include 'admin_sidebar.php';
             });
         });
 
-        document.getElementById("filter-status").addEventListener("change", filterTable);
-        document.getElementById("sort-order").addEventListener("change", sortTable);
-        document.getElementById("search-input").addEventListener("input", searchTable);
+        document.getElementById('filter-status').addEventListener('change', function () {
+            filterTable();
+        });
+
+        document.getElementById('sort-order').addEventListener('change', function () {
+            sortTable();
+        });
+
+        document.getElementById('search-input').addEventListener('input', function () {
+            searchTable();
+        });
 
         function filterTable() {
-            const status = document.getElementById("filter-status").value;
+            const filter = document.getElementById('filter-status').value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
-                const statusColumn = row.cells[5].textContent.trim().toLowerCase();
-                if (status === "" || statusColumn === status.toLowerCase()) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
+                const status = row.cells[6].textContent.toLowerCase();
+                row.style.display = status.includes(filter) ? "" : "none";
             });
         }
 
         function sortTable() {
-            const sortBy = document.getElementById("sort-order").value;
             const rows = Array.from(document.querySelectorAll("#table-body tr"));
-            rows.sort((a, b) => {
-                const totalA = parseFloat(a.cells[4].textContent.replace("RM", "").trim());
-                const totalB = parseFloat(b.cells[4].textContent.replace("RM", "").trim());
+            const sortOrder = document.getElementById("sort-order").value;
 
-                if (sortBy === "highest") {
-                    return totalB - totalA;
-                } else if (sortBy === "lowest") {
-                    return totalA - totalB;
-                } else if (sortBy === "newest") {
-                    return new Date(b.cells[2].textContent) - new Date(a.cells[2].textContent);
-                } else if (sortBy === "oldest") {
-                    return new Date(a.cells[2].textContent) - new Date(b.cells[2].textContent);
+            rows.sort((a, b) => {
+                if (sortOrder === "newest" || sortOrder === "oldest") {
+                    const dateA = new Date(a.cells[2].textContent);
+                    const dateB = new Date(b.cells[2].textContent);
+                    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+                } else if (sortOrder === "highest" || sortOrder === "lowest") {
+                    const totalA = parseFloat(a.cells[4].textContent.replace("RM", ""));
+                    const totalB = parseFloat(b.cells[4].textContent.replace("RM", ""));
+                    return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
                 }
                 return 0;
             });
 
-            rows.forEach(row => document.querySelector("#table-body").appendChild(row));
+            const tbody = document.getElementById("table-body");
+            rows.forEach(row => tbody.appendChild(row));
         }
 
         function searchTable() {
             const query = document.getElementById("search-input").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
-                const orderId = row.cells[0].textContent.toLowerCase();
-                const userName = row.cells[1].textContent.toLowerCase();
-                if (orderId.includes(query) || userName.includes(query)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
+                const name = row.cells[1].textContent.toLowerCase();
+                row.style.display = name.includes(query) ? "" : "none";
             });
         }
     </script>
