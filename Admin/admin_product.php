@@ -568,7 +568,7 @@ function add_check() {
                                 <!-- category -->
                                 <div class="col-md-5">
                                     <div class="form-group mb-4">
-                                        <label>Categor:</label>
+                                        <label>Category:</label>
                                         <select class="form-select" id="category" aria-label="Default select example"
                                             name="cate" ></select>
                                     </div>
@@ -577,26 +577,23 @@ function add_check() {
 
                                 <script>
                                     $(document).ready(function () {
-                                        // Trigger the AJAX call on radio button click
-                                        $('input[name="radio"]').on('click', function () {
-
-                                            // Trigger an AJAX request to get all categories (no need to send 'bid' anymore)
+                                        // Automatically fetch categories when the modal is opened
+                                        $('#myModal').on('show.bs.modal', function () {
                                             $.ajax({
-                                                url: 'run_query.php',  // The PHP file that returns the options
+                                                url: 'run_query.php', // The PHP file that returns the categories
                                                 method: 'POST',
-                                                data: {},  // No data is needed here, as we no longer filter by 'bid'
+                                                data: { fetch_categories: true }, // Send the specific fetch_categories flag
                                                 success: function (data) {
-                                                    // Populate the category dropdown with the response data
-                                                    $('#category').html(data);
+                                                    $('#category').html(data); // Populate the dropdown with categories
                                                 },
                                                 error: function (xhr, status, error) {
-                                                    // Handle AJAX errors (optional)
-                                                    console.error('AJAX Error:', status, error);
+                                                    console.error('AJAX Error:', status, error); // Handle AJAX errors
                                                 }
                                             });
                                         });
                                     });
                                 </script>
+
 
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
