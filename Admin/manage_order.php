@@ -76,27 +76,40 @@ include 'admin_sidebar.php';
             border-color: #3498db;
         }
 
-        .control-bar .searchbar {
+        /* Search Engine (New Position) */
+        .search-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .searchbar {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .control-bar .searchbar ion-icon {
+        .searchbar input {
+            padding: 10px 12px;
+            border: 1px solid #dcdde1;
+            border-radius: 5px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .searchbar input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+
+        .searchbar ion-icon {
             font-size: 20px;
             color: #7f8c8d;
-        }
-
-        /* Date Range Picker */
-        .date-range {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .date-range label {
-            font-size: 14px;
-            color: #2c3e50;
         }
 
         /* Table Styles */
@@ -139,12 +152,22 @@ include 'admin_sidebar.php';
                 flex-direction: column;
                 gap: 15px;
             }
+
+            .search-section {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="main">
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
+        <div class="search-section">
+            <div class="searchbar">
+                <ion-icon name="search-outline"></ion-icon>
+                <input type="text" id="search-input" placeholder="Search by name">
+            </div>
+        </div>
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
@@ -170,10 +193,6 @@ include 'admin_sidebar.php';
                 <input type="text" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
                 <input type="text" id="end-date" placeholder="End Date">
-            </div>
-            <div class="searchbar">
-                <ion-icon name="search-outline"></ion-icon>
-                <input type="text" id="search-input" placeholder="Search by name">
             </div>
         </div>
         <div class="card">
@@ -246,15 +265,17 @@ include 'admin_sidebar.php';
         function filterTable() {
             const filter = document.getElementById("filter-status").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
                 const status = row.cells[5].textContent.toLowerCase();
-                row.style.display = filter === "" || status.includes(filter) ? "" : "none";
+                row.style.display = filter && !status.includes(filter) ? "none" : "";
             });
         }
 
         function sortTable() {
             const sort = document.getElementById("sort-order").value;
             const rows = Array.from(document.querySelectorAll("#table-body tr"));
+
             rows.sort((a, b) => {
                 if (sort === "newest") return new Date(b.cells[2].textContent) - new Date(a.cells[2].textContent);
                 if (sort === "oldest") return new Date(a.cells[2].textContent) - new Date(b.cells[2].textContent);
@@ -262,6 +283,7 @@ include 'admin_sidebar.php';
                 if (sort === "lowest") return parseFloat(a.cells[4].textContent.replace("RM", "")) - parseFloat(b.cells[4].textContent.replace("RM", ""));
                 return 0;
             });
+
             const tableBody = document.getElementById("table-body");
             tableBody.innerHTML = "";
             rows.forEach(row => tableBody.appendChild(row));
@@ -270,6 +292,7 @@ include 'admin_sidebar.php';
         function searchTable() {
             const search = document.getElementById("search-input").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
+
             rows.forEach(row => {
                 const name = row.cells[1].textContent.toLowerCase();
                 row.style.display = name.includes(search) ? "" : "none";
