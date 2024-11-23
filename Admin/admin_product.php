@@ -541,6 +541,14 @@ function add_check() {
                                     </div>
                                 </div>
 
+                                <div class="col-md-12">
+                                    <div class="form-group mb-4">
+                                        <label class="form-label" for="customFile">Product Image</label>
+                                        <input type="file" class="form-control" id="customFile" name="img" />
+                                        <span id="check_i"></span>
+                                    </div>
+                                </div>
+                                
                                 <!-- Quick View -->
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
@@ -594,13 +602,6 @@ function add_check() {
                                         <span id="check_desc"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-12">
-                                    <div class="form-group mb-4">
-                                        <label class="form-label" for="customFile">Product Image</label>
-                                        <input type="file" class="form-control" id="customFile" name="img" />
-                                        <span id="check_i"></span>
-                                    </div>
-                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label class="form-label" for="price">Price:</label>
@@ -636,6 +637,7 @@ function add_check() {
                 </div>
             </div>
         </div><!-- modal end-->
+
         <div id="category-container">
                 <h2 id="category-title">Our Categories</h2>
             <div id="category-boxes">
@@ -656,6 +658,7 @@ function add_check() {
                 </div>
             </div>
         </div>
+
         <hr>
         <?php
         $query = "SELECT 
