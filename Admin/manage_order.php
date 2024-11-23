@@ -81,6 +81,12 @@ include 'admin_sidebar.php';
             gap: 15px;
         }
 
+        .control-bar .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .control-bar select, .control-bar input {
             padding: 10px 12px;
             border: 1px solid #dcdde1;
@@ -95,6 +101,17 @@ include 'admin_sidebar.php';
             border-color: #3498db;
         }
 
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-range label {
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
         .card {
             background: white;
             border-radius: 10px;
@@ -106,40 +123,28 @@ include 'admin_sidebar.php';
         .table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 10px;
+            background: white;
             overflow: hidden;
+            border-radius: 10px;
+            margin-top: 10px;
+            table-layout: fixed;
         }
 
         .table th, .table td {
             padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ecf0f1;
+            text-align: center;
+            border: 1px solid #dcdde1;
+            word-wrap: break-word;
         }
 
         .table th {
             background: #3498db;
             color: white;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .table td {
-            font-size: 14px;
-            color: #2c3e50;
-        }
-
-        .table tr:nth-child(even) {
-            background: #f8f9fa;
+            font-weight: bold;
         }
 
         .table tr:hover {
             background: #ecf0f1;
-        }
-
-        .table img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
         }
 
         @media (max-width: 768px) {
@@ -151,6 +156,11 @@ include 'admin_sidebar.php';
             .search-container {
                 flex-direction: column;
                 gap: 10px;
+            }
+
+            .table th, .table td {
+                padding: 10px;
+                font-size: 12px;
             }
         }
     </style>
@@ -165,17 +175,17 @@ include 'admin_sidebar.php';
         </div>
 
         <div class="control-bar">
-            <div>
-                <label for="filter-status">Filter by:</label>
+            <div class="filter-group">
+                <label>Filter by:</label>
                 <select id="filter-status">
                     <option value="" selected>- General -</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipping">Shipping</option>
-                    <option value="Completed">Completed</option>
+                    <optgroup label="Delivery Status">
+                        <option value="Processing">Processing</option>
+                        <option value="Shipping">Shipping</option>
+                        <option value="Completed">Completed</option>
+                    </optgroup>
                 </select>
-            </div>
-            <div>
-                <label for="sort-order">Sort by:</label>
+                <label>Sort by:</label>
                 <select id="sort-order">
                     <option value="" selected>- General -</option>
                     <option value="newest">Newest</option>
@@ -183,6 +193,12 @@ include 'admin_sidebar.php';
                     <option value="highest">Highest Total</option>
                     <option value="lowest">Lowest Total</option>
                 </select>
+            </div>
+            <div class="date-range">
+                <label for="start-date">From:</label>
+                <input type="text" id="start-date" placeholder="Start Date">
+                <label for="end-date">To:</label>
+                <input type="text" id="end-date" placeholder="End Date">
             </div>
         </div>
 
@@ -216,7 +232,7 @@ include 'admin_sidebar.php';
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="6" style="text-align: center;">No orders found.</td>
+                            <td colspan="6">No orders found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
@@ -259,34 +275,38 @@ include 'admin_sidebar.php';
 
             rows.forEach(row => {
                 const status = row.cells[5].textContent.toLowerCase();
-                row.style.display = filter === "" || status.includes(filter) ? "" : "none";
+                row.style.display = status.includes(filter) ? "" : "none";
             });
         }
 
         function sortTable() {
-            const sort = document.getElementById("sort-order").value;
             const rows = Array.from(document.querySelectorAll("#table-body tr"));
+            const sortOrder = document.getElementById("sort-order").value;
 
             rows.sort((a, b) => {
-                if (sort === "newest") return new Date(b.cells[2].textContent) - new Date(a.cells[2].textContent);
-                if (sort === "oldest") return new Date(a.cells[2].textContent) - new Date(b.cells[2].textContent);
-                if (sort === "highest") return parseFloat(b.cells[4].textContent.replace("RM", "")) - parseFloat(a.cells[4].textContent.replace("RM", ""));
-                if (sort === "lowest") return parseFloat(a.cells[4].textContent.replace("RM", "")) - parseFloat(b.cells[4].textContent.replace("RM", ""));
+                if (sortOrder === "newest" || sortOrder === "oldest") {
+                    const dateA = new Date(a.cells[2].textContent);
+                    const dateB = new Date(b.cells[2].textContent);
+                    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+                } else if (sortOrder === "highest" || sortOrder === "lowest") {
+                    const totalA = parseFloat(a.cells[4].textContent.replace("RM", ""));
+                    const totalB = parseFloat(b.cells[4].textContent.replace("RM", ""));
+                    return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
+                }
                 return 0;
             });
 
-            const tableBody = document.getElementById("table-body");
-            tableBody.innerHTML = "";
-            rows.forEach(row => tableBody.appendChild(row));
+            const tbody = document.getElementById("table-body");
+            rows.forEach(row => tbody.appendChild(row));
         }
 
         function searchTable() {
-            const search = document.getElementById("search-input").value.toLowerCase();
+            const query = document.getElementById("search-input").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
 
             rows.forEach(row => {
                 const name = row.cells[1].textContent.toLowerCase();
-                row.style.display = name.includes(search) ? "" : "none";
+                row.style.display = name.includes(query) ? "" : "none";
             });
         }
     </script>
