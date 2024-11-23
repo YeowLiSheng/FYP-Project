@@ -131,7 +131,7 @@ include 'admin_sidebar.php';
         }
 
         .table th, .table td {
-            padding: 12px;
+            padding: 15px;
             text-align: center;
             border: 1px solid #dcdde1;
             word-wrap: break-word;
@@ -141,20 +141,24 @@ include 'admin_sidebar.php';
             background: #3498db;
             color: white;
             font-weight: bold;
+            position: relative;
+        }
+
+        .table th ion-icon {
+            font-size: 18px;
+            color: white;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .table th span {
+            margin-left: 25px;
         }
 
         .table tr:hover {
             background: #ecf0f1;
-        }
-
-        .table td.icon-cell ion-icon {
-            font-size: 20px;
-            color: #3498db;
-        }
-
-        .table td.icon-cell {
-            text-align: center;
-            padding: 8px;
         }
 
         @media (max-width: 768px) {
@@ -171,10 +175,6 @@ include 'admin_sidebar.php';
             .table th, .table td {
                 padding: 10px;
                 font-size: 12px;
-            }
-
-            .table td.icon-cell ion-icon {
-                font-size: 18px;
             }
         }
     </style>
@@ -220,13 +220,12 @@ include 'admin_sidebar.php';
             <table class="table">
                 <thead>
                     <tr>
-                        <th class="icon-cell"><ion-icon name="card-outline"></ion-icon></th>
-                        <th>Order#</th>
-                        <th>Created by</th>
-                        <th>Created Time</th>
-                        <th>Shipped to</th>
-                        <th>Total</th>
-                        <th>Status</th>
+                        <th><ion-icon name="receipt-outline"></ion-icon><span>Order#</span></th>
+                        <th><ion-icon name="person-circle-outline"></ion-icon><span>Created by</span></th>
+                        <th><ion-icon name="time-outline"></ion-icon><span>Created Time</span></th>
+                        <th><ion-icon name="location-outline"></ion-icon><span>Shipped to</span></th>
+                        <th><ion-icon name="cash-outline"></ion-icon><span>Total</span></th>
+                        <th><ion-icon name="checkmark-done-outline"></ion-icon><span>Delivery Status</span></th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
@@ -237,33 +236,23 @@ include 'admin_sidebar.php';
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
                             <tr>
-                                <td class="icon-cell"><ion-icon name="cart-outline"></ion-icon></td>
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_date"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
                                 <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
-                                <td class="icon-cell">
-                                    <?php if ($row["order_status"] == "Completed") { ?>
-                                        <ion-icon name="checkmark-circle-outline" style="color: green;"></ion-icon>
-                                    <?php } elseif ($row["order_status"] == "Shipping") { ?>
-                                        <ion-icon name="time-outline" style="color: orange;"></ion-icon>
-                                    <?php } else { ?>
-                                        <ion-icon name="hourglass-outline" style="color: red;"></ion-icon>
-                                    <?php } ?>
-                                </td>
+                                <td><?php echo $row["order_status"]; ?></td>
                             </tr>
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="7">No orders found.</td>
+                            <td colspan="6">No orders found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
             </table>
         </div>
     </div>
-
     <script>
         $(function () {
             $("#start-date, #end-date").datepicker({
@@ -272,24 +261,23 @@ include 'admin_sidebar.php';
             });
         });
 
-        document.getElementById('filter-status').addEventListener('change', function () {
-            filterTable();
-        });
+        document.getElementById("filter-status").addEventListener("change", filterTable);
+        document.getElementById("sort-order").addEventListener("change", sortTable);
+        document.getElementById("search-input").addEventListener("input", searchTable);
 
-        document.getElementById('sort-order').addEventListener('change', function () {
-            sortTable();
-        });
-
-        document.getElementById('search-input').addEventListener('input', function () {
-            searchTable();
-        });
+        function filterByDate() {
+            const startDate = $("#start-date").val();
+            const endDate = $("#end-date").val();
+            if (startDate && endDate) {
+                filterTable();
+            }
+        }
 
         function filterTable() {
-            const filter = document.getElementById('filter-status').value.toLowerCase();
+            const filter = document.getElementById("filter-status").value.toLowerCase();
             const rows = document.querySelectorAll("#table-body tr");
-
             rows.forEach(row => {
-                const status = row.cells[6].textContent.toLowerCase();
+                const status = row.cells[5].textContent.toLowerCase();
                 row.style.display = status.includes(filter) ? "" : "none";
             });
         }
