@@ -53,7 +53,7 @@ $pdf->SetTextColor(220, 53, 69);
 $pdf->Cell(0, 10, 'YLS Atelier', 0, 1, 'C');
 $pdf->SetFont('Arial', 'I', 10);
 $pdf->SetTextColor(0);
-$pdf->Cell(0, 6, 'Pasar Pudu Baru 10, Kuala Lumpur 53000', 0, 1, 'C');
+$pdf->Cell(0, 6, 'Melbourne VIC Australia', 0, 1, 'C');
 $pdf->Ln(10);
 
 // 绘制分割线
@@ -103,7 +103,7 @@ $itemNumber = 1;
 
 while ($detail = $details_result->fetch_assoc()) {
     $pdf->Cell(20, 8, $itemNumber, 1, 0, 'C');
-    $pdf->Cell(85, 8, $detail['product_name'], 1, 0, 'L');
+    $pdf->Cell(85, 8, $detail['product_name'], 1, 0, 'C');
     $pdf->Cell(30, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
     $pdf->Cell(20, 8, $detail['quantity'], 1, 0, 'C');
     $pdf->Cell(35, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
@@ -113,15 +113,15 @@ while ($detail = $details_result->fetch_assoc()) {
 // 价格明细 (往下调整)
 $pdf->Ln(10);
 $pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(150, 6, 'Grand Total:', 0, 0, 'R');
+$pdf->Cell(151, 6, 'Grand Total:', 0, 0, 'R');
 $pdf->Cell(40, 6, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
-$pdf->Cell(150, 6, 'Discount:', 0, 0, 'R');
+$pdf->Cell(151, 6, 'Discount:', 0, 0, 'R');
 $pdf->Cell(40, 6, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
-$pdf->Cell(150, 6, 'Delivery Charge:', 0, 0, 'R');
+$pdf->Cell(151, 6, 'Delivery Charge:', 0, 0, 'R');
 $pdf->Cell(40, 6, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'R');
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(150, 8, 'Total Amount:', 0, 0, 'R');
-$pdf->Cell(40, 8, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
+$pdf->Cell(151, 10, 'Total Amount:', 0, 0, 'R');
+$pdf->Cell(40, 10, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
 
 // 感谢语句
 $pdf->Ln(10);
