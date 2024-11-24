@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
             <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
             <tr>
-                <td><img src="User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" style="width: 50px;"></td>
+                <td><img src="images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" style="width: 50px;"></td>
                 <td><?= $row['product_name'] ?></td>
                 <td><?= $row['quantity'] ?></td>
                 <td>RM <?= $row['unit_price'] ?></td>
