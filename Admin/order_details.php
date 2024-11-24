@@ -45,10 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Order Details</title>
     <style>
-        /* 基础样式 */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
         }
@@ -58,12 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin: auto;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
         }
-        h2 {
-            color: #333;
-            text-align: center;
+        h2, h3 {
+            color: #444;
             margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
         }
         table {
             width: 100%;
@@ -77,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         table th {
             background-color: #f8f8f8;
-            color: #555;
+            color: #444;
         }
         .btn {
             display: inline-block;
@@ -109,6 +110,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         .order-status button:hover {
             background: #0056b3;
+        }
+        .user-message {
+            font-style: italic;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .total-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .total-summary h4 {
+            margin: 0;
+            color: #333;
+        }
+        .total-summary .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .total-summary .summary-row:last-child {
+            border-bottom: none;
         }
     </style>
 </head>
@@ -149,12 +175,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <td><?= $order_data['shipping_address'] ?></td>
             </tr>
             <tr>
-                <th>Total Amount</th>
-                <td>RM <?= $order_data['final_amount'] ?></td>
+                <th>Shipping Method</th>
+                <td><?= $order_data['shipping_method'] ?></td>
             </tr>
             <tr>
-                <th>Status</th>
-                <td><?= $order_data['order_status'] ?></td>
+                <th>User Message</th>
+                <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td>
             </tr>
         </table>
 
@@ -170,14 +196,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
             <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
             <tr>
-                <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" style="width: 50px;"></td>
+                <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" style="width: 50px; border-radius: 4px;"></td>
                 <td><?= $row['product_name'] ?></td>
                 <td><?= $row['quantity'] ?></td>
-                <td>RM <?= $row['unit_price'] ?></td>
-                <td>RM <?= $row['total_price'] ?></td>
+                <td>RM <?= number_format($row['unit_price'], 2) ?></td>
+                <td>RM <?= number_format($row['total_price'], 2) ?></td>
             </tr>
             <?php endwhile; ?>
         </table>
+
+        <!-- 总计信息 -->
+        <div class="total-summary">
+            <h4>Order Summary</h4>
+            <div class="summary-row">
+                <span>Grand Total:</span>
+                <span>RM <?= number_format($order_data['Grand_total'], 2) ?></span>
+            </div>
+            <div class="summary-row">
+                <span>Discount Amount:</span>
+                <span>- RM <?= number_format($order_data['discount_amount'], 2) ?></span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery Charge:</span>
+                <span>+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span>
+            </div>
+            <div class="summary-row">
+                <span>Total Payment:</span>
+                <span>RM <?= number_format($order_data['final_amount'], 2) ?></span>
+            </div>
+        </div>
 
         <!-- 更新订单状态 -->
         <div class="order-status">
