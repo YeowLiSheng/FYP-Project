@@ -9,6 +9,7 @@ include 'dataconnection.php';
 </head>
 
 <style>
+<style>
     .card {
         padding: 30px;
         max-width: 1425px; /* Set max-width to keep the table within this width */
@@ -63,8 +64,51 @@ include 'dataconnection.php';
         padding: 10px; /* Set padding for cells */
         vertical-align: middle;
     }
+
+    /* Style for Export button and dropdown */
+    .btn-group {
+        position: relative;
+    }
+
+    .export-btn {
+        margin-left: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+        border-radius: 5px;
+    }
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-content a:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* Show dropdown on button click */
+    .show-dropdown .dropdown-content {
+        display: block;
+    }
 </style>
 
+</style>
 <body>
     <div class="main p-3">
         <div class="head" style="display:flex;">
@@ -78,10 +122,24 @@ include 'dataconnection.php';
                 <ion-icon class="magni" name="search-outline"></ion-icon>
                 <input type="text" class="input" placeholder="Search with name" name="search" id="search">
             </form>
-        </div>
 
-        
+            <!-- Export Button and Dropdown -->
+            <form method="POST" action="generate_user.php">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Export:
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><button type="submit" class="dropdown-item" href="#" name="cust_pdf">PDF</a></li>
+                        <li><button type="submit" class="dropdown-item" href="#" name="cust_excel">CSV</a></li>
+                    </ul>
+                </div>
+            </form>
+        </div> <!-- End of top div -->
         <hr>
+        
+        <!-- Moved the table below the search bar -->
         <div class="card">
             <table class="table table-bordered table-hover">
                 <thead>
@@ -121,6 +179,9 @@ include 'dataconnection.php';
         </div><!-- end of card-->
     </div><!-- end of main-->
 
+
+
+    
     <script>
         // Use AJAX to fetch the filtered results when user types
         $("#search").keyup(function() {
@@ -136,5 +197,7 @@ include 'dataconnection.php';
                 }
             });
         });
+
+
     </script>
 </body>
