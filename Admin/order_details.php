@@ -65,27 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #fff;
             padding: 20px;
             text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         .header h1 {
             margin: 0;
             font-size: 1.8rem;
-        }
-        .print-button {
-            background: #fff;
-            color: #2575fc;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            text-decoration: none;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: background 0.3s ease;
-        }
-        .print-button:hover {
-            background: #e6e6e6;
         }
         .content {
             padding: 30px;
@@ -174,14 +157,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             object-fit: cover;
             border-radius: 5px;
         }
+        .print-button {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .print-button a {
+            background: #34c759;
+            color: #fff;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .print-button a:hover {
+            background: #28a745;
+        }
     </style>
+    <script>
+        function printInvoice() {
+            window.location.href = "receipt.php?order_id=<?= $order_id ?>";
+        }
+    </script>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
         <h1>Order Details</h1>
-        <a href="print_invoice.php?order_id=<?= $order_id ?>" target="_blank" class="print-button">Print Invoice</a>
     </div>
     <div class="content">
         <!-- 用户信息 -->
@@ -196,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 订单信息 -->
         <div class="section">
-            <h3><i class="fas fa-receipt"></i> Order Information</h3>
+            <h3><i class="fas fa-info-circle"></i> Order Information</h3>
             <table>
                 <tr><th>Order ID</th><td><?= $order_data['order_id'] ?></td></tr>
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
@@ -245,10 +247,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="submit">Update</button>
             </form>
         </div>
+
+        <!-- 打印发票按钮 -->
+        <div class="print-button">
+            <a href="javascript:void(0);" onclick="printInvoice()">Print Invoice</a>
+        </div>
     </div>
 </div>
 
-<!-- 引入 Font Awesome 图标库 -->
+<!-- FontAwesome for Icons -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
 </body>
