@@ -702,7 +702,9 @@ function add_check() {
          category.category_name,
          product.tags,
          product.color1,
-         product.color2
+         product.color2,
+         product.size1,
+         product.size2
          FROM product
          JOIN category ON product.category_id = category.category_id
          JOIN product_status ON product.product_status = product_status.p_status_id";
@@ -827,6 +829,13 @@ function add_check() {
                                                                         <b>Colors</b>
                                                                     </label>
                                                                     <?php echo $row['color1'] ?>, <?php echo $row['color2'] ?>
+                                                                </div>
+
+                                                                <div class="form-group mb-4">
+                                                                    <label style="margin-right:9px;">
+                                                                        <b>Sizes</b>
+                                                                    </label>
+                                                                    <?php echo $row['size1'] ?>, <?php echo $row['size2'] ?>
                                                                 </div>
 
                                                                 <div class="form-group mb-4">
@@ -1009,32 +1018,99 @@ function add_check() {
                                                                         value="<?php echo $row["product_name"]; ?>">
                                                                 </div>
                                                             </div>
+                                                            <div class="col-md-5">
+                                                                <div class="form-group mb-4">
+                                                                    <label>Category:</label>
+                                                                    <select class="form-select"
+                                                                        id="edit-category<?php echo $row["product_id"]; ?>"
+                                                                        aria-label="Default select example" name="cate">
+                                                                        <?php
+                                                                        $selected_cate = $row["category_name"];
+                                                                        $select = mysqli_query($connect, "SELECT * FROM category where category_name = '$selected_cate'");
+                                                                        while ($rowc = mysqli_fetch_assoc($select)) {
+                                                                            ?>
+                                                                            <option value="<?php echo $rowc['category_id']; ?>"
+                                                                                checked>
+                                                                                <?php echo $rowc['category_name']; ?>
+                                                                            </option>
+                                                                            <?php
+                                                                        }
+                                                                        ?>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <script>
+                                                                document.addEventListener('DOMContentLoaded', function () {
+                                                                    // Fetch the dropdown element
+                                                                    const categoryDropdown = document.querySelectorAll('[id^="edit-category"]');
+
+                                                                    categoryDropdown.forEach(dropdown => {
+                                                                        // Send a POST request to run_query.php to fetch categories
+                                                                        fetch('run_query.php', {
+                                                                            method: 'POST',
+                                                                            headers: {
+                                                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                                                            },
+                                                                            body: 'fetch_categories=true',
+                                                                        })
+                                                                        .then(response => response.text())
+                                                                        .then(data => {
+                                                                            dropdown.innerHTML = data; // Populate the dropdown with the fetched options
+                                                                        })
+                                                                        .catch(error => {
+                                                                            console.error('Error fetching categories:', error);
+                                                                            dropdown.innerHTML = '<option value="">Error loading categories</option>';
+                                                                        });
+                                                                    });
+                                                                });
+                                                            </script>
+
+                                                            <div class="col-md-12">
+                                                                <div class="form-group mb-4">
+                                                                    <label class="form-label"
+                                                                        for="imgInput<?php echo $row['image']; ?>">Product
+                                                                        Image
+                                                                    </label>
+                                                                    <input type="file" class="form-control"
+                                                                        id="imgInput<?php echo $row['image']; ?>" name="img">
+                                                                    <input type="hidden" name="old-img"
+                                                                        value="<?php echo $row['image'] ?>">
+                                                                </div>
+                                                            </div>
+
 
                                                             <!-- Description -->
                                                             <div class="col-md-12">
                                                                 <div class="form-group mb-4">
                                                                     <label for="product_desc">Description:</label>
                                                                     <textarea class="form-control" 
-                                                                        name="product_desc" 
-                                                                        placeholder="Enter product description"><?php echo $row["product_des"]; ?></textarea>
+                                                                        name="desc" 
+                                                                        placeholder="Enter product description"><?php echo $row["product_desc"]; ?></textarea>
                                                                 </div>
                                                             </div>
 
                                                             <!-- Images -->
                                                             <div class="col-md-4">
                                                                 <label for="Quick_View1">Quick View 1:</label>
-                                                                <input type="file" class="form-control" name="Quick_View1">
-                                                                <input type="hidden" name="old_quick_view1" value="<?php echo $row['Quick_View1']; ?>">
+                                                                <input type="file" class="form-control"
+                                                                        id="imgInput<?php echo $row['Quick_view1']; ?>" name="quick_view1">
+                                                                    <input type="hidden" name="old-quick_view1"
+                                                                        value="<?php echo $row['Quick_view1'] ?>">
                                                             </div>
                                                             <div class="col-md-4">
                                                                 <label for="Quick_View2">Quick View 2:</label>
-                                                                <input type="file" class="form-control" name="Quick_View2">
-                                                                <input type="hidden" name="old_quick_view2" value="<?php echo $row['Quick_View2']; ?>">
+                                                                <input type="file" class="form-control"
+                                                                        id="imgInput<?php echo $row['Quick_view2']; ?>" name="quick_view2">
+                                                                    <input type="hidden" name="old-quick_view2"
+                                                                        value="<?php echo $row['Quick_view2'] ?>">
                                                             </div>
                                                             <div class="col-md-4">
                                                                 <label for="Quick_View3">Quick View 3:</label>
-                                                                <input type="file" class="form-control" name="Quick_View3">
-                                                                <input type="hidden" name="old_quick_view3" value="<?php echo $row['Quick_View3']; ?>">
+                                                                <input type="file" class="form-control"
+                                                                        id="imgInput<?php echo $row['Quick_view3']; ?>" name="quick_view3">
+                                                                    <input type="hidden" name="old-quick_view3"
+                                                                        value="<?php echo $row['Quick_view3'] ?>">
                                                             </div>
 
                                                             <!-- Price and Stock -->
@@ -1043,15 +1119,15 @@ function add_check() {
                                                                 <div class="input-group mb-3">
                                                                     <span class="input-group-text">RM</span>
                                                                     <input type="text" class="form-control" 
-                                                                        name="product_price" 
-                                                                        value="<?php echo $row["product_price"]; ?>">
+                                                                        name="price" 
+                                                                        value="<?php echo $row["price"]; ?>">
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <label for="product_stock">Stock:</label>
                                                                 <input type="text" class="form-control" 
-                                                                    name="product_stock" 
-                                                                    value="<?php echo $row["product_stock"]; ?>">
+                                                                    name="qty" 
+                                                                    value="<?php echo $row["stock"]; ?>">
                                                             </div>
 
                                                             <!-- Colors -->
@@ -1116,7 +1192,7 @@ function add_check() {
                                             <i class="lni lni-close"></i>
                                         </button>
                                         <?php
-                                    } else if ($row["product_status"] == 0) {
+                                    } else if ($row["product_status"] == 2) {
                                         ?>
                                         <button type="button" class="btn btn-success" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
@@ -1140,7 +1216,7 @@ function add_check() {
 
                                                 <div class="modal-body">
                                                     Set this product to status: <b style="color:red;">Unavailable</b>?<br>
-                                                    <img src="../image/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <img src="../User/images/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
@@ -1166,7 +1242,7 @@ function add_check() {
 
                                                 <div class="modal-body">
                                                     Set this product to status: <b style="color:#0EAF09;">Available</b>?<br>
-                                                    <img src="../image/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <img src="../User/images/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">

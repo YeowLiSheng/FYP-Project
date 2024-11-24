@@ -76,14 +76,12 @@ if (isset($_GET["product_id"])) {
 if (isset($_POST["edit_product"])) {
     $id = $_POST["product_id"];
     $pd = $_POST["product_name"];
-    $b = $_POST["brand"];
-    $type = $_POST["edit-radio"];
     $c = $_POST["cate"];
     $d = $_POST["desc"];
     $img = empty($_POST["img"]) ? $_POST["old-img"] : $_POST["img"];
-    $quick_view1 = $_POST["quick_view1"];
-    $quick_view2 = $_POST["quick_view2"];
-    $quick_view3 = $_POST["quick_view3"];
+    $quick_view1 = empty($_POST["quick_view1"]) ? $_POST["old-quick_view1"] : $_POST["quick_view1"];
+    $quick_view2 = empty($_POST["quick_view2"]) ? $_POST["old-quick_view2"] : $_POST["quick_view2"];
+    $quick_view3 = empty($_POST["quick_view3"]) ? $_POST["old-quick_view3"] : $_POST["quick_view3"];
     $price = $_POST["price"];
     $qty = $_POST["qty"];
     $color1 = $_POST["color1"];
@@ -106,8 +104,7 @@ if (isset($_POST["edit_product"])) {
                 color2='$color2',
                 size1='$size1',
                 size2='$size2',
-                tags='$tags',
-                product_type='$type' 
+                tags='$tags'
                 WHERE product_id = '$id'";
 
     $update_run = mysqli_query($connect, $update);

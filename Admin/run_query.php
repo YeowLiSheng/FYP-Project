@@ -43,7 +43,7 @@ if (isset($_POST['p'])) {
 //check c 
 if (isset($_POST['c'])) {
     $c = $_POST['c'];
-    $c_c = "SELECT * FROM category WHERE category = '$c'";
+    $c_c = "SELECT * FROM category WHERE category_name = '$c'";
     $result = mysqli_query($connect, $c_c);
 
     if (mysqli_num_rows($result) > 0) {
