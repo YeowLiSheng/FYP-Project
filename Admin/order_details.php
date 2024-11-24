@@ -3,7 +3,7 @@ include 'dataconnection.php'; // 连接数据库
 include 'admin_sidebar.php'; // 引入管理员侧边栏
 
 if (isset($_GET['order_id'])) {
-    $order_id = $_GET['order_id'];
+    $order_id = (int)$_GET['order_id']; // 强制转换为整数以避免 SQL 注入
 
     // 查询订单信息
     $order_query = "
@@ -11,16 +11,16 @@ if (isset($_GET['order_id'])) {
         FROM orders o
         JOIN user u ON o.user_id = u.user_id
         WHERE o.order_id = $order_id";
-    $order_result = mysqli_query($conn, $order_query);
+    $order_result = mysqli_query($connect, $order_query);
     $order_data = mysqli_fetch_assoc($order_result);
 
     // 查询订单详情信息
     $order_details_query = "
-        SELECT od.*, p.product_name, p.product_image, p.product_price
+        SELECT od.*, p.product_name, p.product_image
         FROM order_details od
         JOIN product p ON od.product_id = p.product_id
         WHERE od.order_id = $order_id";
-    $order_details_result = mysqli_query($conn, $order_details_query);
+    $order_details_result = mysqli_query($connect, $order_details_query);
 } else {
     echo "<script>alert('Order ID is missing.'); window.location.href='admin_orders.php';</script>";
     exit();
@@ -28,10 +28,10 @@ if (isset($_GET['order_id'])) {
 
 // 处理订单状态更新
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $new_status = $_POST['order_status'];
+    $new_status = mysqli_real_escape_string($connect, $_POST['order_status']);
     $update_query = "UPDATE orders SET order_status = '$new_status' WHERE order_id = $order_id";
-    if (mysqli_query($conn, $update_query)) {
-        echo "<script>alert('Order status updated successfully.'); window.location.reload();</script>";
+    if (mysqli_query($connect, $update_query)) {
+        echo "<script>alert('Order status updated successfully.'); window.location.href='?order_id=$order_id';</script>";
     } else {
         echo "<script>alert('Failed to update order status.');</script>";
     }
@@ -45,24 +45,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Order Details</title>
     <style>
-        /* 全局样式 */
+        /* 基础样式 */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
         }
         .container {
-            margin: 20px auto;
-            max-width: 1200px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        h2, h3 {
+        h2 {
             color: #333;
             text-align: center;
+            margin-bottom: 20px;
         }
         table {
             width: 100%;
@@ -70,35 +71,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin: 20px 0;
         }
         table th, table td {
-            text-align: left;
             padding: 10px;
+            text-align: left;
             border-bottom: 1px solid #ddd;
         }
         table th {
-            background: #f4f4f4;
+            background-color: #f8f8f8;
+            color: #555;
         }
-        .product-image {
-            width: 60px;
-            height: auto;
-            border-radius: 5px;
-        }
-        .status-update {
-            text-align: right;
-            margin-top: 20px;
-        }
-        .status-update select, .status-update button {
-            padding: 8px 12px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .status-update button {
-            background-color: #007BFF;
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #4CAF50;
             color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .order-status {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .order-status select {
+            padding: 8px;
+            margin-right: 10px;
+        }
+        .order-status button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .status-update button:hover {
-            background-color: #0056b3;
+        .order-status button:hover {
+            background: #0056b3;
         }
     </style>
 </head>
@@ -140,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
             <tr>
                 <th>Total Amount</th>
-                <td>RM <?= number_format($order_data['final_amount'], 2) ?></td>
+                <td>RM <?= $order_data['final_amount'] ?></td>
             </tr>
             <tr>
                 <th>Status</th>
@@ -148,8 +158,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
         </table>
 
-        <!-- 产品详情 -->
-        <h3>Products</h3>
+        <!-- 订单详情 -->
+        <h3>Order Details</h3>
         <table>
             <tr>
                 <th>Image</th>
@@ -160,19 +170,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
             <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
             <tr>
-                <td><img src="images/<?= $row['product_image'] ?>" alt="Product Image" class="product-image"></td>
+                <td><img src="FYP-Project/User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" style="width: 50px;"></td>
                 <td><?= $row['product_name'] ?></td>
                 <td><?= $row['quantity'] ?></td>
-                <td>RM <?= number_format($row['product_price'], 2) ?></td>
-                <td>RM <?= number_format($row['quantity'] * $row['product_price'], 2) ?></td>
+                <td>RM <?= $row['unit_price'] ?></td>
+                <td>RM <?= $row['total_price'] ?></td>
             </tr>
             <?php endwhile; ?>
         </table>
 
         <!-- 更新订单状态 -->
-        <div class="status-update">
+        <div class="order-status">
             <form method="post">
-                <label for="order_status">Update Status:</label>
+                <label for="order_status">Update Order Status:</label>
                 <select name="order_status" id="order_status">
                     <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
                     <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
