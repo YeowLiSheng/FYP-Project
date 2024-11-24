@@ -7,7 +7,7 @@ $order_id = $_GET['order_id']; // Assuming the order_id is passed via GET
 
 // Fetch order information
 $order_query = "SELECT * FROM orders WHERE order_id = ?";
-$stmt = $connect->prepare($order_query);
+$stmt = $conn->prepare($order_query);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order_result = $stmt->get_result();
@@ -15,14 +15,14 @@ $order = $order_result->fetch_assoc();
 
 // Fetch order details
 $order_details_query = "SELECT * FROM order_details WHERE order_id = ?";
-$stmt = $connect->prepare($order_details_query);
+$stmt = $conn->prepare($order_details_query);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order_details_result = $stmt->get_result();
 
 // Fetch user information
 $user_query = "SELECT * FROM user WHERE user_id = ?";
-$stmt = $connect->prepare($user_query);
+$stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $order['user_id']);
 $stmt->execute();
 $user_result = $stmt->get_result();
@@ -49,52 +49,74 @@ if (isset($_POST['update_status'])) {
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fc;
-            margin-left: 250px; /* Sidebar width */
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f7f7;
+            margin-left: 250px;
+            padding: 20px;
+            color: #333;
         }
         .container {
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
             margin-top: 20px;
         }
-        .order-header, .user-header {
-            font-size: 20px;
+        h2, h3 {
+            color: #444;
             margin-bottom: 20px;
-            font-weight: bold;
+        }
+        .order-header, .user-header, .form-container {
+            margin-bottom: 30px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         table th, table td {
-            border: 1px solid #ddd;
-            padding: 10px;
+            padding: 12px 15px;
             text-align: left;
+            border-bottom: 1px solid #ddd;
         }
         table th {
-            background-color: #f2f2f2;
+            background-color: #f4f4f4;
+            color: #333;
+            font-size: 14px;
         }
-        .form-container {
-            margin-top: 20px;
+        table td {
+            font-size: 15px;
+            color: #555;
         }
-        .form-container label {
-            font-weight: bold;
-        }
-        .form-container select, .form-container button {
-            padding: 10px;
-            margin-top: 10px;
-            width: 200px;
+        table tr:hover {
+            background-color: #f1f1f1;
         }
         .order-status {
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
         .status-dropdown {
-            width: 150px;
+            width: 180px;
+            padding: 8px;
+            font-size: 14px;
+        }
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .form-container button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -113,20 +135,24 @@ if (isset($_POST['update_status'])) {
         <div class="order-details">
             <h3>Order Details</h3>
             <table>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total Price</th>
-                </tr>
-                <?php while ($detail = $order_details_result->fetch_assoc()) : ?>
+                <thead>
                     <tr>
-                        <td><?= $detail['product_name']; ?></td>
-                        <td><?= $detail['quantity']; ?></td>
-                        <td>RM <?= number_format($detail['unit_price'], 2); ?></td>
-                        <td>RM <?= number_format($detail['total_price'], 2); ?></td>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total Price</th>
                     </tr>
-                <?php endwhile; ?>
+                </thead>
+                <tbody>
+                    <?php while ($detail = $order_details_result->fetch_assoc()) : ?>
+                        <tr>
+                            <td><?= $detail['product_name']; ?></td>
+                            <td><?= $detail['quantity']; ?></td>
+                            <td>RM <?= number_format($detail['unit_price'], 2); ?></td>
+                            <td>RM <?= number_format($detail['total_price'], 2); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
             </table>
         </div>
 
@@ -143,7 +169,7 @@ if (isset($_POST['update_status'])) {
             <h3>Update Order Status</h3>
             <form method="POST">
                 <div class="order-status">
-                    <label for="order_status">Status:</label>
+                    <label for="order_status">Order Status:</label>
                     <select name="order_status" id="order_status" class="status-dropdown">
                         <option value="Processing" <?= $order['order_status'] == 'Processing' ? 'selected' : ''; ?>>Processing</option>
                         <option value="Shipping" <?= $order['order_status'] == 'Shipping' ? 'selected' : ''; ?>>Shipping</option>
