@@ -1,6 +1,106 @@
 <?php
 include 'dataconnection.php';
 include 'admin_sidebar.php';
+
+// Include libraries for PDF and Excel generation
+require 'fpdf/fpdf.php';
+require 'PHPExcel/Classes/PHPExcel.php';
+
+if (isset($_POST['export_pdf'])) {
+    // Export to PDF
+    class PDF extends FPDF {
+        function Header() {
+            $this->SetFont('Arial', 'B', 14);
+            $this->Cell(0, 10, 'YLS Atelier - Order List', 0, 1, 'C');
+            $this->Ln(10);
+        }
+        
+        function Footer() {
+            $this->SetY(-15);
+            $this->SetFont('Arial', 'I', 10);
+            $this->Cell(0, 10, 'Page ' . $this->PageNo(), 0, 0, 'C');
+        }
+    }
+
+    $pdf = new PDF();
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 12);
+
+    $query = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
+    $result = mysqli_query($connect, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->Cell(30, 10, 'Order#', 1);
+        $pdf->Cell(40, 10, 'Customer Name', 1);
+        $pdf->Cell(40, 10, 'Order Time', 1);
+        $pdf->Cell(50, 10, 'Shipping Address', 1);
+        $pdf->Cell(30, 10, 'Total', 1);
+        $pdf->Cell(30, 10, 'Status', 1);
+        $pdf->Ln();
+
+        $pdf->SetFont('Arial', '', 12);
+        while ($row = mysqli_fetch_assoc($result)) {
+            $pdf->Cell(30, 10, $row['order_id'], 1);
+            $pdf->Cell(40, 10, $row['user_name'], 1);
+            $pdf->Cell(40, 10, $row['order_datetime'], 1);
+            $pdf->Cell(50, 10, $row['shipping_address'], 1);
+            $pdf->Cell(30, 10, 'RM' . number_format($row['final_amount'], 2), 1);
+            $pdf->Cell(30, 10, $row['order_status'], 1);
+            $pdf->Ln();
+        }
+    } else {
+        $pdf->Cell(0, 10, 'No orders found.', 0, 1);
+    }
+
+    $pdf->Output('D', 'Order_List.pdf');
+    exit;
+}
+
+if (isset($_POST['export_excel'])) {
+    // Export to Excel
+    $excel = new PHPExcel();
+    $excel->setActiveSheetIndex(0);
+    $sheet = $excel->getActiveSheet();
+
+    $sheet->setTitle('Order List');
+    $sheet->setCellValue('A1', 'YLS Atelier - Order List');
+    $sheet->mergeCells('A1:F1');
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+
+    $sheet->setCellValue('A2', 'Order#');
+    $sheet->setCellValue('B2', 'Customer Name');
+    $sheet->setCellValue('C2', 'Order Time');
+    $sheet->setCellValue('D2', 'Shipping Address');
+    $sheet->setCellValue('E2', 'Total');
+    $sheet->setCellValue('F2', 'Status');
+
+    $query = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
+    $result = mysqli_query($connect, $query);
+
+    $rowNum = 3;
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $sheet->setCellValue('A' . $rowNum, $row['order_id']);
+            $sheet->setCellValue('B' . $rowNum, $row['user_name']);
+            $sheet->setCellValue('C' . $rowNum, $row['order_datetime']);
+            $sheet->setCellValue('D' . $rowNum, $row['shipping_address']);
+            $sheet->setCellValue('E' . $rowNum, 'RM' . number_format($row['final_amount'], 2));
+            $sheet->setCellValue('F' . $rowNum, $row['order_status']);
+            $rowNum++;
+        }
+    } else {
+        $sheet->setCellValue('A3', 'No orders found.');
+    }
+
+    $writer = PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="Order_List.xlsx"');
+    header('Cache-Control: max-age=0');
+    $writer->save('php://output');
+    exit;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +139,26 @@ include 'admin_sidebar.php';
             font-size: 32px;
             color: #3498db;
         }
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
 
+        .export-buttons button {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .export-buttons button:hover {
+            background-color: #2980b9;
+        }
         .search-container {
             margin-bottom: 20px;
             background: #fff;
@@ -177,9 +296,12 @@ include 'admin_sidebar.php';
         
         <div class="search-container">
             <ion-icon name="search-outline"></ion-icon>
-            <input type="text" id="search-input" placeholder="Search by name">
+            <input type="text" id="search-input" placeholder="Search by name" style="flex-grow: 1; max-width: 300px;">
+            <form method="POST" class="export-buttons">
+                <button type="submit" name="export_pdf">Export to PDF</button>
+                <button type="submit" name="export_excel">Export to Excel</button>
+            </form>
         </div>
-
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
