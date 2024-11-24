@@ -13,6 +13,8 @@ include 'admin_sidebar.php';
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
     <style>
         body {
@@ -52,13 +54,28 @@ include 'admin_sidebar.php';
         }
 
         .search-container input {
-            width: 100%;
+            flex: 1;
             padding: 10px 12px;
             border: 1px solid #dcdde1;
             border-radius: 5px;
             outline: none;
             font-size: 14px;
             background: white;
+        }
+
+        .search-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .search-container button:hover {
+            background: #1d6fa5;
         }
 
         .search-container ion-icon {
@@ -178,6 +195,8 @@ include 'admin_sidebar.php';
         <div class="search-container">
             <ion-icon name="search-outline"></ion-icon>
             <input type="text" id="search-input" placeholder="Search by name">
+            <button id="export-pdf">Export PDF</button>
+            <button id="export-excel">Export Excel</button>
         </div>
 
         <div class="control-bar">
@@ -253,9 +272,45 @@ include 'admin_sidebar.php';
             });
         });
 
-        document.getElementById("filter-status").addEventListener("change", filterTable);
-        document.getElementById("sort-order").addEventListener("change", sortTable);
-        document.getElementById("search-input").addEventListener("input", searchTable);
+        document.getElementById("export-pdf").addEventListener("click", exportPDF);
+        document.getElementById("export-excel").addEventListener("click", exportExcel);
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(16);
+            doc.text("YLS Atelier", 20, 20);
+            doc.text("Order List", 20, 30);
+
+            const tableData = [];
+            document.querySelectorAll("#table-body tr").forEach(row => {
+                const rowData = Array.from(row.cells).map(cell => cell.textContent.trim());
+                tableData.push(rowData);
+            });
+
+            doc.autoTable({
+                head: [["Order#", "Customer Name", "Order Time", "Shipped To", "Total", "Order Status"]],
+                body: tableData,
+                startY: 40
+            });
+
+            doc.save("Order_List.pdf");
+        }
+
+        function exportExcel() {
+            const wb = XLSX.utils.book_new();
+            wb.Props = {
+                Title: "Order List",
+                Author: "YLS Atelier",
+            };
+
+            const table = document.querySelector(".table");
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+            XLSX.writeFile(wb, "Order_List.xlsx");
+        }
 
         function filterByDate() {
             const startDate = $("#start-date").val();
@@ -264,7 +319,7 @@ include 'admin_sidebar.php';
 
             rows.forEach(row => {
                 const orderDateTime = row.cells[2].textContent; 
-                const orderDate = orderDateTime.split(" ")[0]; // 提取日期部分
+                const orderDate = orderDateTime.split(" ")[0];
 
                 const start = startDate || null;
                 const end = endDate || null;
@@ -319,8 +374,7 @@ include 'admin_sidebar.php';
         }
 
         function viewOrderDetails(orderId) {
-            // 跳转到 orderdetails.php 并传递 order_id
-            window.location.href = `orderdetails.php?order_id=${orderId}`;
+            window.location.href = `order_details.php?order_id=${orderId}`;
         }
     </script>
 </body>

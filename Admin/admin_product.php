@@ -112,7 +112,16 @@
     #check_name,
     #check_type,
     #check_cate,
-    #check_desc {
+    #check_qv1,
+    #check_qv2,
+    #check_qv3,
+    #check_color1,
+    #check_color2,
+    #check_size1,
+    #check_size2,
+    #check_tags,
+    #check_desc 
+    {
         color: red;
         font-size: 0.9em;
     }
@@ -574,17 +583,17 @@ function add_check() {
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
                                         <label for="quick_view1">Quick View 1:</label>
-                                        <input type="text" class="form-control" id="quick_view1" name="quick_view1" placeholder="Quick View Detail 1">
+                                        <input type="file" class="form-control" id="quick_view1" name="quick_view1" placeholder="Quick View Detail 1">
                                         <span id="check_qv1"></span>
                                     </div>
                                     <div class="form-group mb-4">
                                         <label for="quick_view2">Quick View 2:</label>
-                                        <input type="text" class="form-control" id="quick_view2" name="quick_view2" placeholder="Quick View Detail 2">
+                                        <input type="file" class="form-control" id="quick_view2" name="quick_view2" placeholder="Quick View Detail 2">
                                         <span id="check_qv2"></span>
                                     </div>
                                     <div class="form-group mb-4">
                                         <label for="quick_view3">Quick View 3:</label>
-                                        <input type="text" class="form-control" id="quick_view3" name="quick_view3" placeholder="Quick View Detail 3">
+                                        <input type="file" class="form-control" id="quick_view3" name="quick_view3" placeholder="Quick View Detail 3">
                                         <span id="check_qv3"></span>
                                     </div>
                                 </div>
@@ -1184,7 +1193,7 @@ function add_check() {
 
 
                                     <?php
-                                    if ($row["product_status"] == 1) { // 1 = Available, 0 = Unavailable
+                                    if ($row["product_status"] == "Available") { // 1 = Available, 0 = Unavailable
                                         ?>
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
@@ -1192,7 +1201,7 @@ function add_check() {
                                             <i class="lni lni-close"></i>
                                         </button>
                                         <?php
-                                    } else if ($row["product_status"] == 2) {
+                                    } else if ($row["product_status"] == "Unavailable") {
                                         ?>
                                         <button type="button" class="btn btn-success" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
@@ -1216,7 +1225,7 @@ function add_check() {
 
                                                 <div class="modal-body">
                                                     Set this product to status: <b style="color:red;">Unavailable</b>?<br>
-                                                    <img src="../User/images/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <img src="../User/images/<?php echo $row["image"] ?>" alt="Product Image" class="img-fluid">
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
@@ -1242,7 +1251,7 @@ function add_check() {
 
                                                 <div class="modal-body">
                                                     Set this product to status: <b style="color:#0EAF09;">Available</b>?<br>
-                                                    <img src="../User/images/<?php echo $row["product_image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <img src="../User/images/<?php echo $row["image"] ?>" alt="Product Image" class="img-fluid">
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
