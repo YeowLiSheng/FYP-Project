@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- Font Awesome CDN -->
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
@@ -82,12 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-left: 5px solid #2575fc;
             padding-left: 10px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
-        .section h3 i {
-            margin-right: 10px;
-            color: #2575fc;
         }
         table {
             width: 100%;
@@ -157,27 +152,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             object-fit: cover;
             border-radius: 5px;
         }
+        .icon {
+            margin-right: 8px;
+            color: #2575fc;
+        }
         .print-button {
-            margin-top: 20px;
-            text-align: right;
-        }
-        .print-button a {
-            background: #34c759;
-            color: #fff;
+            background: #ff6b6b;
+            color: white;
             padding: 10px 15px;
-            text-decoration: none;
+            border: none;
             border-radius: 5px;
-            font-size: 14px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            margin-top: 20px;
         }
-        .print-button a:hover {
-            background: #28a745;
+        .print-button:hover {
+            background: #e55b5b;
         }
     </style>
-    <script>
-        function printInvoice() {
-            window.location.href = "receipt.php?order_id=<?= $order_id ?>";
-        }
-    </script>
 </head>
 <body>
 
@@ -188,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="content">
         <!-- 用户信息 -->
         <div class="section">
-            <h3><i class="fas fa-user"></i> User Information</h3>
+            <h3><i class="fas fa-user icon"></i>User Information</h3>
             <table>
                 <tr><th>Name</th><td><?= $order_data['user_name'] ?></td></tr>
                 <tr><th>Email</th><td><?= $order_data['user_email'] ?></td></tr>
@@ -198,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 订单信息 -->
         <div class="section">
-            <h3><i class="fas fa-info-circle"></i> Order Information</h3>
+            <h3><i class="fas fa-box icon"></i>Order Information</h3>
             <table>
                 <tr><th>Order ID</th><td><?= $order_data['order_id'] ?></td></tr>
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
@@ -211,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 订单详情 -->
         <div class="section">
-            <h3><i class="fas fa-box"></i> Order Items</h3>
+            <h3><i class="fas fa-list-ul icon"></i>Order Items</h3>
             <table>
                 <tr><th>Image</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
@@ -228,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 订单汇总 -->
         <div class="order-summary">
-            <h4>Order Summary</h4>
+            <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
             <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
             <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
             <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
@@ -248,15 +241,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
 
-        <!-- 打印发票按钮 -->
-        <div class="print-button">
-            <a href="javascript:void(0);" onclick="printInvoice()">Print Invoice</a>
-        </div>
+        <!-- Print Invoice Button -->
+        <button class="print-button" onclick="window.print()">Print Invoice</button>
     </div>
 </div>
-
-<!-- FontAwesome for Icons -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
 </body>
 </html>
