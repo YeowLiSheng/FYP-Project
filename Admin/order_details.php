@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
@@ -58,8 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-                    padding-top: 30px; /* 避开 header 的遮挡，稍微多留一点间距 */
-
+            padding-top: 30px;
         }
         .header {
             background: linear-gradient(45deg, #6a11cb, #2575fc);
@@ -80,9 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .section h3 {
             margin-bottom: 15px;
             color: #444;
+            display: flex;
+            align-items: center;
             border-left: 5px solid #2575fc;
             padding-left: 10px;
             font-weight: bold;
+        }
+        .section h3 i {
+            margin-right: 10px;
+            color: #2575fc;
         }
         table {
             width: 100%;
@@ -146,6 +152,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .status-form button:hover {
             background: #1a5bb5;
         }
+        .print-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #28a745;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .print-btn:hover {
+            background: #218838;
+        }
         img.product-image {
             width: 50px;
             height: 50px;
@@ -163,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="content">
         <!-- 用户信息 -->
         <div class="section">
-            <h3>User Information</h3>
+            <h3><i class="fas fa-user"></i> User Information</h3>
             <table>
                 <tr><th>Name</th><td><?= $order_data['user_name'] ?></td></tr>
                 <tr><th>Email</th><td><?= $order_data['user_email'] ?></td></tr>
@@ -173,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 订单信息 -->
         <div class="section">
-            <h3>Order Information</h3>
+            <h3><i class="fas fa-info-circle"></i> Order Information</h3>
             <table>
                 <tr><th>Order ID</th><td><?= $order_data['order_id'] ?></td></tr>
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
@@ -186,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 订单详情 -->
         <div class="section">
-            <h3>Order Items</h3>
+            <h3><i class="fas fa-shopping-cart"></i> Order Items</h3>
             <table>
                 <tr><th>Image</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
@@ -208,6 +226,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
             <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
             <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
+        </div>
+
+        <!-- 打印按钮 -->
+        <div style="text-align: right; margin-bottom: 20px;">
+            <a href="print_invoice.php?order_id=<?= $order_data['order_id'] ?>" class="print-btn"><i class="fas fa-print"></i> Print Invoice</a>
         </div>
 
         <!-- 更新订单状态 -->
