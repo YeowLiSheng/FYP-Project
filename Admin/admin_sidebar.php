@@ -329,7 +329,7 @@ a.sidebar-link:hover {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="admin_cust.php" class="sidebar-link">
+                    <a href="view_customer.php" class="sidebar-link">
                         <i class="lni lni-users"></i>
                         <span>User</span>
                     </a>
