@@ -7,7 +7,7 @@ $order_id = $_GET['order_id']; // Assuming the order_id is passed via GET
 
 // Fetch order information
 $order_query = "SELECT * FROM orders WHERE order_id = ?";
-$stmt = $conn->prepare($order_query);
+$stmt = $connect->prepare($order_query);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order_result = $stmt->get_result();
@@ -15,14 +15,14 @@ $order = $order_result->fetch_assoc();
 
 // Fetch order details
 $order_details_query = "SELECT * FROM order_details WHERE order_id = ?";
-$stmt = $conn->prepare($order_details_query);
+$stmt = $connect->prepare($order_details_query);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order_details_result = $stmt->get_result();
 
 // Fetch user information
 $user_query = "SELECT * FROM user WHERE user_id = ?";
-$stmt = $conn->prepare($user_query);
+$stmt = $connect->prepare($user_query);
 $stmt->bind_param("i", $order['user_id']);
 $stmt->execute();
 $user_result = $stmt->get_result();
@@ -32,7 +32,7 @@ $user = $user_result->fetch_assoc();
 if (isset($_POST['update_status'])) {
     $new_status = $_POST['order_status'];
     $update_status_query = "UPDATE orders SET order_status = ? WHERE order_id = ?";
-    $stmt = $conn->prepare($update_status_query);
+    $stmt = $connect->prepare($update_status_query);
     $stmt->bind_param("si", $new_status, $order_id);
     $stmt->execute();
     header("Location: order_details.php?order_id=$order_id"); // Refresh the page
