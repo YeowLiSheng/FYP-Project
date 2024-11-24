@@ -3,7 +3,7 @@ include 'dataconnection.php'; // 连接数据库
 include 'admin_sidebar.php'; // 引入管理员侧边栏
 
 if (isset($_GET['order_id'])) {
-    $order_id = (int)$_GET['order_id']; // 强制转换为整数以避免 SQL 注入
+    $order_id = (int)$_GET['order_id'];
 
     // 查询订单信息
     $order_query = "
@@ -43,193 +43,175 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Order Details</title>
+    <title>Order Details</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f7f8fa;
             margin: 0;
             padding: 0;
         }
         .container {
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
+            max-width: 1100px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-        h2, h3 {
+        .header {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h3 {
+            margin-bottom: 15px;
             color: #444;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
+            border-left: 5px solid #2575fc;
+            padding-left: 10px;
+            font-weight: bold;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
         table th, table td {
-            padding: 10px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
         table th {
-            background-color: #f8f8f8;
+            background-color: #f4f6f8;
+            color: #333;
+            font-weight: bold;
+        }
+        .user-message {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #ff6b6b;
+            font-style: italic;
+            border-radius: 5px;
+        }
+        .order-summary {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .order-summary h4 {
+            margin-bottom: 10px;
+            color: #444;
+            font-weight: bold;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .summary-item span {
+            font-weight: 500;
+        }
+        .summary-item .value {
             color: #444;
         }
-        .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            background: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .btn:hover {
-            background: #45a049;
-        }
-        .order-status {
-            margin-top: 20px;
+        .status-form {
             text-align: right;
         }
-        .order-status select {
-            padding: 8px;
-            margin-right: 10px;
+        .status-form select, .status-form button {
+            padding: 10px;
+            font-size: 14px;
+            margin-left: 10px;
         }
-        .order-status button {
-            background: #007BFF;
-            color: white;
+        .status-form button {
+            background: #2575fc;
+            color: #fff;
             border: none;
-            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
         }
-        .order-status button:hover {
-            background: #0056b3;
+        .status-form button:hover {
+            background: #1a5bb5;
         }
-        .user-message {
-            font-style: italic;
-            background-color: #f9f9f9;
-            padding: 10px;
+        img.product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
             border-radius: 5px;
-        }
-        .total-summary {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        .total-summary h4 {
-            margin: 0;
-            color: #333;
-        }
-        .total-summary .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-        .total-summary .summary-row:last-child {
-            border-bottom: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Order Details</h2>
 
+<div class="container">
+    <div class="header">
+        <h1>Order Details</h1>
+    </div>
+    <div class="content">
         <!-- 用户信息 -->
-        <h3>User Information</h3>
-        <table>
-            <tr>
-                <th>Name</th>
-                <td><?= $order_data['user_name'] ?></td>
-            </tr>
-            <tr>
-                <th>Email</th>
-                <td><?= $order_data['user_email'] ?></td>
-            </tr>
-            <tr>
-                <th>Contact</th>
-                <td><?= $order_data['user_contact_number'] ?></td>
-            </tr>
-        </table>
+        <div class="section">
+            <h3>User Information</h3>
+            <table>
+                <tr><th>Name</th><td><?= $order_data['user_name'] ?></td></tr>
+                <tr><th>Email</th><td><?= $order_data['user_email'] ?></td></tr>
+                <tr><th>Contact</th><td><?= $order_data['user_contact_number'] ?></td></tr>
+            </table>
+        </div>
 
         <!-- 订单信息 -->
-        <h3>Order Information</h3>
-        <table>
-            <tr>
-                <th>Order ID</th>
-                <td><?= $order_data['order_id'] ?></td>
-            </tr>
-            <tr>
-                <th>Order Date</th>
-                <td><?= $order_data['order_date'] ?></td>
-            </tr>
-            <tr>
-                <th>Shipping Address</th>
-                <td><?= $order_data['shipping_address'] ?></td>
-            </tr>
-            <tr>
-                <th>Shipping Method</th>
-                <td><?= $order_data['shipping_method'] ?></td>
-            </tr>
-            <tr>
-                <th>User Message</th>
-                <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td>
-            </tr>
-        </table>
+        <div class="section">
+            <h3>Order Information</h3>
+            <table>
+                <tr><th>Order ID</th><td><?= $order_data['order_id'] ?></td></tr>
+                <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
+                <tr><th>Shipping Address</th><td><?= $order_data['shipping_address'] ?></td></tr>
+                <tr><th>Shipping Method</th><td><?= $order_data['shipping_method'] ?></td></tr>
+                <tr><th>User Message</th>
+                    <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
+            </table>
+        </div>
 
         <!-- 订单详情 -->
-        <h3>Order Details</h3>
-        <table>
-            <tr>
-                <th>Image</th>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th>Total Price</th>
-            </tr>
-            <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
-            <tr>
-                <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" style="width: 50px; border-radius: 4px;"></td>
-                <td><?= $row['product_name'] ?></td>
-                <td><?= $row['quantity'] ?></td>
-                <td>RM <?= number_format($row['unit_price'], 2) ?></td>
-                <td>RM <?= number_format($row['total_price'], 2) ?></td>
-            </tr>
-            <?php endwhile; ?>
-        </table>
+        <div class="section">
+            <h3>Order Items</h3>
+            <table>
+                <tr><th>Image</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
+                <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
+                    <tr>
+                        <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="product-image"></td>
+                        <td><?= $row['product_name'] ?></td>
+                        <td><?= $row['quantity'] ?></td>
+                        <td>RM <?= number_format($row['unit_price'], 2) ?></td>
+                        <td>RM <?= number_format($row['total_price'], 2) ?></td>
+                    </tr>
+                <?php endwhile; ?>
+            </table>
+        </div>
 
-        <!-- 总计信息 -->
-        <div class="total-summary">
+        <!-- 订单汇总 -->
+        <div class="order-summary">
             <h4>Order Summary</h4>
-            <div class="summary-row">
-                <span>Grand Total:</span>
-                <span>RM <?= number_format($order_data['Grand_total'], 2) ?></span>
-            </div>
-            <div class="summary-row">
-                <span>Discount Amount:</span>
-                <span>- RM <?= number_format($order_data['discount_amount'], 2) ?></span>
-            </div>
-            <div class="summary-row">
-                <span>Delivery Charge:</span>
-                <span>+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span>
-            </div>
-            <div class="summary-row">
-                <span>Total Payment:</span>
-                <span>RM <?= number_format($order_data['final_amount'], 2) ?></span>
-            </div>
+            <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
+            <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
+            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
+            <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
         <!-- 更新订单状态 -->
-        <div class="order-status">
+        <div class="status-form">
             <form method="post">
-                <label for="order_status">Update Order Status:</label>
+                <label for="order_status">Update Status:</label>
                 <select name="order_status" id="order_status">
                     <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
                     <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
@@ -239,5 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
     </div>
+</div>
+
 </body>
 </html>
