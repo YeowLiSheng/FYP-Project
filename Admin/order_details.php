@@ -51,21 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin: 0;
             padding: 0;
         }
-        h2 {
-        color: #333;
-        text-align: center;
-        margin-bottom: 40px; /* 增大底部间距 */
-    }
-
-    .container {
-        padding: 40px; /* 增加内边距 */
-        margin-top: 20px; /* 增加顶部外边距 */
-        max-width: 1200px;
-        margin: auto;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
         .header {
             background: linear-gradient(45deg, #6a11cb, #2575fc);
             color: #fff;
