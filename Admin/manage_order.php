@@ -246,7 +246,7 @@ include 'admin_sidebar.php';
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr onclick="order_details('<?php echo $row['order_id']; ?>')">
+                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_datetime"]; ?></td>
@@ -374,7 +374,7 @@ include 'admin_sidebar.php';
         }
 
         function viewOrderDetails(orderId) {
-            window.location.href = `orderdetails.php?order_id=${orderId}`;
+            window.location.href = `order_details.php?order_id=${orderId}`;
         }
     </script>
 </body>
