@@ -246,7 +246,7 @@ include 'admin_sidebar.php';
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
+                            <tr onclick="order_details('<?php echo $row['order_id']; ?>')">
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_datetime"]; ?></td>
