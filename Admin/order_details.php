@@ -242,8 +242,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <!-- Print Invoice Button -->
-        <button class="print-button" onclick="window.print()">Print Invoice</button>
-    </div>
+        <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+        </div>
 </div>
 
 </body>
