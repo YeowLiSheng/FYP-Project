@@ -7,7 +7,7 @@ $order_id = $_GET['order_id']; // Assuming the order_id is passed via GET
 
 // Fetch order information
 $order_query = "SELECT * FROM orders WHERE order_id = ?";
-$stmt = $connect->prepare($order_query);
+$stmt = $conn->prepare($order_query);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order_result = $stmt->get_result();
@@ -15,14 +15,14 @@ $order = $order_result->fetch_assoc();
 
 // Fetch order details
 $order_details_query = "SELECT * FROM order_details WHERE order_id = ?";
-$stmt = $connect->prepare($order_details_query);
+$stmt = $conn->prepare($order_details_query);
 $stmt->bind_param("i", $order_id);
 $stmt->execute();
 $order_details_result = $stmt->get_result();
 
 // Fetch user information
 $user_query = "SELECT * FROM user WHERE user_id = ?";
-$stmt = $connect->prepare($user_query);
+$stmt = $conn->prepare($user_query);
 $stmt->bind_param("i", $order['user_id']);
 $stmt->execute();
 $user_result = $stmt->get_result();
@@ -32,7 +32,7 @@ $user = $user_result->fetch_assoc();
 if (isset($_POST['update_status'])) {
     $new_status = $_POST['order_status'];
     $update_status_query = "UPDATE orders SET order_status = ? WHERE order_id = ?";
-    $stmt = $connect->prepare($update_status_query);
+    $stmt = $conn->prepare($update_status_query);
     $stmt->bind_param("si", $new_status, $order_id);
     $stmt->execute();
     header("Location: order_details.php?order_id=$order_id"); // Refresh the page
@@ -94,6 +94,12 @@ if (isset($_POST['update_status'])) {
         table tr:hover {
             background-color: #f1f1f1;
         }
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
         .order-status {
             display: flex;
             justify-content: space-between;
@@ -137,6 +143,7 @@ if (isset($_POST['update_status'])) {
             <table>
                 <thead>
                     <tr>
+                        <th>Product Image</th>
                         <th>Product Name</th>
                         <th>Quantity</th>
                         <th>Unit Price</th>
@@ -144,9 +151,18 @@ if (isset($_POST['update_status'])) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($detail = $order_details_result->fetch_assoc()) : ?>
+                    <?php while ($detail = $order_details_result->fetch_assoc()) : 
+                        $product_id = $detail['product_id'];
+                        $product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
+                        $stmt = $conn->prepare($product_query);
+                        $stmt->bind_param("i", $product_id);
+                        $stmt->execute();
+                        $product_result = $stmt->get_result();
+                        $product = $product_result->fetch_assoc();
+                    ?>
                         <tr>
-                            <td><?= $detail['product_name']; ?></td>
+                            <td><img src="uploads/<?= $product['product_image']; ?>" alt="<?= $product['product_name']; ?>" class="product-image"></td>
+                            <td><?= $product['product_name']; ?></td>
                             <td><?= $detail['quantity']; ?></td>
                             <td>RM <?= number_format($detail['unit_price'], 2); ?></td>
                             <td>RM <?= number_format($detail['total_price'], 2); ?></td>
