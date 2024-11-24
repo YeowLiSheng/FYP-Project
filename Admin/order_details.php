@@ -58,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            padding-top: 80px; /* 避开 header 的遮挡，稍微多留一点间距 */
+
         }
         .header {
             background: linear-gradient(45deg, #6a11cb, #2575fc);
