@@ -4,9 +4,9 @@ session_start();
 if(isset($_POST["voucher"]))
 {
     $vc = $_POST["voucher_code"];
-    $r = $_POST["rate"];
+    $r = $_POST["discount_rate"];
     $rate = $r / 100;
-    $st = "1";
+    $st = "Active";
     $ul = $_POST["usage_limit"];
     $ma = $_POST["minimum_amount"];
     $d = $_POST["voucher_des"];

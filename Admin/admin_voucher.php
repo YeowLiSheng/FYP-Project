@@ -3,73 +3,82 @@ include 'dataconnection.php';
 ?>
 
 <head>
-    <script>
-        function add_check() {
-            event.preventDefault();
-            var no_error = true;
+<script>
+    function add_check(event) {
+        event.preventDefault(); // Prevent form submission
+        var no_error = true;
 
-            var vc = document.s_form.code.value;
-            var rt = document.s_form.rate.value;
-            var st = document.s_form.status.value;
-            var ul = document.s_form.limit.value;
-            var ma = document.s_form.amount.value;
-            var d = document.s_form.des.value;
-            var pic = document.s_form.pic.value;
+        var vc = document.s_form.voucher_code.value.trim();
+        var rt = document.s_form.discount_rate.value.trim();
+        var ul = document.s_form.usage_limit.value.trim();
+        var ma = document.s_form.minimum_amount.value.trim();
+        var d = document.s_form.voucher_des.value.trim();
+        var pic = document.s_form.voucher_pic.value.trim();
 
-            if (vc == "") {
-                document.getElementById("check_vc").innerHTML = "Please enter a code";
-                no_error = false;
-            } else {
-                document.getElementById("check_vc").innerHTML = "";
-            }
+        // Voucher Code validation
+        if (vc === "") {
+            document.getElementById("check_vc").innerHTML = "Please enter a code";
+            no_error = false;
+        } else {
+            document.getElementById("check_vc").innerHTML = "";
+        }
 
-            if (rt == "") {
-                document.getElementById("check_rt").innerHTML = "Please enter a code";
-                no_error = false;
-            } else {
-                document.getElementById("check_rt").innerHTML = "";
-            }
+        // Discount Rate validation
+        if (rt === "") {
+            document.getElementById("check_rt").innerHTML = "Please enter a discount rate";
+            no_error = false;
+        } else if (isNaN(rt) || rt <= 0) {
+            document.getElementById("check_rt").innerHTML = "Discount rate must be a positive number";
+            no_error = false;
+        } else {
+            document.getElementById("check_rt").innerHTML = "";
+        }
 
-            if (st == "") {
-                document.getElementById("check_st").innerHTML = "Please enter a code";
-                no_error = false;
-            } else {
-                document.getElementById("check_st").innerHTML = "";
-            }
-        
-            if (ul == "") {
-                document.getElementById("check_ul").innerHTML = "Please enter a limit";
-                no_error = false;
-            } else {
-                document.getElementById("check_ul").innerHTML = "";
-            }
+        // Usage Limit validation
+        if (ul === "") {
+            document.getElementById("check_ul").innerHTML = "Please enter a usage limit";
+            no_error = false;
+        } else if (isNaN(ul) || ul <= 0) {
+            document.getElementById("check_ul").innerHTML = "Usage limit must be a positive number";
+            no_error = false;
+        } else {
+            document.getElementById("check_ul").innerHTML = "";
+        }
 
-            if (ma == "") {
-                document.getElementById("check_ma").innerHTML = "Please enter a limit";
-                no_error = false;
-            } else {
-                document.getElementById("check_ma").innerHTML = "";
-            }
+        // Minimum Amount validation
+        if (ma === "") {
+            document.getElementById("check_ma").innerHTML = "Please enter a minimum amount";
+            no_error = false;
+        } else if (isNaN(ma) || ma < 0) {
+            document.getElementById("check_ma").innerHTML = "Minimum amount must be a non-negative number";
+            no_error = false;
+        } else {
+            document.getElementById("check_ma").innerHTML = "";
+        }
 
-            if (d == "") {
-                document.getElementById("check_des").innerHTML = "Please enter a code";
-                no_error = false;
-            } else {
-                document.getElementById("check_des").innerHTML = "";
-            }
+        // Description validation
+        if (d === "") {
+            document.getElementById("check_des").innerHTML = "Please enter a description";
+            no_error = false;
+        } else {
+            document.getElementById("check_des").innerHTML = "";
+        }
 
-            if (pic == "") {
-                document.getElementById("check_pic").innerHTML = "Please enter a code";
-                no_error = false;
-            } else {
-                document.getElementById("check_pic").innerHTML = "";
-            }
+        // Voucher Picture validation
+        if (pic === "") {
+            document.getElementById("check_pic").innerHTML = "Please select a voucher picture";
+            no_error = false;
+        } else {
+            document.getElementById("check_pic").innerHTML = "";
+        }
 
+        // Submit the form if no errors are found
         if (no_error) {
             document.getElementById("s_form").submit();
         }
     }
-    </script>
+</script>
+
 </head>
 <style>
     .card {
@@ -123,9 +132,6 @@ include 'dataconnection.php';
                                 <label for="voucher_code">Voucher Code</label>
                                 <div class="input-group mb-3">
                                     <input type="text" class="form-control" id="voucher_code" name="voucher_code" required>
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">%</span>
-                                    </div>
                                 </div>
                                 <div>
                                     <span id="check_vc" style="color:red"></span>
@@ -133,7 +139,7 @@ include 'dataconnection.php';
 
                                 <label for="rate">Discount Rate</label>
                                 <div class="input-group mb-3">
-                                    <input type="text" class="form-control" id="rate" name="rate">
+                                    <input type="text" class="form-control" id="discount_rate" name="discount_rate">
                                     <div class="input-group-append">
                                         <span class="input-group-text">%</span>
                                     </div>
@@ -141,7 +147,7 @@ include 'dataconnection.php';
                                 <div>
                                     <span id="check_rt" style="color:red"></span>
                                 </div>
-
+                                
                                 <label for="usage_limit">Usage Limit</label>
                                 <div class="input-group mb-3">
                                     <input type="number" class="form-control" id="usage_limit" name="usage_limit" required>
@@ -149,7 +155,7 @@ include 'dataconnection.php';
                                 <div>
                                     <span id="check_ul" style="color:red"></span>
                                 </div>
-
+                                
                                 <label for="minimum_amount">Minimum Amount</label>
                                 <div class="input-group mb-3">
                                     <input type="text" class="form-control" id="minimum_amount" name="minimum_amount" required>
@@ -157,15 +163,15 @@ include 'dataconnection.php';
                                 <div>
                                     <span id="check_ma" style="color:red"></span>
                                 </div>
-
+                                
                                 <label for="voucher_des">Description</label>
                                 <div class="input-group mb-3">
-                                    <textarea class="form-control" id="voucher_des" name="voucher_des"></textarea>
+                                    <textarea class="form-control" id="voucher_des" name="voucher_des"></textarea>                                    
                                 </div>
                                 <div>
                                     <span id="check_des" style="color:red"></span>
                                 </div>
-
+                                
                                 <label for="minimum_amount">Voucher Picture</label>
                                 <div class="input-group mb-3">
                                     <input type="file" class="form-control" id="voucher_pic" name="voucher_pic" required>
@@ -177,7 +183,7 @@ include 'dataconnection.php';
                             <input type="hidden" name="voucher">
                             <!-- Modal footer -->
                             <div class="modal-footer">
-                                <button onclick="add_check();" class="btn btn-primary" name="voucher">Generate</button>
+                                <button onclick="add_check(event);" class="btn btn-primary" name="voucher">Generate</button>
                                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                             </div>
                         </form>
@@ -206,12 +212,13 @@ include 'dataconnection.php';
                     while ($row = mysqli_fetch_assoc($s_run)) {
                         ?>
                         <tr>
-                            <td><?php echo $row["voucher_pic"]; ?></td>
+                            <td><img src="../User/images/<?php echo $row['voucher_pic']; ?>" alt="Voucher Picture" style="width: 100px; height: auto;" /></td>
                             <td><?php echo $row["voucher_code"]; ?></td>
-                            <td><?php echo $row["rate"] . "%"; ?></td>
+                            <td><?php echo $row["discount_rate"] . "%"; ?></td>
                             <td><?php echo $row["usage_limit"]; ?></td>
                             <td><?php echo "$" . number_format($row["minimum_amount"], 2); ?></td>
                             <td><?php echo $row["voucher_des"]; ?></td>
+                            <td><?php echo $row["voucher_status"]; ?></td>
                         </tr>
                         <?php
                     }
