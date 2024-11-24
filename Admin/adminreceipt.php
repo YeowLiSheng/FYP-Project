@@ -1,5 +1,5 @@
 <?php 
-require('.../User/fpdf/fpdf.php');
+require('../User/fpdf/fpdf.php');
 session_start();
 
 $servername = "localhost";
