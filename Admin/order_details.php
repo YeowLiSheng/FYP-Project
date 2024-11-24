@@ -61,15 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding-top: 80px; /* 避开 header 的遮挡，稍微多留一点间距 */
 
         }
-        header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        height: 60px; /* header 的高度 */
-        background: #fff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        z-index: 999;
-    }
+        .header {
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
         .header h1 {
             margin: 0;
             font-size: 1.8rem;
