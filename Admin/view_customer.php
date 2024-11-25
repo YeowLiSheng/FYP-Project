@@ -9,39 +9,41 @@ include 'dataconnection.php';
 </head>
 
 <style>
-<style>
     .card {
         padding: 30px;
-        max-width: 1425px; /* Set max-width to keep the table within this width */
-        margin: 10 auto; /* Center the card */
+        max-width: 1425px;
+        margin: 20px auto; /* Increased margin for better spacing */
+        background-color: #f9f9f9; /* Light background for card */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     }
 
     .input {
-        width: 1000px; /* Make the search bar smaller */
+        width: 800px; /* Keep the search bar smaller */
         height: 50px;
         border-radius: 10px;
+        border: 1px solid #ccc; /* Border color for input */
     }
 
     input[type=text] {
         background-color: white;
-        background-position: 10px 10px;
-        background-repeat: no-repeat;
         padding-left: 40px;
+        font-size: 14px; /* Slightly smaller font */
     }
 
     tbody tr {
         cursor: pointer;
+        transition: background-color 0.3s; /* Smooth transition for hover */
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1; /* Highlight row on hover */
     }
 
     .top {
         display: flex;
         align-items: center;
-    }
-
-    .top .btn-group {
-        margin-left: 30px;
-        align-items: center;
-        margin-top: 5px;
+        gap: 20px; /* Space between search bar and export button */
     }
 
     .searchbar {
@@ -51,28 +53,35 @@ include 'dataconnection.php';
     .magni {
         position: absolute;
         top: 17%;
-        font-size: 30px;
-        left: 4.7px;
+        font-size: 20px;
+        left: 10px; /* Adjusted the position of the icon */
+        color: #333; /* Slightly darker color */
     }
 
     .table {
-        width: 100%; /* Allow the table to take up full width of the container */
-        font-size: 1em; /* Adjust font size as needed */
+        width: 100%; /* Ensure table takes full width */
+        font-size: 14px; /* Adjusted font size for readability */
+        margin-top: 20px; /* Space between card and table */
+    }
+
+    .table thead th {
+        background-color: #4CAF50; /* Green background for table headers */
+        color: white;
+        padding: 12px 15px; /* Added more padding for headers */
+        font-size: 16px; /* Larger font for headers */
     }
 
     .table th, .table td {
-        padding: 10px; /* Set padding for cells */
+        padding: 12px 15px; /* Added padding for cells */
         vertical-align: middle;
     }
 
-    /* Style for Export button and dropdown */
     .btn-group {
         position: relative;
     }
 
     .export-btn {
-        margin-left: 10px;
-        padding: 10px 20px;
+        padding: 12px 20px;
         font-size: 16px;
         border: none;
         background-color: #4CAF50;
@@ -102,13 +111,11 @@ include 'dataconnection.php';
         background-color: #f1f1f1;
     }
 
-    /* Show dropdown on button click */
     .show-dropdown .dropdown-content {
         display: block;
     }
 </style>
 
-</style>
 <body>
     <div class="main p-3">
         <div class="head" style="display:flex;">
@@ -131,15 +138,14 @@ include 'dataconnection.php';
                         Export:
                     </button>
                     <ul class="dropdown-menu">
-                        <li><button type="submit" class="dropdown-item" href="#" name="cust_pdf">PDF</a></li>
-                        <li><button type="submit" class="dropdown-item" href="#" name="cust_excel">CSV</a></li>
+                        <li><button type="submit" class="dropdown-item" name="cust_pdf">PDF</button></li>
+                        <li><button type="submit" class="dropdown-item" name="cust_excel">CSV</button></li>
                     </ul>
                 </div>
             </form>
-        </div> <!-- End of top div -->
+        </div>
+
         <hr>
-        
-        <!-- Moved the table below the search bar -->
         <div class="card">
             <table class="table table-bordered table-hover">
                 <thead>
@@ -159,7 +165,7 @@ include 'dataconnection.php';
                             ?>
                             <tr onclick="window.location='cust_detail.php?ID=<?php echo $row['user_id'] ?>';">
                                 <th scope="row"><?php echo $row["user_id"] ?></th>
-                                <td><?php echo $row["user_name"]; ?><br></td>
+                                <td><?php echo $row["user_name"]; ?></td>
                                 <td style="vertical-align: middle;">
                                     Telephone.No: <?php echo $row["user_contact_number"] ?><br>
                                     Email: <?php echo $row["user_email"] ?>
@@ -179,9 +185,6 @@ include 'dataconnection.php';
         </div><!-- end of card-->
     </div><!-- end of main-->
 
-
-
-    
     <script>
         // Use AJAX to fetch the filtered results when user types
         $("#search").keyup(function() {
@@ -198,6 +201,9 @@ include 'dataconnection.php';
             });
         });
 
-
+        // Toggle the visibility of the export dropdown menu
+        function toggleDropdown() {
+            document.getElementById("exportDropdown").classList.toggle("show-dropdown");
+        }
     </script>
 </body>
