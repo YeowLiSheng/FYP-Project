@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
                 <tr><th>Shipping Address</th><td><?= $order_data['shipping_address'] ?></td></tr>
                 <tr><th>Shipping Method</th><td><?= $order_data['shipping_method'] ?></td></tr>
-                <tr><th>User Message</th>
+                <tr><th>User Messag</th>
                     <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
             </table>
         </div>
