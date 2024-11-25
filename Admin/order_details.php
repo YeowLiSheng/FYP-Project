@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"> <!-- Font Awesome CDN -->
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
@@ -128,42 +128,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .summary-item .value {
             color: #444;
         }
-        .button-group {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 20px;
+        .status-form {
+            text-align: right;
         }
-        .button-group button,
-        .button-group a {
-            padding: 10px 15px;
+        .status-form select, .status-form button {
+            padding: 10px;
             font-size: 14px;
-            border-radius: 5px;
-            text-decoration: none;
-            text-align: center;
+            margin-left: 10px;
+        }
+        .status-form button {
+            background: #2575fc;
+            color: #fff;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .update-status {
-            background: #2575fc;
-            color: white;
-        }
-        .update-status:hover {
+        .status-form button:hover {
             background: #1a5bb5;
         }
-        .print-receipt {
+        img.product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .icon {
+            margin-right: 8px;
+            color: #2575fc;
+        }
+        .print-button {
             background: #ff6b6b;
             color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            margin-top: 20px;
         }
-        .print-receipt:hover {
+        .print-button:hover {
             background: #e55b5b;
-        }
-        .back-button {
-            background: #6c757d;
-            color: white;
-        }
-        .back-button:hover {
-            background: #5a6268;
         }
     </style>
 </head>
@@ -192,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
                 <tr><th>Shipping Address</th><td><?= $order_data['shipping_address'] ?></td></tr>
                 <tr><th>Shipping Method</th><td><?= $order_data['shipping_method'] ?></td></tr>
-                <tr><th>User Message</th>
+                <tr><th>User Messaga</th>
                     <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
             </table>
         </div>
@@ -223,20 +228,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
-        <!-- 操作按钮 -->
-        <div class="button-group">
-            <a href="manage_order.php" class="back-button">← Back to Manage Orders</a>
-            <a href="adminreceipt.php?order_id=<?= $order_data['order_id'] ?>" class="print-receipt">🖨️ Print Receipt</a>
-            <form method="post" style="display: inline;">
-                <select name="order_status" class="update-status">
+        <!-- 更新订单状态 -->
+        <div class="status-form">
+            <form method="post">
+                <label for="order_status">Update Status:</label>
+                <select name="order_status" id="order_status">
                     <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
                     <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
                     <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
                 </select>
-                <button type="submit" class="update-status">Update Status</button>
+                <button type="submit">Update</button>
             </form>
         </div>
-    </div>
+
+        <!-- Print Invoice Button -->
+        <a href="adminreceipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+        </div>
 </div>
 
 </body>
