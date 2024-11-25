@@ -163,7 +163,7 @@ include 'dataconnection.php';
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
                             ?>
-                            <tr onclick="window.location='cust_detail.php?ID=<?php echo $row['user_id'] ?>';">
+                            <tr onclick="window.location='customer_detail.php?ID=<?php echo $row['user_id'] ?>';">
                                 <th scope="row"><?php echo $row["user_id"] ?></th>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td style="vertical-align: middle;">
@@ -191,7 +191,7 @@ include 'dataconnection.php';
             var searchQuery = $(this).val();
 
             $.ajax({
-                url: "search_users.php",
+                url: "search_customer.php",
                 type: "POST",
                 data: { search: searchQuery },
                 success: function(data) {
@@ -199,6 +199,12 @@ include 'dataconnection.php';
                     $("#table-body").html(data);
                 }
             });
+        });
+
+        // Clear the search bar when a customer is clicked
+        $("tbody").on("click", "tr", function() {
+            // Clear the search bar
+            $("#search").val('');
         });
 
         // Toggle the visibility of the export dropdown menu
