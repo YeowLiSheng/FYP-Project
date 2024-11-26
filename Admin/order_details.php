@@ -99,13 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: #333;
             font-weight: bold;
         }
-        .user-message {
-            background: #f9f9f9;
-            padding: 15px;
-            border-left: 4px solid #ff6b6b;
-            font-style: italic;
-            border-radius: 5px;
-        }
         .order-summary {
             padding: 20px;
             background: #f9f9f9;
@@ -128,60 +121,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .summary-item .value {
             color: #444;
         }
-        .status-form {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-        .status-form label {
-            margin-right: 10px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .status-form select {
-            padding: 10px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-        .status-form button {
-            background: #2575fc;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .status-form button:hover {
-            background: #1a5bb5;
-        }
-        .action-buttons {
+        .status-section {
+            margin-top: 30px;
+            background: #f4f6f8;
+            padding: 20px;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+        }
+        .status-section select {
+            padding: 10px;
+            font-size: 14px;
+            margin-left: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .status-section button {
+            background: #2575fc;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .status-section button:hover {
+            background: #1a5bb5;
+        }
+        .buttons {
+            display: flex;
+            gap: 15px;
             margin-top: 20px;
         }
-        .action-buttons a {
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+        .print-button, .back-button {
+            background: #ff6b6b;
             color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
             font-size: 16px;
-            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+        .print-button:hover, .back-button:hover {
+            background: #e55b5b;
         }
         .back-button {
             background: #6c757d;
         }
         .back-button:hover {
             background: #5a6268;
-        }
-        .print-button {
-            background: #ff6b6b;
-        }
-        .print-button:hover {
-            background: #e55b5b;
         }
     </style>
 </head>
@@ -219,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="section">
             <h3><i class="fas fa-list-ul icon"></i>Order Items</h3>
             <table>
-                <tr><th>Product Image</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
+                <tr><th>Product</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
                     <tr>
                         <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="product-image"></td>
@@ -237,26 +228,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
             <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
             <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
-            <div class="summary-item"><span>Delivery Charge:</span><span class="value">RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
+            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
+            <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
-        <!-- 更新状态 -->
-        <form method="POST" class="status-form">
-            <label for="order_status">Order Status:</label>
-            <select name="order_status" id="order_status">
-                <option value="Pending" <?= ($order_data['order_status'] == 'Pending' ? 'selected' : '') ?>>Pending</option>
-                <option value="Confirmed" <?= ($order_data['order_status'] == 'Confirmed' ? 'selected' : '') ?>>Confirmed</option>
-                <option value="Shipping" <?= ($order_data['order_status'] == 'Shipping' ? 'selected' : '') ?>>Shipping</option>
-                <option value="Completed" <?= ($order_data['order_status'] == 'Completed' ? 'selected' : '') ?>>Completed</option>
-                <option value="Cancelled" <?= ($order_data['order_status'] == 'Cancelled' ? 'selected' : '') ?>>Cancelled</option>
-            </select>
-            <button type="submit">Update Status</button>
-        </form>
+        <!-- 更新订单状态 -->
+        <div class="status-section">
+            <form method="post">
+                <label for="order_status"><i class="fas fa-edit icon"></i>Update Status:</label>
+                <select name="order_status" id="order_status">
+                    <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
+                    <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
+                    <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
+                </select>
+                <button type="submit"><i class="fas fa-sync-alt icon"></i>Update</button>
+            </form>
+        </div>
 
-        <!-- 动作按钮 -->
-        <div class="action-buttons">
+        <!-- 返回按钮和打印按钮 -->
+        <div class="buttons">
             <a href="manageorder.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
-            <a href="receipt.php?order_id=<?= $order_id ?>" target="_blank" class="print-button"><i class="fas fa-print"></i> Print Receipt</a>
+            <a href="adminreceipt.php?order_id=<?= $order_id ?>" class="print-button"><i class="fas fa-print"></i> Print Receipt</a>
         </div>
     </div>
 </div>
