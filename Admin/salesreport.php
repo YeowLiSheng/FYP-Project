@@ -1,57 +1,59 @@
 <?php
-include 'dataconnection.php'; // 连接数据库
-include 'admin_sidebar.php'; // 引入管理员侧边栏
+include 'dataconnection.php'; // 数据库连接
+include 'admin_sidebar.php'; // 管理员侧边栏
 
-// 获取总订单数
-$total_orders_query = "SELECT COUNT(*) as total_orders FROM orders WHERE order_status = 'Complete'";
-$total_orders_result = mysqli_query($connect, $total_orders_query);
-$total_orders = mysqli_fetch_assoc($total_orders_result)['total_orders'];
+// 获取总订单数、总客户数、总销售额
+$totalOrdersQuery = "SELECT COUNT(order_id) AS total_orders FROM orders";
+$totalOrdersResult = mysqli_query($connect, $totalOrdersQuery);
+$totalOrders = mysqli_fetch_assoc($totalOrdersResult)['total_orders'];
 
-// 获取总客户数
-$total_customers_query = "SELECT COUNT(DISTINCT user_id) as total_customers FROM orders";
-$total_customers_result = mysqli_query($connect, $total_customers_query);
-$total_customers = mysqli_fetch_assoc($total_customers_result)['total_customers'];
+$totalCustomersQuery = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
+$totalCustomersResult = mysqli_query($connect, $totalCustomersQuery);
+$totalCustomers = mysqli_fetch_assoc($totalCustomersResult)['total_customers'];
 
-// 获取总销售额
-$total_sales_query = "SELECT SUM(final_amount) as total_sales FROM orders WHERE order_status = 'Complete'";
-$total_sales_result = mysqli_query($connect, $total_sales_query);
-$total_sales = mysqli_fetch_assoc($total_sales_result)['total_sales'];
+$totalSalesQuery = "SELECT SUM(final_amount) AS total_sales FROM orders";
+$totalSalesResult = mysqli_query($connect, $totalSalesQuery);
+$totalSales = mysqli_fetch_assoc($totalSalesResult)['total_sales'];
 
-// 获取销售类别占比
-$category_sales_query = "
-    SELECT c.category_name, SUM(od.total_price) as total_sales
-    FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
-    JOIN category c ON p.category_id = c.category_id
-    GROUP BY c.category_name
+// 获取分类的销售占比数据
+$categorySalesQuery = "
+    SELECT c.category_name, SUM(od.total_price) AS total_sales 
+    FROM order_details od 
+    JOIN product p ON od.product_id = p.product_id 
+    JOIN category c ON p.category_id = c.category_id 
+    GROUP BY c.category_id
 ";
-$category_sales_result = mysqli_query($connect, $category_sales_query);
+$categorySalesResult = mysqli_query($connect, $categorySalesQuery);
+$categorySales = [];
+while ($row = mysqli_fetch_assoc($categorySalesResult)) {
+    $categorySales[] = $row;
+}
 
-// 获取畅销产品
-$top_sales_query = "
-    SELECT p.product_name, SUM(od.quantity) as total_sold
-    FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
-    GROUP BY p.product_name
-    ORDER BY total_sold DESC LIMIT 5
+// 获取畅销商品数据
+$topProductsQuery = "
+    SELECT od.product_name, SUM(od.quantity) AS total_sold 
+    FROM order_details od 
+    GROUP BY od.product_id 
+    ORDER BY total_sold DESC 
+    LIMIT 5
 ";
-$top_sales_result = mysqli_query($connect, $top_sales_query);
+$topProductsResult = mysqli_query($connect, $topProductsQuery);
+$topProducts = [];
+while ($row = mysqli_fetch_assoc($topProductsResult)) {
+    $topProducts[] = $row;
+}
 
-// 选择日期范围
-$start_date = $_GET['start_date'] ?? date('Y-m-01');  // 默认本月第一天
-$end_date = $_GET['end_date'] ?? date('Y-m-t');  // 默认本月最后一天
-
-// 获取日期范围内的销售数据
-$sales_by_date_query = "
-    SELECT DATE(order_date) as order_date, SUM(final_amount) as daily_sales
-    FROM orders
-    WHERE order_status = 'Complete' AND order_date BETWEEN '$start_date' AND '$end_date'
-    GROUP BY DATE(order_date)
+// 获取每日销售趋势数据
+$salesTrendQuery = "
+    SELECT DATE(order_date) AS sale_date, SUM(final_amount) AS daily_sales 
+    FROM orders 
+    WHERE order_date BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE() 
+    GROUP BY sale_date
 ";
-$sales_by_date_result = mysqli_query($connect, $sales_by_date_query);
-$sales_data = [];
-while ($row = mysqli_fetch_assoc($sales_by_date_result)) {
-    $sales_data[] = $row;
+$salesTrendResult = mysqli_query($connect, $salesTrendQuery);
+$salesTrend = [];
+while ($row = mysqli_fetch_assoc($salesTrendResult)) {
+    $salesTrend[] = $row;
 }
 ?>
 
@@ -61,122 +63,127 @@ while ($row = mysqli_fetch_assoc($sales_by_date_result)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-        }
-        .card-header {
-            background-color: #f8f9fa;
-            font-weight: bold;
-        }
-        .card {
+        .summary-box {
+            background: #f8f9fa;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .container-fluid {
-            padding-top: 30px;
+        .summary-box h5 {
+            font-size: 18px;
+            color: #555;
+        }
+        .summary-box p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        canvas {
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <!-- Top Stats -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Total Orders</div>
-                    <div class="card-body">
-                        <h3 class="text-center"><?php echo $total_orders; ?></h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Total Customers</div>
-                    <div class="card-body">
-                        <h3 class="text-center"><?php echo $total_customers; ?></h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">Total Sales</div>
-                    <div class="card-body">
-                        <h3 class="text-center">$<?php echo number_format($total_sales, 2); ?></h3>
-                    </div>
-                </div>
+<div class="container my-4">
+    <h1 class="mb-4 text-center">Sales Report</h1>
+
+    <!-- Summary Section -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="summary-box">
+                <h5>Total Orders</h5>
+                <p><?= $totalOrders ?></p>
             </div>
         </div>
-
-        <!-- Category Sales Pie Chart -->
-        <div class="card">
-            <div class="card-header">Category Sales Distribution</div>
-            <div class="card-body">
-                <canvas id="categoryChart"></canvas>
+        <div class="col-md-4">
+            <div class="summary-box">
+                <h5>Total Customers</h5>
+                <p><?= $totalCustomers ?></p>
             </div>
         </div>
-
-        <!-- Top 5 Selling Products -->
-        <div class="card">
-            <div class="card-header">Top 5 Selling Products</div>
-            <div class="card-body">
-                <ul class="list-group">
-                    <?php while ($row = mysqli_fetch_assoc($top_sales_result)): ?>
-                        <li class="list-group-item">
-                            <?php echo $row['product_name']; ?> - <?php echo $row['total_sold']; ?> sold
-                        </li>
-                    <?php endwhile; ?>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Sales Over Time Line Chart -->
-        <div class="card">
-            <div class="card-header">Sales Over Time</div>
-            <div class="card-body">
-                <canvas id="salesLineChart"></canvas>
+        <div class="col-md-4">
+            <div class="summary-box">
+                <h5>Total Sales</h5>
+                <p>RM <?= number_format($totalSales, 2) ?></p>
             </div>
         </div>
     </div>
 
-    <script>
-        // Category Sales Pie Chart
-        var ctx1 = document.getElementById('categoryChart').getContext('2d');
-        var categoryData = {
-            labels: [<?php while($row = mysqli_fetch_assoc($category_sales_result)): echo "'" . $row['category_name'] . "',"; endwhile; ?>],
+    <!-- Charts Section -->
+    <div class="row">
+        <!-- Pie Chart -->
+        <div class="col-md-6">
+            <h5 class="text-center">Category Sales Distribution</h5>
+            <canvas id="categorySalesChart"></canvas>
+        </div>
+
+        <!-- Line Chart -->
+        <div class="col-md-6">
+            <h5 class="text-center">Sales Trend (Last 30 Days)</h5>
+            <canvas id="salesTrendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Products Section -->
+    <div class="mt-5">
+        <h5 class="text-center">Top 5 Best-Selling Products</h5>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+            <tr>
+                <th>Product Name</th>
+                <th>Total Sold</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($topProducts as $product): ?>
+                <tr>
+                    <td><?= $product['product_name'] ?></td>
+                    <td><?= $product['total_sold'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JavaScript for Charts -->
+<script>
+    // Category Sales Pie Chart
+    const categorySalesData = <?= json_encode(array_column($categorySales, 'total_sales')) ?>;
+    const categorySalesLabels = <?= json_encode(array_column($categorySales, 'category_name')) ?>;
+    new Chart(document.getElementById('categorySalesChart'), {
+        type: 'pie',
+        data: {
+            labels: categorySalesLabels,
             datasets: [{
-                data: [<?php mysqli_data_seek($category_sales_result, 0); while($row = mysqli_fetch_assoc($category_sales_result)): echo $row['total_sales'] . ","; endwhile; ?>],
-                backgroundColor: ['#FF5733', '#33FF57', '#3357FF', '#FFD700', '#FF69B4'],
+                data: categorySalesData,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
             }]
-        };
-        var categoryChart = new Chart(ctx1, {
-            type: 'pie',
-            data: categoryData,
-        });
+        }
+    });
 
-        // Sales Over Time Line Chart
-        var ctx2 = document.getElementById('salesLineChart').getContext('2d');
-        var salesDates = [<?php foreach ($sales_data as $data) { echo "'" . $data['order_date'] . "',"; } ?>];
-        var salesValues = [<?php foreach ($sales_data as $data) { echo $data['daily_sales'] . ","; } ?>];
-
-        var salesChart = new Chart(ctx2, {
-            type: 'line',
-            data: {
-                labels: salesDates,
-                datasets: [{
-                    label: 'Sales ($)',
-                    data: salesValues,
-                    borderColor: '#42A5F5',
-                    fill: false,
-                    tension: 0.1,
-                }]
-            }
-        });
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    // Sales Trend Line Chart
+    const salesTrendData = <?= json_encode(array_column($salesTrend, 'daily_sales')) ?>;
+    const salesTrendLabels = <?= json_encode(array_column($salesTrend, 'sale_date')) ?>;
+    new Chart(document.getElementById('salesTrendChart'), {
+        type: 'line',
+        data: {
+            labels: salesTrendLabels,
+            datasets: [{
+                label: 'Daily Sales (RM)',
+                data: salesTrendData,
+                borderColor: '#36A2EB',
+                fill: false
+            }]
+        }
+    });
+</script>
 </body>
 </html>
