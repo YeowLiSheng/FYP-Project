@@ -89,6 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-collapse: collapse;
             margin-bottom: 20px;
         }
+        table img {
+        max-width: 100px; /* 限制图片的最大宽度 */
+        max-height: 100px; /* 限制图片的最大高度 */
+        object-fit: cover; /* 保持图片比例且裁剪溢出的部分 */
+        border-radius: 5px; /* 可选：为图片添加圆角 */
+    }
         table th, table td {
             padding: 12px 15px;
             border: 1px solid #ddd;
