@@ -40,7 +40,7 @@
         <!-- Top Summary Section -->
         <div class="row mb-4">
             <?php
-            include 'db_connection.php'; // 替换为您的数据库连接文件
+            include 'dataconnection.php'; // 替换为您的数据库连接文件
 
             $conn = connectDatabase();
 
