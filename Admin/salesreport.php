@@ -2,6 +2,7 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
+// 数据库查询功能
 function getTotalOrders($connect) {
     $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
     $result = mysqli_query($connect, $query);
@@ -48,7 +49,7 @@ function getSalesTrend($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取数据
+// 数据获取
 $totalOrders = getTotalOrders($connect);
 $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
@@ -62,7 +63,7 @@ $salesTrend = getSalesTrend($connect);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Report</title>
+    <title>Admin Sales Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -71,19 +72,17 @@ $salesTrend = getSalesTrend($connect);
             font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
-            margin-left: 250px; /* 假设sidebar宽度为250px */
+            margin-left: 250px; /* Sidebar left margin */
             padding: 20px;
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding-top: 80px; /* Offset to avoid header overlay */
         }
         .dashboard-card {
             color: #fff;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             border-radius: 15px;
             padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container, .table-container {
             background: #fff;
@@ -91,19 +90,26 @@ $salesTrend = getSalesTrend($connect);
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+        .chart-container {
+            height: 400px;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
         .card-header {
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #333;
+            margin-bottom: 15px;
         }
         .table thead th {
-            color: #555;
+            color: #333;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
-        <!-- Top Overview Section -->
+        <!-- Overview Section -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="dashboard-card">
@@ -131,7 +137,7 @@ $salesTrend = getSalesTrend($connect);
             </div>
         </div>
 
-        <!-- Charts Section -->
+        <!-- Chart Section -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
@@ -145,12 +151,12 @@ $salesTrend = getSalesTrend($connect);
             </div>
         </div>
 
-        <!-- Tables Section -->
+        <!-- Table and Bar Chart -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
-                    <h5 class="card-header">Top 5 Products</h5>
-                    <table class="table">
+                    <div class="card-header">Top 5 Products</div>
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
@@ -180,13 +186,9 @@ $salesTrend = getSalesTrend($connect);
 
     <script>
         // Category Pie Chart
-        const categoryData = <?php echo json_encode(array_map(function($row) {
-            return $row['category_sales'];
-        }, $categorySales)); ?>;
-        const categoryLabels = <?php echo json_encode(array_map(function($row) {
-            return $row['category_name'];
-        }, $categorySales)); ?>;
-        new Chart(document.getElementById('categoryPieChart').getContext('2d'), {
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        new Chart(document.getElementById('categoryPieChart'), {
             type: 'pie',
             data: {
                 labels: categoryLabels,
@@ -200,7 +202,7 @@ $salesTrend = getSalesTrend($connect);
         // Sales Trend Line Chart
         const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
         const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart').getContext('2d'), {
+        new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
                 labels: salesTrendLabels,
@@ -214,7 +216,7 @@ $salesTrend = getSalesTrend($connect);
         });
 
         // Category Bar Chart
-        new Chart(document.getElementById('categoryBarChart').getContext('2d'), {
+        new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
                 labels: categoryLabels,
