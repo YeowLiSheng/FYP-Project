@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- 返回按钮和打印按钮 -->
         <div class="buttons">
-            <a href="manageorder.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
+            <a href="manage_order.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
             <a href="adminreceipt.php?order_id=<?= $order_id ?>" class="print-button"><i class="fas fa-print"></i> Print Receipt</a>
         </div>
     </div>
