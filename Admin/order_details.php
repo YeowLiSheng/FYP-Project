@@ -143,6 +143,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 5px;
             border: 1px solid #ddd;
         }
+        .icon {
+    color: #2575fc; /* 主色调，与页面配色一致 */
+    margin-right: 8px; /* 增加间距，使布局更美观 */
+    font-size: 1.2rem; /* 适当增大图标尺寸，增强视觉效果 */
+    vertical-align: middle; /* 图标与文字对齐 */
+    transition: color 0.3s ease; /* 添加过渡效果 */
+}
+
+.icon:hover {
+    color: #6a11cb; /* 鼠标悬停时颜色变化，增强交互感 */
+}
         .status-section button {
             background: #2575fc;
             color: #fff;
