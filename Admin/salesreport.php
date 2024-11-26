@@ -116,6 +116,12 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 </head>
 <body>
     <div class="content-wrapper">
+        <!-- Page Header -->
+        <div class="mb-4">
+            <h1 class="display-4">Sales Dashboard</h1>
+            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and product categories.</p>
+        </div>
+
         <!-- Overview Section -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -162,11 +168,13 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
+                    <h3 class="card-header">Category Sales Distribution</h3>
                     <canvas id="categoryPieChart"></canvas>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <canvas id="salesTrendChart"></canvas>
                 </div>
             </div>
@@ -176,7 +184,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
-                    <div class="card-header">Top 5 Products</div>
+                    <div class="card-header">Top 5 Products by Sales</div>
                     <table class="table table-striped">
                         <thead>
                             <tr>
@@ -199,6 +207,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
+                    <h3 class="card-header">Category Sales Comparison</h3>
                     <canvas id="categoryBarChart"></canvas>
                 </div>
             </div>
