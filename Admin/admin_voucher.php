@@ -200,7 +200,8 @@ include 'dataconnection.php';
                         <th scope="col">Usage Limit</th>
                         <th scope="col">Minimum Amount</th>
                         <th scope="col">Description</th>
-                        <th scope="col">Status</th>  
+                        <th scope="col">Status</th>
+                        <th scope="col">Action</th>  
                     </tr>
                 </thead>
                 <?php
@@ -219,7 +220,59 @@ include 'dataconnection.php';
                             <td><?php echo "$" . number_format($row["minimum_amount"], 2); ?></td>
                             <td><?php echo $row["voucher_des"]; ?></td>
                             <td><?php echo $row["voucher_status"]; ?></td>
+                            <td>
+                                <!-- Edit Button to Open Modal -->
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['voucher_code']; ?>">Edit</button>
+
+                                <!-- Activate/Deactivate Button -->
+                                <form action="a_voucher.php" method="POST" style="display:inline;">
+                                    <?php if ($row["voucher_status"] === "Active") { ?>
+                                        <button type="submit" name="deactivate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn btn-danger">Deactivate</button>
+                                    <?php } else { ?>
+                                        <button type="submit" name="activate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn btn-success">Activate</button>
+                                    <?php } ?>
+                                </form>
+                            </td>
                         </tr>
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editModal<?php echo $row['voucher_code']; ?>" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <!-- Modal Header -->
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel">Edit Voucher: <?php echo $row['voucher_code']; ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <!-- Modal Body -->
+                                    <form action="a_voucher.php" method="POST" enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="voucher_code" value="<?php echo $row['voucher_code']; ?>">
+
+                                            <label for="discount_rate">Discount Rate</label>
+                                            <input type="text" class="form-control" name="discount_rate" value="<?php echo $row['discount_rate']; ?>"><br>
+
+                                            <label for="usage_limit">Usage Limit</label>
+                                            <input type="number" class="form-control" name="usage_limit" value="<?php echo $row['usage_limit']; ?>"><br>
+
+                                            <label for="minimum_amount">Minimum Amount</label>
+                                            <input type="text" class="form-control" name="minimum_amount" value="<?php echo $row['minimum_amount']; ?>"><br>
+
+                                            <label for="voucher_des">Description</label>
+                                            <textarea class="form-control" name="voucher_des"><?php echo $row['voucher_des']; ?></textarea><br>
+
+                                            <label for="voucher_pic">Voucher Picture</label>
+                                            <input type="file" class="form-control" name="voucher_pic">
+                                            <small>Leave empty if no change is needed</small>
+                                        </div>
+                                        <!-- Modal Footer -->
+                                        <div class="modal-footer">
+                                            <button type="submit" name="update_voucher" class="btn btn-primary">Save Changes</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         <?php
                     }
                     ?>
