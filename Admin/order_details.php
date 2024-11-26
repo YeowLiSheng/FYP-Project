@@ -128,22 +128,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .summary-item .value {
             color: #444;
         }
-        .status-form {
-            text-align: right;
+        .status-form h4 {
+            margin-bottom: 10px;
+            color: #444;
+            font-weight: bold;
         }
-        .status-form select, .status-form button {
-            padding: 10px;
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .status-row label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        select {
+            padding: 8px 12px;
             font-size: 14px;
-            margin-left: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
         }
-        .status-form button {
-            background: #2575fc;
+        .update-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            background: #4caf50;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s;
         }
-        .status-form button:hover {
+        .update-button:hover {
+            background: #45a049;
+        }
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .print-button {
+            background: #ff6b6b;
+            color: white;
+            margin-right: 10px;
+        }
+        .print-button:hover {
+            background: #e55b5b;
+        }
+        .back-button {
+            background: #2575fc;
+            color: white;
+        }
+        .back-button:hover {
             background: #1a5bb5;
         }
         img.product-image {
@@ -155,20 +203,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .icon {
             margin-right: 8px;
             color: #2575fc;
-        }
-        .print-button {
-            background: #ff6b6b;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        .print-button:hover {
-            background: #e55b5b;
         }
     </style>
 </head>
@@ -219,31 +253,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
         </div>
 
-        <!-- 订单汇总 -->
+        <!-- 订单总计 -->
         <div class="order-summary">
-            <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
-            <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
-            <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
-            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
-            <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
+            <h4><i class="fas fa-receipt icon"></i>Order Summary</h4>
+            <div class="summary-item"><span>Subtotal:</span><span class="value">RM <?= number_format($order_data['subtotal'], 2) ?></span></div>
+            <div class="summary-item"><span>Delivery Charge:</span><span class="value">RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
+            <div class="summary-item"><span><b>Total:</b></span><span class="value"><b>RM <?= number_format($order_data['grand_total'], 2) ?></b></span></div>
         </div>
 
         <!-- 更新订单状态 -->
         <div class="status-form">
             <form method="post">
-                <label for="order_status">Update Status:</label>
-                <select name="order_status" id="order_status">
-                    <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
-                    <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
-                    <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
-                </select>
-                <button type="submit">Update</button>
+                <h4><i class="fas fa-sync-alt icon"></i>Update Order Status</h4>
+                <div class="status-row">
+                    <label for="order_status">Status:</label>
+                    <select name="order_status" id="order_status">
+                        <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
+                        <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
+                        <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
+                    </select>
+                </div>
+                <button type="submit" class="update-button"><i class="fas fa-save"></i> Save Changes</button>
             </form>
         </div>
 
-        <!-- Print Invoice Button -->
-        <a href="adminreceipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
-        </div>
+        <!-- 打印收据按钮 -->
+        <a href="adminreceipt.php?order_id=<?= $order_data['order_id'] ?>" class="action-button print-button">
+            <i class="fas fa-print"></i> Print Receipt
+        </a>
+
+        <!-- 返回按钮 -->
+        <a href="manageorder.php" class="action-button back-button">
+            <i class="fas fa-arrow-left"></i> Back to Manage Orders
+        </a>
+    </div>
 </div>
 
 </body>
