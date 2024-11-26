@@ -3,24 +3,28 @@ include 'dataconnection.php';
 include 'admin_sidebar.php';
 
 // 数据库查询功能
+// 获取订单总数
 function getTotalOrders($connect) {
     $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_orders'];
 }
 
+// 获取客户总数
 function getTotalCustomers($connect) {
     $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_customers'];
 }
 
+// 获取总销售额
 function getTotalSales($connect) {
     $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_sales'];
 }
 
+// 获取每个分类的销售额
 function getCategorySales($connect) {
     $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
               FROM order_details od 
@@ -31,6 +35,7 @@ function getCategorySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 获取畅销产品数据
 function getTopProducts($connect) {
     $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
               FROM order_details 
@@ -116,30 +121,35 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 </head>
 <body>
     <div class="content-wrapper">
+        <h1 class="mb-4">Sales Overview</h1>
         <!-- Overview Section -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
                     <h2><?php echo $totalOrders; ?></h2>
+                    <p>Total number of orders placed within the selected time period.</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Customers</h5>
                     <h2><?php echo $totalCustomers; ?></h2>
+                    <p>Total unique customers who have made purchases.</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Sales</h5>
                     <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                    <p>Total revenue generated from all orders in the selected period.</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Top Category</h5>
                     <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
+                    <p>The category with the highest sales in the selected period.</p>
                 </div>
             </div>
         </div>
@@ -159,20 +169,24 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </form>
 
         <!-- Chart Section -->
+        <h2 class="mb-4">Sales Data Analysis</h2>
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
                     <canvas id="categoryPieChart"></canvas>
+                    <p class="text-center mt-2">Sales Distribution by Category</p>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
                     <canvas id="salesTrendChart"></canvas>
+                    <p class="text-center mt-2">Sales Trend Over Time</p>
                 </div>
             </div>
         </div>
 
         <!-- Table and Bar Chart -->
+        <h2 class="mb-4">Top Products</h2>
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -200,6 +214,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <div class="col-md-6">
                 <div class="chart-container">
                     <canvas id="categoryBarChart"></canvas>
+                    <p class="text-center mt-2">Sales by Category</p>
                 </div>
             </div>
         </div>
