@@ -74,73 +74,56 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f4f7fc;
-            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
             margin-left: 250px; /* Sidebar left margin */
-            padding: 40px;
+            padding: 20px;
             padding-top: 80px; /* Offset to avoid header overlay */
         }
         .dashboard-card {
             color: #fff;
-            background-color: #3f51b5;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
             text-align: center;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-            min-height: 180px; /* Ensure uniform size */
-            transition: all 0.3s ease;
-            height: 180px; /* Set consistent card height */
-        }
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 150px; /* Ensure uniform size */
         }
         .chart-container, .table-container {
             background: #fff;
             border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container {
-            height: 300px; /* Reduce size of pie chart */
+            height: 400px;
+        }
+        .table-container {
+            overflow-x: auto;
         }
         .card-header {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 15px;
         }
         .table thead th {
             color: #333;
             font-weight: bold;
-            background-color: #f7f7f7;
-        }
-        .btn-custom {
-            background-color: #3f51b5;
-            color: #fff;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-        .btn-custom:hover {
-            background-color: #5c6bc0;
         }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
         <!-- Page Header -->
-        <div class="mb-5">
-            <h1 class="display-4 text-primary">Sales Dashboard</h1>
-            <p class="lead text-muted">View detailed reports on sales performance, including total orders, sales, and customer insights.</p>
+        <div class="mb-4">
+            <h1 class="display-4">Sales Dashboard</h1>
+            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and product categories.</p>
         </div>
 
         <!-- Overview Section -->
-        <div class="row mb-5">
+        <div class="row mb-4">
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -167,8 +150,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Date Picker Form -->
-        <form method="POST" class="mb-5" id="dateForm">
+        <!-- Date Picker Form (自动提交) -->
+        <form method="POST" class="mb-4" id="dateForm">
             <div class="row">
                 <div class="col-md-4">
                     <label for="start_date" class="form-label">Start Date</label>
@@ -181,8 +164,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </form>
 
-        <!-- Charts Section -->
-        <div class="row mb-5">
+        <!-- Chart Section -->
+        <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Category Sales Distribution</h3>
@@ -197,7 +180,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Table Section -->
+        <!-- Table and Bar Chart -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -222,19 +205,25 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </table>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Category Sales Comparison</h3>
+                    <canvas id="categoryBarChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Category Sales Pie Chart
+        // Category Pie Chart
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        const categorySalesData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         new Chart(document.getElementById('categoryPieChart'), {
             type: 'pie',
             data: {
                 labels: categoryLabels,
                 datasets: [{
-                    data: categorySalesData,
+                    data: categoryData,
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
             }
@@ -252,6 +241,20 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: salesTrendData,
                     borderColor: '#4BC0C0',
                     fill: false
+                }]
+            }
+        });
+
+        // Category Sales Bar Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Category Sales',
+                    data: categoryBarData,
+                    backgroundColor: '#FF6384'
                 }]
             }
         });
