@@ -1,6 +1,6 @@
 <?php
 // 连接数据库
-$conn = new mysqli("localhost", "username", "password", "fyp");
+$conn = new mysqli('localhost', 'root', '', 'fyp');
 
 // 检查连接
 if ($conn->connect_error) {
