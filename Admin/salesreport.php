@@ -144,19 +144,16 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Date Picker Form -->
-        <form method="POST" class="mb-4">
+        <!-- Date Picker Form (自动提交) -->
+        <form method="POST" class="mb-4" id="dateForm">
             <div class="row">
                 <div class="col-md-4">
                     <label for="start_date" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>">
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
                 </div>
                 <div class="col-md-4">
                     <label for="end_date" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
                 </div>
             </div>
         </form>
