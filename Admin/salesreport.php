@@ -2,43 +2,47 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 获取用户选择的日期范围
-$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+// 获取日期范围
+$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 
 // 数据库查询功能
-function getTotalOrders($connect) {
-    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
+function getTotalOrders($connect, $startDate, $endDate) {
+    $query = "SELECT COUNT(order_id) AS total_orders FROM orders WHERE order_date BETWEEN '$startDate' AND '$endDate'";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_orders'];
 }
 
-function getTotalCustomers($connect) {
-    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
+function getTotalCustomers($connect, $startDate, $endDate) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders WHERE order_date BETWEEN '$startDate' AND '$endDate'";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_customers'];
 }
 
-function getTotalSales($connect) {
-    $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
+function getTotalSales($connect, $startDate, $endDate) {
+    $query = "SELECT SUM(final_amount) AS total_sales FROM orders WHERE order_date BETWEEN '$startDate' AND '$endDate'";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_sales'];
 }
 
-function getCategorySales($connect) {
+function getCategorySales($connect, $startDate, $endDate) {
     $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
               FROM order_details od 
               JOIN product p ON od.product_id = p.product_id 
               JOIN category c ON p.category_id = c.category_id 
+              JOIN orders o ON od.order_id = o.order_id
+              WHERE o.order_date BETWEEN '$startDate' AND '$endDate'
               GROUP BY c.category_name";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getTopProducts($connect) {
+function getTopProducts($connect, $startDate, $endDate) {
     $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
-              FROM order_details 
-              GROUP BY product_name 
+              FROM order_details od
+              JOIN orders o ON od.order_id = o.order_id
+              WHERE o.order_date BETWEEN '$startDate' AND '$endDate'
+              GROUP BY product_name
               ORDER BY total_sold DESC LIMIT 5";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -47,7 +51,7 @@ function getTopProducts($connect) {
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
-              WHERE order_date BETWEEN '$startDate' AND '$endDate' 
+              WHERE order_date BETWEEN '$startDate' AND '$endDate'
               GROUP BY DATE(order_date) 
               ORDER BY DATE(order_date)";
     $result = mysqli_query($connect, $query);
@@ -55,11 +59,11 @@ function getSalesTrend($connect, $startDate, $endDate) {
 }
 
 // 数据获取
-$totalOrders = getTotalOrders($connect);
-$totalCustomers = getTotalCustomers($connect);
-$totalSales = getTotalSales($connect);
-$categorySales = getCategorySales($connect);
-$topProducts = getTopProducts($connect);
+$totalOrders = getTotalOrders($connect, $startDate, $endDate);
+$totalCustomers = getTotalCustomers($connect, $startDate, $endDate);
+$totalSales = getTotalSales($connect, $startDate, $endDate);
+$categorySales = getCategorySales($connect, $startDate, $endDate);
+$topProducts = getTopProducts($connect, $startDate, $endDate);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
 ?>
@@ -111,23 +115,30 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             color: #333;
             font-weight: bold;
         }
+        .form-control {
+            border-radius: 10px;
+        }
+        .btn-primary {
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
-        <!-- 日期选择器 -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <form method="GET" action="salesreport.php">
-                    <div class="input-group">
-                        <input type="date" name="start_date" value="<?php echo $startDate; ?>" class="form-control">
-                        <span class="input-group-text">to</span>
-                        <input type="date" name="end_date" value="<?php echo $endDate; ?>" class="form-control">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                    </div>
-                </form>
+        <!-- Date Range Form -->
+        <form method="get" action="" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>">
+                </div>
+                <div class="col-md-4">
+                    <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Filter Date Range</button>
+                </div>
             </div>
-        </div>
+        </form>
 
         <!-- Overview Section -->
         <div class="row mb-4">
