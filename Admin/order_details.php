@@ -128,46 +128,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .summary-item .value {
             color: #444;
         }
-        .buttons {
-            text-align: center;
-            margin-top: 30px;
+        .status-form {
+            text-align: right;
         }
-        .btn {
-            display: inline-block;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            border-radius: 5px;
+        .status-form select, .status-form button {
+            padding: 10px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .status-form button {
+            background: #2575fc;
+            color: #fff;
             border: none;
-            text-decoration: none;
-            margin: 0 10px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .btn-back {
-            background: #6c757d;
-        }
-        .btn-back:hover {
-            background: #5a6268;
-        }
-        .btn-update {
-            background: #2575fc;
-        }
-        .btn-update:hover {
+        .status-form button:hover {
             background: #1a5bb5;
         }
-        .btn-print {
-            background: #ff6b6b;
-        }
-        .btn-print:hover {
-            background: #e55b5b;
-        }
-        select {
-            padding: 10px;
-            font-size: 16px;
-            margin-right: 10px;
-            border: 1px solid #ddd;
+        img.product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
             border-radius: 5px;
+        }
+        .icon {
+            margin-right: 8px;
+            color: #2575fc;
+        }
+        .print-button {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .print-button:hover {
+            background: #e55b5b;
         }
     </style>
 </head>
@@ -196,7 +197,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
                 <tr><th>Shipping Address</th><td><?= $order_data['shipping_address'] ?></td></tr>
                 <tr><th>Shipping Method</th><td><?= $order_data['shipping_method'] ?></td></tr>
-                <tr><th>User Message</th><td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
+                <tr><th>User Messaga</th>
+                    <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
             </table>
         </div>
 
@@ -226,20 +228,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
-        <!-- 更新订单状态和打印收据按钮 -->
-        <div class="buttons">
-            <form method="post" style="display: inline-block;">
+        <!-- 更新订单状态 -->
+        <div class="status-form">
+            <form method="post">
+                <label for="order_status">Update Status:</label>
                 <select name="order_status" id="order_status">
                     <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
                     <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
                     <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
                 </select>
-                <button type="submit" class="btn btn-update">Update Status</button>
+                <button type="submit">Update</button>
             </form>
-            <a href="adminreceipt.php?order_id=<?= $order_data['order_id'] ?>" class="btn btn-print">🖨️ Print Receipt</a>
-            <a href="manage_order.php" class="btn btn-back">⬅️ Back</a>
         </div>
-    </div>
+
+        <!-- Print Invoice Button -->
+        <a href="adminreceipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+        </div>
 </div>
 
 </body>
