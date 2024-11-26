@@ -2,6 +2,10 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
+// 获取用户选择的日期范围
+$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
+
 // 数据库查询功能
 function getTotalOrders($connect) {
     $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
@@ -40,9 +44,10 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getSalesTrend($connect) {
+function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
+              WHERE order_date BETWEEN '$startDate' AND '$endDate' 
               GROUP BY DATE(order_date) 
               ORDER BY DATE(order_date)";
     $result = mysqli_query($connect, $query);
@@ -55,7 +60,7 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
-$salesTrend = getSalesTrend($connect);
+$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
 ?>
 <!DOCTYPE html>
@@ -83,10 +88,7 @@ $salesTrend = getSalesTrend($connect);
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            height: 150px; /* 确保卡片一致高度 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            min-height: 150px; /* Ensure uniform size */
         }
         .chart-container, .table-container {
             background: #fff;
@@ -113,6 +115,20 @@ $salesTrend = getSalesTrend($connect);
 </head>
 <body>
     <div class="content-wrapper">
+        <!-- 日期选择器 -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <form method="GET" action="salesreport.php">
+                    <div class="input-group">
+                        <input type="date" name="start_date" value="<?php echo $startDate; ?>" class="form-control">
+                        <span class="input-group-text">to</span>
+                        <input type="date" name="end_date" value="<?php echo $endDate; ?>" class="form-control">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Overview Section -->
         <div class="row mb-4">
             <div class="col-md-3">
