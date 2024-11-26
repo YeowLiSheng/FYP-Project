@@ -648,6 +648,12 @@ if ($paymentSuccess) {
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
 
+	$payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
+    $payment_status = 'Completed'; 
+    $payment_stmt = $conn->prepare($payment_query);
+    $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
+    $payment_stmt->execute();
+
 	
 }
 ?>
