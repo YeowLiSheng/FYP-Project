@@ -147,10 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             background: #1a5bb5;
         }
         img.product-image {
-            width: 50px;
-            height: auto;
-            max-height: 50px;
-            object-fit: contain;
+            width: 80px; /* 调整图片宽度 */
+            height: 80px; /* 调整图片高度 */
+            object-fit: cover;
             border-radius: 5px;
         }
         .icon {
@@ -172,16 +171,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             background: #e55b5b;
         }
         .back-button {
-            background: #1d3557;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 16px;
-            text-decoration: none;
             display: inline-block;
+            padding: 10px 15px;
+            margin-top: 10px;
+            background: #6a11cb;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
         }
         .back-button:hover {
-            background: #457b9d;
+            background: #2575fc;
+        }
+        .back-button i {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -192,6 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h1>Order Details</h1>
     </div>
     <div class="content">
+        <a href="admin_orders.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
         <!-- 用户信息 -->
         <div class="section">
             <h3><i class="fas fa-user icon"></i>User Information</h3>
@@ -226,34 +230,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <td><?= $row['product_name'] ?></td>
                         <td><?= $row['quantity'] ?></td>
                         <td>RM <?= number_format($row['unit_price'], 2) ?></td>
-                        <td>RM <?= number_format($row['total_price'], 2) ?></td>
+                        <td>RM <?= number_format($row['quantity'] * $row['unit_price'], 2) ?></td>
                     </tr>
                 <?php endwhile; ?>
             </table>
         </div>
 
-        <!-- 订单汇总 -->
+        <!-- 总结 -->
         <div class="order-summary">
-            <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
-            <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
-            <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
-            <div class="summary-item"><span>Shipping Fee:</span><span class="value">RM <?= number_format($order_data['shipping_fee'], 2) ?></span></div>
+            <h4>Order Summary</h4>
+            <div class="summary-item">
+                <span>Subtotal</span>
+                <span class="value">RM <?= number_format($order_data['subtotal'], 2) ?></span>
+            </div>
+            <div class="summary-item">
+                <span>Shipping Fee</span>
+                <span class="value">RM <?= number_format($order_data['shipping_fee'], 2) ?></span>
+            </div>
+            <div class="summary-item">
+                <span><strong>Total</strong></span>
+                <span class="value"><strong>RM <?= number_format($order_data['total_price'], 2) ?></strong></span>
+            </div>
         </div>
 
         <!-- 更新状态 -->
-        <div class="status-form">
-            <form action="" method="post">
-                <label for="order_status">Update Status:</label>
-                <select name="order_status" id="order_status">
-                    <option value="Pending" <?= $order_data['order_status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                    <option value="Shipped" <?= $order_data['order_status'] == 'Shipped' ? 'selected' : '' ?>>Shipped</option>
-                    <option value="Delivered" <?= $order_data['order_status'] == 'Delivered' ? 'selected' : '' ?>>Delivered</option>
-                    <option value="Cancelled" <?= $order_data['order_status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                </select>
-                <button type="submit">Update</button>
-            </form>
-        </div>
+        <form method="POST" class="status-form">
+            <label for="order_status">Update Order Status:</label>
+            <select name="order_status" id="order_status">
+                <option value="Pending" <?= $order_data['order_status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
+                <option value="Shipped" <?= $order_data['order_status'] == 'Shipped' ? 'selected' : '' ?>>Shipped</option>
+                <option value="Delivered" <?= $order_data['order_status'] == 'Delivered' ? 'selected' : '' ?>>Delivered</option>
+                <option value="Cancelled" <?= $order_data['order_status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
+            </select>
+            <button type="submit">Update</button>
+        </form>
     </div>
 </div>
+
 </body>
 </html>
