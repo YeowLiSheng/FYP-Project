@@ -2,52 +2,45 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 获取日期范围
-$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
-
 // 数据库查询功能
-function getTotalOrders($connect, $startDate, $endDate) {
-    $query = "SELECT COUNT(order_id) AS total_orders FROM orders WHERE order_date BETWEEN '$startDate' AND '$endDate'";
+function getTotalOrders($connect) {
+    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_orders'];
 }
 
-function getTotalCustomers($connect, $startDate, $endDate) {
-    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders WHERE order_date BETWEEN '$startDate' AND '$endDate'";
+function getTotalCustomers($connect) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_customers'];
 }
 
-function getTotalSales($connect, $startDate, $endDate) {
-    $query = "SELECT SUM(final_amount) AS total_sales FROM orders WHERE order_date BETWEEN '$startDate' AND '$endDate'";
+function getTotalSales($connect) {
+    $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_sales'];
 }
 
-function getCategorySales($connect, $startDate, $endDate) {
+function getCategorySales($connect) {
     $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
               FROM order_details od 
               JOIN product p ON od.product_id = p.product_id 
               JOIN category c ON p.category_id = c.category_id 
-              JOIN orders o ON od.order_id = o.order_id
-              WHERE o.order_date BETWEEN '$startDate' AND '$endDate'
               GROUP BY c.category_name";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getTopProducts($connect, $startDate, $endDate) {
+function getTopProducts($connect) {
     $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
-              FROM order_details od
-              JOIN orders o ON od.order_id = o.order_id
-              WHERE o.order_date BETWEEN '$startDate' AND '$endDate'
-              GROUP BY product_name
+              FROM order_details 
+              GROUP BY product_name 
               ORDER BY total_sold DESC LIMIT 5";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -58,15 +51,19 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 数据获取
-$totalOrders = getTotalOrders($connect, $startDate, $endDate);
-$totalCustomers = getTotalCustomers($connect, $startDate, $endDate);
-$totalSales = getTotalSales($connect, $startDate, $endDate);
-$categorySales = getCategorySales($connect, $startDate, $endDate);
-$topProducts = getTopProducts($connect, $startDate, $endDate);
-$salesTrend = getSalesTrend($connect, $startDate, $endDate);
+// 获取表单数据（如果有的话）
+$startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d');
 
+// 数据获取
+$totalOrders = getTotalOrders($connect);
+$totalCustomers = getTotalCustomers($connect);
+$totalSales = getTotalSales($connect);
+$categorySales = getCategorySales($connect);
+$topProducts = getTopProducts($connect);
+$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,31 +112,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             color: #333;
             font-weight: bold;
         }
-        .form-control {
-            border-radius: 10px;
-        }
-        .btn-primary {
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
-        <!-- Date Range Form -->
-        <form method="get" action="" class="mb-4">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>">
-                </div>
-                <div class="col-md-4">
-                    <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>">
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary w-100">Filter Date Range</button>
-                </div>
-            </div>
-        </form>
-
         <!-- Overview Section -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -167,6 +143,23 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 </div>
             </div>
         </div>
+
+        <!-- Date Picker Form -->
+        <form method="POST" class="mb-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </div>
+        </form>
 
         <!-- Chart Section -->
         <div class="row mb-4">
@@ -238,24 +231,32 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             data: {
                 labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Sales (RM)',
+                    label: 'Daily Sales (RM)',
                     data: salesTrendData,
-                    borderColor: '#36A2EB',
-                    fill: false
+                    fill: false,
+                    borderColor: '#FF5733',
+                    tension: 0.1
                 }]
             }
         });
 
         // Category Bar Chart
+        const barChartData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const barChartLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
         new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
-                labels: categoryLabels,
+                labels: barChartLabels,
                 datasets: [{
-                    label: 'Sales (RM)',
-                    data: categoryData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    label: 'Category Sales (RM)',
+                    data: barChartData,
+                    backgroundColor: '#36A2EB'
                 }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
             }
         });
     </script>
