@@ -1,8 +1,8 @@
 <?php
-include 'dataconnection.php'; // 数据库连接
-include 'admin_sidebar.php'; // 管理员侧边栏
+include 'dataconnection.php';
+include 'admin_sidebar.php';
 
-// 获取总订单数、总客户数、总销售额
+// 获取总订单、总客户、总销售额和分类数据
 $totalOrdersQuery = "SELECT COUNT(order_id) AS total_orders FROM orders";
 $totalOrdersResult = mysqli_query($connect, $totalOrdersQuery);
 $totalOrders = mysqli_fetch_assoc($totalOrdersResult)['total_orders'];
@@ -15,175 +15,191 @@ $totalSalesQuery = "SELECT SUM(final_amount) AS total_sales FROM orders";
 $totalSalesResult = mysqli_query($connect, $totalSalesQuery);
 $totalSales = mysqli_fetch_assoc($totalSalesResult)['total_sales'];
 
-// 获取分类的销售占比数据
-$categorySalesQuery = "
-    SELECT c.category_name, SUM(od.total_price) AS total_sales 
-    FROM order_details od 
-    JOIN product p ON od.product_id = p.product_id 
-    JOIN category c ON p.category_id = c.category_id 
-    GROUP BY c.category_id
-";
+$categorySalesQuery = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
+                       FROM order_details od 
+                       JOIN product p ON od.product_id = p.product_id 
+                       JOIN category c ON p.category_id = c.category_id 
+                       GROUP BY c.category_name";
 $categorySalesResult = mysqli_query($connect, $categorySalesQuery);
-$categorySales = [];
-while ($row = mysqli_fetch_assoc($categorySalesResult)) {
-    $categorySales[] = $row;
-}
 
-// 获取畅销商品数据
-$topProductsQuery = "
-    SELECT od.product_name, SUM(od.quantity) AS total_sold 
-    FROM order_details od 
-    GROUP BY od.product_id 
-    ORDER BY total_sold DESC 
-    LIMIT 5
-";
+$topProductsQuery = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
+                     FROM order_details 
+                     GROUP BY product_name 
+                     ORDER BY total_sold DESC LIMIT 5";
 $topProductsResult = mysqli_query($connect, $topProductsQuery);
-$topProducts = [];
-while ($row = mysqli_fetch_assoc($topProductsResult)) {
-    $topProducts[] = $row;
-}
-
-// 获取每日销售趋势数据
-$salesTrendQuery = "
-    SELECT DATE(order_date) AS sale_date, SUM(final_amount) AS daily_sales 
-    FROM orders 
-    WHERE order_date BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE() 
-    GROUP BY sale_date
-";
-$salesTrendResult = mysqli_query($connect, $salesTrendQuery);
-$salesTrend = [];
-while ($row = mysqli_fetch_assoc($salesTrendResult)) {
-    $salesTrend[] = $row;
-}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .summary-box {
-            background: #f8f9fa;
-            border-radius: 10px;
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-card {
+            color: #fff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
             padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .summary-box h5 {
-            font-size: 18px;
-            color: #555;
+        .chart-container {
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .summary-box p {
-            font-size: 24px;
+        .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            font-size: 1.2rem;
             font-weight: bold;
             color: #333;
         }
-        canvas {
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .table thead th {
+            color: #555;
         }
     </style>
 </head>
 <body>
-<div class="container my-4">
-    <h1 class="mb-4 text-center">Sales Report</h1>
+    <div class="container my-4">
+        <!-- Top Overview Section -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Top Category</h5>
+                    <h2>
+                        <?php
+                        $topCategory = mysqli_fetch_assoc($categorySalesResult);
+                        echo $topCategory ? $topCategory['category_name'] : 'N/A';
+                        ?>
+                    </h2>
+                </div>
+            </div>
+        </div>
 
-    <!-- Summary Section -->
-    <div class="row">
-        <div class="col-md-4">
-            <div class="summary-box">
-                <h5>Total Orders</h5>
-                <p><?= $totalOrders ?></p>
+        <!-- Charts Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="categoryPieChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="summary-box">
-                <h5>Total Customers</h5>
-                <p><?= $totalCustomers ?></p>
+
+        <!-- Tables Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-container">
+                    <h5 class="card-header">Top 5 Products</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = mysqli_fetch_assoc($topProductsResult)): ?>
+                                <tr>
+                                    <td><?php echo $row['product_name']; ?></td>
+                                    <td><?php echo $row['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($row['total_revenue'], 2); ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="summary-box">
-                <h5>Total Sales</h5>
-                <p>RM <?= number_format($totalSales, 2) ?></p>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="categoryBarChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="row">
-        <!-- Pie Chart -->
-        <div class="col-md-6">
-            <h5 class="text-center">Category Sales Distribution</h5>
-            <canvas id="categorySalesChart"></canvas>
-        </div>
+    <script>
+        // Category Pie Chart
+        const categoryLabels = <?php echo json_encode(array_column(mysqli_fetch_all($categorySalesResult, MYSQLI_ASSOC), 'category_name')); ?>;
+        const categoryData = <?php echo json_encode(array_column(mysqli_fetch_all($categorySalesResult, MYSQLI_ASSOC), 'category_sales')); ?>;
+        const categoryPieCtx = document.getElementById('categoryPieChart').getContext('2d');
+        new Chart(categoryPieCtx, {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            }
+        });
 
-        <!-- Line Chart -->
-        <div class="col-md-6">
-            <h5 class="text-center">Sales Trend (Last 30 Days)</h5>
-            <canvas id="salesTrendChart"></canvas>
-        </div>
-    </div>
+        // Sales Trend Line Chart
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        new Chart(salesTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['2024-11-01', '2024-11-02', '2024-11-03'], // Replace with dynamic dates
+                datasets: [{
+                    label: 'Sales (RM)',
+                    data: [1000, 1500, 2000], // Replace with dynamic sales data
+                    borderColor: '#36A2EB',
+                    fill: false
+                }]
+            }
+        });
 
-    <!-- Top Products Section -->
-    <div class="mt-5">
-        <h5 class="text-center">Top 5 Best-Selling Products</h5>
-        <table class="table table-bordered">
-            <thead class="table-dark">
-            <tr>
-                <th>Product Name</th>
-                <th>Total Sold</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($topProducts as $product): ?>
-                <tr>
-                    <td><?= $product['product_name'] ?></td>
-                    <td><?= $product['total_sold'] ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- JavaScript for Charts -->
-<script>
-    // Category Sales Pie Chart
-    const categorySalesData = <?= json_encode(array_column($categorySales, 'total_sales')) ?>;
-    const categorySalesLabels = <?= json_encode(array_column($categorySales, 'category_name')) ?>;
-    new Chart(document.getElementById('categorySalesChart'), {
-        type: 'pie',
-        data: {
-            labels: categorySalesLabels,
-            datasets: [{
-                data: categorySalesData,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-            }]
-        }
-    });
-
-    // Sales Trend Line Chart
-    const salesTrendData = <?= json_encode(array_column($salesTrend, 'daily_sales')) ?>;
-    const salesTrendLabels = <?= json_encode(array_column($salesTrend, 'sale_date')) ?>;
-    new Chart(document.getElementById('salesTrendChart'), {
-        type: 'line',
-        data: {
-            labels: salesTrendLabels,
-            datasets: [{
-                label: 'Daily Sales (RM)',
-                data: salesTrendData,
-                borderColor: '#36A2EB',
-                fill: false
-            }]
-        }
-    });
-</script>
+        // Category Bar Chart
+        const categoryBarCtx = document.getElementById('categoryBarChart').getContext('2d');
+        new Chart(categoryBarCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Sales (RM)',
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            }
+        });
+    </script>
 </body>
 </html>
