@@ -44,7 +44,7 @@ function getTopProducts($connect) {
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
-              WHERE order_date BETWEEN '$startDate' AND '$endDate'
+              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
               GROUP BY DATE(order_date) 
               ORDER BY DATE(order_date)";
     $result = mysqli_query($connect, $query);
@@ -52,8 +52,8 @@ function getSalesTrend($connect, $startDate, $endDate) {
 }
 
 // 获取表单数据（如果有的话）
-$startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$endDate = isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d');
+$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
 // 数据获取
 $totalOrders = getTotalOrders($connect);
@@ -231,32 +231,25 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             data: {
                 labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Daily Sales (RM)',
+                    label: 'Daily Sales',
                     data: salesTrendData,
-                    fill: false,
-                    borderColor: '#FF5733',
-                    tension: 0.1
+                    borderColor: '#4BC0C0',
+                    fill: false
                 }]
             }
         });
 
-        // Category Bar Chart
-        const barChartData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const barChartLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        // Category Sales Bar Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
-                labels: barChartLabels,
+                labels: categoryLabels,
                 datasets: [{
-                    label: 'Category Sales (RM)',
-                    data: barChartData,
-                    backgroundColor: '#36A2EB'
+                    label: 'Category Sales',
+                    data: categoryBarData,
+                    backgroundColor: '#FF6384'
                 }]
-            },
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
             }
         });
     </script>
