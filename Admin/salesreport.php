@@ -83,7 +83,10 @@ $salesTrend = getSalesTrend($connect);
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 150px; /* Ensure uniform size */
+            height: 150px; /* 确保卡片一致高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .chart-container, .table-container {
             background: #fff;
