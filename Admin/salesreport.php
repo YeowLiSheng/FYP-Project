@@ -40,27 +40,14 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getSalesTrend($connect, $startDate, $endDate) {
+function getSalesTrend($connect) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
-              WHERE order_date BETWEEN '$startDate' AND '$endDate'
               GROUP BY DATE(order_date) 
               ORDER BY DATE(order_date)";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
-
-// 默认日期范围为过去7天
-$startDate = date('Y-m-d', strtotime('-7 days'));
-$endDate = date('Y-m-d');
-
-// 获取动态日期范围的销售数据
-if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
-    $startDate = $_POST['start_date'];
-    $endDate = $_POST['end_date'];
-}
-
-$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
 // 数据获取
 $totalOrders = getTotalOrders($connect);
@@ -68,6 +55,8 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
+$salesTrend = getSalesTrend($connect);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -94,7 +83,10 @@ $topProducts = getTopProducts($connect);
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 150px; /* Ensure uniform size */
+            height: 150px; /* 确保卡片一致高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .chart-container, .table-container {
             background: #fff;
@@ -149,24 +141,14 @@ $topProducts = getTopProducts($connect);
             </div>
         </div>
 
-        <!-- Date Range Form -->
-        <form method="POST" class="mb-4">
-            <div class="row">
-                <div class="col-md-5">
-                    <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" />
-                </div>
-                <div class="col-md-5">
-                    <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" />
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary">Update</button>
+        <!-- Chart Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="categoryPieChart"></canvas>
                 </div>
             </div>
-        </form>
-
-        <!-- Sales Trend Chart -->
-        <div class="row mb-4">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="chart-container">
                     <canvas id="salesTrendChart"></canvas>
                 </div>
@@ -198,14 +180,32 @@ $topProducts = getTopProducts($connect);
                     </table>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="categoryBarChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Category Pie Chart
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            }
+        });
+
         // Sales Trend Line Chart
         const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
         const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-
         new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
@@ -215,6 +215,19 @@ $topProducts = getTopProducts($connect);
                     data: salesTrendData,
                     borderColor: '#36A2EB',
                     fill: false
+                }]
+            }
+        });
+
+        // Category Bar Chart
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Sales (RM)',
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
             }
         });
