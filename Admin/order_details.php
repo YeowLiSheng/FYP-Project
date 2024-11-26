@@ -147,8 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             background: #1a5bb5;
         }
         img.product-image {
-            width: 80px; /* 调整图片宽度 */
-            height: 80px; /* 调整图片高度 */
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 5px;
         }
@@ -170,22 +170,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .print-button:hover {
             background: #e55b5b;
         }
-        .back-button {
-            display: inline-block;
-            padding: 10px 15px;
-            margin-top: 10px;
-            background: #6a11cb;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .back-button:hover {
-            background: #2575fc;
-        }
-        .back-button i {
-            margin-right: 5px;
-        }
     </style>
 </head>
 <body>
@@ -195,7 +179,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h1>Order Details</h1>
     </div>
     <div class="content">
-        <a href="admin_orders.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
         <!-- 用户信息 -->
         <div class="section">
             <h3><i class="fas fa-user icon"></i>User Information</h3>
@@ -214,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
                 <tr><th>Shipping Address</th><td><?= $order_data['shipping_address'] ?></td></tr>
                 <tr><th>Shipping Method</th><td><?= $order_data['shipping_method'] ?></td></tr>
-                <tr><th>User Message</th>
+                <tr><th>User Messaga</th>
                     <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
             </table>
         </div>
@@ -230,41 +213,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <td><?= $row['product_name'] ?></td>
                         <td><?= $row['quantity'] ?></td>
                         <td>RM <?= number_format($row['unit_price'], 2) ?></td>
-                        <td>RM <?= number_format($row['quantity'] * $row['unit_price'], 2) ?></td>
+                        <td>RM <?= number_format($row['total_price'], 2) ?></td>
                     </tr>
                 <?php endwhile; ?>
             </table>
         </div>
 
-        <!-- 总结 -->
+        <!-- 订单汇总 -->
         <div class="order-summary">
-            <h4>Order Summary</h4>
-            <div class="summary-item">
-                <span>Subtotal</span>
-                <span class="value">RM <?= number_format($order_data['subtotal'], 2) ?></span>
-            </div>
-            <div class="summary-item">
-                <span>Shipping Fee</span>
-                <span class="value">RM <?= number_format($order_data['shipping_fee'], 2) ?></span>
-            </div>
-            <div class="summary-item">
-                <span><strong>Total</strong></span>
-                <span class="value"><strong>RM <?= number_format($order_data['total_price'], 2) ?></strong></span>
-            </div>
+            <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
+            <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
+            <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
+            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
+            <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
-        <!-- 更新状态 -->
-        <form method="POST" class="status-form">
-            <label for="order_status">Update Order Status:</label>
-            <select name="order_status" id="order_status">
-                <option value="Pending" <?= $order_data['order_status'] == 'Pending' ? 'selected' : '' ?>>Pending</option>
-                <option value="Shipped" <?= $order_data['order_status'] == 'Shipped' ? 'selected' : '' ?>>Shipped</option>
-                <option value="Delivered" <?= $order_data['order_status'] == 'Delivered' ? 'selected' : '' ?>>Delivered</option>
-                <option value="Cancelled" <?= $order_data['order_status'] == 'Cancelled' ? 'selected' : '' ?>>Cancelled</option>
-            </select>
-            <button type="submit">Update</button>
-        </form>
-    </div>
+        <!-- 更新订单状态 -->
+        <div class="status-form">
+            <form method="post">
+                <label for="order_status">Update Status:</label>
+                <select name="order_status" id="order_status">
+                    <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
+                    <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
+                    <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </div>
+
+        <!-- Print Invoice Button -->
+        <a href="adminreceipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+        </div>
 </div>
 
 </body>
