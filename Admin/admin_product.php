@@ -1229,7 +1229,7 @@ function add_check() {
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="update_status.php?action=unavailable&product_id=<?php echo $row["product_id"]; ?>">
+                                                    <a href="a_product.php?action=unavailable&product_id=<?php echo $row["product_id"]; ?>">
                                                         <button type="button" class="btn btn-primary">Yes</button>
                                                     </a>
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
@@ -1255,7 +1255,7 @@ function add_check() {
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="update_status.php?action=available&product_id=<?php echo $row["product_id"]; ?>">
+                                                    <a href="a_product.php?action=available&product_id=<?php echo $row["product_id"]; ?>">
                                                      <button type="button" class="btn btn-primary">Yes</button>
                                                     </a>
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
