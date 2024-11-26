@@ -2,31 +2,60 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 获取总订单、总客户、总销售额和分类数据
-$totalOrdersQuery = "SELECT COUNT(order_id) AS total_orders FROM orders";
-$totalOrdersResult = mysqli_query($connect, $totalOrdersQuery);
-$totalOrders = mysqli_fetch_assoc($totalOrdersResult)['total_orders'];
+function getTotalOrders($connect) {
+    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_orders'];
+}
 
-$totalCustomersQuery = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
-$totalCustomersResult = mysqli_query($connect, $totalCustomersQuery);
-$totalCustomers = mysqli_fetch_assoc($totalCustomersResult)['total_customers'];
+function getTotalCustomers($connect) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_customers'];
+}
 
-$totalSalesQuery = "SELECT SUM(final_amount) AS total_sales FROM orders";
-$totalSalesResult = mysqli_query($connect, $totalSalesQuery);
-$totalSales = mysqli_fetch_assoc($totalSalesResult)['total_sales'];
+function getTotalSales($connect) {
+    $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_sales'];
+}
 
-$categorySalesQuery = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
-                       FROM order_details od 
-                       JOIN product p ON od.product_id = p.product_id 
-                       JOIN category c ON p.category_id = c.category_id 
-                       GROUP BY c.category_name";
-$categorySalesResult = mysqli_query($connect, $categorySalesQuery);
+function getCategorySales($connect) {
+    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
+              FROM order_details od 
+              JOIN product p ON od.product_id = p.product_id 
+              JOIN category c ON p.category_id = c.category_id 
+              GROUP BY c.category_name";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
 
-$topProductsQuery = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
-                     FROM order_details 
-                     GROUP BY product_name 
-                     ORDER BY total_sold DESC LIMIT 5";
-$topProductsResult = mysqli_query($connect, $topProductsQuery);
+function getTopProducts($connect) {
+    $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
+              FROM order_details 
+              GROUP BY product_name 
+              ORDER BY total_sold DESC LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+function getSalesTrend($connect) {
+    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
+              FROM orders 
+              GROUP BY DATE(order_date) 
+              ORDER BY DATE(order_date)";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// 获取数据
+$totalOrders = getTotalOrders($connect);
+$totalCustomers = getTotalCustomers($connect);
+$totalSales = getTotalSales($connect);
+$categorySales = getCategorySales($connect);
+$topProducts = getTopProducts($connect);
+$salesTrend = getSalesTrend($connect);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +70,10 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
             background-color: #f8f9fa;
             font-family: 'Poppins', sans-serif;
         }
+        .content-wrapper {
+            margin-left: 250px; /* 假设sidebar宽度为250px */
+            padding: 20px;
+        }
         .card {
             border: none;
             border-radius: 15px;
@@ -52,13 +85,7 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
             border-radius: 15px;
             padding: 20px;
         }
-        .chart-container {
-            padding: 20px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .table-container {
+        .chart-container, .table-container {
             background: #fff;
             border-radius: 15px;
             padding: 20px;
@@ -75,7 +102,7 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
     </style>
 </head>
 <body>
-    <div class="container my-4">
+    <div class="content-wrapper">
         <!-- Top Overview Section -->
         <div class="row mb-4">
             <div class="col-md-3">
@@ -99,12 +126,7 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Top Category</h5>
-                    <h2>
-                        <?php
-                        $topCategory = mysqli_fetch_assoc($categorySalesResult);
-                        echo $topCategory ? $topCategory['category_name'] : 'N/A';
-                        ?>
-                    </h2>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
                 </div>
             </div>
         </div>
@@ -137,13 +159,13 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while ($row = mysqli_fetch_assoc($topProductsResult)): ?>
+                            <?php foreach ($topProducts as $product): ?>
                                 <tr>
-                                    <td><?php echo $row['product_name']; ?></td>
-                                    <td><?php echo $row['total_sold']; ?></td>
-                                    <td>RM <?php echo number_format($row['total_revenue'], 2); ?></td>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
                                 </tr>
-                            <?php endwhile; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
@@ -158,10 +180,13 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
 
     <script>
         // Category Pie Chart
-        const categoryLabels = <?php echo json_encode(array_column(mysqli_fetch_all($categorySalesResult, MYSQLI_ASSOC), 'category_name')); ?>;
-        const categoryData = <?php echo json_encode(array_column(mysqli_fetch_all($categorySalesResult, MYSQLI_ASSOC), 'category_sales')); ?>;
-        const categoryPieCtx = document.getElementById('categoryPieChart').getContext('2d');
-        new Chart(categoryPieCtx, {
+        const categoryData = <?php echo json_encode(array_map(function($row) {
+            return $row['category_sales'];
+        }, $categorySales)); ?>;
+        const categoryLabels = <?php echo json_encode(array_map(function($row) {
+            return $row['category_name'];
+        }, $categorySales)); ?>;
+        new Chart(document.getElementById('categoryPieChart').getContext('2d'), {
             type: 'pie',
             data: {
                 labels: categoryLabels,
@@ -173,14 +198,15 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
         });
 
         // Sales Trend Line Chart
-        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
-        new Chart(salesTrendCtx, {
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        new Chart(document.getElementById('salesTrendChart').getContext('2d'), {
             type: 'line',
             data: {
-                labels: ['2024-11-01', '2024-11-02', '2024-11-03'], // Replace with dynamic dates
+                labels: salesTrendLabels,
                 datasets: [{
                     label: 'Sales (RM)',
-                    data: [1000, 1500, 2000], // Replace with dynamic sales data
+                    data: salesTrendData,
                     borderColor: '#36A2EB',
                     fill: false
                 }]
@@ -188,8 +214,7 @@ $topProductsResult = mysqli_query($connect, $topProductsQuery);
         });
 
         // Category Bar Chart
-        const categoryBarCtx = document.getElementById('categoryBarChart').getContext('2d');
-        new Chart(categoryBarCtx, {
+        new Chart(document.getElementById('categoryBarChart').getContext('2d'), {
             type: 'bar',
             data: {
                 labels: categoryLabels,
