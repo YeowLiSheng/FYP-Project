@@ -44,7 +44,7 @@ function getTopProducts($connect) {
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
-              WHERE order_date BETWEEN '$startDate' AND '$endDate'
+              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
               GROUP BY DATE(order_date) 
               ORDER BY DATE(order_date)";
     $result = mysqli_query($connect, $query);
@@ -52,8 +52,8 @@ function getSalesTrend($connect, $startDate, $endDate) {
 }
 
 // 获取表单数据（如果有的话）
-$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
+$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
 // 数据获取
 $totalOrders = getTotalOrders($connect);
@@ -145,7 +145,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Date Picker Form -->
-        <form method="GET" class="mb-4" id="dateForm">
+        <form method="POST" class="mb-4">
             <div class="row">
                 <div class="col-md-4">
                     <label for="start_date" class="form-label">Start Date</label>
@@ -154,6 +154,9 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 <div class="col-md-4">
                     <label for="end_date" class="form-label">End Date</label>
                     <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
                 </div>
             </div>
         </form>
@@ -230,31 +233,24 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 datasets: [{
                     label: 'Daily Sales',
                     data: salesTrendData,
-                    borderColor: '#42A5F5',
+                    borderColor: '#4BC0C0',
                     fill: false
                 }]
             }
         });
 
-        // Category Bar Chart
-        const categoryBarData = categoryData.map(s => s / 1000);  // Scaling for better visualization
+        // Category Sales Bar Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
                 labels: categoryLabels,
                 datasets: [{
-                    label: 'Category Sales (in K)',
+                    label: 'Category Sales',
                     data: categoryBarData,
-                    backgroundColor: '#FF5733'
+                    backgroundColor: '#FF6384'
                 }]
             }
-        });
-
-        // Date change event to reload page
-        document.querySelectorAll('input[type="date"]').forEach(input => {
-            input.addEventListener('input', function() {
-                document.getElementById('dateForm').submit();
-            });
         });
     </script>
 </body>
