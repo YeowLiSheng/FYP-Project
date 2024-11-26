@@ -89,6 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-collapse: collapse;
             margin-bottom: 20px;
         }
+        table img {
+        max-width: 100px; /* 限制图片的最大宽度 */
+        max-height: 100px; /* 限制图片的最大高度 */
+        object-fit: cover; /* 保持图片比例且裁剪溢出的部分 */
+        border-radius: 5px; /* 可选：为图片添加圆角 */
+    }
         table th, table td {
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -98,13 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             background-color: #f4f6f8;
             color: #333;
             font-weight: bold;
-        }
-        .user-message {
-            background: #f9f9f9;
-            padding: 15px;
-            border-left: 4px solid #ff6b6b;
-            font-style: italic;
-            border-radius: 5px;
         }
         .order-summary {
             padding: 20px;
@@ -128,35 +127,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .summary-item .value {
             color: #444;
         }
-        .status-form {
-            text-align: right;
+        .status-section {
+            margin-top: 30px;
+            background: #f4f6f8;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .status-form select, .status-form button {
+        .status-section select {
             padding: 10px;
             font-size: 14px;
             margin-left: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
         }
-        .status-form button {
+        
+        .status-section button {
             background: #2575fc;
             color: #fff;
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
-        .status-form button:hover {
+        .status-section button:hover {
             background: #1a5bb5;
         }
-        img.product-image {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
         }
-        .icon {
-            margin-right: 8px;
-            color: #2575fc;
-        }
-        .print-button {
+        .print-button, .back-button {
             background: #ff6b6b;
             color: white;
             padding: 10px 15px;
@@ -164,11 +169,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            display: inline-block;
-            margin-top: 20px;
+            text-decoration: none;
+            text-align: center;
         }
-        .print-button:hover {
+        .print-button:hover, .back-button:hover {
             background: #e55b5b;
+        }
+        .back-button {
+            background: #6c757d;
+        }
+        .back-button:hover {
+            background: #5a6268;
         }
     </style>
 </head>
@@ -206,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="section">
             <h3><i class="fas fa-list-ul icon"></i>Order Items</h3>
             <table>
-                <tr><th>Product Image</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
+                <tr><th>Product</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
                     <tr>
                         <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="product-image"></td>
@@ -229,21 +240,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <!-- 更新订单状态 -->
-        <div class="status-form">
+        <div class="status-section">
             <form method="post">
-                <label for="order_status">Update Status:</label>
+                <label for="order_status"><i class="fas fa-edit icon"></i>Update Status:</label>
                 <select name="order_status" id="order_status">
                     <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
                     <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
                     <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
                 </select>
-                <button type="submit">Update</button>
+                <button type="submit"><i class="fas fa-sync-alt icon"></i>Update</button>
             </form>
         </div>
 
-        <!-- Print Invoice Button -->
-        <a href="adminreceipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+        <!-- 返回按钮和打印按钮 -->
+        <div class="buttons">
+            <a href="manage_order.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
+            <a href="adminreceipt.php?order_id=<?= $order_id ?>" class="print-button"><i class="fas fa-print"></i> Print Receipt</a>
         </div>
+    </div>
 </div>
 
 </body>
