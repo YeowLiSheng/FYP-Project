@@ -52,8 +52,8 @@ function getSalesTrend($connect, $startDate, $endDate) {
 }
 
 // 获取表单数据（如果有的话）
-$startDate = isset($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$endDate = isset($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d');
+$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 
 // 数据获取
 $totalOrders = getTotalOrders($connect);
@@ -145,7 +145,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Date Picker Form -->
-        <form method="POST" class="mb-4">
+        <form method="GET" class="mb-4" id="dateForm">
             <div class="row">
                 <div class="col-md-4">
                     <label for="start_date" class="form-label">Start Date</label>
@@ -154,9 +154,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 <div class="col-md-4">
                     <label for="end_date" class="form-label">End Date</label>
                     <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
                 </div>
             </div>
         </form>
@@ -231,33 +228,33 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             data: {
                 labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Daily Sales (RM)',
+                    label: 'Daily Sales',
                     data: salesTrendData,
-                    fill: false,
-                    borderColor: '#FF5733',
-                    tension: 0.1
+                    borderColor: '#42A5F5',
+                    fill: false
                 }]
             }
         });
 
         // Category Bar Chart
-        const barChartData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const barChartLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        const categoryBarData = categoryData.map(s => s / 1000);  // Scaling for better visualization
         new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
-                labels: barChartLabels,
+                labels: categoryLabels,
                 datasets: [{
-                    label: 'Category Sales (RM)',
-                    data: barChartData,
-                    backgroundColor: '#36A2EB'
+                    label: 'Category Sales (in K)',
+                    data: categoryBarData,
+                    backgroundColor: '#FF5733'
                 }]
-            },
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
             }
+        });
+
+        // Date change event to reload page
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            input.addEventListener('input', function() {
+                document.getElementById('dateForm').submit();
+            });
         });
     </script>
 </body>
