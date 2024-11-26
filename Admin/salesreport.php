@@ -74,82 +74,59 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f3f6f9;
-            font-family: 'Roboto', sans-serif;
-            color: #333;
+            background-color: #f4f7fc;
+            font-family: 'Arial', sans-serif;
         }
         .content-wrapper {
-            margin-left: 250px;
-            padding: 30px;
-            padding-top: 100px; /* 提高顶部间距以避免重叠 */
+            margin-left: 250px; /* Sidebar left margin */
+            padding: 40px;
+            padding-top: 80px; /* Offset to avoid header overlay */
         }
         .dashboard-card {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: #fff;
-            border-radius: 15px;
-            padding: 25px;
+            background: linear-gradient(135deg, #5c6bc0, #3f51b5);
+            border-radius: 20px;
+            padding: 30px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease-in-out;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            min-height: 180px; /* Ensure uniform size */
+            transition: all 0.3s ease;
         }
         .dashboard-card:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
-        .card-header {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #5a5a5a;
-            margin-bottom: 20px;
-        }
-        .table-container {
+        .chart-container, .table-container {
             background: #fff;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-top: 30px;
-        }
-        .chart-container {
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-top: 30px;
-        }
-        .table th, .table td {
-            vertical-align: middle;
-        }
-        .form-control {
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .btn-primary {
-            background-color: #6a11cb;
-            border-color: #6a11cb;
-        }
-        .btn-primary:hover {
-            background-color: #2575fc;
-            border-color: #2575fc;
-        }
-        .section-title {
-            font-size: 2rem;
-            color: #4c4c4c;
-            font-weight: bold;
+            padding: 30px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
         }
-        .lead {
-            font-size: 1.2rem;
-            color: #5a5a5a;
+        .chart-container {
+            height: 400px;
         }
-        .sidebar {
-            background-color: #333;
-            color: white;
-            height: 100vh;
+        .card-header {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
         }
-        .sidebar a {
-            color: white;
+        .table thead th {
+            color: #333;
+            font-weight: bold;
+            background-color: #f7f7f7;
         }
-        .sidebar a:hover {
-            background-color: #444;
+        .btn-custom {
+            background-color: #3f51b5;
+            color: #fff;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-custom:hover {
+            background-color: #5c6bc0;
         }
     </style>
 </head>
@@ -157,8 +134,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <div class="content-wrapper">
         <!-- Page Header -->
         <div class="mb-5">
-            <h1 class="section-title">Sales Dashboard</h1>
-            <p class="lead">Analyze the sales performance with an overview of total orders, revenue, top-selling categories, and products.</p>
+            <h1 class="display-4 text-primary">Sales Dashboard</h1>
+            <p class="lead text-muted">View detailed reports on sales performance, including total orders, sales, and customer insights.</p>
         </div>
 
         <!-- Overview Section -->
@@ -190,8 +167,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Date Picker Form -->
-        <form method="POST" class="mb-4" id="dateForm">
-            <div class="row mb-4">
+        <form method="POST" class="mb-5" id="dateForm">
+            <div class="row">
                 <div class="col-md-4">
                     <label for="start_date" class="form-label">Start Date</label>
                     <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
@@ -204,7 +181,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </form>
 
         <!-- Charts Section -->
-        <div class="row mb-4">
+        <div class="row mb-5">
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Category Sales Distribution</h3>
@@ -219,29 +196,35 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Top Products and Sales Comparison -->
+        <!-- Table Section -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
-                    <h3 class="card-header">Top 5 Selling Products</h3>
-                    <table class="table table-bordered">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
-                                <th>Total Sold</th>
+                                <th>Units Sold</th>
                                 <th>Total Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($topProducts as $product): ?>
-                            <tr>
-                                <td><?php echo $product['product_name']; ?></td>
-                                <td><?php echo $product['total_sold']; ?></td>
-                                <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
-                            </tr>
+                                <tr>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Top 5 Categories by Sales</h3>
+                    <canvas id="categoryBarChart"></canvas>
                 </div>
             </div>
         </div>
@@ -274,6 +257,20 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: salesTrendData,
                     borderColor: '#4BC0C0',
                     fill: false
+                }]
+            }
+        });
+
+        // Category Sales Bar Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Category Sales',
+                    data: categoryBarData,
+                    backgroundColor: '#FF6384'
                 }]
             }
         });
