@@ -84,13 +84,14 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         }
         .dashboard-card {
             color: #fff;
-            background: linear-gradient(135deg, #5c6bc0, #3f51b5);
-            border-radius: 20px;
+            background-color: #3f51b5;
+            border-radius: 15px;
             padding: 30px;
             text-align: center;
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
             min-height: 180px; /* Ensure uniform size */
             transition: all 0.3s ease;
+            height: 180px; /* Set consistent card height */
         }
         .dashboard-card:hover {
             transform: translateY(-5px);
@@ -104,7 +105,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             margin-bottom: 30px;
         }
         .chart-container {
-            height: 400px;
+            height: 300px; /* Reduce size of pie chart */
         }
         .card-header {
             font-size: 1.6rem;
@@ -221,12 +222,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </table>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Top 5 Categories by Sales</h3>
-                    <canvas id="categoryBarChart"></canvas>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -257,20 +252,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: salesTrendData,
                     borderColor: '#4BC0C0',
                     fill: false
-                }]
-            }
-        });
-
-        // Category Sales Bar Chart
-        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        new Chart(document.getElementById('categoryBarChart'), {
-            type: 'bar',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    label: 'Category Sales',
-                    data: categoryBarData,
-                    backgroundColor: '#FF6384'
                 }]
             }
         });
