@@ -128,81 +128,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .summary-item .value {
             color: #444;
         }
-        .status-form h4 {
-            margin-bottom: 10px;
-            color: #444;
-            font-weight: bold;
+        .status-form {
+            text-align: center;
+            margin-top: 20px;
         }
-        .status-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .status-row label {
+        .status-form label {
             font-size: 16px;
-            font-weight: 500;
-            color: #333;
+            font-weight: 600;
+            color: #444;
         }
-        select {
-            padding: 8px 12px;
+        .status-form select {
+            padding: 10px;
             font-size: 14px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            background: #fff;
+            margin: 0 10px;
         }
-        .update-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 10px 15px;
-            font-size: 14px;
-            background: #4caf50;
+        .status-form button {
+            background: #2575fc;
             color: #fff;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-        .update-button:hover {
-            background: #45a049;
-        }
-        .action-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 15px;
             font-size: 16px;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            transition: background 0.3s;
         }
-        .print-button {
-            background: #ff6b6b;
-            color: white;
-            margin-right: 10px;
-        }
-        .print-button:hover {
-            background: #e55b5b;
-        }
-        .back-button {
-            background: #2575fc;
-            color: white;
-        }
-        .back-button:hover {
+        .status-form button:hover {
             background: #1a5bb5;
         }
-        img.product-image {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
+        .action-buttons {
+            text-align: center;
+            margin-top: 30px;
         }
-        .icon {
-            margin-right: 8px;
-            color: #2575fc;
+        .action-buttons a {
+            text-decoration: none;
+            margin: 0 10px;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+        }
+        .action-buttons .back-button {
+            background: #6c757d;
+        }
+        .action-buttons .back-button:hover {
+            background: #5a6268;
+        }
+        .action-buttons .print-button {
+            background: #ff6b6b;
+        }
+        .action-buttons .print-button:hover {
+            background: #e55b5b;
         }
     </style>
 </head>
@@ -231,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Date</th><td><?= $order_data['order_date'] ?></td></tr>
                 <tr><th>Shipping Address</th><td><?= $order_data['shipping_address'] ?></td></tr>
                 <tr><th>Shipping Method</th><td><?= $order_data['shipping_method'] ?></td></tr>
-                <tr><th>User Messaga</th>
+                <tr><th>User Message</th>
                     <td class="user-message"><?= $order_data['user_message'] ?? 'No message provided.' ?></td></tr>
             </table>
         </div>
@@ -253,39 +231,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
         </div>
 
-        <!-- 订单总计 -->
+        <!-- 订单汇总 -->
         <div class="order-summary">
-            <h4><i class="fas fa-receipt icon"></i>Order Summary</h4>
-            <div class="summary-item"><span>Subtotal:</span><span class="value">RM <?= number_format($order_data['subtotal'], 2) ?></span></div>
-            <div class="summary-item"><span>Delivery Charge:</span><span class="value">RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
-            <div class="summary-item"><span><b>Total:</b></span><span class="value"><b>RM <?= number_format($order_data['grand_total'], 2) ?></b></span></div>
+            <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
+            <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
+            <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
+            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
+            <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
         <!-- 更新订单状态 -->
         <div class="status-form">
             <form method="post">
-                <h4><i class="fas fa-sync-alt icon"></i>Update Order Status</h4>
-                <div class="status-row">
-                    <label for="order_status">Status:</label>
-                    <select name="order_status" id="order_status">
-                        <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
-                        <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
-                        <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
-                    </select>
-                </div>
-                <button type="submit" class="update-button"><i class="fas fa-save"></i> Save Changes</button>
+                <label for="order_status">Update Status:</label>
+                <select name="order_status" id="order_status">
+                    <option value="Processing" <?= $order_data['order_status'] == 'Processing' ? 'selected' : '' ?>>Processing</option>
+                    <option value="Shipping" <?= $order_data['order_status'] == 'Shipping' ? 'selected' : '' ?>>Shipping</option>
+                    <option value="Complete" <?= $order_data['order_status'] == 'Complete' ? 'selected' : '' ?>>Complete</option>
+                </select>
+                <button type="submit">Update</button>
             </form>
         </div>
 
-        <!-- 打印收据按钮 -->
-        <a href="adminreceipt.php?order_id=<?= $order_data['order_id'] ?>" class="action-button print-button">
-            <i class="fas fa-print"></i> Print Receipt
-        </a>
-
-        <!-- 返回按钮 -->
-        <a href="manageorder.php" class="action-button back-button">
-            <i class="fas fa-arrow-left"></i> Back to Manage Orders
-        </a>
+        <!-- 动作按钮 -->
+        <div class="action-buttons">
+            <a href="manageorder.php" class="back-button">🔙 Back</a>
+            <a href="adminreceipt.php?order_id=<?= $order_data['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+        </div>
     </div>
 </div>
 
