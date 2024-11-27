@@ -40,9 +40,9 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取销售趋势数据，根据日期范围过滤
-function getSalesTrend($connect, $startDate, $endDate) {
-    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
+// 获取每日订单数的时间趋势数据
+function getDailyOrdersTrend($connect, $startDate, $endDate) {
+    $query = "SELECT DATE(order_date) AS date, COUNT(order_id) AS daily_orders 
               FROM orders 
               WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
               GROUP BY DATE(order_date) 
@@ -61,7 +61,7 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
-$salesTrend = getSalesTrend($connect, $startDate, $endDate);
+$dailyOrdersTrend = getDailyOrdersTrend($connect, $startDate, $endDate);
 ?>
 
 <!DOCTYPE html>
@@ -97,12 +97,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .chart-container {
-            height: 400px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
         .chart-wrapper {
             position: relative;
             width: 100%;
@@ -137,7 +131,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Overview Section -->
         <div class="row mb-4">
-            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -182,25 +175,25 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Category Sales Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryPieChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Daily Orders Trend</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="dailyOrdersChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Table and Bar Chart -->
+        <!-- Table Section -->
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="table-container">
                     <div class="card-header">Top 5 Products by Sales</div>
                     <table class="table table-striped">
@@ -223,68 +216,45 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </table>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Category Sales Comparison</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryBarChart"></canvas>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
     <script>
-        // Category Pie Chart
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        new Chart(document.getElementById('categoryPieChart'), {
-            type: 'pie',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    data: categoryData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-                }]
-            },
-            options: {
-                maintainAspectRatio: false
-            }
-        });
-
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart'), {
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        const salesTrendData = <?php echo json_encode($salesTrend); ?>;
+        new Chart(salesTrendCtx, {
             type: 'line',
             data: {
-                labels: salesTrendLabels,
+                labels: salesTrendData.map(item => item.date),
                 datasets: [{
-                    label: 'Daily Sales',
-                    data: salesTrendData,
-                    borderColor: '#4BC0C0',
-                    fill: false
+                    label: 'Daily Sales (RM)',
+                    data: salesTrendData.map(item => item.daily_sales),
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
                 }]
             },
             options: {
-                maintainAspectRatio: false
+                responsive: true,
             }
         });
 
-        // Category Sales Bar Chart
-        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        new Chart(document.getElementById('categoryBarChart'), {
+        const dailyOrdersCtx = document.getElementById('dailyOrdersChart').getContext('2d');
+        const dailyOrdersData = <?php echo json_encode($dailyOrdersTrend); ?>;
+        new Chart(dailyOrdersCtx, {
             type: 'bar',
             data: {
-                labels: categoryLabels,
+                labels: dailyOrdersData.map(item => item.date),
                 datasets: [{
-                    label: 'Category Sales',
-                    data: categoryBarData,
-                    backgroundColor: '#FF6384'
+                    label: 'Daily Orders',
+                    data: dailyOrdersData.map(item => item.daily_orders),
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
                 }]
             },
             options: {
-                maintainAspectRatio: false
+                responsive: true,
             }
         });
     </script>
