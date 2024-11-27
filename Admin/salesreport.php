@@ -74,22 +74,34 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f4f5f7;
             font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
             margin-left: 250px;
-            padding: 20px;
+            padding: 30px;
             padding-top: 80px;
         }
         .dashboard-card {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
             color: #fff;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .dashboard-card h5 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .dashboard-card h2 {
+            font-size: 2rem;
+            font-weight: bold;
         }
         .chart-container, .table-container {
             background: #fff;
@@ -98,7 +110,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container {
-            height: 400px;
+            height: 450px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -114,11 +126,14 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         .card-header {
             font-size: 1.5rem;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .table thead th {
-            color: #333;
+            color: #495057;
             font-weight: bold;
+        }
+        .lead {
+            color: #6c757d;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
@@ -130,33 +145,32 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 </head>
 <body>
     <div class="content-wrapper">
-        <div class="mb-4">
-            <h1 class="display-4">Sales Dashboard</h1>
-            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and product categories.</p>
+        <div class="mb-5">
+            <h1 class="display-5 text-primary">Sales Dashboard</h1>
+            <p class="lead">Gain insights into your sales data and monitor performance across orders, customers, and categories.</p>
         </div>
 
         <!-- Overview Section -->
-        <div class="row mb-4">
-            <!-- Cards -->
-            <div class="col-md-3">
+        <div class="row mb-5">
+            <div class="col-md-3 col-sm-6 mb-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
                     <h2><?php echo $totalOrders; ?></h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6 mb-3">
                 <div class="dashboard-card">
                     <h5>Total Customers</h5>
                     <h2><?php echo $totalCustomers; ?></h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6 mb-3">
                 <div class="dashboard-card">
                     <h5>Total Sales</h5>
                     <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6 mb-3">
                 <div class="dashboard-card">
                     <h5>Top Category</h5>
                     <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
@@ -165,22 +179,22 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Date Picker -->
-        <form method="POST" class="mb-4" id="dateForm">
+        <form method="POST" class="mb-5" id="dateForm">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="start_date" class="form-label">Start Date</label>
                     <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="end_date" class="form-label">End Date</label>
                     <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
                 </div>
             </div>
         </form>
 
-        <!-- Charts Section -->
-        <div class="row mb-4">
-            <div class="col-md-6">
+        <!-- Charts and Table Section -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4">
                 <div class="chart-container">
                     <h3 class="card-header">Category Sales Distribution</h3>
                     <div class="chart-wrapper">
@@ -188,9 +202,9 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 mb-4">
                 <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <h3 class="card-header">Sales Trend</h3>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -198,12 +212,11 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Table and Bar Chart -->
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 mb-4">
                 <div class="table-container">
-                    <div class="card-header">Top 5 Products by Sales</div>
-                    <table class="table table-striped">
+                    <h3 class="card-header">Top 5 Products</h3>
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
@@ -223,68 +236,66 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </table>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Category Sales Comparison</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryBarChart"></canvas>
-                    </div>
+            <div class="col-md-6 mb-4">
+                <div class="table-container">
+                    <h3 class="card-header">Category Sales</h3>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Total Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($categorySales as $category): ?>
+                                <tr>
+                                    <td><?php echo $category['category_name']; ?></td>
+                                    <td>RM <?php echo number_format($category['category_sales'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Category Pie Chart
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        new Chart(document.getElementById('categoryPieChart'), {
+        // 数据处理逻辑
+        const categoryData = <?php echo json_encode(array_map(function($row) {
+            return ['label' => $row['category_name'], 'value' => $row['category_sales']];
+        }, $categorySales)); ?>;
+
+        const salesTrendData = <?php echo json_encode(array_map(function($row) {
+            return ['date' => $row['date'], 'value' => $row['daily_sales']];
+        }, $salesTrend)); ?>;
+
+        // 图表初始化
+        const ctx1 = document.getElementById('categoryPieChart').getContext('2d');
+        const ctx2 = document.getElementById('salesTrendChart').getContext('2d');
+
+        new Chart(ctx1, {
             type: 'pie',
             data: {
-                labels: categoryLabels,
+                labels: categoryData.map(c => c.label),
                 datasets: [{
-                    data: categoryData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    data: categoryData.map(c => c.value),
+                    backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3', '#9c27b0'],
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart'), {
+        new Chart(ctx2, {
             type: 'line',
             data: {
-                labels: salesTrendLabels,
+                labels: salesTrendData.map(s => s.date),
                 datasets: [{
-                    label: 'Daily Sales',
-                    data: salesTrendData,
-                    borderColor: '#4BC0C0',
-                    fill: false
+                    label: 'Sales Amount (RM)',
+                    data: salesTrendData.map(s => s.value),
+                    borderColor: '#2196f3',
+                    fill: true,
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
-            }
-        });
-
-        // Category Sales Bar Chart
-        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        new Chart(document.getElementById('categoryBarChart'), {
-            type: 'bar',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    label: 'Category Sales',
-                    data: categoryBarData,
-                    backgroundColor: '#FF6384'
-                }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
     </script>
