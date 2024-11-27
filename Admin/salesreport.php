@@ -51,6 +51,29 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 获取每月订单数量
+function getMonthlyOrderCount($connect, $startDate, $endDate) {
+    $query = "SELECT MONTH(order_date) AS month, COUNT(order_id) AS order_count 
+              FROM orders 
+              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
+              GROUP BY MONTH(order_date)
+              ORDER BY MONTH(order_date)";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// 获取最活跃客户数据
+function getActiveCustomers($connect) {
+    $query = "SELECT u.user_id, u.name, SUM(od.total_price) AS total_spent
+              FROM orders o
+              JOIN order_details od ON o.order_id = od.order_id
+              JOIN users u ON o.user_id = u.user_id
+              GROUP BY u.user_id
+              ORDER BY total_spent DESC LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
 // 获取表单数据（如果有的话）
 $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
@@ -62,6 +85,8 @@ $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
+$monthlyOrderCount = getMonthlyOrderCount($connect, $startDate, $endDate);
+$activeCustomers = getActiveCustomers($connect);
 ?>
 
 <!DOCTYPE html>
@@ -182,23 +207,23 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Category Sales Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryPieChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Monthly Order Count</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="monthlyOrderChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Table and Bar Chart -->
+        <!-- Table Section -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -224,67 +249,81 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Category Sales Comparison</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryBarChart"></canvas>
-                    </div>
+                <div class="table-container">
+                    <div class="card-header">Active Customers (Top 5)</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($activeCustomers as $customer): ?>
+                                <tr>
+                                    <td><?php echo $customer['name']; ?></td>
+                                    <td>RM <?php echo number_format($customer['total_spent'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Chart.js Script -->
     <script>
-        // Category Pie Chart
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        new Chart(document.getElementById('categoryPieChart'), {
-            type: 'pie',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    data: categoryData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-                }]
-            },
-            options: {
-                maintainAspectRatio: false
-            }
-        });
-
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart'), {
+        // Sales Trend Chart
+        const salesTrendData = <?php echo json_encode($salesTrend); ?>;
+        const salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
-                labels: salesTrendLabels,
+                labels: salesTrendData.map(data => data.date),
                 datasets: [{
                     label: 'Daily Sales',
-                    data: salesTrendData,
-                    borderColor: '#4BC0C0',
+                    data: salesTrendData.map(data => data.daily_sales),
+                    borderColor: '#007bff',
                     fill: false
                 }]
             },
             options: {
-                maintainAspectRatio: false
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Sales Trend' },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: { 
+                        title: { display: true, text: 'Date' },
+                        ticks: { autoSkip: true, maxTicksLimit: 7 }
+                    },
+                    y: { title: { display: true, text: 'Sales (RM)' } }
+                }
             }
         });
 
-        // Category Sales Bar Chart
-        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        new Chart(document.getElementById('categoryBarChart'), {
+        // Monthly Order Count Chart
+        const monthlyOrderData = <?php echo json_encode($monthlyOrderCount); ?>;
+        const monthlyOrderChart = new Chart(document.getElementById('monthlyOrderChart'), {
             type: 'bar',
             data: {
-                labels: categoryLabels,
+                labels: monthlyOrderData.map(data => data.month),
                 datasets: [{
-                    label: 'Category Sales',
-                    data: categoryBarData,
-                    backgroundColor: '#FF6384'
+                    label: 'Orders per Month',
+                    data: monthlyOrderData.map(data => data.order_count),
+                    backgroundColor: '#28a745'
                 }]
             },
             options: {
-                maintainAspectRatio: false
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Orders per Month' }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Month' } },
+                    y: { title: { display: true, text: 'Order Count' } }
+                }
             }
         });
     </script>
