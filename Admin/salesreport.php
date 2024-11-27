@@ -62,7 +62,7 @@ function getMonthlyOrderCount($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取最活跃客户数据
+// 获取最活跃的客户
 function getActiveCustomers($connect) {
     $query = "SELECT u.user_id, u.name, SUM(od.total_price) AS total_spent
               FROM orders o
@@ -71,6 +71,11 @@ function getActiveCustomers($connect) {
               GROUP BY u.user_id
               ORDER BY total_spent DESC LIMIT 5";
     $result = mysqli_query($connect, $query);
+    
+    if (!$result) {
+        die("Error executing query: " . mysqli_error($connect));
+    }
+    
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
@@ -223,16 +228,16 @@ $activeCustomers = getActiveCustomers($connect);
             </div>
         </div>
 
-        <!-- Table Section -->
+        <!-- Table and Bar Chart -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
-                    <div class="card-header">Top 5 Products by Sales</div>
+                    <h3 class="card-header">Top Products</h3>
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
-                                <th>Units Sold</th>
+                                <th>Total Sold</th>
                                 <th>Total Revenue</th>
                             </tr>
                         </thead>
@@ -248,9 +253,10 @@ $activeCustomers = getActiveCustomers($connect);
                     </table>
                 </div>
             </div>
+
             <div class="col-md-6">
                 <div class="table-container">
-                    <div class="card-header">Active Customers (Top 5)</div>
+                    <h3 class="card-header">Active Customers</h3>
                     <table class="table table-striped">
                         <thead>
                             <tr>
@@ -272,57 +278,71 @@ $activeCustomers = getActiveCustomers($connect);
         </div>
     </div>
 
-    <!-- Chart.js Script -->
     <script>
         // Sales Trend Chart
         const salesTrendData = <?php echo json_encode($salesTrend); ?>;
-        const salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
+        const salesTrendLabels = salesTrendData.map(item => item.date);
+        const salesTrendValues = salesTrendData.map(item => item.daily_sales);
+
+        new Chart(document.getElementById("salesTrendChart"), {
             type: 'line',
             data: {
-                labels: salesTrendData.map(data => data.date),
+                labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Daily Sales',
-                    data: salesTrendData.map(data => data.daily_sales),
-                    borderColor: '#007bff',
-                    fill: false
+                    label: 'Sales (RM)',
+                    data: salesTrendValues,
+                    fill: false,
+                    borderColor: '#42A5F5',
+                    tension: 0.1
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    title: { display: true, text: 'Sales Trend' },
-                    tooltip: { mode: 'index', intersect: false }
-                },
-                scales: {
-                    x: { 
-                        title: { display: true, text: 'Date' },
-                        ticks: { autoSkip: true, maxTicksLimit: 7 }
+                    legend: {
+                        position: 'top',
                     },
-                    y: { title: { display: true, text: 'Sales (RM)' } }
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return 'RM ' + tooltipItem.raw;
+                            }
+                        }
+                    }
                 }
             }
         });
 
         // Monthly Order Count Chart
         const monthlyOrderData = <?php echo json_encode($monthlyOrderCount); ?>;
-        const monthlyOrderChart = new Chart(document.getElementById('monthlyOrderChart'), {
+        const monthlyOrderLabels = monthlyOrderData.map(item => item.month);
+        const monthlyOrderValues = monthlyOrderData.map(item => item.order_count);
+
+        new Chart(document.getElementById("monthlyOrderChart"), {
             type: 'bar',
             data: {
-                labels: monthlyOrderData.map(data => data.month),
+                labels: monthlyOrderLabels,
                 datasets: [{
-                    label: 'Orders per Month',
-                    data: monthlyOrderData.map(data => data.order_count),
-                    backgroundColor: '#28a745'
+                    label: 'Order Count',
+                    data: monthlyOrderValues,
+                    backgroundColor: '#42A5F5',
+                    borderColor: '#42A5F5',
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    title: { display: true, text: 'Orders per Month' }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Month' } },
-                    y: { title: { display: true, text: 'Order Count' } }
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.raw + ' Orders';
+                            }
+                        }
+                    }
                 }
             }
         });
