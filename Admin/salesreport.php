@@ -40,13 +40,11 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取销售趋势数据，根据日期范围过滤
-function getSalesTrend($connect, $startDate, $endDate) {
-    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
+// 订单状态分布统计
+function getOrderStatusDistribution($connect) {
+    $query = "SELECT status, COUNT(order_id) AS count 
               FROM orders 
-              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
-              GROUP BY DATE(order_date) 
-              ORDER BY DATE(order_date)";
+              GROUP BY status";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
@@ -61,7 +59,7 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
-$salesTrend = getSalesTrend($connect, $startDate, $endDate);
+$orderStatusDistribution = getOrderStatusDistribution($connect);
 ?>
 
 <!DOCTYPE html>
@@ -164,41 +162,25 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Date Picker -->
-        <form method="POST" class="mb-4" id="dateForm">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="start_date" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
-                </div>
-                <div class="col-md-4">
-                    <label for="end_date" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
-                </div>
-            </div>
-        </form>
-
-        <!-- Charts Section -->
+        <!-- Category Sales Pie Chart -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Category Sales Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryPieChart"></canvas>
-                    </div>
+                    <canvas id="categorySalesChart"></canvas>
                 </div>
             </div>
+
+            <!-- Order Status Distribution Chart -->
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="salesTrendChart"></canvas>
-                    </div>
+                    <h3 class="card-header">Order Status Distribution</h3>
+                    <canvas id="orderStatusChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Table and Bar Chart -->
+        <!-- Top Products Table -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -223,68 +205,35 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </table>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Category Sales Comparison</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryBarChart"></canvas>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
     <script>
-        // Category Pie Chart
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        new Chart(document.getElementById('categoryPieChart'), {
+        // Category Sales Chart
+        const categorySalesCtx = document.getElementById('categorySalesChart').getContext('2d');
+        const categorySalesData = <?php echo json_encode($categorySales); ?>;
+        new Chart(categorySalesCtx, {
             type: 'pie',
             data: {
-                labels: categoryLabels,
+                labels: categorySalesData.map(item => item.category_name),
                 datasets: [{
-                    data: categoryData,
+                    data: categorySalesData.map(item => parseFloat(item.category_sales)),
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart'), {
-            type: 'line',
+        // Order Status Chart
+        const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
+        const orderStatusData = <?php echo json_encode($orderStatusDistribution); ?>;
+        new Chart(orderStatusCtx, {
+            type: 'doughnut',
             data: {
-                labels: salesTrendLabels,
+                labels: orderStatusData.map(item => item.status),
                 datasets: [{
-                    label: 'Daily Sales',
-                    data: salesTrendData,
-                    borderColor: '#4BC0C0',
-                    fill: false
+                    data: orderStatusData.map(item => item.count),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
-            }
-        });
-
-        // Category Sales Bar Chart
-        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        new Chart(document.getElementById('categoryBarChart'), {
-            type: 'bar',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    label: 'Category Sales',
-                    data: categoryBarData,
-                    backgroundColor: '#FF6384'
-                }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
     </script>
