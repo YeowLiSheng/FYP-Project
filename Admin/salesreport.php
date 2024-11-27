@@ -51,35 +51,6 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取客户消费等级数据
-function getCustomerSpendDistribution($connect) {
-    $query = "SELECT 
-                 CASE 
-                     WHEN total_spend > 5000 THEN 'High'
-                     WHEN total_spend BETWEEN 1000 AND 5000 THEN 'Medium'
-                     ELSE 'Low' 
-                 END AS customer_level,
-                 COUNT(user_id) AS customer_count
-              FROM (
-                  SELECT user_id, SUM(final_amount) AS total_spend
-                  FROM orders 
-                  GROUP BY user_id
-              ) AS customer_spend
-              GROUP BY customer_level";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
-
-// 获取每月销售收入数据
-function getMonthlySales($connect) {
-    $query = "SELECT MONTH(order_date) AS month, SUM(final_amount) AS monthly_sales 
-              FROM orders 
-              WHERE YEAR(order_date) = YEAR(CURRENT_DATE) 
-              GROUP BY MONTH(order_date)";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
-
 // 获取表单数据（如果有的话）
 $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
@@ -91,8 +62,6 @@ $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
-$customerSpend = getCustomerSpendDistribution($connect);
-$monthlySales = getMonthlySales($connect);
 ?>
 
 <!DOCTYPE html>
@@ -229,35 +198,16 @@ $monthlySales = getMonthlySales($connect);
             </div>
         </div>
 
-        <!-- Table and Additional Charts -->
+        <!-- Table and Bar Chart -->
         <div class="row">
             <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Monthly Sales Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="monthlySalesChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Customer Spending Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="customerSpendChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <div class="col-md-12">
                 <div class="table-container">
-                    <h3 class="card-header">Top Selling Products</h3>
-                    <table class="table table-bordered">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
-                                <th>Total Sold</th>
+                                <th>Units Sold</th>
                                 <th>Total Revenue</th>
                             </tr>
                         </thead>
@@ -273,21 +223,28 @@ $monthlySales = getMonthlySales($connect);
                     </table>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Category Sales Comparison</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
 
     <script>
-        // 类别销售分布饼图
+        // Category Pie Chart
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        const categorySalesData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         new Chart(document.getElementById('categoryPieChart'), {
             type: 'pie',
             data: {
                 labels: categoryLabels,
                 datasets: [{
-                    data: categorySalesData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40'],
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
             },
             options: {
@@ -295,9 +252,9 @@ $monthlySales = getMonthlySales($connect);
             }
         });
 
-        // 销售趋势折线图
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        // Sales Trend Line Chart
         const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
         new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
@@ -305,7 +262,7 @@ $monthlySales = getMonthlySales($connect);
                 datasets: [{
                     label: 'Daily Sales',
                     data: salesTrendData,
-                    borderColor: '#36A2EB',
+                    borderColor: '#4BC0C0',
                     fill: false
                 }]
             },
@@ -314,35 +271,16 @@ $monthlySales = getMonthlySales($connect);
             }
         });
 
-        // 月度销售收入图表
-        const monthlySalesData = <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>;
-        const monthlySalesLabels = <?php echo json_encode(array_column($monthlySales, 'month')); ?>;
-        new Chart(document.getElementById('monthlySalesChart'), {
-            type: 'line',
+        // Category Sales Bar Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
             data: {
-                labels: monthlySalesLabels,
+                labels: categoryLabels,
                 datasets: [{
-                    label: 'Monthly Sales',
-                    data: monthlySalesData,
-                    borderColor: '#FF9F40',
-                    fill: false
-                }]
-            },
-            options: {
-                maintainAspectRatio: false
-            }
-        });
-
-        // 客户消费分布饼图
-        const customerSpendData = <?php echo json_encode(array_column($customerSpend, 'customer_count')); ?>;
-        const customerSpendLabels = <?php echo json_encode(array_column($customerSpend, 'customer_level')); ?>;
-        new Chart(document.getElementById('customerSpendChart'), {
-            type: 'pie',
-            data: {
-                labels: customerSpendLabels,
-                datasets: [{
-                    data: customerSpendData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+                    label: 'Category Sales',
+                    data: categoryBarData,
+                    backgroundColor: '#FF6384'
                 }]
             },
             options: {
