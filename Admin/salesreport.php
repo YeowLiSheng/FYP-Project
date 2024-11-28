@@ -132,7 +132,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
-            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and product categories.</p>
+            
         </div>
 
         <!-- Overview Section -->
