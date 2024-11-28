@@ -31,47 +31,40 @@ function getCategorySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getTopProducts($connect) {
-    $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
-              FROM order_details 
-              GROUP BY product_name 
-              ORDER BY total_sold DESC LIMIT 5";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
-
-// 新增：获取订单状态分布
 function getOrderStatusDistribution($connect) {
-    $query = "SELECT order_status, COUNT(order_id) AS count 
+    $query = "SELECT order_status, COUNT(order_id) AS status_count 
               FROM orders 
               GROUP BY order_status";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取销售趋势数据，根据日期范围过滤
-function getSalesTrend($connect, $startDate, $endDate) {
-    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
-              FROM orders 
-              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
-              GROUP BY DATE(order_date) 
-              ORDER BY DATE(order_date)";
+function getCustomerRegionDistribution($connect) {
+    $query = "SELECT city, COUNT(user_id) AS customer_count 
+              FROM user_address 
+              GROUP BY city";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取表单数据（如果有的话）
-$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
-$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
+function getMonthlySalesComparison($connect) {
+    $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
+              FROM orders 
+              WHERE order_date >= DATE_SUB(NOW(), INTERVAL 3 MONTH) 
+              GROUP BY DATE_FORMAT(order_date, '%Y-%m')
+              ORDER BY month ASC";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
 
 // 数据获取
 $totalOrders = getTotalOrders($connect);
 $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
-$topProducts = getTopProducts($connect);
-$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 $orderStatusDistribution = getOrderStatusDistribution($connect);
+$customerRegionDistribution = getCustomerRegionDistribution($connect);
+$monthlySalesComparison = getMonthlySalesComparison($connect);
 ?>
 
 <!DOCTYPE html>
@@ -83,6 +76,7 @@ $orderStatusDistribution = getOrderStatusDistribution($connect);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* 样式保持不变 */
         body {
             background-color: #f8f9fa;
             font-family: 'Poppins', sans-serif;
@@ -142,12 +136,11 @@ $orderStatusDistribution = getOrderStatusDistribution($connect);
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
-            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and product categories.</p>
+            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and more.</p>
         </div>
 
         <!-- Overview Section -->
         <div class="row mb-4">
-            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -174,20 +167,6 @@ $orderStatusDistribution = getOrderStatusDistribution($connect);
             </div>
         </div>
 
-        <!-- Date Picker -->
-        <form method="POST" class="mb-4" id="dateForm">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="start_date" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
-                </div>
-                <div class="col-md-4">
-                    <label for="end_date" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
-                </div>
-            </div>
-        </form>
-
         <!-- Charts Section -->
         <div class="row mb-4">
             <div class="col-md-6">
@@ -200,37 +179,21 @@ $orderStatusDistribution = getOrderStatusDistribution($connect);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <h3 class="card-header">Monthly Sales Comparison</h3>
                     <div class="chart-wrapper">
-                        <canvas id="salesTrendChart"></canvas>
+                        <canvas id="monthlySalesChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Table and Bar Chart -->
         <div class="row">
             <div class="col-md-6">
-                <div class="table-container">
-                    <div class="card-header">Top 5 Products by Sales</div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Units Sold</th>
-                                <th>Total Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($topProducts as $product): ?>
-                                <tr>
-                                    <td><?php echo $product['product_name']; ?></td>
-                                    <td><?php echo $product['total_sold']; ?></td>
-                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                <div class="chart-container">
+                    <h3 class="card-header">Customer Region Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="customerRegionChart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-md-6">
@@ -246,56 +209,62 @@ $orderStatusDistribution = getOrderStatusDistribution($connect);
 
     <script>
         // Order Status Chart
-        const orderStatusData = <?php echo json_encode(array_column($orderStatusDistribution, 'count')); ?>;
+        const orderStatusData = <?php echo json_encode(array_column($orderStatusDistribution, 'status_count')); ?>;
         const orderStatusLabels = <?php echo json_encode(array_column($orderStatusDistribution, 'order_status')); ?>;
         new Chart(document.getElementById('orderStatusChart'), {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: orderStatusLabels,
                 datasets: [{
                     data: orderStatusData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384', '#4BC0C0']
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart'), {
+        // Customer Region Chart
+        const regionData = <?php echo json_encode(array_column($customerRegionDistribution, 'customer_count')); ?>;
+        const regionLabels = <?php echo json_encode(array_column($customerRegionDistribution, 'city')); ?>;
+        new Chart(document.getElementById('customerRegionChart'), {
+            type: 'bar',
+            data: {
+                labels: regionLabels,
+                datasets: [{
+                    label: 'Customer Count',
+                    data: regionData,
+                    backgroundColor: '#FF6384'
+                }]
+            }
+        });
+
+        // Monthly Sales Chart
+        const monthlySalesData = <?php echo json_encode(array_column($monthlySalesComparison, 'monthly_sales')); ?>;
+        const monthlySalesLabels = <?php echo json_encode(array_column($monthlySalesComparison, 'month')); ?>;
+        new Chart(document.getElementById('monthlySalesChart'), {
             type: 'line',
             data: {
-                labels: salesTrendLabels,
+                labels: monthlySalesLabels,
                 datasets: [{
-                    label: 'Daily Sales',
-                    data: salesTrendData,
+                    label: 'Monthly Sales (RM)',
+                    data: monthlySalesData,
                     borderColor: '#4BC0C0',
                     fill: false
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
 
-        // Category Sales Bar Chart
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        // Category Sales Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
         new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
                 labels: categoryLabels,
                 datasets: [{
-                    label: 'Category Sales',
-                    data: categoryData,
+                    label: 'Category Sales (RM)',
+                    data: categoryBarData,
                     backgroundColor: '#FF6384'
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
     </script>
