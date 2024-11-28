@@ -363,13 +363,13 @@ a.sidebar-link:hover {
                 </li>
 
                 <li class="sidebar-item">
-                    <a href="admin_order.php" class="sidebar-link">
+                    <a href="manage_order.php" class="sidebar-link">
                         <i class="lni lni-list"></i>
                         <span>Order</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="admin_salesrpt.php" class="sidebar-link">
+                    <a href="salesreport.php" class="sidebar-link">
                         <i class="lni lni-stats-up"></i>
                         <span>Sales Report</span>
                     </a>
