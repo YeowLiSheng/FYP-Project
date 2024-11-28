@@ -349,12 +349,7 @@ a.sidebar-link:hover {
                         <span>Component</span>
                     </a>
                 </li>
-                <li class="sidebar-item">
-                    <a href="admin_peri.php" class="sidebar-link">
-                        <i class="lni lni-keyboard"></i>
-                        <span>Peripheral</span>
-                    </a>
-                </li>
+
                 <li class="sidebar-item">
                     <a href="admin_product.php" class="sidebar-link">
                         <i class="lni lni-cart-full"></i>
@@ -387,6 +382,14 @@ a.sidebar-link:hover {
 
                     </a>
                 </li>
+                
+                <li class="sidebar-item">
+                    <a href="view_contact_us.php" class="sidebar-link">
+                        <i class="lni lni-keyboard"></i>
+                        <span>Contact Us</span>
+                    </a>
+                </li>
+
                 </ul>
             </aside>
         </div>
