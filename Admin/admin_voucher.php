@@ -77,6 +77,34 @@ include 'dataconnection.php';
             document.getElementById("s_form").submit();
         }
     }
+    document.addEventListener("DOMContentLoaded", function () {
+    const table = document.querySelector(".table");
+    const rowsPerPage = 5;
+    const rows = table.querySelectorAll("tbody tr");
+    const pageCount = Math.ceil(rows.length / rowsPerPage);
+    const pagination = document.createElement("div");
+    pagination.classList.add("pagination");
+
+    for (let i = 1; i <= pageCount; i++) {
+        const button = document.createElement("button");
+        button.innerHTML = i;
+        button.onclick = function () {
+            paginateTable(i);
+        };
+        pagination.appendChild(button);
+    }
+    table.parentNode.appendChild(pagination);
+    paginateTable(1);
+
+    function paginateTable(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            row.style.display = index >= start && index < end ? "" : "none";
+        });
+    }
+});
 </script>
 
 </head>
@@ -84,6 +112,68 @@ include 'dataconnection.php';
     .card {
         padding: 20px;
     }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .pagination button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+    .pagination button:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+    /* Dashboard overview styling */
+    .dashboard-overview {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .overview-card {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .overview-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .overview-card h5 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .overview-card h3 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-overview {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
 </style>
 
 <body>
@@ -111,11 +201,42 @@ include 'dataconnection.php';
             <hr>
         </div>
         <hr>
+        <!-- Dashboard Overview Section -->
+        <div class="dashboard-overview">
+            <div class="overview-card">
+                <h5>Total Vouchers</h5>
+                <h3><?php echo mysqli_num_rows(mysqli_query($connect, "SELECT * FROM voucher")); ?></h3>
+            </div>
+            <div class="overview-card">
+                <h5>Active Vouchers</h5>
+                <h3>
+                    <?php
+                    $active_query = "SELECT COUNT(*) as count FROM voucher WHERE voucher_status = 'Active'";
+                    $active_result = mysqli_query($connect, $active_query);
+                    echo mysqli_fetch_assoc($active_result)['count'];
+                    ?>
+                </h3>
+            </div>
+            <div class="overview-card">
+                <h5>Inactive Vouchers</h5>
+                <h3>
+                    <?php
+                    $inactive_query = "SELECT COUNT(*) as count FROM voucher WHERE voucher_status = 'Inactive'";
+                    $inactive_result = mysqli_query($connect, $inactive_query);
+                    echo mysqli_fetch_assoc($inactive_result)['count'];
+                    ?>
+                </h3>
+            </div>
+        </div>
+        
         <hr>
-        <div class="card" style="width:50%;">
+        <div class="card" style="width:100%;">
             <div class="card-head" style="margin-bottom:30px;">
                 <button type="button" class="btn btn-success float-start" data-bs-toggle="modal"
                     data-bs-target="#myModal">Generate Voucher</button>
+            </div>
+            <div class="mb-3">
+                <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control" placeholder="Search Vouchers by Code or Description">
             </div>
             <div class="modal" id="myModal">
                 <div class="modal-dialog modal-dialog-centered">
