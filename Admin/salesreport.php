@@ -40,6 +40,15 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 新增：获取订单状态分布
+function getOrderStatusDistribution($connect) {
+    $query = "SELECT order_status, COUNT(order_id) AS count 
+              FROM orders 
+              GROUP BY order_status";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
 // 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
@@ -62,6 +71,7 @@ $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
+$orderStatusDistribution = getOrderStatusDistribution($connect);
 ?>
 
 <!DOCTYPE html>
@@ -182,9 +192,9 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Category Sales Distribution</h3>
+                    <h3 class="card-header">Order Status Distribution</h3>
                     <div class="chart-wrapper">
-                        <canvas id="categoryPieChart"></canvas>
+                        <canvas id="orderStatusChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -235,15 +245,15 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </div>
 
     <script>
-        // Category Pie Chart
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        new Chart(document.getElementById('categoryPieChart'), {
+        // Order Status Chart
+        const orderStatusData = <?php echo json_encode(array_column($orderStatusDistribution, 'count')); ?>;
+        const orderStatusLabels = <?php echo json_encode(array_column($orderStatusDistribution, 'order_status')); ?>;
+        new Chart(document.getElementById('orderStatusChart'), {
             type: 'pie',
             data: {
-                labels: categoryLabels,
+                labels: orderStatusLabels,
                 datasets: [{
-                    data: categoryData,
+                    data: orderStatusData,
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
             },
@@ -272,14 +282,15 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         });
 
         // Category Sales Bar Chart
-        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
         new Chart(document.getElementById('categoryBarChart'), {
             type: 'bar',
             data: {
                 labels: categoryLabels,
                 datasets: [{
                     label: 'Category Sales',
-                    data: categoryBarData,
+                    data: categoryData,
                     backgroundColor: '#FF6384'
                 }]
             },
