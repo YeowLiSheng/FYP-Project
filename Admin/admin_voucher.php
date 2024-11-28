@@ -77,6 +77,34 @@ include 'dataconnection.php';
             document.getElementById("s_form").submit();
         }
     }
+    document.addEventListener("DOMContentLoaded", function () {
+    const table = document.querySelector(".table");
+    const rowsPerPage = 5;
+    const rows = table.querySelectorAll("tbody tr");
+    const pageCount = Math.ceil(rows.length / rowsPerPage);
+    const pagination = document.createElement("div");
+    pagination.classList.add("pagination");
+
+    for (let i = 1; i <= pageCount; i++) {
+        const button = document.createElement("button");
+        button.innerHTML = i;
+        button.onclick = function () {
+            paginateTable(i);
+        };
+        pagination.appendChild(button);
+    }
+    table.parentNode.appendChild(pagination);
+    paginateTable(1);
+
+    function paginateTable(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            row.style.display = index >= start && index < end ? "" : "none";
+        });
+    }
+});
 </script>
 
 </head>
@@ -84,6 +112,68 @@ include 'dataconnection.php';
     .card {
         padding: 20px;
     }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .pagination button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+    .pagination button:hover {
+        background-color: #007bff;
+        color: #fff;
+    }
+    /* Dashboard overview styling */
+    .dashboard-overview {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .overview-card {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .overview-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .overview-card h5 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .overview-card h3 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-overview {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
 </style>
 
 <body>
@@ -111,11 +201,42 @@ include 'dataconnection.php';
             <hr>
         </div>
         <hr>
+        <!-- Dashboard Overview Section -->
+        <div class="dashboard-overview">
+            <div class="overview-card">
+                <h5>Total Vouchers</h5>
+                <h3><?php echo mysqli_num_rows(mysqli_query($connect, "SELECT * FROM voucher")); ?></h3>
+            </div>
+            <div class="overview-card">
+                <h5>Active Vouchers</h5>
+                <h3>
+                    <?php
+                    $active_query = "SELECT COUNT(*) as count FROM voucher WHERE voucher_status = 'Active'";
+                    $active_result = mysqli_query($connect, $active_query);
+                    echo mysqli_fetch_assoc($active_result)['count'];
+                    ?>
+                </h3>
+            </div>
+            <div class="overview-card">
+                <h5>Inactive Vouchers</h5>
+                <h3>
+                    <?php
+                    $inactive_query = "SELECT COUNT(*) as count FROM voucher WHERE voucher_status = 'Inactive'";
+                    $inactive_result = mysqli_query($connect, $inactive_query);
+                    echo mysqli_fetch_assoc($inactive_result)['count'];
+                    ?>
+                </h3>
+            </div>
+        </div>
+        
         <hr>
-        <div class="card" style="width:50%;">
+        <div class="card" style="width:100%;">
             <div class="card-head" style="margin-bottom:30px;">
                 <button type="button" class="btn btn-success float-start" data-bs-toggle="modal"
                     data-bs-target="#myModal">Generate Voucher</button>
+            </div>
+            <div class="mb-3">
+                <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control" placeholder="Search Vouchers by Code or Description">
             </div>
             <div class="modal" id="myModal">
                 <div class="modal-dialog modal-dialog-centered">
@@ -200,7 +321,8 @@ include 'dataconnection.php';
                         <th scope="col">Usage Limit</th>
                         <th scope="col">Minimum Amount</th>
                         <th scope="col">Description</th>
-                        <th scope="col">Status</th>  
+                        <th scope="col">Status</th>
+                        <th scope="col">Action</th>  
                     </tr>
                 </thead>
                 <?php
@@ -219,7 +341,59 @@ include 'dataconnection.php';
                             <td><?php echo "$" . number_format($row["minimum_amount"], 2); ?></td>
                             <td><?php echo $row["voucher_des"]; ?></td>
                             <td><?php echo $row["voucher_status"]; ?></td>
+                            <td>
+                                <!-- Edit Button to Open Modal -->
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['voucher_code']; ?>">Edit</button>
+
+                                <!-- Activate/Deactivate Button -->
+                                <form action="a_voucher.php" method="POST" style="display:inline;">
+                                    <?php if ($row["voucher_status"] === "Active") { ?>
+                                        <button type="submit" name="deactivate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn btn-danger">Deactivate</button>
+                                    <?php } else { ?>
+                                        <button type="submit" name="activate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn btn-success">Activate</button>
+                                    <?php } ?>
+                                </form>
+                            </td>
                         </tr>
+                        <!-- Edit Modal -->
+                        <div class="modal fade" id="editModal<?php echo $row['voucher_code']; ?>" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <!-- Modal Header -->
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editModalLabel">Edit Voucher: <?php echo $row['voucher_code']; ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <!-- Modal Body -->
+                                    <form action="a_voucher.php" method="POST" enctype="multipart/form-data">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="voucher_code" value="<?php echo $row['voucher_code']; ?>">
+
+                                            <label for="discount_rate">Discount Rate</label>
+                                            <input type="text" class="form-control" name="discount_rate" value="<?php echo $row['discount_rate']; ?>"><br>
+
+                                            <label for="usage_limit">Usage Limit</label>
+                                            <input type="number" class="form-control" name="usage_limit" value="<?php echo $row['usage_limit']; ?>"><br>
+
+                                            <label for="minimum_amount">Minimum Amount</label>
+                                            <input type="text" class="form-control" name="minimum_amount" value="<?php echo $row['minimum_amount']; ?>"><br>
+
+                                            <label for="voucher_des">Description</label>
+                                            <textarea class="form-control" name="voucher_des"><?php echo $row['voucher_des']; ?></textarea><br>
+
+                                            <label for="voucher_pic">Voucher Picture</label>
+                                            <input type="file" class="form-control" name="voucher_pic">
+                                            <small>Leave empty if no change is needed</small>
+                                        </div>
+                                        <!-- Modal Footer -->
+                                        <div class="modal-footer">
+                                            <button type="submit" name="update_voucher" class="btn btn-primary">Save Changes</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         <?php
                     }
                     ?>

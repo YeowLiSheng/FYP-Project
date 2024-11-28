@@ -358,13 +358,13 @@ a.sidebar-link:hover {
                 </li>
 
                 <li class="sidebar-item">
-                    <a href="admin_order.php" class="sidebar-link">
+                    <a href="manage_order.php" class="sidebar-link">
                         <i class="lni lni-list"></i>
                         <span>Order</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="admin_salesrpt.php" class="sidebar-link">
+                    <a href="salesreport.php" class="sidebar-link">
                         <i class="lni lni-stats-up"></i>
                         <span>Sales Report</span>
                     </a>
@@ -409,30 +409,5 @@ a.sidebar-link:hover {
     });
 
 
-    // var links = document.querySelectorAll('.sidebar a');
-
-    //         links.forEach(function(link) {
-    //             link.classList.remove('active');
-    //         });
-
-    //         links.forEach(function(link) {
-    //             link.addEventListener('click', function() {
-
-    //                 links.forEach(function(link) {
-    //                     link.classList.remove('active');
-    //                 });
-
-
-    //                 link.classList.add('active');
-
-
-    //                 localStorage.setItem('activeLink', link.getAttribute('href'));
-    //             });
-    //         });
-
-    //         var storedActiveLink = localStorage.getItem('activeLink');
-    //         if (storedActiveLink) {
-    //             document.querySelector('.sidebar a[href="' + storedActiveLink + '"]').classList.add('active');
-    //         }
 
 </script>
