@@ -25,7 +25,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 // Define categories
 $categories = [
-    'Order_shipping' => 'Web Order Shipping',
+    'Order_shipping' => 'Order Shipping',
     'Order_queries' => 'General Order Queries',
     'Payment' => 'Payment',
     'Order_problem' => 'Problems With My Order',
