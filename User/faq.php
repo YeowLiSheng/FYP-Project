@@ -42,29 +42,44 @@ $categories = [
             background-color: #f7f7f7;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         .faq-container {
-            max-width: 900px;
-            margin: 50px auto;
+            width: 100%;
             background-color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            overflow: hidden;
             padding: 30px;
+            overflow: hidden;
+            box-sizing: border-box;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
+        /* Styling for the H1 Header with Background Image */
         h1 {
             text-align: center;
             font-size: 36px;
-            color: #333;
+            color: white; /* Text color */
+            padding: 60px 20px;
+            width: 100%;
+            border-radius: 8px;
             margin-bottom: 20px;
+            background-image: url('../User/images/HeadFaq.avif'); /* Add your image URL here */
+            background-size: cover; /* Make the image cover the entire header */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent the image from repeating */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .tab-buttons {
             display: flex;
             justify-content: space-around;
-            border-bottom: 2px solid #ddd;
             margin-bottom: 20px;
         }
 
@@ -73,11 +88,11 @@ $categories = [
             padding: 15px;
             font-size: 16px;
             cursor: pointer;
-            border: none;
-            background-color: #f1f1f1;
-            transition: background-color 0.3s ease;
-            color: #555;
-            border-bottom: 3px solid transparent;
+            background-color: #333;
+            color: #fff;
+            border: 2px solid #000;
+            text-transform: uppercase;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .tab-buttons button:hover,
@@ -88,6 +103,8 @@ $categories = [
         }
 
         .faq-category {
+            flex: 1;
+            overflow-y: auto;
             display: none;
         }
 
@@ -105,7 +122,7 @@ $categories = [
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            padding: 10px;
+            padding: 15px;
             background-color: #f1f1f1;
             border-radius: 4px;
             transition: background-color 0.3s ease;
@@ -142,34 +159,45 @@ $categories = [
 <body>
 
 <div class="faq-container">
-    <h1>Frequently Asked Questions</h1>
+    <h1>FAQS</h1>
 
     <div class="tab-buttons">
-        <?php foreach ($categories as $index => $category): ?>
-            <button class="<?php echo $index === 0 ? 'active' : ''; ?>"
-                    onclick="showCategory(<?php echo $index; ?>)">
-                <?php echo $category; ?>
-            </button>
-        <?php endforeach; ?>
+        <button class="active" onclick="showCategory(0)">Web Order Shipping</button>
+        <button onclick="showCategory(1)">General Order Queries</button>
+        <button onclick="showCategory(2)">Payment</button>
+        <button onclick="showCategory(3)">Problems With My Order</button>
+        <button onclick="showCategory(4)">Product Information</button>
     </div>
 
-    <?php foreach ($categories as $index => $category): ?>
-        <div class="faq-category <?php echo $index === 0 ? 'active' : ''; ?>" id="category-<?php echo $index; ?>">
-            <h2><?php echo $category; ?></h2>
-            <?php
-            mysqli_data_seek($result, 0); // Reset the result pointer for each category
-            $i = 1;
-            while ($row = mysqli_fetch_assoc($result)): ?>
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span><?php echo $i . ". " . htmlspecialchars($row['faq_question']); ?></span>
-                        <i class="fa fa-chevron-down"></i>
-                    </div>
-                    <div class="faq-answer"><?php echo htmlspecialchars($row['faq_answer']); ?></div>
-                </div>
-            <?php $i++; endwhile; ?>
+    <!-- Category 1 -->
+    <div class="faq-category active" id="category-0">
+        <h2>Web Order Shipping</h2>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>1. What shipping service do you use?</span>
+                <i class="fa fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                We use reliable shipping services like FedEx, UPS, and DHL to ensure fast and secure delivery.
+            </div>
         </div>
-    <?php endforeach; ?>
+        <!-- Add more FAQ items here -->
+    </div>
+
+    <!-- Additional categories with placeholder content -->
+    <div class="faq-category" id="category-1">
+        <h2>General Order Queries</h2>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>1. Can I modify my order after placing it?</span>
+                <i class="fa fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                You can modify your order within 24 hours by contacting customer service.
+            </div>
+        </div>
+    </div>
+    <!-- Repeat for all other categories -->
 </div>
 
 <script>
