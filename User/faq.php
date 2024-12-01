@@ -10,21 +10,26 @@ if (!isset($connect) || !$connect) {
     die("Database connection failed.");
 }
 
-// Retrieve FAQ data from the database
-$query = "SELECT faq_question, faq_answer FROM faq";
+// Retrieve FAQ data from the database grouped by `faq_type`
+$query = "SELECT faq_question, faq_answer, faq_type FROM faq";
 $result = mysqli_query($connect, $query);
 
 if (!$result) {
     die("Query failed: " . mysqli_error($connect));
 }
 
-// Example categories
+$faq_data = [];
+while ($row = mysqli_fetch_assoc($result)) {
+    $faq_data[$row['faq_type']][] = $row;
+}
+
+// Define categories
 $categories = [
-    'Web Order Shipping',
-    'General Order Queries',
-    'Payment',
-    'Problems With My Order',
-    'Product Information'
+    'Order_shipping' => 'Web Order Shipping',
+    'Order_queries' => 'General Order Queries',
+    'Payment' => 'Payment',
+    'Order_problem' => 'Problems With My Order',
+    'Product_info' => 'Product Information',
 ];
 ?>
 
@@ -55,6 +60,7 @@ $categories = [
             border-radius: 8px;
             padding: 30px;
             overflow: hidden;
+            overflow-y: auto;
             box-sizing: border-box;
             height: 100vh;
             display: flex;
@@ -104,11 +110,11 @@ $categories = [
 
         .faq-category {
             flex: 1;
-            overflow-y: auto;
             display: none;
         }
 
-        .faq-category.active {
+        .faq-category.active,
+        .faq-category.show-all {
             display: block;
         }
 
@@ -136,13 +142,18 @@ $categories = [
         }
 
         .faq-answer {
-            display: none;
-            padding: 10px 20px;
+            height: 0; /* Initially, height is 0 */
+            overflow: hidden; /* Prevent content overflow */
+            transition: height 0.3s ease; /* Smooth transition effect for height */
+            padding: 0 20px; /* Add horizontal padding */
             background-color: #fff;
             border-radius: 4px;
-            margin-top: 10px;
-            font-size: 16px;
+            font-size: 18px;
             color: #555;
+            margin-top: 10px;
+        }
+        .faq-answer.open {
+            height: 50px; /* Set the fixed height */
         }
 
         .faq-question i {
@@ -153,81 +164,82 @@ $categories = [
         .faq-question.open i {
             transform: rotate(180deg);
         }
+        
     </style>
 </head>
 
 <body>
 
 <div class="faq-container">
-    <h1>FAQS</h1>
+    <h1>FAQs</h1>
 
     <div class="tab-buttons">
-        <button class="active" onclick="showCategory(0)">Web Order Shipping</button>
-        <button onclick="showCategory(1)">General Order Queries</button>
-        <button onclick="showCategory(2)">Payment</button>
-        <button onclick="showCategory(3)">Problems With My Order</button>
-        <button onclick="showCategory(4)">Product Information</button>
+        <button class="active" onclick="showCategory('all')">All</button>
+        <?php foreach ($categories as $type => $label): ?>
+            <button onclick="showCategory('<?php echo $type; ?>')"><?php echo $label; ?></button>
+        <?php endforeach; ?>
     </div>
 
-    <!-- Category 1 -->
-    <div class="faq-category active" id="category-0">
-        <h2>Web Order Shipping</h2>
-        <div class="faq-item">
-            <div class="faq-question">
-                <span>1. What shipping service do you use?</span>
-                <i class="fa fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-                We use reliable shipping services like FedEx, UPS, and DHL to ensure fast and secure delivery.
-            </div>
+    <?php foreach ($categories as $type => $label): ?>
+        <div class="faq-category" id="category-<?php echo $type; ?>">
+            <h2><?php echo $label; ?></h2>
+            <?php if (isset($faq_data[$type])): ?>
+                <?php foreach ($faq_data[$type] as $faq): ?>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span><?php echo $faq['faq_question']; ?></span>
+                            <i class="fa fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer"><?php echo $faq['faq_answer']; ?></div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No FAQs available for this category.</p>
+            <?php endif; ?>
         </div>
-        <!-- Add more FAQ items here -->
-    </div>
-
-    <!-- Additional categories with placeholder content -->
-    <div class="faq-category" id="category-1">
-        <h2>General Order Queries</h2>
-        <div class="faq-item">
-            <div class="faq-question">
-                <span>1. Can I modify my order after placing it?</span>
-                <i class="fa fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-                You can modify your order within 24 hours by contacting customer service.
-            </div>
-        </div>
-    </div>
-    <!-- Repeat for all other categories -->
+    <?php endforeach; ?>
 </div>
 
 <script>
-    function showCategory(index) {
+    function showCategory(type) {
+    // Remove 'active' and 'show-all' classes from all categories
+    document.querySelectorAll('.faq-category').forEach(function (category) {
+        category.classList.remove('active', 'show-all');
+    });
+
+    if (type === 'all') {
+        // Add 'show-all' to all categories
         document.querySelectorAll('.faq-category').forEach(function (category) {
-            category.classList.remove('active');
+            category.classList.add('show-all');
         });
-
-        document.querySelectorAll('.tab-buttons button').forEach(function (button) {
-            button.classList.remove('active');
-        });
-
-        document.getElementById('category-' + index).classList.add('active');
-        document.querySelectorAll('.tab-buttons button')[index].classList.add('active');
+    } else {
+        // Add 'active' only to the selected category
+        document.getElementById('category-' + type).classList.add('active');
     }
 
-    document.querySelectorAll('.faq-question').forEach(item => {
-        item.addEventListener('click', () => {
-            const answer = item.nextElementSibling;
-            const icon = item.querySelector('i');
-
-            if (answer.style.display === 'block') {
-                answer.style.display = 'none';
-                icon.classList.remove('open');
-            } else {
-                answer.style.display = 'block';
-                icon.classList.add('open');
-            }
-        });
+    // Update the active state of buttons
+    document.querySelectorAll('.tab-buttons button').forEach(function (button) {
+        button.classList.remove('active');
     });
+    document.querySelector('.tab-buttons button[onclick="showCategory(\'' + type + '\')"]').classList.add('active');
+}
+
+document.querySelectorAll('.faq-question').forEach(item => {
+    item.addEventListener('click', () => {
+        const answer = item.nextElementSibling;
+        answer.classList.toggle('open'); // Add or remove the 'open' class to control height
+        item.classList.toggle('open'); // Rotate the arrow icon
+    });
+});
+
+// Initialize all answers with the correct state for closed
+window.onload = function () {
+    document.querySelectorAll('.faq-answer').forEach(answer => {
+        answer.classList.remove('open'); // Start with answers collapsed
+    });
+    showCategory('all'); // Show all categories by default
+};
+
 </script>
 
 </body>
