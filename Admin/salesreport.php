@@ -2,28 +2,27 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// Database Queries
-function getMonthlySales($connect) {
-    $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
-              FROM orders 
-              GROUP BY month 
-              ORDER BY month";
+// 数据库查询功能
+function getTotalOrders($connect) {
+    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
     $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    return mysqli_fetch_assoc($result)['total_orders'];
 }
 
-function getDailySales($connect) {
-    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
-              FROM orders 
-              WHERE DATE(order_date) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) 
-              GROUP BY date 
-              ORDER BY date";
+function getTotalCustomers($connect) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
     $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    return mysqli_fetch_assoc($result)['total_customers'];
 }
 
-function getCategoryProfit($connect) {
-    $query = "SELECT c.category_name, SUM(od.total_price) - SUM(p.cost_price * od.quantity) AS profit 
+function getTotalSales($connect) {
+    $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_sales'];
+}
+
+function getCategorySales($connect) {
+    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
               FROM order_details od 
               JOIN product p ON od.product_id = p.product_id 
               JOIN category c ON p.category_id = c.category_id 
@@ -32,50 +31,37 @@ function getCategoryProfit($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getLowSellingProducts($connect) {
-    $query = "SELECT p.product_name, SUM(od.quantity) AS total_sold 
-              FROM order_details od 
-              JOIN product p ON od.product_id = p.product_id 
-              GROUP BY p.product_id 
-              ORDER BY total_sold ASC 
-              LIMIT 5";
+function getTopProducts($connect) {
+    $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
+              FROM order_details 
+              GROUP BY product_name 
+              ORDER BY total_sold DESC LIMIT 5";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getGrowthComparison($connect) {
-    $currentMonthQuery = "SELECT SUM(final_amount) AS current_month_sales 
-                          FROM orders 
-                          WHERE MONTH(order_date) = MONTH(CURRENT_DATE()) 
-                          AND YEAR(order_date) = YEAR(CURRENT_DATE())";
-    $lastMonthQuery = "SELECT SUM(final_amount) AS last_month_sales 
-                       FROM orders 
-                       WHERE MONTH(order_date) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) 
-                       AND YEAR(order_date) = YEAR(CURRENT_DATE())";
-    $currentYearQuery = "SELECT SUM(final_amount) AS current_year_sales 
-                         FROM orders 
-                         WHERE YEAR(order_date) = YEAR(CURRENT_DATE())";
-    $lastYearQuery = "SELECT SUM(final_amount) AS last_year_sales 
-                      FROM orders 
-                      WHERE YEAR(order_date) = YEAR(CURRENT_DATE() - INTERVAL 1 YEAR)";
-    
-    $currentMonth = mysqli_fetch_assoc(mysqli_query($connect, $currentMonthQuery))['current_month_sales'];
-    $lastMonth = mysqli_fetch_assoc(mysqli_query($connect, $lastMonthQuery))['last_month_sales'];
-    $currentYear = mysqli_fetch_assoc(mysqli_query($connect, $currentYearQuery))['current_year_sales'];
-    $lastYear = mysqli_fetch_assoc(mysqli_query($connect, $lastYearQuery))['last_year_sales'];
-
-    return [
-        'month_growth' => $lastMonth ? (($currentMonth - $lastMonth) / $lastMonth) * 100 : null,
-        'year_growth' => $lastYear ? (($currentYear - $lastYear) / $lastYear) * 100 : null
-    ];
+// 获取销售趋势数据，根据日期范围过滤
+function getSalesTrend($connect, $startDate, $endDate) {
+    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
+              FROM orders 
+              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
+              GROUP BY DATE(order_date) 
+              ORDER BY DATE(order_date)";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// Data Fetching
-$monthlySales = getMonthlySales($connect);
-$dailySales = getDailySales($connect);
-$categoryProfit = getCategoryProfit($connect);
-$lowSellingProducts = getLowSellingProducts($connect);
-$growthComparison = getGrowthComparison($connect);
+// 获取表单数据（如果有的话）
+$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
+
+// 数据获取
+$totalOrders = getTotalOrders($connect);
+$totalCustomers = getTotalCustomers($connect);
+$totalSales = getTotalSales($connect);
+$categorySales = getCategorySales($connect);
+$topProducts = getTopProducts($connect);
+$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
 
 <!DOCTYPE html>
@@ -83,7 +69,7 @@ $growthComparison = getGrowthComparison($connect);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Sales Report</title>
+    <title>Admin Sales Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -94,6 +80,7 @@ $growthComparison = getGrowthComparison($connect);
         .content-wrapper {
             margin-left: 250px;
             padding: 20px;
+            padding-top: 80px;
         }
         .dashboard-card {
             color: #fff;
@@ -104,99 +91,132 @@ $growthComparison = getGrowthComparison($connect);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-height: 150px;
         }
-        .chart-container {
+        .chart-container, .table-container {
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+        .chart-container {
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
         .table-container {
-            background: #fff;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             overflow-x: auto;
+        }
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .table thead th {
+            color: #333;
+            font-weight: bold;
+        }
+        @media screen and (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0;
+                padding-top: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
-        <h1 class="mb-4">Enhanced Sales Report</h1>
+        <div class="mb-4">
+            <h1 class="display-4">Sales Dashboard</h1>
+            
+        </div>
 
-        <!-- Growth Comparison -->
+        <!-- Overview Section -->
         <div class="row mb-4">
-            <div class="col-md-6">
+            <!-- Cards -->
+            <div class="col-md-3">
                 <div class="dashboard-card">
-                    <h5>Month-on-Month Growth</h5>
-                    <h2><?php echo number_format($growthComparison['month_growth'], 2); ?>%</h2>
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <div class="dashboard-card">
-                    <h5>Year-on-Year Growth</h5>
-                    <h2><?php echo number_format($growthComparison['year_growth'], 2); ?>%</h2>
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Top Category</h5>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
                 </div>
             </div>
         </div>
 
-        <!-- Sales Charts -->
+        <!-- Date Picker -->
+        <form method="POST" class="mb-4" id="dateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+
+        <!-- Charts Section -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3>Monthly Sales Trend</h3>
-                    <canvas id="monthlySalesChart"></canvas>
+                    <h3 class="card-header">Category Sales Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3>Daily Sales (Last 30 Days)</h3>
-                    <canvas id="dailySalesChart"></canvas>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Category Profit Table -->
-        <div class="row mb-4">
-            <div class="col-md-12">
+        <!-- Table Section -->
+        <div class="row">
+            <div class="col-md-6">
                 <div class="table-container">
-                    <h3>Category Profit</h3>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Profit (RM)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($categoryProfit as $category): ?>
-                                <tr>
-                                    <td><?php echo $category['category_name']; ?></td>
-                                    <td><?php echo number_format($category['profit'], 2); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Low Selling Products Table -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="table-container">
-                    <h3>Low Selling Products</h3>
+                    <div class="card-header">Top 5 Products by Sales</div>
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
-                                <th>Total Sold</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($lowSellingProducts as $product): ?>
+                            <?php foreach ($topProducts as $product): ?>
                                 <tr>
                                     <td><?php echo $product['product_name']; ?></td>
                                     <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -207,34 +227,39 @@ $growthComparison = getGrowthComparison($connect);
     </div>
 
     <script>
-        // Monthly Sales Chart
-        const monthlySales = <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>;
-        const monthlyLabels = <?php echo json_encode(array_column($monthlySales, 'month')); ?>;
-        new Chart(document.getElementById('monthlySalesChart'), {
-            type: 'bar',
+        // Category Pie Chart
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
             data: {
-                labels: monthlyLabels,
+                labels: categoryLabels,
                 datasets: [{
-                    label: 'Monthly Sales (RM)',
-                    data: monthlySales,
-                    backgroundColor: '#6a11cb'
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
 
-        // Daily Sales Chart
-        const dailySales = <?php echo json_encode(array_column($dailySales, 'daily_sales')); ?>;
-        const dailyLabels = <?php echo json_encode(array_column($dailySales, 'date')); ?>;
-        new Chart(document.getElementById('dailySalesChart'), {
+        // Sales Trend Line Chart
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
-                labels: dailyLabels,
+                labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Daily Sales (RM)',
-                    data: dailySales,
-                    borderColor: '#2575fc',
+                    label: 'Daily Sales',
+                    data: salesTrendData,
+                    borderColor: '#4BC0C0',
                     fill: false
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
     </script>
