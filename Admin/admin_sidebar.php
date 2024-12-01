@@ -279,7 +279,7 @@ a.sidebar-link:hover {
     <div class="wrapper">
         <div class="topbar">
             <div class="logo">
-                <img src="../image/skt.png" style="width:110px; height:60px;">
+                <img src="../User/images/YLS2.jpg" style="width:110px; height:60px;">
             </div>
             <div class="user">
                 <div class="dropdown">
