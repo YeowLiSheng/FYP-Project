@@ -182,7 +182,6 @@ $categories = [
 
     <?php foreach ($categories as $type => $label): ?>
         <div class="faq-category" id="category-<?php echo $type; ?>">
-            <h2><?php echo $label; ?></h2>
             <?php if (isset($faq_data[$type])): ?>
                 <?php foreach ($faq_data[$type] as $faq): ?>
                     <div class="faq-item">
