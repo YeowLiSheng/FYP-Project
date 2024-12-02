@@ -1,37 +1,5 @@
 <?php
-include('dataconnection.php');
-
-// Fetch total sales
-$total_sales_query = "SELECT SUM(final_amount) AS total_sales FROM orders";
-$total_sales_result = mysqli_query($connect, $total_sales_query);
-$total_sales = mysqli_fetch_assoc($total_sales_result)['total_sales'];
-
-// Fetch sales by category
-$sales_by_category_query = "
-    SELECT c.category_name, SUM(od.total_price) AS category_sales
-    FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
-    JOIN category c ON p.category_id = c.category_id
-    GROUP BY c.category_name
-";
-$sales_by_category_result = mysqli_query($connect, $sales_by_category_query);
-
-// Fetch sales by order status
-$sales_by_status_query = "
-    SELECT order_status, COUNT(order_id) AS total_orders, SUM(final_amount) AS total_sales
-    FROM orders
-    GROUP BY order_status
-";
-$sales_by_status_result = mysqli_query($connect, $sales_by_status_query);
-
-// Fetch monthly sales
-$monthly_sales_query = "
-    SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales
-    FROM orders
-    GROUP BY DATE_FORMAT(order_date, '%Y-%m')
-    ORDER BY month
-";
-$monthly_sales_result = mysqli_query($connect, $monthly_sales_query);
+include("dataconnection.php");
 ?>
 
 <!DOCTYPE html>
@@ -40,110 +8,186 @@ $monthly_sales_result = mysqli_query($connect, $monthly_sales_query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: 20px auto;
+        }
+        .chart-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-<div class="container my-5">
-    <h1 class="text-center">Sales Report</h1>
+    <div class="container">
+        <h1>Sales Report</h1>
 
-    <!-- Total Sales -->
-    <div class="row my-4">
-        <div class="col-md-4 offset-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h4>Total Sales</h4>
-                    <p class="display-4">$<?= number_format($total_sales, 2) ?></p>
-                </div>
-            </div>
+        <!-- Chart 1: Daily Sales Overview -->
+        <div class="chart-container">
+            <h2>每日销售总览</h2>
+            <canvas id="dailySalesChart"></canvas>
+        </div>
+
+        <!-- Chart 2: Category Sales Share -->
+        <div class="chart-container">
+            <h2>产品类别销售占比</h2>
+            <canvas id="categorySalesChart"></canvas>
+        </div>
+
+        <!-- Chart 3: Top Products Sales -->
+        <div class="chart-container">
+            <h2>热门商品销售情况</h2>
+            <canvas id="topProductsChart"></canvas>
+        </div>
+
+        <!-- Chart 4: Voucher Usage -->
+        <div class="chart-container">
+            <h2>折扣与优惠券使用情况</h2>
+            <canvas id="voucherUsageChart"></canvas>
         </div>
     </div>
 
-    <!-- Sales by Category -->
-    <div class="my-4">
-        <h3>Sales by Category</h3>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Category</th>
-                <th>Sales ($)</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php while ($row = mysqli_fetch_assoc($sales_by_category_result)) { ?>
-                <tr>
-                    <td><?= $row['category_name'] ?></td>
-                    <td><?= number_format($row['category_sales'], 2) ?></td>
-                </tr>
-            <?php } ?>
-            </tbody>
-        </table>
-    </div>
+    <script>
+        <?php
+        // Daily Sales Data
+        $daily_sales_query = "SELECT DATE(order_date) as date, SUM(final_amount) as total FROM orders GROUP BY DATE(order_date)";
+        $daily_sales_result = mysqli_query($connect, $daily_sales_query);
+        $daily_sales_data = [];
+        while ($row = mysqli_fetch_assoc($daily_sales_result)) {
+            $daily_sales_data[] = $row;
+        }
+        ?>
 
-    <!-- Sales by Order Status -->
-    <div class="my-4">
-        <h3>Sales by Order Status</h3>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Status</th>
-                <th>Total Orders</th>
-                <th>Sales ($)</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php while ($row = mysqli_fetch_assoc($sales_by_status_result)) { ?>
-                <tr>
-                    <td><?= $row['order_status'] ?></td>
-                    <td><?= $row['total_orders'] ?></td>
-                    <td><?= number_format($row['total_sales'], 2) ?></td>
-                </tr>
-            <?php } ?>
-            </tbody>
-        </table>
-    </div>
+        const dailySalesLabels = <?php echo json_encode(array_column($daily_sales_data, 'date')); ?>;
+        const dailySalesData = <?php echo json_encode(array_column($daily_sales_data, 'total')); ?>;
 
-    <!-- Monthly Sales -->
-    <div class="my-4">
-        <h3>Monthly Sales</h3>
-        <canvas id="monthlySalesChart"></canvas>
-        <script>
-            <?php
-            $months = [];
-            $monthly_sales = [];
-            while ($row = mysqli_fetch_assoc($monthly_sales_result)) {
-                $months[] = $row['month'];
-                $monthly_sales[] = $row['monthly_sales'];
+        new Chart(document.getElementById('dailySalesChart'), {
+            type: 'line',
+            data: {
+                labels: dailySalesLabels,
+                datasets: [{
+                    label: '销售金额',
+                    data: dailySalesData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.2,
+                    fill: false
+                }]
             }
-            ?>
-            const months = <?= json_encode($months) ?>;
-            const sales = <?= json_encode($monthly_sales) ?>;
+        });
 
-            const ctx = document.getElementById('monthlySalesChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [{
-                        label: 'Monthly Sales ($)',
-                        data: sales,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top'
-                        }
-                    }
-                }
-            });
-        </script>
-    </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <?php
+        // Category Sales Data
+        $category_sales_query = "
+            SELECT c.category_name, SUM(o.final_amount) as total
+            FROM orders o
+            JOIN order_details od ON o.order_id = od.order_id
+            JOIN product p ON od.product_id = p.product_id
+            JOIN category c ON p.category_id = c.category_id
+            GROUP BY c.category_name
+        ";
+        $category_sales_result = mysqli_query($connect, $category_sales_query);
+        $category_sales_data = [];
+        while ($row = mysqli_fetch_assoc($category_sales_result)) {
+            $category_sales_data[] = $row;
+        }
+        ?>
+
+        const categorySalesLabels = <?php echo json_encode(array_column($category_sales_data, 'category_name')); ?>;
+        const categorySalesData = <?php echo json_encode(array_column($category_sales_data, 'total')); ?>;
+
+        new Chart(document.getElementById('categorySalesChart'), {
+            type: 'pie',
+            data: {
+                labels: categorySalesLabels,
+                datasets: [{
+                    label: '销售占比',
+                    data: categorySalesData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            }
+        });
+
+        <?php
+        // Top Products Data
+        $top_products_query = "
+            SELECT p.product_name, SUM(od.quantity) as total_quantity
+            FROM order_details od
+            JOIN product p ON od.product_id = p.product_id
+            GROUP BY p.product_name
+            ORDER BY total_quantity DESC
+            LIMIT 5
+        ";
+        $top_products_result = mysqli_query($connect, $top_products_query);
+        $top_products_data = [];
+        while ($row = mysqli_fetch_assoc($top_products_result)) {
+            $top_products_data[] = $row;
+        }
+        ?>
+
+        const topProductsLabels = <?php echo json_encode(array_column($top_products_data, 'product_name')); ?>;
+        const topProductsData = <?php echo json_encode(array_column($top_products_data, 'total_quantity')); ?>;
+
+        new Chart(document.getElementById('topProductsChart'), {
+            type: 'bar',
+            data: {
+                labels: topProductsLabels,
+                datasets: [{
+                    label: '销售数量',
+                    data: topProductsData,
+                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        <?php
+        // Voucher Usage Data
+        $voucher_usage_query = "
+            SELECT v.voucher_code, SUM(vu.usage_num) as total_usage
+            FROM voucher_usage vu
+            JOIN voucher v ON vu.voucher_id = v.voucher_id
+            GROUP BY v.voucher_code
+        ";
+        $voucher_usage_result = mysqli_query($connect, $voucher_usage_query);
+        $voucher_usage_data = [];
+        while ($row = mysqli_fetch_assoc($voucher_usage_result)) {
+            $voucher_usage_data[] = $row;
+        }
+        ?>
+
+        const voucherUsageLabels = <?php echo json_encode(array_column($voucher_usage_data, 'voucher_code')); ?>;
+        const voucherUsageData = <?php echo json_encode(array_column($voucher_usage_data, 'total_usage')); ?>;
+
+        new Chart(document.getElementById('voucherUsageChart'), {
+            type: 'bar',
+            data: {
+                labels: voucherUsageLabels,
+                datasets: [{
+                    label: '使用次数',
+                    data: voucherUsageData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
 </body>
 </html>
