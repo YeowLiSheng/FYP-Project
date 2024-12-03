@@ -50,6 +50,17 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 新增：获取 Top 5 客户（按消费总额排序）
+function getTopCustomers($connect) {
+    $query = "SELECT u.user_name, u.user_email, SUM(o.final_amount) AS total_spent 
+              FROM orders o
+              JOIN user u ON o.user_id = u.user_id
+              GROUP BY o.user_id
+              ORDER BY total_spent DESC LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
 $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
@@ -59,6 +70,7 @@ $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
+$topCustomers = getTopCustomers($connect);
 ?>
 
 <!DOCTYPE html>
@@ -71,7 +83,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f4f8;
             font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
@@ -87,6 +99,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-height: 150px;
+            transition: transform 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-10px);
         }
         .chart-container, .table-container {
             background: #fff;
@@ -112,21 +128,22 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 15px;
+            color: #333;
         }
         .table thead th {
             color: #333;
             font-weight: bold;
+        }
+        .no-data {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #aaa;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
                 margin-left: 0;
                 padding-top: 20px;
             }
-        }
-        .no-data {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #aaa;
         }
     </style>
 </head>
@@ -136,6 +153,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <h1 class="display-4">Sales Dashboard</h1>
         </div>
 
+        <!-- 统计卡片 -->
         <div class="row mb-4">
             <div class="col-md-3">
                 <div class="dashboard-card">
@@ -163,19 +181,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <form method="POST" class="mb-4" id="dateForm">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="start_date" class="form-label">Start Date</label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
-                </div>
-                <div class="col-md-4">
-                    <label for="end_date" class="form-label">End Date</label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
-                </div>
-            </div>
-        </form>
-
+        <!-- 图表和表格 -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
@@ -203,6 +209,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
+        <!-- Top 5 产品 -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -233,37 +240,73 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     </table>
                 </div>
             </div>
+
+            <!-- 新增 Top 5 客户 -->
+            <div class="col-md-6">
+                <div class="table-container">
+                    <div class="card-header">Top 5 Customers by Spending</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($topCustomers)): ?>
+                                <?php foreach ($topCustomers as $customer): ?>
+                                    <tr>
+                                        <td><?php echo $customer['user_name']; ?></td>
+                                        <td><?php echo $customer['user_email']; ?></td>
+                                        <td>RM <?php echo number_format($customer['total_spent'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="no-data">No customer data available</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
-        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        const trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        var categorySales = <?php echo json_encode($categorySales); ?>;
+        var salesTrend = <?php echo json_encode($salesTrend); ?>;
+        
+        // Category Sales Pie Chart
+        var categoryLabels = categorySales.map(function(item) { return item.category_name; });
+        var categoryData = categorySales.map(function(item) { return item.category_sales; });
 
-        const categoryCtx = document.getElementById('categoryPieChart').getContext('2d');
-        new Chart(categoryCtx, {
+        var categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
             type: 'pie',
             data: {
                 labels: categoryLabels,
                 datasets: [{
                     data: categoryData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
                 }]
             }
         });
 
-        const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
-        new Chart(trendCtx, {
+        // Sales Trend Line Chart
+        var trendLabels = salesTrend.map(function(item) { return item.date; });
+        var trendData = salesTrend.map(function(item) { return item.daily_sales; });
+
+        var salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
                 labels: trendLabels,
                 datasets: [{
-                    label: 'Daily Sales',
+                    label: 'Sales Trend',
                     data: trendData,
-                    borderColor: '#36A2EB',
                     fill: false,
+                    borderColor: '#2575fc',
+                    tension: 0.1
                 }]
             }
         });
