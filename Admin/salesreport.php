@@ -75,17 +75,11 @@ $topCustomers = getTopCustomers($connect);
 if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
     $startDate = date('Y-m-d', strtotime($_GET['start_date']));
     $endDate = date('Y-m-d', strtotime($_GET['end_date']));
-
     $salesTrend = getSalesTrend($connect, $startDate, $endDate);
-
-    $response = [
-        'labels' => array_column($salesTrend, 'date'),
-        'sales' => array_column($salesTrend, 'daily_sales'),
-    ];
-    header('Content-Type: application/json');
-    echo json_encode($response);
+    echo json_encode($salesTrend);
     exit;
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -163,10 +157,6 @@ if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
         .chart-container {
             height: 450px; /* Increased chart height */
         }
-        #startDate, #endDate {
-    max-width: 150px;
-    margin-left: 10px;
-}
     </style>
 </head>
 <body>
@@ -218,26 +208,24 @@ if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <label for="startDate" class="form-label">Start Date:</label>
-        <input type="date" id="startDate" class="form-control" value="<?php echo $startDate; ?>">
+            <div class="chart-container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="card-header">Sales Trend</h3>
+        <div class="d-flex">
+            <label for="start_date" class="me-2">Start Date:</label>
+            <input type="date" id="start_date" class="form-control me-3" style="width: 150px;">
+            <label for="end_date" class="me-2">End Date:</label>
+            <input type="date" id="end_date" class="form-control" style="width: 150px;">
+        </div>
     </div>
-    <div>
-        <label for="endDate" class="form-label">End Date:</label>
-        <input type="date" id="endDate" class="form-control" value="<?php echo $endDate; ?>">
-    </div>
+    <?php if (!empty($salesTrend)): ?>
+        <div class="chart-wrapper">
+            <canvas id="salesTrendChart"></canvas>
+        </div>
+    <?php else: ?>
+        <div class="no-data">No sales data available</div>
+    <?php endif; ?>
 </div>
-                    <?php if (!empty($salesTrend)): ?>
-                    <div class="chart-wrapper">
-                        <canvas id="salesTrendChart"></canvas>
-                    </div>
-                    <?php else: ?>
-                        <div class="no-data">No sales data available</div>
-                    <?php endif; ?>
-                </div>
             </div>
         </div>
 
@@ -326,31 +314,6 @@ if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
         var trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
         var trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
 
-        // 获取动态日期选择器元素
-var startDateInput = document.getElementById('startDate');
-var endDateInput = document.getElementById('endDate');
-
-// 日期选择变化时重新获取数据并更新图表
-startDateInput.addEventListener('input', updateSalesTrend);
-endDateInput.addEventListener('input', updateSalesTrend);
-
-function updateSalesTrend() {
-    var startDate = startDateInput.value;
-    var endDate = endDateInput.value;
-
-    if (startDate && endDate && new Date(startDate) <= new Date(endDate)) {
-        // 通过 Fetch API 动态获取新的数据
-        fetch(`salesreport.php?start_date=${startDate}&end_date=${endDate}`)
-            .then(response => response.json())
-            .then(data => {
-                // 更新图表数据
-                salesTrendChart.data.labels = data.labels;
-                salesTrendChart.data.datasets[0].data = data.sales;
-                salesTrendChart.update();
-            })
-            .catch(error => console.error('Error fetching sales trend data:', error));
-    }
-}
         var salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
@@ -403,6 +366,99 @@ function updateSalesTrend() {
                 }
             }
         });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const salesTrendChartElement = document.getElementById('salesTrendChart');
+    let salesTrendChartInstance;
+
+    function updateSalesTrendChart(startDate, endDate) {
+        fetch(`salesreport.php?start_date=${startDate}&end_date=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                const trendLabels = data.map(item => item.date);
+                const trendData = data.map(item => parseFloat(item.daily_sales));
+
+                if (salesTrendChartInstance) {
+                    salesTrendChartInstance.destroy();
+                }
+
+                salesTrendChartInstance = new Chart(salesTrendChartElement, {
+                    type: 'line',
+                    data: {
+                        labels: trendLabels,
+                        datasets: [{
+                            label: 'Sales Trend',
+                            data: trendData,
+                            fill: true,
+                            borderColor: '#2575fc',
+                            backgroundColor: 'rgba(37, 117, 252, 0.2)',
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#2575fc',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            hoverBackgroundColor: '#2575fc',
+                            hoverBorderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Sales (RM)'
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#2575fc',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: '#2575fc',
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                });
+            });
+    }
+
+    function handleDateChange() {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        if (startDate && endDate && new Date(startDate) <= new Date(endDate)) {
+            updateSalesTrendChart(startDate, endDate);
+        }
+    }
+
+    startDateInput.addEventListener('change', handleDateChange);
+    endDateInput.addEventListener('change', handleDateChange);
+
+    // Load initial data
+    const defaultStartDate = new Date();
+    defaultStartDate.setDate(defaultStartDate.getDate() - 30);
+    startDateInput.value = defaultStartDate.toISOString().split('T')[0];
+    endDateInput.value = new Date().toISOString().split('T')[0];
+    updateSalesTrendChart(startDateInput.value, endDateInput.value);
+});
     </script>
 </body>
 </html>
