@@ -71,21 +71,6 @@ $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 $topCustomers = getTopCustomers($connect);
-
-
-if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
-    $startDate = $_GET['start_date'];
-    $endDate = $_GET['end_date'];
-
-    $salesTrend = getSalesTrend($connect, $startDate, $endDate);
-
-    // 转换数据为 JSON 格式
-    echo json_encode([
-        'trendLabels' => array_column($salesTrend, 'date'),
-        'trendData' => array_column($salesTrend, 'daily_sales'),
-    ]);
-    exit;
-}
 ?>
 
 <!DOCTYPE html>
@@ -214,22 +199,16 @@ if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
                 </div>
             </div>
             <div class="col-md-6">
-            <div class="chart-container">
-    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-    <div class="d-flex justify-content-center align-items-center mb-3">
-        <label for="start_date" class="form-label me-2">Start Date:</label>
-        <input type="date" id="start_date" class="form-control me-3" style="max-width: 200px;">
-        <label for="end_date" class="form-label me-2">End Date:</label>
-        <input type="date" id="end_date" class="form-control" style="max-width: 200px;">
-    </div>
-    <?php if (!empty($salesTrend)): ?>
-    <div class="chart-wrapper">
-        <canvas id="salesTrendChart"></canvas>
-    </div>
-    <?php else: ?>
-        <div class="no-data">No sales data available</div>
-    <?php endif; ?>
-</div>
+                <div class="chart-container">
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <?php if (!empty($salesTrend)): ?>
+                    <div class="chart-wrapper">
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
+                    <?php else: ?>
+                        <div class="no-data">No sales data available</div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
 
@@ -370,29 +349,6 @@ if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
                 }
             }
         });
-
-
-        document.getElementById('start_date').addEventListener('change', updateSalesTrend);
-    document.getElementById('end_date').addEventListener('change', updateSalesTrend);
-
-    function updateSalesTrend() {
-        const startDate = document.getElementById('start_date').value;
-        const endDate = document.getElementById('end_date').value;
-
-        // 确保两个日期都有值
-        if (startDate && endDate) {
-            fetch(`salesreport.php?start_date=${startDate}&end_date=${endDate}`)
-                .then(response => response.json())
-                .then(data => {
-                    // 更新图表数据
-                    salesTrendChart.data.labels = data.trendLabels;
-                    salesTrendChart.data.datasets[0].data = data.trendData;
-                    salesTrendChart.update();
-                })
-                .catch(error => console.error('Error:', error));
-        }
-    }
-
     </script>
 </body>
 </html>
