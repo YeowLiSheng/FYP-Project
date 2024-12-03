@@ -73,60 +73,89 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Poppins', sans-serif;
-        }
+        <style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Poppins', sans-serif;
+    }
+    .content-wrapper {
+        margin-left: 250px;
+        padding: 20px;
+        padding-top: 80px;
+    }
+    .dashboard-card {
+        color: #fff;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        height: 150px; /* 固定高度 */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .dashboard-card h5 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+    .dashboard-card h2 {
+        font-size: 2rem;
+        margin: 0;
+    }
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px; /* 卡片间距 */
+        justify-content: space-between; /* 平均分布 */
+    }
+    .col-md-3 {
+        flex: 1;
+        max-width: calc(25% - 20px); /* 四列布局，减去间距 */
+        min-width: 200px; /* 最小宽度，防止过小 */
+    }
+    .chart-container, .table-container {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .chart-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+    }
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    .card-header {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .table thead th {
+        color: #333;
+        font-weight: bold;
+    }
+    @media screen and (max-width: 768px) {
         .content-wrapper {
-            margin-left: 250px;
-            padding: 20px;
-            padding-top: 80px;
+            margin-left: 0;
+            padding-top: 20px;
         }
-        .dashboard-card {
-            color: #fff;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 150px;
+        .col-md-3 {
+            max-width: 100%; /* 移动端一列显示 */
         }
-        .chart-container, .table-container {
-            background: #fff;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .chart-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
-        }
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            height: 300px;
-        }
-        .table-container {
-            overflow-x: auto;
-        }
-        .card-header {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .table thead th {
-            color: #333;
-            font-weight: bold;
-        }
-        @media screen and (max-width: 768px) {
-            .content-wrapper {
-                margin-left: 0;
-                padding-top: 20px;
-            }
-        }
+    }
+</style>
+
     </style>
 </head>
 <body>
