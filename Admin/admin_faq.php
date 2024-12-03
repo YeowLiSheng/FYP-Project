@@ -2,6 +2,21 @@
 include 'admin_sidebar.php'; 
 include 'dataconnection.php'; 
 ?>
+<?php
+if (isset($_SESSION['title'])) {
+    echo "<script>
+        Swal.fire({
+            title: '{$_SESSION['title']}',
+            text: '{$_SESSION['text']}',
+            icon: '{$_SESSION['icon']}',
+            confirmButtonText: 'OK'
+        });
+    </script>";
+    unset($_SESSION['title']);
+    unset($_SESSION['text']);
+    unset($_SESSION['icon']);
+}
+?>
 
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
