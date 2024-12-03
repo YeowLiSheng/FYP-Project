@@ -61,8 +61,8 @@ function getTopCustomers($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-$startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
+$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
 $totalOrders = getTotalOrders($connect);
 $totalCustomers = getTotalCustomers($connect);
@@ -115,7 +115,6 @@ $topCustomers = getTopCustomers($connect);
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
         }
         .chart-wrapper {
             position: relative;
@@ -149,18 +148,6 @@ $topCustomers = getTopCustomers($connect);
         .chart-container {
             height: 450px; /* Increased chart height */
         }
-        .date-picker-container {
-            margin-bottom: 20px;
-        }
-        .date-picker input {
-            border-radius: 10px;
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            margin: 0 5px;
-        }
-        .date-picker input:focus {
-            border-color: #2575fc;
-        }
     </style>
 </head>
 <body>
@@ -171,49 +158,140 @@ $topCustomers = getTopCustomers($connect);
 
         <!-- 统计卡片 -->
         <div class="row mb-4">
-            <!-- ... 已省略的卡片内容 ... -->
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Top Category</h5>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
+                </div>
+            </div>
         </div>
 
         <!-- 图表和表格 -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Dynamic Date Range)</h3>
-                    <div class="date-picker-container">
-                        <div class="date-picker">
-                            <input type="date" id="start_date" value="<?php echo $startDate; ?>">
-                            <input type="date" id="end_date" value="<?php echo $endDate; ?>">
-                        </div>
+                    <h3 class="card-header">Category Sales Distribution</h3>
+                    <?php if (!empty($categorySales)): ?>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryPieChart"></canvas>
                     </div>
-                    <div id="salesTrendChartContainer">
-                        <?php if (!empty($salesTrend)): ?>
-                        <div class="chart-wrapper">
-                            <canvas id="salesTrendChart"></canvas>
-                        </div>
-                        <?php else: ?>
-                            <div class="no-data">No sales data available</div>
-                        <?php endif; ?>
-                    </div>
+                    <?php else: ?>
+                        <div class="no-data">No data available</div>
+                    <?php endif; ?>
                 </div>
             </div>
-            <!-- ... 其他内容省略 ... -->
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <?php if (!empty($salesTrend)): ?>
+                    <div class="chart-wrapper">
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
+                    <?php else: ?>
+                        <div class="no-data">No sales data available</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 产品 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-container">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($topProducts)): ?>
+                                <?php foreach ($topProducts as $product): ?>
+                                    <tr>
+                                        <td><?php echo $product['product_name']; ?></td>
+                                        <td><?php echo $product['total_sold']; ?></td>
+                                        <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="no-data">No product data available</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Top 5 客户 -->
+            <div class="col-md-6">
+                <div class="table-container">
+                    <div class="card-header">Top 5 Customers by Spending</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($topCustomers)): ?>
+                                <?php foreach ($topCustomers as $customer): ?>
+                                    <tr>
+                                        <td><?php echo $customer['user_name']; ?></td>
+                                        <td><?php echo $customer['user_email']; ?></td>
+                                        <td>RM <?php echo number_format($customer['total_spent'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="no-data">No customer data available</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // 更新销售趋势数据
-        function updateSalesTrend() {
-            const startDate = document.getElementById('start_date').value;
-            const endDate = document.getElementById('end_date').value;
+        // Category Sales Pie Chart
+        var categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        var categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
 
-            if (startDate && endDate) {
-                window.location.href = `salesreport.php?start_date=${startDate}&end_date=${endDate}`;
+        var categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                }]
             }
-        }
-
-        // 日期选择器事件监听
-        document.getElementById('start_date').addEventListener('change', updateSalesTrend);
-        document.getElementById('end_date').addEventListener('change', updateSalesTrend);
+        });
 
         // Sales Trend Line Chart
         var trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
@@ -244,17 +322,30 @@ $topCustomers = getTopCustomers($connect);
                 maintainAspectRatio: false,
                 scales: {
                     x: {
-                        title: { display: true, text: 'Date' },
-                        grid: { color: '#e5e5e5' }
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
                     },
                     y: {
-                        title: { display: true, text: 'Sales' },
-                        grid: { color: '#e5e5e5' }
+                        title: {
+                            display: true,
+                            text: 'Sales (RM)'
+                        },
+                        beginAtZero: true
                     }
                 },
                 plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { enabled: true }
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2575fc',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#2575fc',
+                        borderWidth: 1
+                    }
                 }
             }
         });
