@@ -128,14 +128,67 @@ include 'dataconnection.php';
                     echo "<td>" . $row['faq_answer'] . "</td>";
                     echo "<td>" . $row['faq_type'] . "</td>";
                     echo "<td>
+                        <!-- Delete Button -->
                         <form action='a_faq.php' method='POST' style='display:inline;'>
                             <button type='submit' name='delete_faq' value='" . $row['faq_id'] . "' class='btn btn-danger'>Delete</button>
                         </form>
+                        <!-- Edit Button -->
+                        <button type='button' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#editModal" . $row['faq_id'] . "'>
+                            Edit
+                        </button>
                     </td>";
                     echo "</tr>";
+
+                    // Edit Modal
+                    echo "
+                    <div class='modal fade' id='editModal" . $row['faq_id'] . "' tabindex='-1' aria-labelledby='editModalLabel" . $row['faq_id'] . "' aria-hidden='true'>
+                        <div class='modal-dialog'>
+                            <div class='modal-content'>
+                                <!-- Modal Header -->
+                                <div class='modal-header'>
+                                    <h5 class='modal-title' id='editModalLabel" . $row['faq_id'] . "'>Edit FAQ: " . $row['faq_question'] . "</h5>
+                                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                                </div>
+                                <!-- Modal Body -->
+                                <form action='a_faq.php' method='POST'>
+                                    <div class='modal-body'>
+                                        <input type='hidden' name='faq_id' value='" . $row['faq_id'] . "'>
+
+                                        <label for='faq_question'>FAQ Question</label>
+                                        <input type='text' class='form-control' id='faq_question' name='faq_question' value='" . $row['faq_question'] . "' required><br>
+
+                                        <label for='faq_answer'>FAQ Answer</label>
+                                        <textarea class='form-control' id='faq_answer' name='faq_answer' required>" . $row['faq_answer'] . "</textarea><br>
+
+                                        <label for='faq_type'>FAQ Type</label>
+                                        <select class='form-control' id='faq_type' name='faq_type' required>
+                                            <option value='" . $row['faq_type'] . "' selected>" . $row['faq_type'] . "</option>";
+
+                                            // Fetch other types for dropdown
+                                            $type_query = "SELECT DISTINCT faq_type FROM faq";
+                                            $type_result = mysqli_query($connect, $type_query);
+                                            while ($type_row = mysqli_fetch_assoc($type_result)) {
+                                                if ($type_row['faq_type'] !== $row['faq_type']) {
+                                                    echo "<option value='" . $type_row['faq_type'] . "'>" . $type_row['faq_type'] . "</option>";
+                                                }
+                                            }
+
+                    echo "
+                                        </select>
+                                    </div>
+                                    <!-- Modal Footer -->
+                                    <div class='modal-footer'>
+                                        <button type='submit' name='edit_faq' class='btn btn-primary'>Save Changes</button>
+                                        <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>";
                 }
                 ?>
             </tbody>
+
         </table>
     </div>
 </body>
