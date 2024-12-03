@@ -50,6 +50,7 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 新增：获取 Top 5 客户（按消费总额排序）
 function getTopCustomers($connect) {
     $query = "SELECT u.user_name, u.user_email, SUM(o.final_amount) AS total_spent 
               FROM orders o
@@ -81,40 +82,71 @@ $topCustomers = getTopCustomers($connect);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .chart-container {
-            background: #fff;
-            border-radius: 10px;
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Poppins', sans-serif;
+        }
+        .content-wrapper {
+            margin-left: 250px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            padding-top: 80px;
         }
-
-        .chart-wrapper {
+        .dashboard-card {
+            color: #fff;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
+            transition: transform 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-10px);
+        }
+        .chart-container, .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
             height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .table thead th {
+            color: #333;
+            font-weight: bold;
+        }
         .no-data {
             text-align: center;
-            font-size: 18px;
-            color: #999;
+            font-size: 1.2rem;
+            color: #aaa;
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        @media screen and (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0;
+                padding-top: 20px;
+            }
         }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f8f9fa;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: #f2f2f2;
+        .chart-container {
+            height: 450px; /* Increased chart height */
         }
     </style>
 </head>
@@ -124,33 +156,35 @@ $topCustomers = getTopCustomers($connect);
             <h1 class="display-4">Sales Dashboard</h1>
         </div>
 
+        <!-- 统计卡片 -->
         <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Orders</h5>
-                        <p class="card-text"><?php echo $totalOrders; ?></p>
-                    </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Customers</h5>
-                        <p class="card-text"><?php echo $totalCustomers; ?></p>
-                    </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Sales</h5>
-                        <p class="card-text">RM <?php echo number_format($totalSales, 2); ?></p>
-                    </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Top Category</h5>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
                 </div>
             </div>
         </div>
 
+        <!-- 图表和表格 -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
@@ -164,25 +198,9 @@ $topCustomers = getTopCustomers($connect);
                     <?php endif; ?>
                 </div>
             </div>
-
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Custom Date Range)</h3>
-                    <form method="POST" action="" class="mb-3">
-                        <div class="row g-3">
-                            <div class="col-auto">
-                                <label for="start_date" class="form-label">Start Date:</label>
-                                <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>">
-                            </div>
-                            <div class="col-auto">
-                                <label for="end_date" class="form-label">End Date:</label>
-                                <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>">
-                            </div>
-                            <div class="col-auto">
-                                <button type="submit" class="btn btn-primary mt-4">Filter</button>
-                            </div>
-                        </div>
-                    </form>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <?php if (!empty($salesTrend)): ?>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
@@ -194,85 +212,143 @@ $topCustomers = getTopCustomers($connect);
             </div>
         </div>
 
+        <!-- Top 5 产品 -->
         <div class="row">
             <div class="col-md-6">
-                <h3>Top Products</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Total Sold</th>
-                            <th>Total Revenue (RM)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($topProducts as $product): ?>
-                        <tr>
-                            <td><?php echo $product['product_name']; ?></td>
-                            <td><?php echo $product['total_sold']; ?></td>
-                            <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($topProducts)): ?>
+                                <?php foreach ($topProducts as $product): ?>
+                                    <tr>
+                                        <td><?php echo $product['product_name']; ?></td>
+                                        <td><?php echo $product['total_sold']; ?></td>
+                                        <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="no-data">No product data available</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <!-- Top 5 客户 -->
             <div class="col-md-6">
-                <h3>Top Customers</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Customer Name</th>
-                            <th>Email</th>
-                            <th>Total Spent (RM)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($topCustomers as $customer): ?>
-                        <tr>
-                            <td><?php echo $customer['user_name']; ?></td>
-                            <td><?php echo $customer['user_email']; ?></td>
-                            <td>RM <?php echo number_format($customer['total_spent'], 2); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <div class="card-header">Top 5 Customers by Spending</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($topCustomers)): ?>
+                                <?php foreach ($topCustomers as $customer): ?>
+                                    <tr>
+                                        <td><?php echo $customer['user_name']; ?></td>
+                                        <td><?php echo $customer['user_email']; ?></td>
+                                        <td>RM <?php echo number_format($customer['total_spent'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="no-data">No customer data available</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const categorySalesData = <?php echo json_encode($categorySales); ?>;
-        const salesTrendData = <?php echo json_encode($salesTrend); ?>;
-        const ctxCategory = document.getElementById('categoryPieChart').getContext('2d');
-        const ctxTrend = document.getElementById('salesTrendChart').getContext('2d');
+        // Category Sales Pie Chart
+        var categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        var categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
 
-        if (categorySalesData.length) {
-            new Chart(ctxCategory, {
-                type: 'pie',
-                data: {
-                    labels: categorySalesData.map(data => data.category_name),
-                    datasets: [{
-                        data: categorySalesData.map(data => data.category_sales),
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                    }],
-                },
-            });
-        }
+        var categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                }]
+            }
+        });
 
-        if (salesTrendData.length) {
-            new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: salesTrendData.map(data => data.date),
-                    datasets: [{
-                        label: 'Sales (RM)',
-                        data: salesTrendData.map(data => data.daily_sales),
-                        borderColor: '#4BC0C0',
-                        fill: false,
-                    }],
+        // Sales Trend Line Chart
+        var trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        var trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+
+        var salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Sales Trend',
+                    data: trendData,
+                    fill: true,
+                    borderColor: '#2575fc',
+                    backgroundColor: 'rgba(37, 117, 252, 0.2)',
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#2575fc',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    hoverBackgroundColor: '#2575fc',
+                    hoverBorderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Sales (RM)'
+                        },
+                        beginAtZero: true
+                    }
                 },
-            });
-        }
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2575fc',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#2575fc',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
