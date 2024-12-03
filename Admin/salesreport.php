@@ -73,79 +73,66 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-         body {
-        background-color: #eef2f7;
-        font-family: 'Poppins', sans-serif;
-    }
-    .content-wrapper {
-        margin-left: 250px;
-        padding: 20px;
-        padding-top: 80px;
-    }
-    .dashboard-card {
-        color: #fff;
-        background: linear-gradient(135deg, #536976, #292E49);
-        border-radius: 12px;
-        padding: 25px 15px;
-        text-align: center;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        height: 180px; /* 保证所有卡片高度一致 */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    .dashboard-card h5 {
-        font-size: 1rem;
-        margin-bottom: 10px;
-        font-weight: 500;
-    }
-    .dashboard-card h2 {
-        font-size: 2rem;
-        font-weight: bold;
-    }
-    .chart-container, .table-container {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-    }
-    .chart-wrapper {
-        position: relative;
-        width: 100%;
-        height: 300px;
-    }
-    .table-container {
-        overflow-x: auto;
-    }
-    .card-header {
-        font-size: 1.3rem;
-        font-weight: bold;
-        color: #333;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-    }
-    .table thead th {
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-    }
-    @media screen and (max-width: 768px) {
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+        }
         .content-wrapper {
-            margin-left: 0;
-            padding-top: 20px;
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
         }
         .dashboard-card {
-            height: auto; /* 确保在小屏幕下自适应 */
+            color: #fff;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
         }
-    }
+        .chart-container, .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .table thead th {
+            color: #333;
+            font-weight: bold;
+        }
+        @media screen and (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0;
+                padding-top: 20px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
+            
         </div>
 
         <!-- Overview Section -->
@@ -177,6 +164,20 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
+        <!-- Date Picker -->
+        <form method="POST" class="mb-4" id="dateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+
         <!-- Charts Section -->
         <div class="row mb-4">
             <div class="col-md-6">
@@ -190,21 +191,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-                    
-                    <!-- Date Picker inside the card -->
-                    <form method="POST" class="mb-3">
-                        <div class="row">
-                            <div class="col-6">
-                                <label for="start_date" class="form-label">Start Date</label>
-                                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
-                            </div>
-                            <div class="col-6">
-                                <label for="end_date" class="form-label">End Date</label>
-                                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
-                            </div>
-                        </div>
-                    </form>
-                    
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
