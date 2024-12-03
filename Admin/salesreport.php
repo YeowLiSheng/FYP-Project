@@ -83,14 +83,23 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             padding-top: 80px;
         }
         .dashboard-card {
-            color: #fff;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 150px;
-        }
+    color: #fff;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    min-height: 180px; /* 统一高度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
         .chart-container, .table-container {
             background: #fff;
             border-radius: 15px;
@@ -105,10 +114,13 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             align-items: center;
         }
         .chart-wrapper {
-            position: relative;
-            width: 100%;
-            height: 300px;
-        }
+    position: relative;
+    width: 100%;
+    max-height: 280px; /* 限制图表高度，避免溢出 */
+}
+form .row {
+    gap: 10px; /* 优化间距 */
+}
         .table-container {
             overflow-x: auto;
         }
