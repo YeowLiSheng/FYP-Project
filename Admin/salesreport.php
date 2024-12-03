@@ -40,7 +40,6 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -51,11 +50,9 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取表单数据（如果有的话）
 $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
-// 数据获取
 $totalOrders = getTotalOrders($connect);
 $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
@@ -90,19 +87,36 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.3s ease;
         }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .row.mb-4 {
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .row.mb-4 {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .dashboard-card {
+                min-height: 120px;
+            }
+        }
+
         .chart-container, .table-container {
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .chart-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            justify-content: center;
-            align-items: center;
         }
         .chart-wrapper {
             position: relative;
@@ -116,10 +130,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 15px;
-        }
-        .table thead th {
-            color: #333;
-            font-weight: bold;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
@@ -136,8 +146,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Overview Section -->
-        <div class="row mb-4">
-            <!-- Cards -->
+        <div class="row mb-4 d-flex justify-content-between">
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -177,8 +186,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-                    
-                    <!-- Date Picker inside the card -->
                     <form method="POST" class="mb-3">
                         <div class="row">
                             <div class="col-6">
@@ -191,7 +198,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                             </div>
                         </div>
                     </form>
-                    
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -239,28 +245,23 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: categoryData,
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        // Sales Trend Chart
+        const trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        const trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
         new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
-                labels: salesTrendLabels,
+                labels: trendLabels,
                 datasets: [{
                     label: 'Daily Sales',
-                    data: salesTrendData,
-                    borderColor: '#4BC0C0',
-                    fill: false
+                    data: trendData,
+                    fill: true,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)'
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
     </script>
