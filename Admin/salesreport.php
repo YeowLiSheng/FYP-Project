@@ -71,6 +71,21 @@ $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 $topCustomers = getTopCustomers($connect);
+
+if (isset($_GET['start_date']) && isset($_GET['end_date'])) {
+    $startDate = date('Y-m-d', strtotime($_GET['start_date']));
+    $endDate = date('Y-m-d', strtotime($_GET['end_date']));
+
+    $salesTrend = getSalesTrend($connect, $startDate, $endDate);
+
+    $response = [
+        'labels' => array_column($salesTrend, 'date'),
+        'sales' => array_column($salesTrend, 'daily_sales'),
+    ];
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -148,6 +163,10 @@ $topCustomers = getTopCustomers($connect);
         .chart-container {
             height: 450px; /* Increased chart height */
         }
+        #startDate, #endDate {
+    max-width: 150px;
+    margin-left: 10px;
+}
     </style>
 </head>
 <body>
@@ -201,6 +220,16 @@ $topCustomers = getTopCustomers($connect);
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <label for="startDate" class="form-label">Start Date:</label>
+        <input type="date" id="startDate" class="form-control" value="<?php echo $startDate; ?>">
+    </div>
+    <div>
+        <label for="endDate" class="form-label">End Date:</label>
+        <input type="date" id="endDate" class="form-control" value="<?php echo $endDate; ?>">
+    </div>
+</div>
                     <?php if (!empty($salesTrend)): ?>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
@@ -297,6 +326,31 @@ $topCustomers = getTopCustomers($connect);
         var trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
         var trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
 
+        // 获取动态日期选择器元素
+var startDateInput = document.getElementById('startDate');
+var endDateInput = document.getElementById('endDate');
+
+// 日期选择变化时重新获取数据并更新图表
+startDateInput.addEventListener('input', updateSalesTrend);
+endDateInput.addEventListener('input', updateSalesTrend);
+
+function updateSalesTrend() {
+    var startDate = startDateInput.value;
+    var endDate = endDateInput.value;
+
+    if (startDate && endDate && new Date(startDate) <= new Date(endDate)) {
+        // 通过 Fetch API 动态获取新的数据
+        fetch(`salesreport.php?start_date=${startDate}&end_date=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                // 更新图表数据
+                salesTrendChart.data.labels = data.labels;
+                salesTrendChart.data.datasets[0].data = data.sales;
+                salesTrendChart.update();
+            })
+            .catch(error => console.error('Error fetching sales trend data:', error));
+    }
+}
         var salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
