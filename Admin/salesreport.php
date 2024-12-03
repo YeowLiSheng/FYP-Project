@@ -40,7 +40,6 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -51,11 +50,9 @@ function getSalesTrend($connect, $startDate, $endDate) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取表单数据（如果有的话）
 $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
-// 数据获取
 $totalOrders = getTotalOrders($connect);
 $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
@@ -126,18 +123,20 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 padding-top: 20px;
             }
         }
+        .no-data {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
-            
         </div>
 
-        <!-- Overview Section -->
         <div class="row mb-4">
-            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -164,7 +163,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Date Picker -->
         <form method="POST" class="mb-4" id="dateForm">
             <div class="row">
                 <div class="col-md-4">
@@ -178,27 +176,33 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </form>
 
-        <!-- Charts Section -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Category Sales Distribution</h3>
+                    <?php if (!empty($categorySales)): ?>
                     <div class="chart-wrapper">
                         <canvas id="categoryPieChart"></canvas>
                     </div>
+                    <?php else: ?>
+                        <div class="no-data">No data available</div>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <?php if (!empty($salesTrend)): ?>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
+                    <?php else: ?>
+                        <div class="no-data">No sales data available</div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        <!-- Table Section -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -212,13 +216,19 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($topProducts as $product): ?>
+                            <?php if (!empty($topProducts)): ?>
+                                <?php foreach ($topProducts as $product): ?>
+                                    <tr>
+                                        <td><?php echo $product['product_name']; ?></td>
+                                        <td><?php echo $product['total_sold']; ?></td>
+                                        <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
                                 <tr>
-                                    <td><?php echo $product['product_name']; ?></td>
-                                    <td><?php echo $product['total_sold']; ?></td>
-                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                    <td colspan="3" class="no-data">No product data available</td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -227,39 +237,34 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </div>
 
     <script>
-        // Category Pie Chart
         const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
         const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
-        new Chart(document.getElementById('categoryPieChart'), {
+        const trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+
+        const categoryCtx = document.getElementById('categoryPieChart').getContext('2d');
+        new Chart(categoryCtx, {
             type: 'pie',
             data: {
                 labels: categoryLabels,
                 datasets: [{
                     data: categoryData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Line Chart
-        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
-        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        new Chart(document.getElementById('salesTrendChart'), {
+        const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        new Chart(trendCtx, {
             type: 'line',
             data: {
-                labels: salesTrendLabels,
+                labels: trendLabels,
                 datasets: [{
                     label: 'Daily Sales',
-                    data: salesTrendData,
-                    borderColor: '#4BC0C0',
-                    fill: false
+                    data: trendData,
+                    borderColor: '#36A2EB',
+                    fill: false,
                 }]
-            },
-            options: {
-                maintainAspectRatio: false
             }
         });
     </script>
