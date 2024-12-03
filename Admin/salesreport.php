@@ -74,99 +74,90 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #eef2f3;
+            background-color: #f8f9fa;
             font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
             margin-left: 250px;
-            padding: 30px;
+            padding: 20px;
+            padding-top: 80px;
         }
         .dashboard-card {
             color: #fff;
-            background: linear-gradient(135deg, #7f00ff, #e100ff);
-            border-radius: 20px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-height: 150px;
-            position: relative;
-        }
-        .dashboard-card h5 {
-            font-size: 1.2rem;
-        }
-        .dashboard-card h2 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .dashboard-card i {
-            font-size: 2.5rem;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            opacity: 0.3;
         }
         .chart-container, .table-container {
             background: #fff;
-            border-radius: 20px;
+            border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
         }
         .chart-wrapper {
             position: relative;
             width: 100%;
-            height: 350px;
+            height: 300px;
         }
         .table-container {
             overflow-x: auto;
         }
-        .table th, .table td {
-            vertical-align: middle;
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #f9f9f9;
+        .table thead th {
+            color: #333;
+            font-weight: bold;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
                 margin-left: 0;
                 padding-top: 20px;
             }
-            .dashboard-card i {
-                font-size: 2rem;
-            }
         }
     </style>
 </head>
 <body>
     <div class="content-wrapper">
-        <h1 class="display-4 mb-4">Sales Dashboard</h1>
+        <div class="mb-4">
+            <h1 class="display-4">Sales Dashboard</h1>
+        </div>
 
         <!-- Overview Section -->
-        <div class="row g-4">
+        <div class="row mb-4">
+            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <i class="bi bi-cart-check"></i>
                     <h5>Total Orders</h5>
                     <h2><?php echo $totalOrders; ?></h2>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <i class="bi bi-people-fill"></i>
                     <h5>Total Customers</h5>
                     <h2><?php echo $totalCustomers; ?></h2>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <i class="bi bi-cash-coin"></i>
                     <h5>Total Sales</h5>
                     <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <i class="bi bi-bar-chart-fill"></i>
                     <h5>Top Category</h5>
                     <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
                 </div>
@@ -174,10 +165,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Charts Section -->
-        <div class="row g-4 mt-4">
+        <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="mb-3">Category Sales Distribution</h3>
+                    <h3 class="card-header">Category Sales Distribution</h3>
                     <div class="chart-wrapper">
                         <canvas id="categoryPieChart"></canvas>
                     </div>
@@ -185,20 +176,22 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="mb-3">Sales Trend (Last 30 Days)</h3>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    
+                    <!-- Date Picker inside the card -->
                     <form method="POST" class="mb-3">
-                        <div class="row g-2">
-                            <div class="col">
-                                <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>">
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
                             </div>
-                            <div class="col">
-                                <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>">
-                            </div>
-                            <div class="col-auto">
-                                <button type="submit" class="btn btn-primary">Filter</button>
+                            <div class="col-6">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
                             </div>
                         </div>
                     </form>
+                    
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -207,11 +200,11 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Table Section -->
-        <div class="row g-4 mt-4">
+        <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
-                    <h3 class="mb-3">Top 5 Products by Sales</h3>
-                    <table class="table table-striped table-hover">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
@@ -235,28 +228,39 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </div>
 
     <script>
-        // Charts
+        // Category Pie Chart
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
         new Chart(document.getElementById('categoryPieChart'), {
             type: 'pie',
             data: {
-                labels: <?php echo json_encode(array_column($categorySales, 'category_name')); ?>,
+                labels: categoryLabels,
                 datasets: [{
-                    data: <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>,
+                    data: categoryData,
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
 
+        // Sales Trend Line Chart
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
         new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
-                labels: <?php echo json_encode(array_column($salesTrend, 'date')); ?>,
+                labels: salesTrendLabels,
                 datasets: [{
                     label: 'Daily Sales',
-                    data: <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>,
+                    data: salesTrendData,
                     borderColor: '#4BC0C0',
                     fill: false
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
     </script>
