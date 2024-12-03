@@ -279,7 +279,7 @@ a.sidebar-link:hover {
     <div class="wrapper">
         <div class="topbar">
             <div class="logo">
-                <img src="../image/skt.png" style="width:110px; height:60px;">
+                <img src="../User/images/YLS2.jpg" style="width:110px; height:60px;">
             </div>
             <div class="user">
                 <div class="dropdown">
@@ -344,17 +344,12 @@ a.sidebar-link:hover {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="admin_pc.php" class="sidebar-link">
+                    <a href="admin_faq.php" class="sidebar-link">
                         <i class="lni lni-stackoverflow"></i>
-                        <span>Component</span>
+                        <span>FAQ</span>
                     </a>
                 </li>
-                <li class="sidebar-item">
-                    <a href="admin_peri.php" class="sidebar-link">
-                        <i class="lni lni-keyboard"></i>
-                        <span>Peripheral</span>
-                    </a>
-                </li>
+
                 <li class="sidebar-item">
                     <a href="admin_product.php" class="sidebar-link">
                         <i class="lni lni-cart-full"></i>
@@ -387,6 +382,14 @@ a.sidebar-link:hover {
 
                     </a>
                 </li>
+                
+                <li class="sidebar-item">
+                    <a href="view_contact_us.php" class="sidebar-link">
+                        <i class="lni lni-keyboard"></i>
+                        <span>Contact Us</span>
+                    </a>
+                </li>
+
                 </ul>
             </aside>
         </div>

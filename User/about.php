@@ -109,6 +109,22 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     height: 100%;
     object-fit: cover; /* Ensures the video covers the container without stretching */
 }
+/* Hide all default controls */
+.no-controls::-webkit-media-controls,
+.no-controls::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+/* Hide controls for other browsers */
+.no-controls::-moz-media-controls,
+.no-controls::-moz-media-controls-enclosure {
+    display: none !important;
+}
+
+/* Prevent interaction with the video */
+.no-controls {
+    pointer-events: none;
+}
 </style>
 <body class="animsition">
 	
@@ -453,7 +469,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
 				<div class="col-11 col-md-5 col-lg-4 m-lr-auto">
 					<div class="how-bor1 ">
 						<div class="hov-img0">
-    						<video class="responsive-video" src="images/VID.mp4" controls autoplay muted loop>
+    						<video class="responsive-video no-controls" src="images/VID.mp4" controls autoplay muted loop>
         						Your browser does not support the video tag.
     						</video>
 						</div>

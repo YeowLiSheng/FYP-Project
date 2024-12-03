@@ -922,7 +922,6 @@ if (isset($_SESSION['id'])) {
 
 <?php
 
-
 // Check if the form is submitted
 if (isset($_POST['submitbtn'])) {
     // Retrieve user input
@@ -948,10 +947,11 @@ if (isset($_POST['submitbtn'])) {
         $user_id = null; // Set user_id as null for non-logged-in users
     }
 
-    // Insert into contact_us table
-    $query = "INSERT INTO contact_us (user_email, message, user_id) VALUES (?, ?, ?)";
+    // Insert into contact_us table with status = 0
+    $status = 0; // Set status to 0
+    $query = "INSERT INTO contact_us (user_email, message, user_id, status) VALUES (?, ?, ?, ?)";
     $stmt = $connect->prepare($query);
-    $stmt->bind_param("ssi", $email, $message, $user_id);
+    $stmt->bind_param("ssii", $email, $message, $user_id, $status);
 
     if ($stmt->execute()) {
         echo '<script>alert("The Message Send Successful");</script>';
