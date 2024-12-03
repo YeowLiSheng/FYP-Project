@@ -801,7 +801,7 @@ body {
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="faq.php" class="stext-107 cl7 hov-cl1 trans-04">
 								FAQs
 							</a>
 						</li>
