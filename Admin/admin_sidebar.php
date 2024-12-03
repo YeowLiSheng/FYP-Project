@@ -346,7 +346,7 @@ a.sidebar-link:hover {
                 <li class="sidebar-item">
                     <a href="admin_faq.php" class="sidebar-link">
                         <i class="lni lni-stackoverflow"></i>
-                        <span>Component</span>
+                        <span>FAQ</span>
                     </a>
                 </li>
 
