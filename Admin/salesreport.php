@@ -77,7 +77,7 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
-$salesTrend = getSalesTrend($connect, $startDate, $endDate);
+//$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
 // 获取新增统计数据
 $pendingOrders = getPendingOrders($connect);
