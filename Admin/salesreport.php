@@ -111,7 +111,7 @@ $topCustomers = getTopCustomers($connect);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container {
-            height: 450px;
+            height: 400px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -144,6 +144,9 @@ $topCustomers = getTopCustomers($connect);
                 margin-left: 0;
                 padding-top: 20px;
             }
+        }
+        .chart-container {
+            height: 450px; /* Increased chart height */
         }
     </style>
 </head>
@@ -183,7 +186,19 @@ $topCustomers = getTopCustomers($connect);
 
         <!-- 图表和表格 -->
         <div class="row mb-4">
-            <div class="col-md-12">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Category Sales Distribution</h3>
+                    <?php if (!empty($categorySales)): ?>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
+                    <?php else: ?>
+                        <div class="no-data">No data available</div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <?php if (!empty($salesTrend)): ?>
@@ -229,7 +244,7 @@ $topCustomers = getTopCustomers($connect);
                 </div>
             </div>
 
-            <!-- 新增 Top 5 客户 -->
+            <!-- Top 5 客户 -->
             <div class="col-md-6">
                 <div class="table-container">
                     <div class="card-header">Top 5 Customers by Spending</div>
@@ -263,11 +278,24 @@ $topCustomers = getTopCustomers($connect);
     </div>
 
     <script>
-        var salesTrend = <?php echo json_encode($salesTrend); ?>;
-        
+        // Category Sales Pie Chart
+        var categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        var categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+
+        var categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                }]
+            }
+        });
+
         // Sales Trend Line Chart
-        var trendLabels = salesTrend.map(function(item) { return item.date; });
-        var trendData = salesTrend.map(function(item) { return item.daily_sales; });
+        var trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        var trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
 
         var salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
@@ -278,58 +306,45 @@ $topCustomers = getTopCustomers($connect);
                     data: trendData,
                     fill: true,
                     borderColor: '#2575fc',
-                    backgroundColor: 'rgba(37, 117, 252, 0.2)', /* 改进的渐变色背景 */
-                    tension: 0.4, /* 让曲线更平滑 */
-                    pointBackgroundColor: '#2575fc', /* 点的颜色 */
-                    pointBorderColor: '#fff', /* 点的边框颜色 */
-                    pointRadius: 5, /* 点的大小 */
-                    pointHoverRadius: 7, /* 点悬停时的大小 */
+                    backgroundColor: 'rgba(37, 117, 252, 0.2)',
+                    tension: 0.4,
                     borderWidth: 2,
-                    lineTension: 0.3
+                    pointRadius: 5,
+                    pointBackgroundColor: '#2575fc',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    hoverBackgroundColor: '#2575fc',
+                    hoverBorderColor: '#fff'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return 'RM ' + tooltipItem.raw.toFixed(2); // 销售额显示格式化
-                            }
-                        }
-                    }
-                },
                 scales: {
                     x: {
-                        grid: {
+                        title: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        ticks: {
-                            font: {
-                                size: 12
-                            }
+                            text: 'Date'
                         }
                     },
                     y: {
-                        beginAtZero: true,
-                        grid: {
+                        title: {
                             display: true,
-                            color: 'rgba(0, 0, 0, 0.1)'
+                            text: 'Sales (RM)'
                         },
-                        ticks: {
-                            font: {
-                                size: 12
-                            },
-                            callback: function(value) {
-                                return 'RM ' + value; // y轴数值前加“RM”
-                            }
-                        }
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#2575fc',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#2575fc',
+                        borderWidth: 1
                     }
                 }
             }
