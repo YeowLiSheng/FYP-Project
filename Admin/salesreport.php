@@ -111,7 +111,7 @@ $topCustomers = getTopCustomers($connect);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container {
-            height: 400px;
+            height: 450px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -183,19 +183,7 @@ $topCustomers = getTopCustomers($connect);
 
         <!-- 图表和表格 -->
         <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Category Sales Distribution</h3>
-                    <?php if (!empty($categorySales)): ?>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryPieChart"></canvas>
-                    </div>
-                    <?php else: ?>
-                        <div class="no-data">No data available</div>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <?php if (!empty($salesTrend)): ?>
@@ -275,24 +263,8 @@ $topCustomers = getTopCustomers($connect);
     </div>
 
     <script>
-        var categorySales = <?php echo json_encode($categorySales); ?>;
         var salesTrend = <?php echo json_encode($salesTrend); ?>;
         
-        // Category Sales Pie Chart
-        var categoryLabels = categorySales.map(function(item) { return item.category_name; });
-        var categoryData = categorySales.map(function(item) { return item.category_sales; });
-
-        var categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
-            type: 'pie',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    data: categoryData,
-                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
-                }]
-            }
-        });
-
         // Sales Trend Line Chart
         var trendLabels = salesTrend.map(function(item) { return item.date; });
         var trendData = salesTrend.map(function(item) { return item.daily_sales; });
@@ -304,10 +276,62 @@ $topCustomers = getTopCustomers($connect);
                 datasets: [{
                     label: 'Sales Trend',
                     data: trendData,
-                    fill: false,
+                    fill: true,
                     borderColor: '#2575fc',
-                    tension: 0.1
+                    backgroundColor: 'rgba(37, 117, 252, 0.2)', /* 改进的渐变色背景 */
+                    tension: 0.4, /* 让曲线更平滑 */
+                    pointBackgroundColor: '#2575fc', /* 点的颜色 */
+                    pointBorderColor: '#fff', /* 点的边框颜色 */
+                    pointRadius: 5, /* 点的大小 */
+                    pointHoverRadius: 7, /* 点悬停时的大小 */
+                    borderWidth: 2,
+                    lineTension: 0.3
                 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return 'RM ' + tooltipItem.raw.toFixed(2); // 销售额显示格式化
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            callback: function(value) {
+                                return 'RM ' + value; // y轴数值前加“RM”
+                            }
+                        }
+                    }
+                }
             }
         });
     </script>
