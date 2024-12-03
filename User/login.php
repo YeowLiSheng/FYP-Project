@@ -1,57 +1,91 @@
-
 <?php
-session_start(); // Start the session for using session variables
+session_start();
 
-// Check if the form is submitted
 if (isset($_POST["loginbtn"])) {
-    // Establish a database connection
     $con = mysqli_connect('localhost', 'root', '', 'fyp', 3306);
-    
-    // Check connection
     if (mysqli_connect_errno()) {
         echo "Failed to connect to MySQL: " . mysqli_connect_error();
         exit();
     }
-    
-    // Set character set
     mysqli_set_charset($con, "utf8");
-    
-    // Sanitize and retrieve form inputs
+
+    $secret_key = '6Ld-vZAqAAAAAPQuvjldDRNuWB9MDnZ78CPYRSzo';
+
+    // Validate reCAPTCHA
+    if (empty($_POST['g-recaptcha-response'])) {
+        
+		echo "<script>
+		alert('Please complete the CAPTCHA verification..');
+		window.location.href = 'login.php';
+	  	</script>";
+        exit();
+    }
+    $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secret_key . '&response=' . $_POST['g-recaptcha-response']);
+    $response_data = json_decode($response);
+
+    if (!$response_data->success) {
+        
+		echo "<script>
+		alert('CAPTCHA verification failed. Please try again.');
+		window.location.href = 'login.php';
+	  	</script>";
+        exit();
+    }
+
+    // Sanitize inputs
     $email = trim(mysqli_real_escape_string($con, $_POST["email"]));
     $password = trim(mysqli_real_escape_string($con, $_POST["password"]));
-    
-    // Prepare the SQL query to get user by email
+
+    // Fetch user details
     $query = "SELECT * FROM user WHERE user_email = ?";
     $stmt = $con->prepare($query);
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    
-    // Get the result and fetch the user data
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
 
-    // Check if user exists and verify password
-	if ($row && $password === $row['user_password']) {
+    if ($row && $password === $row['user_password']) {
+        $_SESSION['user_name'] = $row['user_name'];
+        $_SESSION['id'] = $row['user_id'];
+        echo "<script>
+                alert('Login successful!');
+                window.location.href = 'dashboard.php';
+              </script>";
+        exit();
+    } else {
+        echo '<script>alert("Invalid Email or Password.");</script>';
+    }
 
-		// Successful login
-		$_SESSION['user_name'] = $row['user_name'];
-		$_SESSION['id'] = $row['user_id']; // Ensure 'user_id' is correct
-	
-		// Display success message and then redirect using JavaScript
-		echo "<script>
-				alert('Login successful!');
-				window.location.href = 'dashboard.php';
-			  </script>";
-		exit(); // Stop further script execution after redirection
-	} else {
-		echo '<script>alert("Invalid Email or Password");</script>';
-	}
-	
-
-    // Close the statement and connection
     $stmt->close();
     $con->close();
 }
+
+
+
+?>
+
+
+<?php
+
+	if(empty($_POST['g-recaptcha-response']))
+	{
+	$captcha_error = 'Captcha is required';
+	}
+	else
+	{
+	$secret_key = '6Ld-vZAqAAAAAPQuvjldDRNuWB9MDnZ78CPYRSzo';
+
+	$response = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret='.$secret_key.'&response='.$_POST['g-recaptcha-response']);
+
+	$response_data = json_decode($response);
+
+	if(!$response_data->success)
+	{
+	$captcha_error = 'Captcha verification failed';
+	}
+	}
+
+
 ?>
 
 
@@ -63,11 +97,16 @@ if (isset($_POST["loginbtn"])) {
     <title>Login</title>
     <link rel="stylesheet" href="styles.css">
 
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?hl=en" async defer></script>
 
 
 
-        <!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
+<!--===============================================================================================-->	
+<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
 <!--===============================================================================================-->
@@ -501,7 +540,7 @@ if (isset($_POST["loginbtn"])) {
 
 
 
-    <form id="loginForm" method="POST" action="">
+    <form id="loginForm" method="POST" action="login.php">
         <h2>Login</h2>
         <p style="text-align: center; margin-top: 20px;">
             Don't have an account? <a href="register.php" style="color: #28a745; text-decoration: none;">Resgister</a>
@@ -526,6 +565,11 @@ if (isset($_POST["loginbtn"])) {
 		</div>
 
 
+		<div class="form-group">
+       <div class="g-recaptcha" data-sitekey="6Ld-vZAqAAAAADm1iGivIk3mWjuo2ejhIjhMan0w"></div>
+       <span id="captcha_error" class="text-danger"></span>
+      </div>
+
         <p>
             <input type="submit" name="loginbtn" value="Log In">
         </p>
@@ -536,6 +580,10 @@ if (isset($_POST["loginbtn"])) {
     </form>
 
     <script>
+
+
+
+
         function checkEmail() {
             const email = document.getElementById("email").value;
             const emailError = document.getElementById("emailError");
