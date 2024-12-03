@@ -2,7 +2,7 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 数据库查询功能（你的原代码）
+// 数据库查询功能
 function getTotalOrders($connect) {
     $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
     $result = mysqli_query($connect, $query);
@@ -40,29 +40,13 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 新增的统计功能
-function getPendingOrders($connect) {
-    $query = "SELECT COUNT(order_id) AS pending_orders 
+// 获取销售趋势数据，根据日期范围过滤
+function getSalesTrend($connect, $startDate, $endDate) {
+    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
-              WHERE order_status IN ('Processing', 'Shipping')";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_assoc($result)['pending_orders'];
-}
-
-function getMonthlySales($connect) {
-    $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
-              FROM orders 
-              GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
-              ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC 
-              LIMIT 12";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
-
-function getLowStockProducts($connect, $threshold = 10) {
-    $query = "SELECT product_name, stock 
-              FROM product 
-              WHERE stock < $threshold";
+              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
+              GROUP BY DATE(order_date) 
+              ORDER BY DATE(order_date)";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
@@ -77,12 +61,7 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
-//$salesTrend = getSalesTrend($connect, $startDate, $endDate);
-
-// 获取新增统计数据
-$pendingOrders = getPendingOrders($connect);
-$monthlySales = getMonthlySales($connect);
-$lowStockProducts = getLowStockProducts($connect);
+$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
 
 <!DOCTYPE html>
@@ -153,10 +132,12 @@ $lowStockProducts = getLowStockProducts($connect);
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
+            
         </div>
 
         <!-- Overview Section -->
         <div class="row mb-4">
+            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -177,8 +158,8 @@ $lowStockProducts = getLowStockProducts($connect);
             </div>
             <div class="col-md-3">
                 <div class="dashboard-card">
-                    <h5>Pending Orders</h5>
-                    <h2><?php echo $pendingOrders; ?></h2>
+                    <h5>Top Category</h5>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
                 </div>
             </div>
         </div>
@@ -209,9 +190,9 @@ $lowStockProducts = getLowStockProducts($connect);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Monthly Sales (Last 12 Months)</h3>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <div class="chart-wrapper">
-                        <canvas id="monthlySalesChart"></canvas>
+                        <canvas id="salesTrendChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -237,115 +218,50 @@ $lowStockProducts = getLowStockProducts($connect);
                                     <td><?php echo $product['total_sold']; ?></td>
                                     <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
                                 </tr>
-                                <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="table-container">
-                    <div class="card-header">Low Stock Products</div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Stock</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($lowStockProducts as $product): ?>
-                                <tr>
-                                    <td><?php echo $product['product_name']; ?></td>
-                                    <td><?php echo $product['stock']; ?></td>
-                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- Chart.js Script -->
     <script>
-        const categoryData = <?php echo json_encode($categorySales); ?>;
-        const categoryLabels = categoryData.map(item => item.category_name);
-        const categorySalesData = categoryData.map(item => item.category_sales);
-
-        const monthlyData = <?php echo json_encode($monthlySales); ?>;
-        const monthlyLabels = monthlyData.map(item => item.month);
-        const monthlySalesData = monthlyData.map(item => item.monthly_sales);
-
         // Category Pie Chart
-        const categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        new Chart(document.getElementById('categoryPieChart'), {
             type: 'pie',
             data: {
                 labels: categoryLabels,
                 datasets: [{
-                    label: 'Sales by Category',
-                    data: categorySalesData,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                    borderColor: '#fff',
-                    borderWidth: 1
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
             },
             options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return tooltipItem.label + ': RM ' + tooltipItem.raw.toFixed(2);
-                            }
-                        }
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
 
-        // Monthly Sales Bar Chart
-        const monthlySalesChart = new Chart(document.getElementById('monthlySalesChart'), {
-            type: 'bar',
+        // Sales Trend Line Chart
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        new Chart(document.getElementById('salesTrendChart'), {
+            type: 'line',
             data: {
-                labels: monthlyLabels,
+                labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Monthly Sales (RM)',
-                    data: monthlySalesData,
-                    backgroundColor: '#42A5F5',
-                    borderColor: '#1E88E5',
-                    borderWidth: 1
+                    label: 'Daily Sales',
+                    data: salesTrendData,
+                    borderColor: '#4BC0C0',
+                    fill: false
                 }]
             },
             options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'RM ' + value.toFixed(2);
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                return 'RM ' + tooltipItem.raw.toFixed(2);
-                            }
-                        }
-                    }
-                }
+                maintainAspectRatio: false
             }
         });
     </script>
-
 </body>
 </html>
-
