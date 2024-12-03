@@ -1,5 +1,88 @@
 <?php
-include('dataconnection.php');
+include 'dataconnection.php';
+include 'admin_sidebar.php';
+
+// 数据库查询功能（你的原代码）
+function getTotalOrders($connect) {
+    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_orders'];
+}
+
+function getTotalCustomers($connect) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_customers'];
+}
+
+function getTotalSales($connect) {
+    $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_sales'];
+}
+
+function getCategorySales($connect) {
+    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
+              FROM order_details od 
+              JOIN product p ON od.product_id = p.product_id 
+              JOIN category c ON p.category_id = c.category_id 
+              GROUP BY c.category_name";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+function getTopProducts($connect) {
+    $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
+              FROM order_details 
+              GROUP BY product_name 
+              ORDER BY total_sold DESC LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// 新增的统计功能
+function getPendingOrders($connect) {
+    $query = "SELECT COUNT(order_id) AS pending_orders 
+              FROM orders 
+              WHERE order_status IN ('Processing', 'Shipping')";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['pending_orders'];
+}
+
+function getMonthlySales($connect) {
+    $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
+              FROM orders 
+              GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
+              ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC 
+              LIMIT 12";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+function getLowStockProducts($connect, $threshold = 10) {
+    $query = "SELECT product_name, stock 
+              FROM product 
+              WHERE stock < $threshold";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// 获取表单数据（如果有的话）
+$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
+
+// 数据获取
+$totalOrders = getTotalOrders($connect);
+$totalCustomers = getTotalCustomers($connect);
+$totalSales = getTotalSales($connect);
+$categorySales = getCategorySales($connect);
+$topProducts = getTopProducts($connect);
+$salesTrend = getSalesTrend($connect, $startDate, $endDate);
+
+// 获取新增统计数据
+$pendingOrders = getPendingOrders($connect);
+$monthlySales = getMonthlySales($connect);
+$lowStockProducts = getLowStockProducts($connect);
 ?>
 
 <!DOCTYPE html>
@@ -7,203 +90,262 @@ include('dataconnection.php');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Report</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin Sales Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f1f1f1;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
         }
-        .container {
-            margin-top: 30px;
+        .content-wrapper {
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
         }
-        .card {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            transition: transform 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .card-header {
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
+        .dashboard-card {
+            color: #fff;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            border-radius: 12px 12px 0 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
+        }
+        .chart-container, .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container {
-            position: relative;
             height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .table thead {
-            background-color: #343a40;
-            color: white;
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
-        .table-striped tbody tr:nth-child(odd) {
-            background-color: #f9f9f9;
+        .table-container {
+            overflow-x: auto;
         }
-        .table-striped tbody tr:nth-child(even) {
-            background-color: #ffffff;
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
         }
-        .table tbody td {
-            vertical-align: middle;
+        .table thead th {
+            color: #333;
+            font-weight: bold;
+        }
+        @media screen and (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0;
+                padding-top: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center mb-5 text-success">Sales Report</h1>
+    <div class="content-wrapper">
+        <div class="mb-4">
+            <h1 class="display-4">Sales Dashboard</h1>
+        </div>
 
-        <!-- Total Sales Overview -->
-        <div class="card mb-4">
-            <div class="card-header">Total Sales Overview</div>
-            <div class="card-body">
-                <?php
-                $result = mysqli_query($connect, "SELECT SUM(final_amount) AS total_sales, COUNT(order_id) AS total_orders FROM orders");
-                $data = mysqli_fetch_assoc($result);
-                $total_sales = $data['total_sales'] ?? 0;
-                $total_orders = $data['total_orders'] ?? 0;
-                ?>
-                <div class="row text-center">
-                    <div class="col-6">
-                        <p>Total Sales</p>
-                        <h3 class="text-success">$<?= number_format($total_sales, 2) ?></h3>
-                    </div>
-                    <div class="col-6">
-                        <p>Total Orders</p>
-                        <h3 class="text-primary"><?= $total_orders ?></h3>
-                    </div>
+        <!-- Overview Section -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Pending Orders</h5>
+                    <h2><?php echo $pendingOrders; ?></h2>
                 </div>
             </div>
         </div>
 
-        <!-- Sales by Category Chart -->
-        <div class="card mb-4">
-            <div class="card-header">Sales by Category</div>
-            <div class="card-body">
+        <!-- Date Picker -->
+        <form method="POST" class="mb-4" id="dateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+
+        <!-- Charts Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
                 <div class="chart-container">
-                    <canvas id="categoryChart"></canvas>
+                    <h3 class="card-header">Category Sales Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
                 </div>
-                <?php
-                $categories = [];
-                $sales_by_category = [];
-                $result = mysqli_query($connect, "
-                    SELECT c.category_name, SUM(od.total_price) AS total
-                    FROM order_details od
-                    JOIN product p ON od.product_id = p.product_id
-                    JOIN category c ON p.category_id = c.category_id
-                    GROUP BY c.category_name
-                ");
-                while ($row = mysqli_fetch_assoc($result)) {
-                    $categories[] = $row['category_name'];
-                    $sales_by_category[] = $row['total'];
-                }
-                ?>
-                <script>
-                    const categoryLabels = <?= json_encode($categories) ?>;
-                    const categoryData = <?= json_encode($sales_by_category) ?>;
-                    const ctx1 = document.getElementById('categoryChart').getContext('2d');
-                    new Chart(ctx1, {
-                        type: 'pie',
-                        data: {
-                            labels: categoryLabels,
-                            datasets: [{
-                                label: 'Sales by Category ($)',
-                                data: categoryData,
-                                backgroundColor: ['#f39c12', '#3498db', '#e74c3c', '#2ecc71'],
-                                hoverOffset: 4
-                            }]
-                        },
-                    });
-                </script>
             </div>
-        </div>
-
-        <!-- Monthly Sales Line Chart -->
-        <div class="card mb-4">
-            <div class="card-header">Monthly Sales Overview</div>
-            <div class="card-body">
+            <div class="col-md-6">
                 <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
+                    <h3 class="card-header">Monthly Sales (Last 12 Months)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="monthlySalesChart"></canvas>
+                    </div>
                 </div>
-                <?php
-                $months = [];
-                $monthly_sales = [];
-                $result = mysqli_query($connect, "
-                    SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS total
-                    FROM orders
-                    GROUP BY month
-                ");
-                while ($row = mysqli_fetch_assoc($result)) {
-                    $months[] = $row['month'];
-                    $monthly_sales[] = $row['total'];
-                }
-                ?>
-                <script>
-                    const monthlyLabels = <?= json_encode($months) ?>;
-                    const monthlyData = <?= json_encode($monthly_sales) ?>;
-                    const ctx2 = document.getElementById('monthlyChart').getContext('2d');
-                    new Chart(ctx2, {
-                        type: 'line',
-                        data: {
-                            labels: monthlyLabels,
-                            datasets: [{
-                                label: 'Monthly Sales ($)',
-                                data: monthlyData,
-                                borderColor: '#1abc9c',
-                                fill: false,
-                                tension: 0.4,
-                                pointRadius: 5
-                            }]
-                        },
-                    });
-                </script>
             </div>
         </div>
 
-        <!-- Top 5 Best-Selling Products -->
-        <div class="card mb-4">
-            <div class="card-header">Top 5 Best-Selling Products</div>
-            <div class="card-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Product Name</th>
-                            <th>Total Quantity Sold</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $result = mysqli_query($connect, "
-                            SELECT p.product_name, SUM(od.quantity) AS total_quantity
-                            FROM order_details od
-                            JOIN product p ON od.product_id = p.product_id
-                            GROUP BY p.product_name
-                            ORDER BY total_quantity DESC
-                            LIMIT 5
-                        ");
-                        $rank = 1;
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr>
-                                <td>{$rank}</td>
-                                <td>{$row['product_name']}</td>
-                                <td>{$row['total_quantity']}</td>
-                              </tr>";
-                            $rank++;
-                        }
-                        ?>
-                    </tbody>
-                </table>
+        <!-- Table Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-container">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($topProducts as $product): ?>
+                                <tr>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="table-container">
+                    <div class="card-header">Low Stock Products</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($lowStockProducts as $product): ?>
+                                <tr>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['stock']; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
     </div>
 
-    <!-- Bootstrap JS & Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"></script>
+    <!-- Chart.js Script -->
+    <script>
+        const categoryData = <?php echo json_encode($categorySales); ?>;
+        const categoryLabels = categoryData.map(item => item.category_name);
+        const categorySalesData = categoryData.map(item => item.category_sales);
+
+        const monthlyData = <?php echo json_encode($monthlySales); ?>;
+        const monthlyLabels = monthlyData.map(item => item.month);
+        const monthlySalesData = monthlyData.map(item => item.monthly_sales);
+
+        // Category Pie Chart
+        const categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Sales by Category',
+                    data: categorySalesData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': RM ' + tooltipItem.raw.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Monthly Sales Bar Chart
+        const monthlySalesChart = new Chart(document.getElementById('monthlySalesChart'), {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Monthly Sales (RM)',
+                    data: monthlySalesData,
+                    backgroundColor: '#42A5F5',
+                    borderColor: '#1E88E5',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'RM ' + value.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                return 'RM ' + tooltipItem.raw.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
 </body>
 </html>
+
