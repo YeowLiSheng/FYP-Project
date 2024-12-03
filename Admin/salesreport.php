@@ -83,7 +83,7 @@ $topCustomers = getTopCustomers($connect);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f0f4f8;
+            background-color: #f8f9fa;
             font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
@@ -99,10 +99,6 @@ $topCustomers = getTopCustomers($connect);
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-height: 150px;
-            transition: transform 0.3s ease;
-        }
-        .dashboard-card:hover {
-            transform: translateY(-10px);
         }
         .chart-container, .table-container {
             background: #fff;
@@ -128,22 +124,21 @@ $topCustomers = getTopCustomers($connect);
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 15px;
-            color: #333;
         }
         .table thead th {
             color: #333;
             font-weight: bold;
-        }
-        .no-data {
-            text-align: center;
-            font-size: 1.2rem;
-            color: #aaa;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
                 margin-left: 0;
                 padding-top: 20px;
             }
+        }
+        .no-data {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #aaa;
         }
     </style>
 </head>
@@ -250,7 +245,7 @@ $topCustomers = getTopCustomers($connect);
                             <tr>
                                 <th>Customer Name</th>
                                 <th>Email</th>
-                                <th>Total Spent</th>
+                                <th>Total Spending</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -274,41 +269,40 @@ $topCustomers = getTopCustomers($connect);
         </div>
     </div>
 
+    <!-- 添加图表数据 -->
     <script>
-        var categorySales = <?php echo json_encode($categorySales); ?>;
-        var salesTrend = <?php echo json_encode($salesTrend); ?>;
-        
-        // Category Sales Pie Chart
-        var categoryLabels = categorySales.map(function(item) { return item.category_name; });
-        var categoryData = categorySales.map(function(item) { return item.category_sales; });
-
-        var categoryPieChart = new Chart(document.getElementById('categoryPieChart'), {
-            type: 'pie',
-            data: {
-                labels: categoryLabels,
+        document.addEventListener('DOMContentLoaded', function() {
+            <?php if (!empty($categorySales)): ?>
+            const categoryData = {
+                labels: <?php echo json_encode(array_column($categorySales, 'category_name')); ?>,
                 datasets: [{
-                    data: categoryData,
-                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+                    label: 'Sales',
+                    data: <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+                    hoverOffset: 4
                 }]
-            }
-        });
+            };
+            new Chart(document.getElementById('categoryPieChart'), {
+                type: 'pie',
+                data: categoryData
+            });
+            <?php endif; ?>
 
-        // Sales Trend Line Chart
-        var trendLabels = salesTrend.map(function(item) { return item.date; });
-        var trendData = salesTrend.map(function(item) { return item.daily_sales; });
-
-        var salesTrendChart = new Chart(document.getElementById('salesTrendChart'), {
-            type: 'line',
-            data: {
-                labels: trendLabels,
+            <?php if (!empty($salesTrend)): ?>
+            const trendData = {
+                labels: <?php echo json_encode(array_column($salesTrend, 'date')); ?>,
                 datasets: [{
-                    label: 'Sales Trend',
-                    data: trendData,
-                    fill: false,
-                    borderColor: '#2575fc',
-                    tension: 0.1
+                    label: 'Daily Sales',
+                    data: <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>,
+                    borderColor: '#4BC0C0',
+                    fill: false
                 }]
-            }
+            };
+            new Chart(document.getElementById('salesTrendChart'), {
+                type: 'line',
+                data: trendData
+            });
+            <?php endif; ?>
         });
     </script>
 </body>
