@@ -84,8 +84,9 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         }
         .dashboard-row {
             display: flex;
-            gap: 15px;
-            justify-content: space-between;
+    gap: 20px; /* 增加间距 */
+    justify-content: space-between;
+    flex-wrap: wrap; /* 响应式布局 */
         }
         .dashboard-card, .chart-container, .table-card {
             flex: 1;
@@ -95,13 +96,35 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .dashboard-card {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+    flex-grow: 1;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px; /* 增加内边距 */
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* 添加过渡效果 */
+}
+
+.dashboard-card h5 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.dashboard-card h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px); /* 悬停提升效果 */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
         .chart-wrapper {
             position: relative;
             width: 100%;
@@ -143,23 +166,24 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Overview Section -->
         <div class="row mb-4 dashboard-row">
-            <div class="dashboard-card">
-                <h5>Total Orders</h5>
-                <h2><?php echo $totalOrders; ?></h2>
-            </div>
-            <div class="dashboard-card">
-                <h5>Total Customers</h5>
-                <h2><?php echo $totalCustomers; ?></h2>
-            </div>
-            <div class="dashboard-card">
-                <h5>Total Sales</h5>
-                <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
-            </div>
-            <div class="dashboard-card">
-                <h5>Top Category</h5>
-                <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
-            </div>
-        </div>
+    <h3 class="mb-3 text-center">Overview</h3>
+    <div class="dashboard-card">
+        <h5>Total Orders</h5>
+        <h2><?php echo $totalOrders; ?></h2>
+    </div>
+    <div class="dashboard-card">
+        <h5>Total Customers</h5>
+        <h2><?php echo $totalCustomers; ?></h2>
+    </div>
+    <div class="dashboard-card">
+        <h5>Total Sales</h5>
+        <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+    </div>
+    <div class="dashboard-card">
+        <h5>Top Category</h5>
+        <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
+    </div>
+</div>
 
         <!-- Charts Section -->
         <div class="row mb-4 dashboard-row">
