@@ -83,17 +83,14 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             padding-top: 80px;
         }
         .dashboard-card {
-    color: #fff;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    border-radius: 15px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    min-height: 150px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
+            color: #fff;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
+        }
         .chart-container {
             background: #fff;
             border-radius: 15px;
