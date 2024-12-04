@@ -40,7 +40,6 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -83,19 +82,23 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             padding-top: 80px;
         }
         .dashboard-card {
-    color: #fff;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    border-radius: 15px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    height: 180px; /* 统一高度 */
-    display: flex; /* 使用 flex 布局 */
-    flex-direction: column; /* 竖直方向排列 */
-    justify-content: center; /* 垂直居中 */
-    align-items: center; /* 水平居中 */
-}
-
+            color: #fff;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%; /* 自动填满父元素高度 */
+        }
+        .row .col-md-3 {
+            display: flex;
+            flex-direction: column;
+            height: 180px; /* 卡片高度与 Sales Trend 区域一致 */
+        }
         .chart-container {
             background: #fff;
             border-radius: 15px;
@@ -188,7 +191,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-                    <!-- Date Filter -->
                     <form method="POST" class="date-filter">
                         <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
                         <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
@@ -267,4 +269,3 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </script>
 </body>
 </html>
-
