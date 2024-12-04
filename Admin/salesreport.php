@@ -98,9 +98,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .chart-container {
-            height: 500px;
+            height: 400px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .chart-wrapper {
             position: relative;
@@ -114,15 +115,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 15px;
-        }
-        .date-filter {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .date-filter input {
-            width: 48%;
         }
         .table thead th {
             color: #333;
@@ -140,6 +132,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
+            
         </div>
 
         <!-- Overview Section -->
@@ -171,6 +164,20 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
+        <!-- Date Picker -->
+        <form method="POST" class="mb-4" id="dateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+
         <!-- Charts Section -->
         <div class="row mb-4">
             <div class="col-md-6">
@@ -183,11 +190,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <div class="date-filter">
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="document.getElementById('dateForm').submit();">
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="document.getElementById('dateForm').submit();">
-                    </div>
-                    <h3 class="card-header">Sales Trend</h3>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -262,4 +265,3 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </script>
 </body>
 </html>
-
