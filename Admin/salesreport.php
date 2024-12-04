@@ -74,77 +74,34 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f1f3f8;
+            background-color: #f8f9fa;
             font-family: 'Poppins', sans-serif;
-            color: #333;
         }
         .content-wrapper {
             margin-left: 250px;
             padding: 20px;
             padding-top: 80px;
         }
-        .dashboard-cards {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
         .dashboard-card {
-            flex: 1 1 calc(25% - 20px);
             color: #fff;
-            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             border-radius: 15px;
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
             min-height: 150px;
         }
-        .dashboard-card h5 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-        .dashboard-card h2 {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-        .chart-container, .table-container {
+        .chart-container {
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            position: relative;
         }
         .chart-wrapper {
             position: relative;
             width: 100%;
             height: 300px;
-        }
-        .table-container {
-            overflow-x: auto;
-        }
-        .table-container table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0;
-        }
-        .table-container th, .table-container td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .table-container th {
-            background-color: #f9fafc;
-            font-weight: bold;
-        }
-        .table-container tr:hover {
-            background-color: #f1f3f8;
-        }
-        .card-header {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 15px;
         }
         .date-filter {
             display: flex;
@@ -155,13 +112,22 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         .date-filter input[type="date"] {
             max-width: 45%;
         }
+        .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
         @media screen and (max-width: 768px) {
             .content-wrapper {
                 margin-left: 0;
                 padding-top: 20px;
-            }
-            .dashboard-cards {
-                flex-direction: column;
             }
             .date-filter input[type="date"] {
                 max-width: 100%;
@@ -172,34 +138,43 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 <body>
     <div class="content-wrapper">
         <div class="mb-4">
-            <h1 class="display-4 text-primary">Sales Dashboard</h1>
+            <h1 class="display-4">Sales Dashboard</h1>
         </div>
 
         <!-- Overview Section -->
-        <div class="dashboard-cards">
-            <div class="dashboard-card">
-                <h5>Total Orders</h5>
-                <h2><?php echo $totalOrders; ?></h2>
+        <div class="row mb-4">
+            <!-- Cards -->
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
+                </div>
             </div>
-            <div class="dashboard-card">
-                <h5>Total Customers</h5>
-                <h2><?php echo $totalCustomers; ?></h2>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
+                </div>
             </div>
-            <div class="dashboard-card">
-                <h5>Total Sales</h5>
-                <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
             </div>
-            <div class="dashboard-card">
-                <h5>Top Category</h5>
-                <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Top Category</h5>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
+                </div>
             </div>
         </div>
 
         <!-- Charts Section -->
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header text-secondary">Category Sales Distribution</h3>
+                    <h3 class="card-header">Category Sales Distribution</h3>
                     <div class="chart-wrapper">
                         <canvas id="categoryPieChart"></canvas>
                     </div>
@@ -207,7 +182,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header text-secondary">Sales Trend (Last 30 Days)</h3>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <!-- Date Filter -->
                     <form method="POST" class="date-filter">
                         <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
                         <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
@@ -221,10 +197,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Table Section -->
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="table-container">
-                    <div class="card-header text-secondary">Top 5 Products by Sales</div>
-                    <table>
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
@@ -257,7 +233,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 labels: categoryLabels,
                 datasets: [{
                     data: categoryData,
-                    backgroundColor: ['#4e54c8', '#8f94fb', '#36a2eb', '#ff6384', '#ffce56']
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
             },
             options: {
@@ -275,7 +251,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 datasets: [{
                     label: 'Daily Sales',
                     data: salesTrendData,
-                    borderColor: '#4e54c8',
+                    borderColor: '#4BC0C0',
                     fill: false
                 }]
             },
@@ -286,3 +262,4 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </script>
 </body>
 </html>
+
