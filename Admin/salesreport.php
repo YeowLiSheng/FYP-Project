@@ -87,8 +87,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             gap: 15px;
             justify-content: space-between;
         }
-        .dashboard-card, .chart-container, .table-container {
-            flex: 1; /* 确保每张卡片宽度一致 */
+        .dashboard-card {
+            flex: 1; /* 每张卡片占据相同的比例空间 */
             color: #fff;
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             border-radius: 15px;
@@ -101,8 +101,15 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             align-items: center;
         }
         .chart-container, .table-container {
+            flex: 1; /* 保证图表和表格卡片宽度一致 */
             background: #fff;
-            color: #000;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .chart-wrapper {
             position: relative;
@@ -127,9 +134,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             .content-wrapper {
                 margin-left: 0;
                 padding-top: 20px;
-            }
-            .dashboard-row {
-                flex-direction: column;
             }
             .date-filter input[type="date"] {
                 max-width: 100%;
@@ -184,7 +188,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Table Section -->
-        <div class="row mb-4 dashboard-row">
+        <div class="row">
             <div class="table-container">
                 <div class="card-header">Top 5 Products by Sales</div>
                 <table class="table table-striped">
