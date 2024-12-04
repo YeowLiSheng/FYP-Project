@@ -83,34 +83,30 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             padding-top: 80px;
         }
         .dashboard-card {
-            color: #fff;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            height: 180px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+    color: #fff;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    height: 180px; /* 统一高度 */
+    display: flex; /* 使用 flex 布局 */
+    flex-direction: column; /* 竖直方向排列 */
+    justify-content: center; /* 垂直居中 */
+    align-items: center; /* 水平居中 */
+}
+
         .chart-container {
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             position: relative;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
         .chart-wrapper {
             position: relative;
             width: 100%;
-            height: calc(100% - 50px);
+            height: 300px;
         }
         .date-filter {
             display: flex;
@@ -126,7 +122,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            height: 400px;
             overflow-x: auto;
         }
         .card-header {
@@ -153,6 +148,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Overview Section -->
         <div class="row mb-4">
+            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -192,6 +188,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <!-- Date Filter -->
                     <form method="POST" class="date-filter">
                         <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
                         <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
@@ -243,25 +240,31 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: categoryData,
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Chart
-        const salesDates = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        const salesValues = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        // Sales Trend Line Chart
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
         new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
-                labels: salesDates,
+                labels: salesTrendLabels,
                 datasets: [{
                     label: 'Daily Sales',
-                    data: salesValues,
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: '#36A2EB',
-                    fill: true
+                    data: salesTrendData,
+                    borderColor: '#4BC0C0',
+                    fill: false
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
     </script>
 </body>
 </html>
+
