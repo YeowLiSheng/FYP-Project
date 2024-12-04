@@ -87,25 +87,16 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             gap: 15px;
             justify-content: space-between;
         }
-        .dashboard-card {
-            flex: 1; /* 每张卡片占据相同的比例空间 */
-            color: #fff;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .chart-container, .table-container {
-            flex: 1; /* 保证图表和表格卡片宽度一致 */
+        .dashboard-card, .chart-container, .table-card {
+            flex: 1;
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-card {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -125,10 +116,13 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         .date-filter input[type="date"] {
             max-width: 45%;
         }
-        .card-header {
+        .table-card .card-header {
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 15px;
+        }
+        .table-container {
+            overflow-x: auto;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
@@ -188,27 +182,33 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Table Section -->
-        <div class="row">
-            <div class="table-container">
+        <div class="row dashboard-row">
+            <div class="table-card">
                 <div class="card-header">Top 5 Products by Sales</div>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Product Name</th>
-                            <th>Units Sold</th>
-                            <th>Total Revenue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($topProducts as $product): ?>
+                <div class="table-container">
+                    <table class="table table-striped">
+                        <thead>
                             <tr>
-                                <td><?php echo $product['product_name']; ?></td>
-                                <td><?php echo $product['total_sold']; ?></td>
-                                <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($topProducts as $product): ?>
+                                <tr>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="card-header">Additional Card</div>
+                <p>Add your content here...</p>
             </div>
         </div>
     </div>
