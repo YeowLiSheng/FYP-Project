@@ -40,6 +40,7 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -131,6 +132,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <div class="content-wrapper">
         <div class="mb-4">
             <h1 class="display-4">Sales Dashboard</h1>
+            
         </div>
 
         <!-- Overview Section -->
@@ -162,6 +164,20 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
+        <!-- Date Picker -->
+        <form method="POST" class="mb-4" id="dateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+
         <!-- Charts Section -->
         <div class="row mb-4">
             <div class="col-md-6">
@@ -174,19 +190,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="card-header m-0">Sales Trend</h3>
-                        <form method="POST" id="dateForm" class="d-flex">
-                            <div class="me-2">
-                                <label for="start_date" class="form-label m-0 small">Start Date</label>
-                                <input type="date" class="form-control form-control-sm" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
-                            </div>
-                            <div>
-                                <label for="end_date" class="form-label m-0 small">End Date</label>
-                                <input type="date" class="form-control form-control-sm" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
-                            </div>
-                        </form>
-                    </div>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -234,23 +238,28 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: categoryData,
                     backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
 
-        // Sales Trend Chart
-        const trendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
-        const trendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        // Sales Trend Line Chart
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
         new Chart(document.getElementById('salesTrendChart'), {
             type: 'line',
             data: {
-                labels: trendLabels,
+                labels: salesTrendLabels,
                 datasets: [{
-                    label: 'Daily Sales (RM)',
-                    data: trendData,
-                    borderColor: '#6a11cb',
-                    backgroundColor: 'rgba(106, 17, 203, 0.1)',
-                    fill: true
+                    label: 'Daily Sales',
+                    data: salesTrendData,
+                    borderColor: '#4BC0C0',
+                    fill: false
                 }]
+            },
+            options: {
+                maintainAspectRatio: false
             }
         });
     </script>
