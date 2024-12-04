@@ -230,11 +230,11 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($topProducts as $product): ?>
+                            <?php foreach ($topProducts as $Customers): ?>
                                 <tr>
-                                    <td><?php echo $product['product_name']; ?></td>
-                                    <td><?php echo $product['total_sold']; ?></td>
-                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                    <td><?php echo $Customers['product_name']; ?></td>
+                                    <td><?php echo $Customers['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($Customers['total_spent'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -253,7 +253,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($topProducts as $product): ?>
+                            <?php foreach ($topCustomers as $product): ?>
                                 <tr>
                                     <td><?php echo $product['product_name']; ?></td>
                                     <td><?php echo $product['total_sold']; ?></td>
