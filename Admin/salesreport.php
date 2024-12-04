@@ -161,7 +161,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 <body>
     <div class="content-wrapper">
         <div class="mb-4">
-            <h1 class="display-4">Sales Dashboard</h1>
+            <h1 class="display-4">Sales Report</h1>
         </div>
 
         <!-- Overview Section -->
