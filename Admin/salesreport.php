@@ -91,23 +91,32 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-height: 150px;
         }
-        .chart-container, .table-container {
+        .chart-container {
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .chart-container {
-            height: 500px;
-            display: flex;
-            flex-direction: column;
+            position: relative;
         }
         .chart-wrapper {
             position: relative;
             width: 100%;
-            height: calc(100% - 50px);
+            height: 300px;
+        }
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .date-filter input[type="date"] {
+            max-width: 45%;
         }
         .table-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             overflow-x: auto;
         }
         .card-header {
@@ -115,23 +124,13 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             font-weight: bold;
             margin-bottom: 15px;
         }
-        .date-filter {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .date-filter input {
-            max-width: 160px;
-        }
-        .table thead th {
-            color: #333;
-            font-weight: bold;
-        }
         @media screen and (max-width: 768px) {
             .content-wrapper {
                 margin-left: 0;
                 padding-top: 20px;
+            }
+            .date-filter input[type="date"] {
+                max-width: 100%;
             }
         }
     </style>
@@ -144,6 +143,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Overview Section -->
         <div class="row mb-4">
+            <!-- Cards -->
             <div class="col-md-3">
                 <div class="dashboard-card">
                     <h5>Total Orders</h5>
@@ -182,11 +182,12 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
-                    <h3 class="card-header">Sales Trend</h3>
-                    <div class="date-filter">
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="document.getElementById('dateForm').submit();">
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="document.getElementById('dateForm').submit();">
-                    </div>
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <!-- Date Filter -->
+                    <form method="POST" class="date-filter">
+                        <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                        <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                    </form>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -261,3 +262,4 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     </script>
 </body>
 </html>
+
