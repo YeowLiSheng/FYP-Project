@@ -166,7 +166,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Overview Section -->
         <div class="row mb-4 dashboard-row">
-    <h3 class="mb-3 text-center">Overview</h3>
+
     <div class="dashboard-card">
         <h5>Total Orders</h5>
         <h2><?php echo $totalOrders; ?></h2>
