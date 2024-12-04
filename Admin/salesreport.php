@@ -255,8 +255,8 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                         <tbody>
                             <?php foreach ($topCustomers as $Customers): ?>
                                 <tr>
-                                    <td><?php echo $Customers['u.user_name']; ?></td>
-                                    <td><?php echo $Customers['u.user_email']; ?></td>
+                                    <td><?php echo $Customers['user_name']; ?></td>
+                                    <td><?php echo $Customers['user_email']; ?></td>
                                     <td>RM <?php echo number_format($Customers['total_spent'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
