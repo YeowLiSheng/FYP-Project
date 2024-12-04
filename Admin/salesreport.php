@@ -74,64 +74,66 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f4f5f7;
             font-family: 'Poppins', sans-serif;
         }
         .content-wrapper {
-            margin-left: 250px;
             padding: 20px;
-            padding-top: 80px;
         }
         .dashboard-card {
             color: #fff;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            border-radius: 15px;
+            background: linear-gradient(135deg, #4e73df, #1cc88a);
+            border-radius: 12px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            min-height: 150px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         .chart-container, .table-container {
             background: #fff;
-            border-radius: 15px;
+            border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .chart-container {
-            height: 500px;
-            display: flex;
-            flex-direction: column;
         }
         .chart-wrapper {
             position: relative;
             width: 100%;
             height: 100%;
         }
-        .table-container {
-            overflow-x: auto;
-        }
         .card-header {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: bold;
             margin-bottom: 15px;
+            color: #4e73df;
         }
         .date-filter {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 10px;
             margin-bottom: 10px;
         }
-        .date-filter input {
-            width: 48%;
+        .table {
+            margin: 0;
+            border-collapse: collapse;
+            border-spacing: 0;
         }
-        .table thead th {
-            color: #333;
-            font-weight: bold;
+        .table th {
+            background-color: #4e73df;
+            color: #fff;
+            text-align: center;
+        }
+        .table tbody tr:nth-child(odd) {
+            background-color: #f8f9fc;
+        }
+        .table tbody tr:hover {
+            background-color: #e3e6f0;
         }
         @media screen and (max-width: 768px) {
             .content-wrapper {
-                margin-left: 0;
-                padding-top: 20px;
+                padding: 15px;
             }
         }
     </style>
@@ -139,40 +141,40 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 <body>
     <div class="content-wrapper">
         <div class="mb-4">
-            <h1 class="display-4">Sales Dashboard</h1>
+            <h1 class="display-5 text-center text-primary">Sales Dashboard</h1>
         </div>
 
         <!-- Overview Section -->
-        <div class="row mb-4">
+        <div class="row mb-4 g-4">
             <!-- Cards -->
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="dashboard-card">
-                    <h5>Total Orders</h5>
+                    <h6>Total Orders</h6>
                     <h2><?php echo $totalOrders; ?></h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="dashboard-card">
-                    <h5>Total Customers</h5>
+                    <h6>Total Customers</h6>
                     <h2><?php echo $totalCustomers; ?></h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="dashboard-card">
-                    <h5>Total Sales</h5>
+                    <h6>Total Sales</h6>
                     <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <div class="dashboard-card">
-                    <h5>Top Category</h5>
+                    <h6>Top Category</h6>
                     <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
                 </div>
             </div>
         </div>
 
         <!-- Charts Section -->
-        <div class="row mb-4">
+        <div class="row mb-4 g-4">
             <div class="col-md-6">
                 <div class="chart-container">
                     <h3 class="card-header">Category Sales Distribution</h3>
@@ -183,11 +185,11 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="col-md-6">
                 <div class="chart-container">
+                    <h3 class="card-header">Sales Trend</h3>
                     <div class="date-filter">
                         <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="document.getElementById('dateForm').submit();">
                         <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="document.getElementById('dateForm').submit();">
                     </div>
-                    <h3 class="card-header">Sales Trend</h3>
                     <div class="chart-wrapper">
                         <canvas id="salesTrendChart"></canvas>
                     </div>
@@ -197,10 +199,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 
         <!-- Table Section -->
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="table-container">
                     <div class="card-header">Top 5 Products by Sales</div>
-                    <table class="table table-striped">
+                    <table class="table table-hover text-center">
                         <thead>
                             <tr>
                                 <th>Product Name</th>
