@@ -40,6 +40,7 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -81,7 +82,13 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             padding: 20px;
             padding-top: 80px;
         }
+        .dashboard-row {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+        }
         .dashboard-card {
+            flex: 1; /* 每张卡片占据相同的比例空间 */
             color: #fff;
             background: linear-gradient(135deg, #6a11cb, #2575fc);
             border-radius: 15px;
@@ -92,19 +99,17 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100%; /* 自动填满父元素高度 */
-        }
-        .row .col-md-3 {
-            display: flex;
-            flex-direction: column;
-            height: 180px; /* 卡片高度与 Sales Trend 区域一致 */
         }
         .chart-container {
+            flex: 1; /* 保证图表卡片和其他卡片宽度一致 */
             background: #fff;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .chart-wrapper {
             position: relative;
@@ -150,54 +155,41 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
         </div>
 
         <!-- Overview Section -->
-        <div class="row mb-4">
-            <!-- Cards -->
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <h5>Total Orders</h5>
-                    <h2><?php echo $totalOrders; ?></h2>
-                </div>
+        <div class="row mb-4 dashboard-row">
+            <div class="dashboard-card">
+                <h5>Total Orders</h5>
+                <h2><?php echo $totalOrders; ?></h2>
             </div>
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <h5>Total Customers</h5>
-                    <h2><?php echo $totalCustomers; ?></h2>
-                </div>
+            <div class="dashboard-card">
+                <h5>Total Customers</h5>
+                <h2><?php echo $totalCustomers; ?></h2>
             </div>
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <h5>Total Sales</h5>
-                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
-                </div>
+            <div class="dashboard-card">
+                <h5>Total Sales</h5>
+                <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
             </div>
-            <div class="col-md-3">
-                <div class="dashboard-card">
-                    <h5>Top Category</h5>
-                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
-                </div>
+            <div class="dashboard-card">
+                <h5>Top Category</h5>
+                <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
             </div>
         </div>
 
         <!-- Charts Section -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Category Sales Distribution</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="categoryPieChart"></canvas>
-                    </div>
+        <div class="row mb-4 dashboard-row">
+            <div class="chart-container">
+                <h3 class="card-header">Category Sales Distribution</h3>
+                <div class="chart-wrapper">
+                    <canvas id="categoryPieChart"></canvas>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
-                    <form method="POST" class="date-filter">
-                        <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
-                        <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
-                    </form>
-                    <div class="chart-wrapper">
-                        <canvas id="salesTrendChart"></canvas>
-                    </div>
+            <div class="chart-container">
+                <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                <form method="POST" class="date-filter">
+                    <input type="date" class="form-control" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                    <input type="date" class="form-control" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </form>
+                <div class="chart-wrapper">
+                    <canvas id="salesTrendChart"></canvas>
                 </div>
             </div>
         </div>
