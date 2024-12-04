@@ -40,6 +40,16 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+function getTopCustomers($connect) {
+    $query = "SELECT u.user_name, u.user_email, SUM(o.final_amount) AS total_spent 
+    FROM orders o
+    JOIN user u ON o.user_id = u.user_id
+    GROUP BY o.user_id
+    ORDER BY total_spent DESC LIMIT 5";
+$result = mysqli_query($connect, $query);
+return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
 // 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
@@ -61,6 +71,7 @@ $totalCustomers = getTotalCustomers($connect);
 $totalSales = getTotalSales($connect);
 $categorySales = getCategorySales($connect);
 $topProducts = getTopProducts($connect);
+$topCustomers= getTopCustomers(connect:$connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
 
@@ -231,8 +242,27 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 </div>
             </div>
             <div class="table-card">
-                <div class="card-header">Additional Card</div>
-                <p>Add your content here...</p>
+                <div class="card-header">Top 5 Customers</div>
+                <div class="table-container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Customers Name</th>
+                                <th>Email</th>
+                                <th>Total Spending</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($topProducts as $product): ?>
+                                <tr>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
