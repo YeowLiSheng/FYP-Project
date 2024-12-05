@@ -335,19 +335,36 @@ include 'admin_sidebar.php';
             doc.save("Order_List.pdf");
         }
 
-        function exportExcel() {
-            const wb = XLSX.utils.book_new();
-            wb.Props = {
-                Title: "Order List",
-                Author: "YLS Atelier",
-            };
+ 
+            function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Order List",
+        Author: "YLS Atelier",
+    };
 
-            const table = document.querySelector(".table");
-            const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    // Convert the HTML table to a sheet
+    const table = document.querySelector(".table");
+    const ws = XLSX.utils.table_to_sheet(table);
 
-            XLSX.writeFile(wb, "Order_List.xlsx");
-        }
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 15 }, // Order# column
+        { wch: 20 }, // Customer Name column
+        { wch: 25 }, // Order Time column
+        { wch: 30 }, // Shipped To column
+        { wch: 15 }, // Total column
+        { wch: 20 }, // Order Status column
+    ];
+
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+    // Save the workbook
+    XLSX.writeFile(wb, "Order_List.xlsx");
+}
+
+        
 
         function filterByDate() {
             const startDate = $("#start-date").val();
