@@ -336,22 +336,33 @@ include 'admin_sidebar.php';
         }
 
  
-            function exportExcel() {
+        function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Order List",
         Author: "YLS Atelier",
     };
 
-    // Convert the HTML table to a sheet
+    // Convert the HTML table to a worksheet
     const table = document.querySelector(".table");
     const ws = XLSX.utils.table_to_sheet(table);
 
-    // Set column widths
+    // Iterate over cells in Order Time column and set date-time format
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let R = range.s.r; R <= range.e.r; R++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: R, c: 2 }); // Assuming "Order Time" is in column C (c = 2)
+        const cell = ws[cellAddress];
+        if (cell && typeof cell.v === "string" && cell.v.includes("-")) {
+            // Format as date-time string for Excel
+            cell.z = "yyyy-mm-dd hh:mm:ss"; // Set explicit date-time format
+        }
+    }
+
+    // Set column widths for better visibility
     ws['!cols'] = [
         { wch: 15 }, // Order# column
         { wch: 20 }, // Customer Name column
-        { wch: 35 }, // Order Time column
+        { wch: 25 }, // Order Time column
         { wch: 50 }, // Shipped To column
         { wch: 15 }, // Total column
         { wch: 20 }, // Order Status column
@@ -363,6 +374,7 @@ include 'admin_sidebar.php';
     // Save the workbook
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
+
 
         
 
