@@ -195,18 +195,8 @@ include 'admin_sidebar.php';
         <div class="search-container">
             <ion-icon name="search-outline"></ion-icon>
             <input type="text" id="search-input" placeholder="Search by name">
-            <form method="POST" action="generate_user.php">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        Export:
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><button type="submit" class="dropdown-item" name="cust_pdf">PDF</button></li>
-                        <li><button type="submit" class="dropdown-item" name="cust_excel">CSV</button></li>
-                    </ul>
-                </div>
-            </form>
+            <button id="export-pdf">Export PDF</button>
+            <button id="export-excel">Export Excel</button>
         </div>
 
         <div class="control-bar">
