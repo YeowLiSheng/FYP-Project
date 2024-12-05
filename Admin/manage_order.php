@@ -341,16 +341,40 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
         }
 
  
-            function exportExcel() {
+        function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Order List",
         Author: "YLS Atelier",
     };
 
-    // Convert the HTML table to a sheet
+    // Prepare data for the table with formatted dates
     const table = document.querySelector(".table");
-    const ws = XLSX.utils.table_to_sheet(table);
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        // Format the Order Time column (index 2)
+        const orderTimeIndex = 2;
+        if (cells[orderTimeIndex]) {
+            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
+            const formattedDate = rawDate.toLocaleString("en-GB", { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            }).replace(",", ""); // Remove comma for proper formatting
+            cells[orderTimeIndex].textContent = formattedDate;
+        }
+        return cells.map(cell => cell.textContent);
+    });
+
+    // Add headers
+    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
+    rows.unshift(headers);
+
+    // Create worksheet from updated data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
 
     // Set column widths
     ws['!cols'] = [
