@@ -418,22 +418,6 @@ include 'admin_sidebar.php';
         function viewOrderDetails(orderId) {
             window.location.href = `order_details.php?order_id=${orderId}`;
         }
-        
-        document.addEventListener("DOMContentLoaded", () => {
-    const dropdownToggle = document.querySelector(".btn-group .dropdown-toggle");
-    const dropdownMenu = document.querySelector(".btn-group .dropdown-menu");
-
-    // 点击按钮时切换菜单
-    dropdownToggle.addEventListener("click", (event) => {
-        event.stopPropagation(); // 阻止冒泡，防止触发文档的点击事件
-        dropdownMenu.classList.toggle("show");
-    });
-
-    // 点击其他地方时隐藏菜单
-    document.addEventListener("click", () => {
-        dropdownMenu.classList.remove("show");
-    });
-});
     </script>
 </body>
 </html>
