@@ -345,7 +345,7 @@ a.sidebar-link:hover {
                 </li>
                 <li class="sidebar-item">
                     <a href="admin_faq.php" class="sidebar-link">
-                        <i class="lni lni-stackoverflow"></i>
+                        <i class="fas fa-question-circle"></i>
                         <span>FAQ</span>
                     </a>
                 </li>
