@@ -347,14 +347,20 @@ include 'admin_sidebar.php';
     const table = document.querySelector(".table");
     const ws = XLSX.utils.table_to_sheet(table);
 
-    // Iterate over cells in Order Time column and set date-time format
+    // Iterate over cells in Order Time column and convert to date-time
     const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let R = range.s.r; R <= range.e.r; R++) {
+    for (let R = range.s.r + 1; R <= range.e.r; R++) { // Start from row 2 (index 1) to skip headers
         const cellAddress = XLSX.utils.encode_cell({ r: R, c: 2 }); // Assuming "Order Time" is in column C (c = 2)
         const cell = ws[cellAddress];
-        if (cell && typeof cell.v === "string" && cell.v.includes("-")) {
-            // Format as date-time string for Excel
-            cell.z = "yyyy-mm-dd hh:mm:ss"; // Set explicit date-time format
+        if (cell && typeof cell.v === "string" && cell.v.includes("/")) {
+            // Parse the date string into a JavaScript Date object
+            const [day, month, year] = cell.v.split("/").map(Number);
+            const date = new Date(year, month - 1, day);
+
+            // Update cell value and set Excel date format
+            cell.v = date;
+            cell.t = "d"; // Set type to date
+            cell.z = "yyyy-mm-dd hh:mm:ss"; // Set date-time format
         }
     }
 
