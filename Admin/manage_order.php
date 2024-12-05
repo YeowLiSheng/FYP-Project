@@ -352,7 +352,7 @@ include 'admin_sidebar.php';
         { wch: 15 }, // Order# column
         { wch: 20 }, // Customer Name column
         { wch: 25 }, // Order Time column
-        { wch: 30 }, // Shipped To column
+        { wch: 50 }, // Shipped To column
         { wch: 15 }, // Total column
         { wch: 20 }, // Order Status column
     ];
