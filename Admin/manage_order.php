@@ -96,6 +96,7 @@ include 'admin_sidebar.php';
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     z-index: 10;
     margin-top: 5px;
+    margin-right:2px;
 }
 
 .btn-group:hover .dropdown-menu {
