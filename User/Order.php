@@ -78,6 +78,28 @@ $all_orders = fetchOrdersWithProducts($conn);
 $processing_orders = fetchOrdersWithProducts($conn, 'Processing');
 $shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
 $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+
+if (isset($_GET['order_id'])) {
+    $order_id = intval($_GET['order_id']);
+
+    // 更新订单状态为 Completed
+    $query = "UPDATE orders SET order_status = 'Completed' WHERE order_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $order_id);
+
+    if ($stmt->execute()) {
+        echo "<script>
+                alert('Order marked as completed!');
+                window.location.href = 'myorders.php'; // 返回到订单页面
+              </script>";
+    } else {
+        echo "<script>
+                alert('Failed to update order status.');
+                window.history.back(); // 返回上一页
+              </script>";
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -642,7 +664,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
         <!-- Order Containers for Each Status -->
         <?php
-        function renderOrders($orders) {
+        function renderOrders($orders, $status = '') {
             if ($orders->num_rows > 0) {
                 while ($order = $orders->fetch_assoc()) {
                     echo '
@@ -655,6 +677,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
                             <p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>
                         </div>
                     </div>';
+
+					if ($status === 'Shipping') {
+						echo '
+						<div class="complete-button">
+							<button onclick="confirmComplete(' . $order['order_id'] . ')">Complete</button>
+						</div>';
+					}
+		
+					echo '</div>';	
                 }
             } else {
                 echo '
@@ -678,7 +709,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
         <!-- Shipping Orders -->
         <div class="order-container" id="Shipping" style="display: none;">
-            <?php renderOrders($shipping_orders); ?>
+		<?php renderOrders($shipping_orders, 'Shipping'); ?>
         </div>
 
         <!-- Completed Orders -->
@@ -1124,6 +1155,11 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         });
         document.getElementById(status + '-tab').classList.add('active');
     }
+	function confirmComplete(orderId) {
+    if (confirm("Are you sure you want to mark this order as completed?")) {
+        window.location.href = `update_order_status.php?order_id=${orderId}`;
+    }
+}
 	</script>
 
 </body>
