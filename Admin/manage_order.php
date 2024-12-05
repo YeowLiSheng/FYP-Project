@@ -16,10 +16,6 @@ include 'admin_sidebar.php';
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -86,42 +82,7 @@ include 'admin_sidebar.php';
             font-size: 20px;
             color: #7f8c8d;
         }
-        .btn-group {
-    display: inline-block;
-    position: relative;
-}
 
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background: #fff;
-    border: 1px solid #dcdde1;
-    border-radius: 5px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    margin-top: 5px;
-}
-
-.btn-group .dropdown-menu {
-    display: none; /* 隐藏菜单 */
-}
-
-.btn-group.show .dropdown-menu {
-    display: block; /* 显示菜单仅在触发时 */
-}
-
-.dropdown-item {
-    padding: 10px 15px;
-    text-decoration: none;
-    color: #2c3e50;
-    cursor: pointer;
-    display: block;
-    transition: background-color 0.2s;
-}
-
-.dropdown-item:hover {
-    background-color: #ecf0f1;
-}
         .control-bar {
             display: flex;
             flex-wrap: wrap;
@@ -232,18 +193,11 @@ include 'admin_sidebar.php';
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
         
         <div class="search-container">
-    <ion-icon name="search-outline"></ion-icon>
-    <input type="text" id="search-input" placeholder="Search by name">
-    <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        Export:
-    </button>
-    <ul class="dropdown-menu">
-        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-    </ul>
-</div>
-</div>
+            <ion-icon name="search-outline"></ion-icon>
+            <input type="text" id="search-input" placeholder="Search by name">
+            <button id="export-pdf">Export PDF</button>
+            <button id="export-excel">Export Excel</button>
+        </div>
 
         <div class="control-bar">
             <div class="filter-group">
@@ -422,21 +376,6 @@ include 'admin_sidebar.php';
         function viewOrderDetails(orderId) {
             window.location.href = `order_details.php?order_id=${orderId}`;
         }
-        document.addEventListener("DOMContentLoaded", () => {
-    const dropdownToggle = document.querySelector(".btn-group .dropdown-toggle");
-    const dropdownMenu = document.querySelector(".btn-group .dropdown-menu");
-
-    // 点击按钮时切换菜单
-    dropdownToggle.addEventListener("click", (event) => {
-        event.stopPropagation(); // 阻止冒泡，防止触发文档的点击事件
-        dropdownMenu.classList.toggle("show");
-    });
-
-    // 点击其他地方时隐藏菜单
-    document.addEventListener("click", () => {
-        dropdownMenu.classList.remove("show");
-    });
-});
     </script>
 </body>
 </html>
