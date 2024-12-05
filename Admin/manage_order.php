@@ -98,8 +98,12 @@ include 'admin_sidebar.php';
     margin-top: 5px;
 }
 
-.btn-group:hover .dropdown-menu {
-    display: block;
+.btn-group .dropdown-menu {
+    display: none; /* 隐藏菜单 */
+}
+
+.btn-group.show .dropdown-menu {
+    display: block; /* 显示菜单仅在触发时 */
 }
 
 .dropdown-item {
@@ -227,14 +231,14 @@ include 'admin_sidebar.php';
     <ion-icon name="search-outline"></ion-icon>
     <input type="text" id="search-input" placeholder="Search by name">
     <div class="btn-group">
-        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Export:
-        </button>
-        <ul class="dropdown-menu">
-            <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-            <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-        </ul>
-    </div>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Export:
+    </button>
+    <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+    </ul>
+</div>
 </div>
 
         <div class="control-bar">
@@ -414,6 +418,22 @@ include 'admin_sidebar.php';
         function viewOrderDetails(orderId) {
             window.location.href = `order_details.php?order_id=${orderId}`;
         }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+    const dropdownToggle = document.querySelector(".btn-group .dropdown-toggle");
+    const dropdownMenu = document.querySelector(".btn-group .dropdown-menu");
+
+    // 点击按钮时切换菜单
+    dropdownToggle.addEventListener("click", (event) => {
+        event.stopPropagation(); // 阻止冒泡，防止触发文档的点击事件
+        dropdownMenu.classList.toggle("show");
+    });
+
+    // 点击其他地方时隐藏菜单
+    document.addEventListener("click", () => {
+        dropdownMenu.classList.remove("show");
+    });
+});
     </script>
 </body>
 </html>
