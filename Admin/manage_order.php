@@ -336,36 +336,18 @@ include 'admin_sidebar.php';
         }
 
  
-        function exportExcel() {
+            function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Order List",
         Author: "YLS Atelier",
     };
 
-    // Convert the HTML table to a worksheet
+    // Convert the HTML table to a sheet
     const table = document.querySelector(".table");
     const ws = XLSX.utils.table_to_sheet(table);
 
-    // Iterate over cells in Order Time column and convert to date-time
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    for (let R = range.s.r + 1; R <= range.e.r; R++) { // Start from row 2 (index 1) to skip headers
-        const cellAddress = XLSX.utils.encode_cell({ r: R, c: 2 }); // Assuming "Order Time" is in column C (c = 2)
-        const cell = ws[cellAddress];
-        if (cell && typeof cell.v === "string" && cell.v.includes("/")) {
-            // Parse the date string into a JavaScript Date object
-            const [day, month, year] = cell.v.split("/").map(Number);
-            const date = new Date(year, month - 1, day, 18, 33, 0); // Add a default time (e.g., 18:33:00)
-
-            // Convert Date to Excel serial number format
-            const excelDate = (date - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000);
-            cell.v = excelDate; // Set the numeric value for Excel
-            cell.t = "n"; // Set cell type to numeric
-            cell.z = "yyyy-mm-dd hh:mm:ss"; // Set display format to date-time
-        }
-    }
-
-    // Set column widths for better visibility
+    // Set column widths
     ws['!cols'] = [
         { wch: 15 }, // Order# column
         { wch: 20 }, // Customer Name column
@@ -381,7 +363,6 @@ include 'admin_sidebar.php';
     // Save the workbook
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
-
 
         
 
