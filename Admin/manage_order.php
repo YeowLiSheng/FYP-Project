@@ -231,14 +231,13 @@ include 'admin_sidebar.php';
     <ion-icon name="search-outline"></ion-icon>
     <input type="text" id="search-input" placeholder="Search by name">
     <div class="btn-group">
-        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Export:
-        </button>
-        <ul class="dropdown-menu">
-            <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-            <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-        </ul>
-    </div>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Export:
+    </button>
+    <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+    </ul>
 </div>
 </div>
 
@@ -419,7 +418,7 @@ include 'admin_sidebar.php';
         function viewOrderDetails(orderId) {
             window.location.href = `order_details.php?order_id=${orderId}`;
         }
-
+        
         document.addEventListener("DOMContentLoaded", () => {
     const dropdownToggle = document.querySelector(".btn-group .dropdown-toggle");
     const dropdownMenu = document.querySelector(".btn-group .dropdown-menu");
