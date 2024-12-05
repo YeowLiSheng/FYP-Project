@@ -24,13 +24,21 @@ $pdf->Ln(10);
 
 // Table Header
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->SetFillColor(200, 200, 200); // Light gray background
-$pdf->Cell(25, 10, 'Order#', 1, 0, 'C', true);
-$pdf->Cell(40, 10, 'Customer Name', 1, 0, 'C', true);
-$pdf->Cell(40, 10, 'Order Time', 1, 0, 'C', true);
-$pdf->Cell(50, 10, 'Shipped To', 1, 0, 'C', true);
-$pdf->Cell(25, 10, 'Total', 1, 0, 'C', true);
-$pdf->Cell(30, 10, 'Order Status', 1, 1, 'C', true);
+$pdf->SetFillColor(230, 230, 230); // Light gray background for the header
+$pdf->SetDrawColor(180, 180, 180); // Border color
+
+$header = [
+    ['Order#', 20],
+    ['Customer Name', 40],
+    ['Order Time', 35],
+    ['Shipped To', 50],
+    ['Total (RM)', 25],
+    ['Order Status', 30]
+];
+foreach ($header as $col) {
+    $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
+}
+$pdf->Ln();
 
 // Fetch Data
 $pdf->SetFont('Arial', '', 10);
@@ -42,13 +50,29 @@ $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Format and display each row
-        $pdf->Cell(25, 10, $row['order_id'], 1, 0, 'C');
-        $pdf->Cell(40, 10, $row['user_name'], 1, 0, 'C');
-        $pdf->Cell(40, 10, date('d/m/Y H:i:s', strtotime($row['order_date'])), 1, 0, 'C');
-        $pdf->Cell(50, 10, $row['shipping_address'], 1, 0, 'C');
-        $pdf->Cell(25, 10, 'RM ' . number_format($row['final_amount'], 2), 1, 0, 'C');
-        $pdf->Cell(30, 10, $row['order_status'], 1, 1, 'C');
+        // Adjust row content
+        $order_id = $row['order_id'];
+        $customer_name = $row['user_name'];
+        $order_time = date('d/m/Y H:i:s', strtotime($row['order_date']));
+        $shipped_to = $row['shipping_address'];
+        $total = 'RM ' . number_format($row['final_amount'], 2);
+        $order_status = $row['order_status'];
+
+        // Handle word wrapping for the 'Shipped To' column
+        $cell_width = 50; // Width of 'Shipped To'
+        $cell_height = 6; // Height of each wrapped line
+        $line_count = ceil($pdf->GetStringWidth($shipped_to) / $cell_width);
+
+        // Output row data
+        $pdf->Cell(20, $cell_height * $line_count, $order_id, 1, 0, 'C');
+        $pdf->Cell(40, $cell_height * $line_count, $customer_name, 1, 0, 'C');
+        $pdf->Cell(35, $cell_height * $line_count, $order_time, 1, 0, 'C');
+        $x = $pdf->GetX(); // Save x position
+        $y = $pdf->GetY(); // Save y position
+        $pdf->MultiCell($cell_width, $cell_height, $shipped_to, 1, 'C');
+        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
+        $pdf->Cell(25, $cell_height * $line_count, $total, 1, 0, 'C');
+        $pdf->Cell(30, $cell_height * $line_count, $order_status, 1, 1, 'C');
     }
 } else {
     $pdf->Cell(0, 10, 'No orders found.', 1, 1, 'C');
