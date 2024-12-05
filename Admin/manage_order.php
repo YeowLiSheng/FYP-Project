@@ -355,11 +355,11 @@ include 'admin_sidebar.php';
         if (cell && typeof cell.v === "string" && cell.v.includes("/")) {
             // Parse the date string into a JavaScript Date object
             const [day, month, year] = cell.v.split("/").map(Number);
-            const date = new Date(year, month - 1, day);
+            const date = new Date(year, month - 1, day, 18, 33, 0); // Example: add a fixed time (18:33:00)
 
-            // Update cell value and set Excel date format
-            cell.v = date;
-            cell.t = "d"; // Set type to date
+            // Update cell value to Excel's numeric date format (days since 1900-01-01)
+            cell.v = (date - new Date(Date.UTC(1899, 11, 30))) / (24 * 60 * 60 * 1000); // Convert to Excel date number
+            cell.t = "n"; // Set type to numeric
             cell.z = "yyyy-mm-dd hh:mm:ss"; // Set date-time format
         }
     }
