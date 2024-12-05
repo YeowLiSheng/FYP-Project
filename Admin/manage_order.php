@@ -224,7 +224,8 @@ include 'admin_sidebar.php';
         
         <div class="search-container">
     <ion-icon name="search-outline"></ion-icon>
-    <input type="text" id="search-input" placeholder="Search by name">
+    <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
+
     <div class="btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Export:
@@ -421,15 +422,15 @@ function sortTable() {
     rows.forEach(row => tbody.appendChild(row));
 }
 
-        function searchTable() {
-            const query = document.getElementById("search-input").value.toLowerCase();
-            const rows = document.querySelectorAll("#table-body tr");
+function searchTable() { 
+    const query = document.getElementById("search-input").value.toLowerCase().trim();
+    const rows = document.querySelectorAll("#table-body tr");
 
-            rows.forEach(row => {
-                const name = row.cells[1].textContent.toLowerCase();
-                row.style.display = name.includes(query) ? "" : "none";
-            });
-        }
+    rows.forEach(row => {
+        const name = row.cells[1].textContent.toLowerCase().trim();
+        row.style.display = name.includes(query) ? "" : "none";
+    });
+}
 
         function viewOrderDetails(orderId) {
             window.location.href = `order_details.php?order_id=${orderId}`;
