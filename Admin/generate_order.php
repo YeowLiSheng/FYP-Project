@@ -9,13 +9,13 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Create a new PDF instance
+/// Create a new PDF instance
 $pdf = new FPDF();
 $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 
-// Add Logo
-$pdf->Image('../User/images/YLS2.jpg', 10, 10, 50); // Position: (10,10), Width: 50
+// Add Logo (smaller size)
+$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Position: (10,10), Width: 30
 
 // Title Section
 $pdf->SetFont('Arial', 'B', 20);
@@ -31,7 +31,7 @@ $pdf->SetFillColor(200, 220, 255); // Light blue background
 $pdf->Cell(20, 10, 'Order#', 1, 0, 'C', true);
 $pdf->Cell(40, 10, 'Customer Name', 1, 0, 'C', true);
 $pdf->Cell(40, 10, 'Order Time', 1, 0, 'C', true);
-$pdf->Cell(60, 10, 'Shipped To', 1, 0, 'C', true);
+$pdf->Cell(50, 10, 'Shipped To', 1, 0, 'C', true);
 $pdf->Cell(20, 10, 'Total', 1, 0, 'C', true);
 $pdf->Cell(30, 10, 'Order Status', 1, 1, 'C', true);
 
@@ -44,12 +44,13 @@ $result = $connect->query($query);
 if ($result->num_rows > 0) {
     $pdf->SetFont('Arial', '', 10);
     while ($row = $result->fetch_assoc()) {
-        $pdf->Cell(20, 10, $row['order_id'], 1);
-        $pdf->Cell(40, 10, $row['user_name'], 1);
-        $pdf->Cell(40, 10, date('d/m/Y H:i:s', strtotime($row['order_datetime'])), 1);
-        $pdf->Cell(60, 10, $row['shipping_address'], 1);
+        // Multicell for long texts
+        $pdf->Cell(20, 10, $row['order_id'], 1, 0, 'C');
+        $pdf->Cell(40, 10, $row['user_name'], 1, 0, 'C');
+        $pdf->Cell(40, 10, date('d/m/Y H:i:s', strtotime($row['order_datetime'])), 1, 0, 'C');
+        $pdf->MultiCell(50, 10, $row['shipping_address'], 1, 'C');
         $pdf->Cell(20, 10, 'RM' . number_format($row['final_amount'], 2), 1, 0, 'R');
-        $pdf->Cell(30, 10, $row['order_status'], 1, 1);
+        $pdf->MultiCell(30, 10, $row['order_status'], 1, 'C');
     }
 } else {
     $pdf->Cell(0, 10, 'No orders found.', 1, 1, 'C');
