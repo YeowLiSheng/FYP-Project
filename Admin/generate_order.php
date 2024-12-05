@@ -13,14 +13,13 @@ if ($connect->connect_error) {
 $pdf = new FPDF();
 $pdf->AddPage();
 
-// Logo
-$pdf->Image('../User/images/YLS2.jpg', 85, 10, 40); // Center the logo
-$pdf->Ln(20);
-
-// Title
+// Logo at the top-left
+$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
 $pdf->SetFont('Arial', 'B', 16);
-$pdf->Cell(0, 10, 'YLS Atelier - Order List', 0, 1, 'C');
-$pdf->Ln(10);
+$pdf->SetXY(50, 15); // Set position for title to the right of the logo
+$pdf->Cell(0, 10, 'YLS Atelier - Order List', 0, 1, 'L'); // Align title with logo
+
+$pdf->Ln(15); // Add spacing below title
 
 // Table Header
 $pdf->SetFont('Arial', 'B', 12);
