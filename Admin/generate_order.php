@@ -19,7 +19,7 @@ $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetXY(50, 15); // Set position for title to the right of the logo
 $pdf->Cell(0, 10, 'YLS Atelier - Order List', 0, 1, 'L'); // Align title with logo
 
-$pdf->Ln(15); // Add spacing below title
+$pdf->Ln(20); // Add spacing below title (adjusted to move table down)
 
 // Table Header
 $pdf->SetFont('Arial', 'B', 12);
@@ -32,8 +32,12 @@ $header = [
     ['Order Time', 35],
     ['Shipped To', 50],
     ['Total (RM)', 25],
-    ['Order Status', 30]
+    ['Order Status', 25] // Reduced width for more space to the right
 ];
+
+// Adjust left margin
+$left_margin = 10; 
+$pdf->SetX($left_margin); // Set initial left margin
 foreach ($header as $col) {
     $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
 }
@@ -62,6 +66,9 @@ if ($result->num_rows > 0) {
         $cell_height = 6; // Height of each wrapped line
         $line_count = ceil($pdf->GetStringWidth($shipped_to) / $cell_width);
 
+        // Set left margin for row data
+        $pdf->SetX($left_margin);
+
         // Output row data
         $pdf->Cell(20, $cell_height * $line_count, $order_id, 1, 0, 'C');
         $pdf->Cell(40, $cell_height * $line_count, $customer_name, 1, 0, 'C');
@@ -71,9 +78,10 @@ if ($result->num_rows > 0) {
         $pdf->MultiCell($cell_width, $cell_height, $shipped_to, 1, 'C');
         $pdf->SetXY($x + $cell_width, $y); // Move to next cell
         $pdf->Cell(25, $cell_height * $line_count, $total, 1, 0, 'C');
-        $pdf->Cell(30, $cell_height * $line_count, $order_status, 1, 1, 'C');
+        $pdf->Cell(25, $cell_height * $line_count, $order_status, 1, 1, 'C');
     }
 } else {
+    $pdf->SetX($left_margin);
     $pdf->Cell(0, 10, 'No orders found.', 1, 1, 'C');
 }
 
