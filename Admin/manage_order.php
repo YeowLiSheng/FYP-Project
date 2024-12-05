@@ -98,12 +98,8 @@ include 'admin_sidebar.php';
     margin-top: 5px;
 }
 
-.btn-group .dropdown-menu {
-    display: none; /* 隐藏菜单 */
-}
-
-.btn-group.show .dropdown-menu {
-    display: block; /* 显示菜单仅在触发时 */
+.btn-group:hover .dropdown-menu {
+    display: block;
 }
 
 .dropdown-item {
