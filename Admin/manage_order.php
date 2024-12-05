@@ -318,26 +318,8 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            window.location.href = "generate_order.php";
 
-            doc.setFontSize(16);
-            doc.text("YLS Atelier", 20, 20);
-            doc.text("Order List", 20, 30);
-
-            const tableData = [];
-            document.querySelectorAll("#table-body tr").forEach(row => {
-                const rowData = Array.from(row.cells).map(cell => cell.textContent.trim());
-                tableData.push(rowData);
-            });
-
-            doc.autoTable({
-                head: [["Order#", "Customer Name", "Order Time", "Shipped To", "Total", "Order Status"]],
-                body: tableData,
-                startY: 40
-            });
-
-            doc.save("Order_List.pdf");
         }
 
  
