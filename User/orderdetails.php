@@ -79,7 +79,7 @@ $order = $order_result->fetch_assoc();
 
 // 获取订单详情
 $details_stmt = $conn->prepare("
-    SELECT od.detail_id, od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image
+    SELECT od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image
     FROM order_details od
     JOIN product p ON od.product_id = p.product_id
     WHERE od.order_id = ?
@@ -88,33 +88,6 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $detail_id = $_POST['detail_id'];
-    $rating = $_POST['rating'];
-    $comment = $_POST['comment'];
-    $user_id = $_SESSION['id'];
-
-    // 处理可选图片上传
-    $image_path = null;
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-        $image_name = time() . "_" . basename($_FILES['image']['name']);
-        $image_path = "images/review_images/" . $image_name;
-        move_uploaded_file($_FILES['image']['tmp_name'], $image_path);
-    }
-
-    // 插入评价数据到数据库
-    $review_stmt = $conn->prepare("
-        INSERT INTO reviews (detail_id, rating, comment, image, user_id)
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    $review_stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-
-    if ($review_stmt->execute()) {
-        echo "<script>alert('Review submitted successfully!');</script>";
-    } else {
-        echo "<script>alert('Failed to submit the review.');</script>";
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -329,16 +302,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .rate-button:hover {
         background: #e0a800;
     }
-
-	/* Modal Styles */
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-.modal-content { background-color: white; margin: 10% auto; padding: 20px; width: 50%; border-radius: 10px; }
-.close { float: right; font-size: 24px; cursor: pointer; }
-.rating { display: flex; gap: 5px; }
-.rating label { font-size: 30px; cursor: pointer; }
-.rating input { display: none; }
-.rating input:checked ~ label { color: gold; }
-.submit-button { background-color: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
 </style>
 </head>
 <body class="animsition">
@@ -711,40 +674,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
-		<a href="javascript:void(0);" class="rate-button" onclick="openRateModal()">⭐ Rate </a>
-		<?php } ?>
-
-<div id="rateModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Rate Product</h2>
-        <form id="rateForm" action="" method="POST" enctype="multipart/form-data">
-            <label for="product">Select Product:</label>
-            <select id="product" name="detail_id" required>
-                <option value="" disabled selected>Select a product</option>
-                <?php foreach ($details_result as $detail) { ?>
-                    <option value="<?= $detail['detail_id'] ?>"><?= $detail['product_name'] ?></option>
-                <?php } ?>
-            </select>
-
-            <label for="rating">Rating:</label>
-            <div class="rating">
-                <?php for ($i = 5; $i >= 1; $i--) { ?>
-                    <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" required>
-                    <label for="star<?= $i ?>" title="<?= $i ?> stars">★</label>
-                <?php } ?>
-            </div>
-
-            <label for="comment">Comment:</label>
-            <textarea id="comment" name="comment" rows="4" placeholder="Enter your comment here..." required></textarea>
-
-            <label for="image">Upload Image (Optional):</label>
-            <input type="file" id="image" name="image" accept="image/*">
-
-            <button type="submit" class="submit-button">Submit Review</button>
-        </form>
-    </div>
-</div>
+    <a href="rate_order.php?order_id=<?= $order['order_id'] ?>" class="rate-button">⭐ Rate Order</a>
+<?php } ?>
 </div>
 </div>
 
@@ -1173,24 +1104,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script>
-	// Modal open and close functionality
-const rateModal = document.getElementById('rateModal');
-const closeBtn = document.querySelector('.close');
-
-function openRateModal() {
-    rateModal.style.display = 'block';
-}
-
-closeBtn.addEventListener('click', () => {
-    rateModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === rateModal) {
-        rateModal.style.display = 'none';
-    }
-});
-</script>
 </body>
 </html>
