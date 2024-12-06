@@ -79,7 +79,7 @@ $order = $order_result->fetch_assoc();
 
 // 获取订单详情
 $details_stmt = $conn->prepare("
-    SELECT od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image
+    SELECT od.detail_id, od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image
     FROM order_details od
     JOIN product p ON od.product_id = p.product_id
     WHERE od.order_id = ?
