@@ -672,7 +672,7 @@ $details_result = $details_stmt->get_result();
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
-	<?php if ($order['order_status'] === 'Completed') { ?>
+	<?php if ($order['order_status'] === 'Complete') { ?>
     <a href="rate_order.php?order_id=<?= $order['order_id'] ?>" class="rate-button">⭐ Rate Order</a>
 <?php } ?>
 </div>
