@@ -261,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
     cursor: pointer;
-    position: relative; /* 方便定位其他元素 */
+    position: relative; /* 关键：为绝对定位的按钮提供参考 */
 }
 
 .order-summary:hover {
@@ -336,7 +336,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 10px;
+    position: absolute; /* 绝对定位 */
+    bottom: 20px; /* 距离底部 */
+    right: 20px; /* 距离右侧 */
+    transition: background-color 0.3s ease;
 }
 
 .complete-btn:hover {
