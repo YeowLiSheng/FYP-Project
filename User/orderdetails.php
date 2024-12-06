@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_POST['com
 
     // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
-        $target_dir = "uploads/review_images/";
+        $target_dir = "images/review_images/";
         $image_name = basename($_FILES['image']['name']);
         $target_file = $target_dir . time() . "_" . $image_name;
 
