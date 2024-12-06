@@ -389,6 +389,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     background-color: #dc3545;
     color: white;
 }
+
+.rate-btn {
+    background-color: #4CAF50; /* 绿色按钮 */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px; /* 与内容的间距 */
+    position: absolute; /* 固定到右下角 */
+    right: 20px;
+    bottom: 20px;
+}
+
+.rate-btn:hover {
+    background-color: #45a049; /* 深绿色悬停效果 */
+}
 .no-orders {
     text-align: center;
     margin-top: 50px;
@@ -732,7 +749,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         <!-- Order Containers for Each Status -->
         <?php
-       function renderOrders($orders, $showCompleteButton = false) {
+       function renderOrders($orders, $showCompleteButton = false,$showRateButton = false) {
 		if ($orders->num_rows > 0) {
 			while ($order = $orders->fetch_assoc()) {
 				echo '
@@ -750,6 +767,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<button type="button" class="complete-btn" 
 								onclick="openPopup(' . $order['order_id'] . ')">
 							Complete
+						</button>';
+				}
+				if ($showRateButton) {
+					echo '
+						<button type="button" class="rate-btn" 
+								onclick="rateOrder(' . $order['order_id'] . ')">
+							Rate
 						</button>';
 				}
 	
@@ -785,8 +809,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
-            <?php renderOrders($completed_orders); ?>
-        </div>
+    <?php renderOrders($completed_orders, false, true); ?>
+</div>
     </div>
 
 	<div id="popup-form" class="popup-form" style="display: none;">
@@ -1246,6 +1270,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
 function closePopup() {
     document.getElementById("popup-form").style.display = "none";
+}
+
+function rateOrder(orderId) {
+    // 跳转到评分页面或弹出评分窗口
+    window.location.href = `rate_order.php?order_id=${orderId}`;
 }
 	</script>
 
