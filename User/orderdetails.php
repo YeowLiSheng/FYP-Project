@@ -294,7 +294,7 @@ $details_result = $details_stmt->get_result();
         margin-top: 20px;
         text-align: center;
         cursor: pointer;
-        background: #ffc107; /* 使用黄色作为评分按钮颜色 */
+        background: #28a745; /* 使用黄色作为评分按钮颜色 */
         transition: 0.3s;
     }
 
