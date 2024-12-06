@@ -736,7 +736,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 		if ($orders->num_rows > 0) {
 			while ($order = $orders->fetch_assoc()) {
 				echo '
-				<div class="order-summary">
+            <a href="order_details.php?order_id=' . $order['order_id'] . '" class="order-summary">
 					<img src="images/' . $order['product_image'] . '" alt="Product Image">
 					<div>
 						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
