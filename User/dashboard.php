@@ -95,25 +95,26 @@ $product_result = $connect->query($sql);
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-				<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block;">
-  					<span style="display: inline-block; animation: marquee 10s linear infinite;">
-    					Free shipping for standard order over $10000 <span style="margin-left: 200px;"></span> New user will get 10% discount!!!
-  					</span>
-				</div>
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 200px;"></span> New user will get 10% discount!!!<span style="padding-left: 200px;"></span>Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							<span style="padding-left: 200px;"></span>Free shipping for standard order over $10000 <span style="padding-left: 200px;"></span> New user will get 10% discount!!!<span style="padding-left: 200px;"></span>Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+						@keyframes marquee {
+							0% {
+								transform: translateX(100%);
+							}
+							100% {
+								transform: translateX(-100%);
+							}
+						}
+					</style>
+					</div>
 
-				<style>
-  					@keyframes marquee {
-    					0% {
-      						transform: translateX(100%);
-    					}
-    					100% {
-      						transform: translateX(-100%);
-    					}
-  					}
-				</style>
-
-
-					<div class="right-top-bar flex-w h-full">
+					<div class="right-top-bar flex-w h-full" style="z-index: 1;">
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
