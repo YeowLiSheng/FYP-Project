@@ -88,6 +88,28 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
+if (isset($_POST['submitReview'])) {
+    $product_id = intval($_POST['product_id']);
+    $rating = intval($_POST['rating']);
+    $comment = $conn->real_escape_string($_POST['comment']);
+    $order_id = $order['order_id'];
+    $user_id = $_SESSION['id'];
+    
+    $image = '';
+    if (!empty($_FILES['image']['name'])) {
+        $image = time() . '_' . $_FILES['image']['name'];
+        move_uploaded_file($_FILES['image']['tmp_name'], "uploads/$image");
+    }
+
+    $review_stmt = $conn->prepare("INSERT INTO review (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $review_stmt->bind_param("issiii", $rating, $comment, $image, $user_id, $product_id, $order_id);
+    
+    if ($review_stmt->execute()) {
+        echo "<script>alert('Review submitted successfully!');</script>";
+    } else {
+        echo "<script>alert('Failed to submit review.');</script>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -302,6 +324,54 @@ $details_result = $details_stmt->get_result();
     .rate-button:hover {
         background: #e0a800;
     }
+
+	.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 40%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.close-button {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#starRating {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+#starRating .star {
+    font-size: 30px;
+    color: #ccc;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+#starRating .star:hover,
+#starRating .star.selected {
+    color: #FFD700;
+}
 </style>
 </head>
 <body class="animsition">
@@ -674,8 +744,39 @@ $details_result = $details_stmt->get_result();
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
-    <a href="rate_order.php?order_id=<?= $order['order_id'] ?>" class="rate-button">⭐ Rate Order</a>
-<?php } ?>
+		<a href="#" class="rate-button">⭐ Rate Order</a>
+		<?php } ?>
+<div id="ratePopup" class="popup">
+    <div class="popup-content">
+        <span class="close-button">&times;</span>
+        <h2>Rate Your Product</h2>
+        <form id="rateForm" method="POST" enctype="multipart/form-data">
+            <label for="productSelect">Select Product:</label>
+            <select id="productSelect" name="product_id" required>
+                <option value="">-- Select Product --</option>
+                <?php foreach ($details_result as $product) { ?>
+                <option value="<?= $product['product_id'] ?>"><?= $product['product_name'] ?></option>
+                <?php } ?>
+            </select>
+
+            <label for="rating">Rating:</label>
+            <div id="starRating">
+                <?php for ($i = 1; $i <= 5; $i++) { ?>
+                <span class="star" data-value="<?= $i ?>">&#9733;</span>
+                <?php } ?>
+                <input type="hidden" id="ratingInput" name="rating" required>
+            </div>
+
+            <label for="comment">Comment:</label>
+            <textarea id="comment" name="comment" placeholder="Write your review..." required></textarea>
+
+            <label for="image">Upload Image (Optional):</label>
+            <input type="file" id="image" name="image" accept="image/*">
+
+            <button type="submit" name="submitReview">Submit Review</button>
+        </form>
+    </div>
+</div>
 </div>
 </div>
 
@@ -1103,6 +1204,25 @@ $details_result = $details_stmt->get_result();
 		});
 	</script>
 	<!--===============================================================================================-->
-	<script src="js/main.js"></script>
+	<script src="js/main.js">
+		// Open and close popup
+document.querySelector('.rate-button').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('ratePopup').style.display = 'block';
+});
+
+document.querySelector('.close-button').addEventListener('click', function () {
+    document.getElementById('ratePopup').style.display = 'none';
+});
+
+// Star rating logic
+document.querySelectorAll('#starRating .star').forEach(star => {
+    star.addEventListener('click', function () {
+        document.querySelectorAll('#starRating .star').forEach(s => s.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('ratingInput').value = this.dataset.value;
+    });
+});
+	</script>
 </body>
 </html>
