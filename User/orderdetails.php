@@ -94,21 +94,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_POST['com
     $product_id = intval($_POST['product_id']);
     $order_id = intval($_POST['order_id']);
     $user_id = $_SESSION['id'];
-    $image_path = '';
+    $image_path = null; // 默认设置为 null
 
-    // Handle image upload
+    // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $target_dir = "uploads/review_images/";
         $image_name = basename($_FILES['image']['name']);
         $target_file = $target_dir . time() . "_" . $image_name;
 
         if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-            $image_path = $target_file;
+            $image_path = $target_file; // 仅当上传成功时设置路径
         }
     }
 
-    // Insert review into the database
-    $stmt = $conn->prepare("INSERT INTO review (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
+    // 插入评价数据
+    $stmt = $conn->prepare("
+        INSERT INTO review (rating, comment, image, user_id, product_id, order_id) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
     $stmt->bind_param("issiii", $rating, $comment, $image_path, $user_id, $product_id, $order_id);
 
     if ($stmt->execute()) {
