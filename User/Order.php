@@ -95,7 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         $update_stmt->bind_param("i", $order_id);
 
         if ($update_stmt->execute()) {
-            echo "<script>alert('Order status updated successfully!');</script>";
+            // 添加页面重定向，刷新页面
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit;
         } else {
             echo "<script>alert('Failed to update order status. Please try again later.');</script>";
         }
@@ -106,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     $stmt->close();
     $update_stmt->close();
 }
+
 ?>
 
 <!DOCTYPE html>
