@@ -342,7 +342,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 .complete-btn:hover {
     background-color: #45a049;
 }
+.popup-form {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
 
+.popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.popup-content h2 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.popup-content button {
+    margin: 10px 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.popup-confirm-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.popup-cancel-btn {
+    background-color: #dc3545;
+    color: white;
+}
 .no-orders {
     text-align: center;
     margin-top: 50px;
@@ -701,10 +744,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				// 如果需要显示 "Complete" 按钮
 				if ($showCompleteButton) {
 					echo '
-						<form method="post" onsubmit="return confirm(\'Are you sure you have received your order?\');">
-							<input type="hidden" name="order_id" value="' . $order['order_id'] . '">
-							<button type="submit" name="complete_order" class="complete-btn">Complete</button>
-						</form>';
+						<button type="button" class="complete-btn" 
+								onclick="openPopup(' . $order['order_id'] . ')">
+							Complete
+						</button>';
 				}
 	
 				echo '
@@ -742,6 +785,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <?php renderOrders($completed_orders); ?>
         </div>
     </div>
+
+	<div id="popup-form" class="popup-form" style="display: none;">
+    <div class="popup-content">
+        <h2>Confirm Order Completion</h2>
+        <p>Are you sure you have received your order?</p>
+        <form method="post">
+            <input type="hidden" id="popup-order-id" name="order_id">
+            <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
+            <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
+        </form>
+    </div>
+</div>
 </div>
 
 	<!-- Footer -->
@@ -1180,6 +1235,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         });
         document.getElementById(status + '-tab').classList.add('active');
     }
+
+	function openPopup(orderId) {
+    document.getElementById("popup-order-id").value = orderId;
+    document.getElementById("popup-form").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("popup-form").style.display = "none";
+}
 	</script>
 
 </body>
