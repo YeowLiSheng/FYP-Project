@@ -94,18 +94,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_POST['com
     $product_id = intval($_POST['product_id']);
     $order_id = intval($_POST['order_id']);
     $user_id = $_SESSION['id'];
-    $image_path = null; // 默认设置为 null
-
-    // 处理图片上传
-    if (!empty($_FILES['image']['name'])) {
-        $target_dir = "images/review_images/";
-        $image_name = basename($_FILES['image']['name']);
-        $target_file = $target_dir . time() . "_" . $image_name;
-
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-            $image_path = $target_file; // 仅当上传成功时设置路径
-        }
-    }
+	$image_path = null; // 默认设置为 null
+	if (!empty($_FILES['image']['name'])) {
+		$target_dir = "images/review_images/";
+		$image_name = basename($_FILES['image']['name']);
+		$target_file = $target_dir . time() . "_" . $image_name;
+	
+		if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+			$image_path = $target_file; // 仅当上传成功时设置路径
+		}
+	}
+	if (is_null($image_path)) {
+		$image_path = ''; // 如果没有上传图片，则存储空字符串
+	}
 
     // 插入评价数据
     $stmt = $conn->prepare("
