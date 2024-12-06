@@ -88,28 +88,36 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
-if (isset($_POST['submitReview'])) {
-    $product_id = intval($_POST['product_id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_POST['comment'], $_POST['product_id'], $_POST['order_id'])) {
     $rating = intval($_POST['rating']);
     $comment = $conn->real_escape_string($_POST['comment']);
-    $order_id = $order['order_id'];
+    $product_id = intval($_POST['product_id']);
+    $order_id = intval($_POST['order_id']);
     $user_id = $_SESSION['id'];
-    
-    $image = '';
+    $image_path = '';
+
+    // Handle image upload
     if (!empty($_FILES['image']['name'])) {
-        $image = time() . '_' . $_FILES['image']['name'];
-        move_uploaded_file($_FILES['image']['tmp_name'], "uploads/$image");
+        $target_dir = "uploads/review_images/";
+        $image_name = basename($_FILES['image']['name']);
+        $target_file = $target_dir . time() . "_" . $image_name;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+            $image_path = $target_file;
+        }
     }
 
-    $review_stmt = $conn->prepare("INSERT INTO review (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
-    $review_stmt->bind_param("issiii", $rating, $comment, $image, $user_id, $product_id, $order_id);
-    
-    if ($review_stmt->execute()) {
-        echo "<script>alert('Review submitted successfully!');</script>";
+    // Insert review into the database
+    $stmt = $conn->prepare("INSERT INTO review (rating, comment, image, user_id, product_id, order_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("issiii", $rating, $comment, $image_path, $user_id, $product_id, $order_id);
+
+    if ($stmt->execute()) {
+        echo "<script>alert('Review submitted successfully!'); window.location.href='orderdetails.php?order_id=$order_id';</script>";
     } else {
-        echo "<script>alert('Failed to submit review.');</script>";
+        echo "<script>alert('Failed to submit the review. Please try again.');</script>";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -324,53 +332,79 @@ if (isset($_POST['submitReview'])) {
     .rate-button:hover {
         background: #e0a800;
     }
-
-	.popup {
-    display: none;
+	.popup-form {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 9999;
-}
-
-.popup-content {
-    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
+    width: 400px;
+    background-color: #fff;
     border-radius: 10px;
-    width: 40%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.popup-content {
+    padding: 20px;
+}
+
+.popup-content h2 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
     text-align: center;
 }
 
-.close-button {
-    float: right;
-    font-size: 20px;
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#star-rating .star {
+    font-size: 1.5rem;
     cursor: pointer;
-}
-
-#starRating {
-    display: flex;
-    justify-content: center;
-    margin: 10px 0;
-}
-
-#starRating .star {
-    font-size: 30px;
     color: #ccc;
-    cursor: pointer;
-    margin: 0 5px;
+    margin-right: 5px;
 }
 
-#starRating .star:hover,
-#starRating .star.selected {
-    color: #FFD700;
+#star-rating .star.selected {
+    color: gold;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-actions .cancel-btn, .form-actions .submit-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: #fff;
+}
+
+.submit-btn {
+    background-color: #4CAF50;
+    color: #fff;
+}
+
+.popup-form .form-group input,
+.popup-form .form-group textarea,
+.popup-form .form-group select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 </style>
 </head>
@@ -744,39 +778,46 @@ if (isset($_POST['submitReview'])) {
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
-		<a href="#" class="rate-button">⭐ Rate Order</a>
+		<a href="javascript:void(0);" class="rate-button" onclick="togglePopup()">⭐ Rate Order</a>
 		<?php } ?>
-<div id="ratePopup" class="popup">
+
+		<div id="rate-popup" class="popup-form" style="display: none;">
     <div class="popup-content">
-        <span class="close-button">&times;</span>
         <h2>Rate Your Product</h2>
-        <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <label for="productSelect">Select Product:</label>
-            <select id="productSelect" name="product_id" required>
-                <option value="">-- Select Product --</option>
-                <?php foreach ($details_result as $product) { ?>
-                <option value="<?= $product['product_id'] ?>"><?= $product['product_name'] ?></option>
-                <?php } ?>
-            </select>
-
-            <label for="rating">Rating:</label>
-            <div id="starRating">
-                <?php for ($i = 1; $i <= 5; $i++) { ?>
-                <span class="star" data-value="<?= $i ?>">&#9733;</span>
-                <?php } ?>
-                <input type="hidden" id="ratingInput" name="rating" required>
+        <form id="rate-form" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+            <div class="form-group">
+                <label for="product_id">Select Product:</label>
+                <select id="product_id" name="product_id" required>
+                    <?php foreach ($details_result as $product) { ?>
+                        <option value="<?= $product['product_id'] ?>"><?= $product['product_name'] ?></option>
+                    <?php } ?>
+                </select>
             </div>
-
-            <label for="comment">Comment:</label>
-            <textarea id="comment" name="comment" placeholder="Write your review..." required></textarea>
-
-            <label for="image">Upload Image (Optional):</label>
-            <input type="file" id="image" name="image" accept="image/*">
-
-            <button type="submit" name="submitReview">Submit Review</button>
+            <div class="form-group">
+                <label for="rating">Rating:</label>
+                <div id="star-rating">
+                    <?php for ($i = 1; $i <= 5; $i++) { ?>
+                        <span class="star" data-value="<?= $i ?>">★</span>
+                    <?php } ?>
+                </div>
+                <input type="hidden" id="rating" name="rating" required>
+            </div>
+            <div class="form-group">
+                <label for="comment">Comment:</label>
+                <textarea id="comment" name="comment" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="image">Upload Image (Optional):</label>
+                <input type="file" id="image" name="image" accept="image/*">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="cancel-btn" onclick="togglePopup()">Cancel</button>
+                <button type="submit" class="submit-btn">Submit</button>
+            </div>
         </form>
     </div>
-</div>
+</div>	
 </div>
 </div>
 
@@ -1204,25 +1245,28 @@ if (isset($_POST['submitReview'])) {
 		});
 	</script>
 	<!--===============================================================================================-->
-	<script src="js/main.js">
-		// Open and close popup
-document.querySelector('.rate-button').addEventListener('click', function (e) {
-    e.preventDefault();
-    document.getElementById('ratePopup').style.display = 'block';
-});
+	<script src="js/main.js"></script>
+	<script>
+    // Toggle the popup form
+    function togglePopup() {
+        const popup = document.getElementById('rate-popup');
+        popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    }
 
-document.querySelector('.close-button').addEventListener('click', function () {
-    document.getElementById('ratePopup').style.display = 'none';
-});
+    // Handle star rating
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.addEventListener('click', function () {
+            const ratingValue = this.getAttribute('data-value');
+            document.getElementById('rating').value = ratingValue;
 
-// Star rating logic
-document.querySelectorAll('#starRating .star').forEach(star => {
-    star.addEventListener('click', function () {
-        document.querySelectorAll('#starRating .star').forEach(s => s.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('ratingInput').value = this.dataset.value;
+            // Highlight selected stars
+            stars.forEach(s => s.classList.remove('selected'));
+            for (let i = 0; i < ratingValue; i++) {
+                stars[i].classList.add('selected');
+            }
+        });
     });
-});
-	</script>
+</script>
 </body>
 </html>
