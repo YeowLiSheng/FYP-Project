@@ -75,11 +75,6 @@ $category_result = $conn->query($category_query);
 // Fetch products
 $product_query = "SELECT * FROM product WHERE 1";
 
-// Apply category filter if a valid category_id is provided
-if ($selected_category !== null) {
-    $product_query .= " AND category_id = $selected_category";
-}
-
 $product_result = $conn->query($product_query);
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
@@ -95,7 +90,10 @@ $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%
 if ($category_filter) {
     $product_query .= " AND category_id = $category_filter";
 }
-
+// Apply category filter if a valid category_id is provided
+if ($selected_category !== null) {
+    $product_query .= " AND category_id = $selected_category";
+}
 // Apply price filter if it's not 'all'
 if (!empty($price_filter) && $price_filter[0] !== 'all') {
     $price_conditions = [];
