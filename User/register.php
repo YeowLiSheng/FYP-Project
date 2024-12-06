@@ -41,6 +41,13 @@
 <!--eye icon-->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?hl=en" async defer></script>
+
     
     <style>
         body {
@@ -511,6 +518,11 @@
 			</span>
 			<span id="confirmPasswordError" class="error">Passwords do not match.</span>
 		</div>
+
+		<div class="form-group">
+       <div class="g-recaptcha" data-sitekey="6Ld-vZAqAAAAADm1iGivIk3mWjuo2ejhIjhMan0w"></div>
+       <span id="captcha_error" class="text-danger"></span>
+      </div>
 
 
         <p>
@@ -1129,6 +1141,31 @@ if (isset($_POST["signupbtn"])) {
 
     $now = new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur'));
     $currentDateTime = $now->format('Y-m-d H:i:s');
+
+
+
+	$secret_key = '6Ld-vZAqAAAAAPQuvjldDRNuWB9MDnZ78CPYRSzo';
+
+    // Validate reCAPTCHA
+    if (empty($_POST['g-recaptcha-response'])) {
+        
+		echo "<script>
+		alert('Please complete the CAPTCHA verification..');
+		window.location.href = 'login.php';
+	  	</script>";
+        exit();
+    }
+    $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secret_key . '&response=' . $_POST['g-recaptcha-response']);
+    $response_data = json_decode($response);
+
+    if (!$response_data->success) {
+        
+		echo "<script>
+		alert('CAPTCHA verification failed. Please try again.');
+		window.location.href = 'login.php';
+	  	</script>";
+        exit();
+    }
 
     // Check if email already exists
     $verify_query = mysqli_query($connect, "SELECT * FROM user WHERE user_email='$email'");
