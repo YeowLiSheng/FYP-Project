@@ -26,7 +26,15 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+// Get the category_id from the URL
+$category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
 
+// Fetch products based on the selected category
+$sql = "SELECT * FROM product";
+if ($category_id > 0) {
+    $sql .= " WHERE category_id = $category_id";
+}
+$product_result = $connect->query($sql);
 ?>
 
 
@@ -87,9 +95,23 @@ if ($result && mysqli_num_rows($result) > 0) {
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
+				<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block;">
+  					<span style="display: inline-block; animation: marquee 10s linear infinite;">
+    					Free shipping for standard order over $10000 <span style="margin-left: 200px;"></span> New user will get 10% discount!!!
+  					</span>
+				</div>
+
+				<style>
+  					@keyframes marquee {
+    					0% {
+      						transform: translateX(100%);
+    					}
+    					100% {
+      						transform: translateX(-100%);
+    					}
+  					}
+				</style>
+
 
 					<div class="right-top-bar flex-w h-full">
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
@@ -394,17 +416,17 @@ if ($result && mysqli_num_rows($result) > 0) {
 	<section class="section-slide">
 		<div class="wrap-slick1">
 			<div class="slick1">
-				<div class="item-slick1" style="background-image: url(images/slide-01.jpg);">
+				<div class="item-slick1" style="background-image: url(images/LV_Banner.avif);">
 					<div class="container h-full">
 						<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
 							<div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
-								<span class="ltext-101 cl2 respon2">
-									Women Collection 2018
+								<span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+									Women Collection 2024
 								</span>
 							</div>
 								
 							<div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
-								<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1">
+								<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
 									NEW SEASON
 								</h2>
 							</div>
@@ -418,23 +440,23 @@ if ($result && mysqli_num_rows($result) > 0) {
 					</div>
 				</div>
 
-				<div class="item-slick1" style="background-image: url(images/slide-02.jpg);">
+				<div class="item-slick1" style="background-image: url(images/LV_Men.webp);">
 					<div class="container h-full">
 						<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
 							<div class="layer-slick1 animated visible-false" data-appear="rollIn" data-delay="0">
-								<span class="ltext-101 cl2 respon2">
+								<span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
 									Men New-Season
 								</span>
 							</div>
 								
 							<div class="layer-slick1 animated visible-false" data-appear="lightSpeedIn" data-delay="800">
-								<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1">
-									Jackets & Coats
+								<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+									Bags & Accessories
 								</h2>
 							</div>
 								
 							<div class="layer-slick1 animated visible-false" data-appear="slideInUp" data-delay="1600">
-								<a href="product.html" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+								<a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
 									Shop Now
 								</a>
 							</div>
@@ -442,23 +464,23 @@ if ($result && mysqli_num_rows($result) > 0) {
 					</div>
 				</div>
 
-				<div class="item-slick1" style="background-image: url(images/slide-03.jpg);">
+				<div class="item-slick1" style="background-image: url(images/LV_New.jpg);">
 					<div class="container h-full">
 						<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
 							<div class="layer-slick1 animated visible-false" data-appear="rotateInDownLeft" data-delay="0">
-								<span class="ltext-101 cl2 respon2">
-									Men Collection 2018
+								<span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);" >
+									New Collection 2024
 								</span>
 							</div>
 								
 							<div class="layer-slick1 animated visible-false" data-appear="rotateInUpRight" data-delay="800">
-								<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1">
+								<h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
 									New arrivals
 								</h2>
 							</div>
 								
 							<div class="layer-slick1 animated visible-false" data-appear="rotateIn" data-delay="1600">
-								<a href="product.html" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+								<a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
 									Shop Now
 								</a>
 							</div>
@@ -479,14 +501,14 @@ if ($result && mysqli_num_rows($result) > 0) {
 					<div class="block1 wrap-pic-w">
 						<img src="images/banner-01.jpg" alt="IMG-BANNER">
 
-						<a href="product.html" class="block1-txt ab-t-l s-full flex-col-l-sb p-lr-38 p-tb-34 trans-03 respon3">
+						<a href="product.php?category_id=1" class="block1-txt ab-t-l s-full flex-col-l-sb p-lr-38 p-tb-34 trans-03 respon3">
 							<div class="block1-txt-child1 flex-col-l">
 								<span class="block1-name ltext-102 trans-04 p-b-8">
 									Women
 								</span>
 
 								<span class="block1-info stext-102 trans-04">
-									Spring 2018
+									New 2024
 								</span>
 							</div>
 
@@ -511,7 +533,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 								</span>
 
 								<span class="block1-info stext-102 trans-04">
-									Spring 2018
+									New 2024
 								</span>
 							</div>
 

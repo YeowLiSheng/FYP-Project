@@ -82,7 +82,37 @@ include 'admin_sidebar.php';
             font-size: 20px;
             color: #7f8c8d;
         }
+        .btn-group {
+    display: inline-block;
+    position: relative;
+}
 
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #dcdde1;
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    margin-top: 5px;
+
+}
+
+
+
+.dropdown-item {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #2c3e50;
+    cursor: pointer;
+    display: block;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #ecf0f1;
+}
         .control-bar {
             display: flex;
             flex-wrap: wrap;
@@ -193,11 +223,19 @@ include 'admin_sidebar.php';
         <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
         
         <div class="search-container">
-            <ion-icon name="search-outline"></ion-icon>
-            <input type="text" id="search-input" placeholder="Search by name">
-            <button id="export-pdf">Export PDF</button>
-            <button id="export-excel">Export Excel</button>
-        </div>
+    <ion-icon name="search-outline"></ion-icon>
+    <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
+
+    <div class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Export:
+    </button>
+    <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+    </ul>
+</div>
+</div>
 
         <div class="control-bar">
             <div class="filter-group">
@@ -265,6 +303,10 @@ include 'admin_sidebar.php';
         </div>
     </div>
     <script>
+
+document.getElementById("filter-status").addEventListener("change", filterTable);
+document.getElementById("sort-order").addEventListener("change", sortTable);
+
         $(function () {
             $("#start-date, #end-date").datepicker({
                 dateFormat: "yy-mm-dd",
@@ -276,41 +318,64 @@ include 'admin_sidebar.php';
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            window.location.href = "generate_order.php";
 
-            doc.setFontSize(16);
-            doc.text("YLS Atelier", 20, 20);
-            doc.text("Order List", 20, 30);
-
-            const tableData = [];
-            document.querySelectorAll("#table-body tr").forEach(row => {
-                const rowData = Array.from(row.cells).map(cell => cell.textContent.trim());
-                tableData.push(rowData);
-            });
-
-            doc.autoTable({
-                head: [["Order#", "Customer Name", "Order Time", "Shipped To", "Total", "Order Status"]],
-                body: tableData,
-                startY: 40
-            });
-
-            doc.save("Order_List.pdf");
         }
 
+ 
         function exportExcel() {
-            const wb = XLSX.utils.book_new();
-            wb.Props = {
-                Title: "Order List",
-                Author: "YLS Atelier",
-            };
+    const wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Order List",
+        Author: "YLS Atelier",
+    };
 
-            const table = document.querySelector(".table");
-            const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, "Orders");
-
-            XLSX.writeFile(wb, "Order_List.xlsx");
+    // Prepare data for the table with formatted dates
+    const table = document.querySelector(".table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        // Format the Order Time column (index 2)
+        const orderTimeIndex = 2;
+        if (cells[orderTimeIndex]) {
+            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
+            const formattedDate = rawDate.toLocaleString("en-GB", { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            }).replace(",", ""); // Remove comma for proper formatting
+            cells[orderTimeIndex].textContent = formattedDate;
         }
+        return cells.map(cell => cell.textContent);
+    });
+
+    // Add headers
+    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
+    rows.unshift(headers);
+
+    // Create worksheet from updated data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 15 }, // Order# column
+        { wch: 20 }, // Customer Name column
+        { wch: 25 }, // Order Time column
+        { wch: 50 }, // Shipped To column
+        { wch: 15 }, // Total column
+        { wch: 20 }, // Order Status column
+    ];
+
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+    // Save the workbook
+    XLSX.writeFile(wb, "Order_List.xlsx");
+}
+
+        
 
         function filterByDate() {
             const startDate = $("#start-date").val();
@@ -333,45 +398,45 @@ include 'admin_sidebar.php';
         }
 
         function filterTable() {
-            const status = document.getElementById("filter-status").value;
-            const rows = document.querySelectorAll("#table-body tr");
+    const status = document.getElementById("filter-status").value;
+    const rows = document.querySelectorAll("#table-body tr");
 
-            rows.forEach(row => {
-                const orderStatus = row.cells[5].textContent;
-                row.style.display = orderStatus.includes(status) || status === "" ? "" : "none";
-            });
+    rows.forEach(row => {
+        const orderStatus = row.cells[5].textContent.trim(); // 确保去除空白字符
+        row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
+    });
+}
+
+function sortTable() {
+    const rows = Array.from(document.querySelectorAll("#table-body tr"));
+    const sortOrder = document.getElementById("sort-order").value;
+
+    rows.sort((a, b) => {
+        if (sortOrder === "newest" || sortOrder === "oldest") {
+            const dateA = new Date(a.cells[2].textContent.trim());
+            const dateB = new Date(b.cells[2].textContent.trim());
+            return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+        } else if (sortOrder === "highest" || sortOrder === "lowest") {
+            const totalA = parseFloat(a.cells[4].textContent.replace(/[^\d.-]/g, ""));
+            const totalB = parseFloat(b.cells[4].textContent.replace(/[^\d.-]/g, ""));
+            return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
         }
+        return 0;
+    });
 
-        function sortTable() {
-            const rows = Array.from(document.querySelectorAll("#table-body tr"));
-            const sortOrder = document.getElementById("sort-order").value;
+    const tbody = document.getElementById("table-body");
+    rows.forEach(row => tbody.appendChild(row));
+}
 
-            rows.sort((a, b) => {
-                if (sortOrder === "newest" || sortOrder === "oldest") {
-                    const dateA = new Date(a.cells[2].textContent);
-                    const dateB = new Date(b.cells[2].textContent);
-                    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-                } else if (sortOrder === "highest" || sortOrder === "lowest") {
-                    const totalA = parseFloat(a.cells[4].textContent.replace("RM", ""));
-                    const totalB = parseFloat(b.cells[4].textContent.replace("RM", ""));
-                    return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
-                }
-                return 0;
-            });
+function searchTable() { 
+    const query = document.getElementById("search-input").value.toLowerCase().trim();
+    const rows = document.querySelectorAll("#table-body tr");
 
-            const tbody = document.getElementById("table-body");
-            rows.forEach(row => tbody.appendChild(row));
-        }
-
-        function searchTable() {
-            const query = document.getElementById("search-input").value.toLowerCase();
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const name = row.cells[1].textContent.toLowerCase();
-                row.style.display = name.includes(query) ? "" : "none";
-            });
-        }
+    rows.forEach(row => {
+        const name = row.cells[1].textContent.toLowerCase().trim();
+        row.style.display = name.includes(query) ? "" : "none";
+    });
+}
 
         function viewOrderDetails(orderId) {
             window.location.href = `order_details.php?order_id=${orderId}`;
