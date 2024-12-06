@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rating'], $_POST['com
     if ($stmt->execute()) {
         echo "<script>alert('Review submitted successfully!'); window.location.href='orderdetails.php?order_id=$order_id';</script>";
     } else {
-        echo "<script>alert('Failed to submit the review. Please try again.');</script>";
+		echo "Failed to submit review. SQL Error: " . $stmt->error;
     }
 }
 
