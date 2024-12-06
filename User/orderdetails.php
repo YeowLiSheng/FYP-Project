@@ -88,41 +88,6 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
-if (isset($_POST['submitReview'])) {
-    $product_id = intval($_POST['product_id']);
-    $rating = intval($_POST['rating']);
-    $comment = trim($_POST['comment']);
-    $user_id = intval($_POST['user_id']);
-    $order_id = intval($_POST['order_id']);
-    $image_path = "";
-
-    // 处理上传图片
-    if (!empty($_FILES['image']['name'])) {
-        $image_name = time() . '_' . basename($_FILES['image']['name']);
-        $target_dir = "uploads/review_images/";
-        $target_file = $target_dir . $image_name;
-
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
-            $image_path = $target_file;
-        } else {
-            echo "Failed to upload image.";
-            exit;
-        }
-    }
-
-    // 插入评价数据
-    $stmt = $conn->prepare("
-        INSERT INTO review (rating, comment, image, user_id, product_id, order_id)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param("issiii", $rating, $comment, $image_path, $user_id, $product_id, $order_id);
-
-    if ($stmt->execute()) {
-        echo "<script>alert('Review submitted successfully!');</script>";
-    } else {
-        echo "<script>alert('Failed to submit review.');</script>";
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -337,34 +302,6 @@ if (isset($_POST['submitReview'])) {
     .rate-button:hover {
         background: #e0a800;
     }
-
-	.popup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-}
-
-.popup-content {
-    max-width: 400px;
-    text-align: center;
-}
-
-.popup .stars {
-    display: flex;
-    justify-content: center;
-}
-
-.popup .stars label {
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: gold;
-}
 </style>
 </head>
 <body class="animsition">
@@ -737,42 +674,8 @@ if (isset($_POST['submitReview'])) {
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
-		<a href="#" class="rate-button" onclick="openRatingPopup()">⭐ Rate Order</a>
-		<?php } ?>
-<!-- Popup Form -->
-<div id="ratingPopup" class="popup">
-    <div class="popup-content">
-        <h2>Rate Product</h2>
-        <form id="rateForm" method="post" enctype="multipart/form-data">
-            <label for="product">Select Product:</label>
-            <select name="product_id" id="product" required>
-                <option value="" disabled selected>Choose a product</option>
-                <?php
-                // Populate the dropdown with products from the order
-                $details_result->data_seek(0); // Reset pointer for product loop
-                while ($detail = $details_result->fetch_assoc()) {
-                    echo '<option value="' . $detail['product_id'] . '">' . $detail['product_name'] . '</option>';
-                }
-                ?>
-            </select>
-            <label for="rating">Rating:</label>
-            <div class="stars">
-                <?php for ($i = 1; $i <= 5; $i++) { ?>
-                <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" required>
-                <label for="star<?= $i ?>">⭐</label>
-                <?php } ?>
-            </div>
-            <label for="comment">Comment:</label>
-            <textarea name="comment" id="comment" rows="4" required></textarea>
-            <label for="image">Upload Image (Optional):</label>
-            <input type="file" name="image" id="image" accept="image/*">
-            <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-            <input type="hidden" name="user_id" value="<?= $_SESSION['id'] ?>">
-            <button type="submit" name="submitReview">Submit</button>
-            <button type="button" onclick="closeRatingPopup()">Cancel</button>
-        </form>
-    </div>
-</div>
+    <a href="rate_order.php?order_id=<?= $order['order_id'] ?>" class="rate-button">⭐ Rate Order</a>
+<?php } ?>
 </div>
 </div>
 
@@ -1201,14 +1104,5 @@ if (isset($_POST['submitReview'])) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script>
-		function openRatingPopup() {
-    document.getElementById('ratingPopup').style.display = 'block';
-}
-
-function closeRatingPopup() {
-    document.getElementById('ratingPopup').style.display = 'none';
-}
-	</script>
 </body>
 </html>
