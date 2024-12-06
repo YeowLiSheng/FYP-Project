@@ -78,6 +78,34 @@ $all_orders = fetchOrdersWithProducts($conn);
 $processing_orders = fetchOrdersWithProducts($conn, 'Processing');
 $shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
 $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
+    // 获取订单 ID
+    $order_id = intval($_POST['order_id']);
+    
+    // 检查订单是否属于当前用户
+    $stmt = $conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $order_id, $_SESSION['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // 更新订单状态为 "Complete"
+        $update_stmt = $conn->prepare("UPDATE orders SET order_status = 'Complete' WHERE order_id = ?");
+        $update_stmt->bind_param("i", $order_id);
+
+        if ($update_stmt->execute()) {
+            echo "<script>alert('Order status updated successfully!');</script>";
+        } else {
+            echo "<script>alert('Failed to update order status. Please try again later.');</script>";
+        }
+    } else {
+        echo "<script>alert('Invalid order or permission denied.');</script>";
+    }
+
+    $stmt->close();
+    $update_stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -297,6 +325,19 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     font-weight: bold;
     color: #333;
     margin-left: auto;
+}
+.complete-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.complete-btn:hover {
+    background-color: #45a049;
 }
 
 .no-orders {
@@ -642,28 +683,40 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
         <!-- Order Containers for Each Status -->
         <?php
-        function renderOrders($orders) {
-            if ($orders->num_rows > 0) {
-                while ($order = $orders->fetch_assoc()) {
-                    echo '
-                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-                        <img src="images/' . $order['product_image'] . '" alt="Product Image">
-                        <div>
-                            <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-                            <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-                            <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>
-                        </div>
-                    </div>';
-                }
-            } else {
-                echo '
-                <div class="no-orders">
-                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-                    <button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
-                </div>';
-            }
-        }
+       function renderOrders($orders, $showCompleteButton = false) {
+		if ($orders->num_rows > 0) {
+			while ($order = $orders->fetch_assoc()) {
+				echo '
+				<div class="order-summary">
+					<img src="images/' . $order['product_image'] . '" alt="Product Image">
+					<div>
+						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
+						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
+						<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+						
+				// 如果需要显示 "Complete" 按钮
+				if ($showCompleteButton) {
+					echo '
+						<form method="post" onsubmit="return confirm(\'Are you sure you have received your order?\');">
+							<input type="hidden" name="order_id" value="' . $order['order_id'] . '">
+							<button type="submit" name="complete_order" class="complete-btn">Complete</button>
+						</form>';
+				}
+	
+				echo '
+					</div>
+				</div>';
+			}
+		} else {
+			echo '
+			<div class="no-orders">
+				<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+				<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
+			</div>';
+		}
+	}
+	
         ?>
 
         <!-- All Orders -->
@@ -678,8 +731,8 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
         <!-- Shipping Orders -->
         <div class="order-container" id="Shipping" style="display: none;">
-            <?php renderOrders($shipping_orders); ?>
-        </div>
+    <?php renderOrders($shipping_orders, true); ?>
+</div>
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
