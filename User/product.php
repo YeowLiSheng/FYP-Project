@@ -66,14 +66,16 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     }
     exit;
 }
+
+$selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
 // Fetch categories
 $category_query = "SELECT * FROM category";
 $category_result = $conn->query($category_query);
 
 // Fetch products
-$product_query = "SELECT * FROM product";
-$product_result = $conn->query($product_query);
+$product_query = "SELECT * FROM product WHERE 1";
 
+$product_result = $conn->query($product_query);
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
 $price_filter = isset($_GET['price']) ? explode(',', $_GET['price']) : [];
@@ -88,7 +90,10 @@ $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%
 if ($category_filter) {
     $product_query .= " AND category_id = $category_filter";
 }
-
+// Apply category filter if a valid category_id is provided
+if ($selected_category !== null) {
+    $product_query .= " AND category_id = $selected_category";
+}
 // Apply price filter if it's not 'all'
 if (!empty($price_filter) && $price_filter[0] !== 'all') {
     $price_conditions = [];
@@ -523,20 +528,21 @@ body {
    		<div class="container">
         	<div class="flex-w flex-sb-m p-b-52">
             	<div class="flex-w flex-l-m filter-tope-group m-tb-10">
-                	<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1" data-filter="*">
-                    	All Products
-                	</button>
+					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 <?= $selected_category === null ? 'how-active1' : '' ?>" data-filter="*">
+        				All Products
+    				</button>
 
                 	<?php
-                	// Display categories dynamically
-                	if ($category_result->num_rows > 0) {
-                    	while($row = $category_result->fetch_assoc()) {
-                        	// Display categories with their IDs in the data-filter
-                        	echo '<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".category-' . $row['category_id'] . '">'
-                        	. $row['category_name'] .
-                        	'</button>';
-                    	}
-                	}
+						// Display categories dynamically
+						if ($category_result->num_rows > 0) {
+							while ($row = $category_result->fetch_assoc()) {
+								$isActive = ($selected_category === intval($row['category_id'])) ? 'how-active1' : '';
+								echo '<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ' . $isActive . '" 
+										data-filter=".category-' . $row['category_id'] . '">'
+									. $row['category_name'] .
+									'</button>';
+							}
+						}
                 	?>
             	</div>
         	
