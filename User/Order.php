@@ -78,6 +78,37 @@ $all_orders = fetchOrdersWithProducts($conn);
 $processing_orders = fetchOrdersWithProducts($conn, 'Processing');
 $shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
 $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
+    // 获取订单 ID
+    $order_id = intval($_POST['order_id']);
+    
+    // 检查订单是否属于当前用户
+    $stmt = $conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $order_id, $_SESSION['id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        // 更新订单状态为 "Complete"
+        $update_stmt = $conn->prepare("UPDATE orders SET order_status = 'Complete' WHERE order_id = ?");
+        $update_stmt->bind_param("i", $order_id);
+
+        if ($update_stmt->execute()) {
+            // 添加页面重定向，刷新页面
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit;
+        } else {
+            echo "<script>alert('Failed to update order status. Please try again later.');</script>";
+        }
+    } else {
+        echo "<script>alert('Invalid order or permission denied.');</script>";
+    }
+
+    $stmt->close();
+    $update_stmt->close();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -230,7 +261,7 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
     cursor: pointer;
-    position: relative; /* 方便定位其他元素 */
+    position: relative; /* 关键：为绝对定位的按钮提供参考 */
 }
 
 .order-summary:hover {
@@ -298,7 +329,66 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
     color: #333;
     margin-left: auto;
 }
+.complete-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    position: absolute; /* 绝对定位 */
+    bottom: 20px; /* 距离底部 */
+    right: 20px; /* 距离右侧 */
+    transition: background-color 0.3s ease;
+}
 
+.complete-btn:hover {
+    background-color: #45a049;
+}
+.popup-form {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.popup-content h2 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.popup-content button {
+    margin: 10px 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.popup-confirm-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.popup-cancel-btn {
+    background-color: #dc3545;
+    color: white;
+}
 .no-orders {
     text-align: center;
     margin-top: 50px;
@@ -642,28 +732,41 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
         <!-- Order Containers for Each Status -->
         <?php
-        function renderOrders($orders) {
-            if ($orders->num_rows > 0) {
-                while ($order = $orders->fetch_assoc()) {
-                    echo '
+       function renderOrders($orders, $showCompleteButton = false) {
+		if ($orders->num_rows > 0) {
+			while ($order = $orders->fetch_assoc()) {
+				echo '
+
                     <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-                        <img src="images/' . $order['product_image'] . '" alt="Product Image">
-                        <div>
-                            <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-                            <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-                            <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-                            <p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>
-                        </div>
-                    </div>';
-                }
-            } else {
-                echo '
-                <div class="no-orders">
-                    <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-                    <button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
-                </div>';
-            }
-        }
+					<img src="images/' . $order['product_image'] . '" alt="Product Image">
+					<div>
+						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
+						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
+						<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+						
+				// 如果需要显示 "Complete" 按钮
+				if ($showCompleteButton) {
+					echo '
+						<button type="button" class="complete-btn" 
+								onclick="openPopup(' . $order['order_id'] . ')">
+							Complete
+						</button>';
+				}
+	
+				echo '
+					</div>
+				</div>';
+			}
+		} else {
+			echo '
+			<div class="no-orders">
+				<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+				<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
+			</div>';
+		}
+	}
+	
         ?>
 
         <!-- All Orders -->
@@ -678,14 +781,26 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
 
         <!-- Shipping Orders -->
         <div class="order-container" id="Shipping" style="display: none;">
-            <?php renderOrders($shipping_orders); ?>
-        </div>
+    <?php renderOrders($shipping_orders, true); ?>
+</div>
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
             <?php renderOrders($completed_orders); ?>
         </div>
     </div>
+
+	<div id="popup-form" class="popup-form" style="display: none;">
+    <div class="popup-content">
+        <h2>Confirm Order Completion</h2>
+        <p>Are you sure you have received your order?</p>
+        <form method="post">
+            <input type="hidden" id="popup-order-id" name="order_id">
+            <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
+            <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
+        </form>
+    </div>
+</div>
 </div>
 
 	<!-- Footer -->
@@ -1124,6 +1239,15 @@ $completed_orders = fetchOrdersWithProducts($conn, 'Complete');
         });
         document.getElementById(status + '-tab').classList.add('active');
     }
+
+	function openPopup(orderId) {
+    document.getElementById("popup-order-id").value = orderId;
+    document.getElementById("popup-form").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("popup-form").style.display = "none";
+}
 	</script>
 
 </body>

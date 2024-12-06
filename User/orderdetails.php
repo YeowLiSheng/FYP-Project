@@ -87,6 +87,7 @@ $details_stmt = $conn->prepare("
 $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
+
 ?>
 
 <!DOCTYPE html>
@@ -284,6 +285,22 @@ $details_result = $details_stmt->get_result();
         justify-content: space-between;
         margin: 8px 0;
         font-weight: bold;
+    }
+	.rate-button {
+        display: inline-block;
+        padding: 10px 25px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        cursor: pointer;
+        background: #28a745; /* 使用黄色作为评分按钮颜色 */
+        transition: 0.3s;
+    }
+
+    .rate-button:hover {
+        background: #e0a800;
     }
 </style>
 </head>
@@ -656,6 +673,9 @@ $details_result = $details_stmt->get_result();
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+	<?php if ($order['order_status'] === 'Complete') { ?>
+    <a href="rate_order.php?order_id=<?= $order['order_id'] ?>" class="rate-button">⭐ Rate Order</a>
+<?php } ?>
 </div>
 </div>
 
