@@ -368,18 +368,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 .selected-product-preview {
     display: flex;
+    flex-direction: column; /* 垂直对齐 */
     align-items: center;
     margin-top: 10px;
 }
 
 .selected-product-preview img {
-    width: 50px;
-    height: 50px;
-    border-radius: 5px;
-    margin-right: 10px;
+    width: 100px; /* 调整图片大小 */
+    height: 100px;
+    border-radius: 10px;
+    margin-bottom: 10px;
     object-fit: cover;
 }
 
+input[type="file"] {
+    display: block;
+    margin: 0 auto; /* 居中 */
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
 .rating-stars {
     display: flex;
     justify-content: center;
@@ -818,8 +826,8 @@ textarea {
 </select>
                 <div class="selected-product-preview" id="productPreview">
                     <img id="productImage" src="" alt="Product Image" style="display: none;" />
-                    <span id="productName"></span>
-                </div>
+					<span id="productName" style="display: block;"></span>
+					</div>
             </div>
 
             <!-- 评分 -->
