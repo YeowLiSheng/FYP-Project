@@ -84,7 +84,7 @@ $stmt->close();
 // Fetch reviews for the product
 $review_query = "
     SELECT r.comment, r.rating, u.user_name, u.user_image 
-    FROM review r 
+    FROM reviews r 
     JOIN user u ON r.user_id = u.user_id 
     WHERE r.product_id = ?";
 $stmt = $conn->prepare($review_query);
