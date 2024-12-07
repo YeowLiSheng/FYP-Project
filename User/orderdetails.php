@@ -811,7 +811,7 @@ textarea {
     <option value="" disabled selected>Select a product</option>
     <?php foreach ($order_details as $detail) { ?>
         <option value="<?= $detail['product_id'] ?>" 
-                data-img="<?= $detail['product_image'] ?>">
+        data-img="images/<?= $detail['product_image'] ?>">
             <?= $detail['product_name'] ?>
         </option>
     <?php } ?>
