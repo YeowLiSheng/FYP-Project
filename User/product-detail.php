@@ -698,9 +698,16 @@ $conn->close();
                                 </p>
 								<?php if (!empty($review['image'])) { ?>
                                     <div class="review-image">
-                                        <img src="<?php echo $review['image']; ?>" alt="Review Image" 
-										style="width: 100px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px;">
-										</div>
+    <img src="<?php echo $review['image']; ?>" alt="Review Image" 
+         style="width: 150px; height: 150px; border-radius: 10px; object-fit: cover; margin-top: 10px; cursor: pointer;" 
+         onclick="openModal('<?php echo $review['image']; ?>')">
+</div>
+
+<!-- 模态框 -->
+<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center;">
+    <span style="position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer;" onclick="closeModal()">&times;</span>
+    <img id="modalImage" src="" alt="Full Image" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
+</div>
                                 <?php } ?>
                             </div>
                         </div>
@@ -1460,6 +1467,17 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 	<script src="js/main.js"></script>
+	<script> function openModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+        modal.style.display = 'flex';
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }</script>
 
 </body>
 </html>
