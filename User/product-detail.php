@@ -87,9 +87,8 @@ $review_query = "
         r.comment, 
         r.rating, 
         u.user_name, 
-        u.user_image 
-		COUNT(*) as review_count 
-
+        u.user_image, 
+        COUNT(*) as review_count
     FROM 
         reviews r
     JOIN 
@@ -97,7 +96,9 @@ $review_query = "
     JOIN 
         order_details od ON r.detail_id = od.detail_id
     WHERE 
-        od.product_id = ?";
+        od.product_id = ?
+    GROUP BY 
+        r.comment, r.rating, u.user_name, u.user_image";
 $stmt = $conn->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $conn->error); // 输出 SQL 错误
