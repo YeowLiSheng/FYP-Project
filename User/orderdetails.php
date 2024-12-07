@@ -55,7 +55,7 @@ if (!isset($_GET['order_id'])) {
 
 
 
-$order_id = intval($_GET['order_id']);
+$order_id = intval($_GET['order_id']); 
 
 // 使用预处理语句获取订单信息
 $order_stmt = $conn->prepare("
