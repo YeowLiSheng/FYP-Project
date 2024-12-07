@@ -83,10 +83,19 @@ $stmt->close();
 
 // Fetch reviews for the product
 $review_query = "
-    SELECT r.comment, r.rating, u.user_name, u.user_image 
-    FROM reviews r 
-    JOIN user u ON r.user_id = u.user_id 
-    WHERE r.product_id = ?";
+    SELECT 
+        r.comment, 
+        r.rating, 
+        u.user_name, 
+        u.user_image 
+    FROM 
+        reviews r
+    JOIN 
+        user u ON r.user_id = u.user_id
+    JOIN 
+        order_details od ON r.detail_id = od.detail_id
+    WHERE 
+        od.product_id = ?";
 $stmt = $conn->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $conn->error); // 输出 SQL 错误
