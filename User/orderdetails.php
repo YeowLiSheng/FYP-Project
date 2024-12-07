@@ -139,15 +139,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
-		// 提交成功时显示弹窗特效并重定向
+		// 提交成功时触发特效并加载到页面底部
 		echo "<script>
 			document.addEventListener('DOMContentLoaded', function() {
 				showSuccessPopup();
 				setTimeout(function() {
-					window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-				}, 3000); // 3秒后重定向
+					window.scrollTo(0, document.body.scrollHeight); // 滑动到页面底部
+					setTimeout(function() {
+						window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+					}, 3000); // 3秒后重定向
+				}, 500); // 添加延迟以确保动画执行
 			});
 		</script>";
+		exit; // 避免输出额外的内容
 	} else {
 		// 提交失败时显示错误消息
 		echo "<script>alert('Error saving review. Please try again later.');</script>";
@@ -466,12 +470,21 @@ textarea {
     left: 50%;
     transform: translate(-50%, -50%);
     background: #fff;
-    padding: 20px 40px;
-    border-radius: 8px;
+    padding: 20px;
+    border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    z-index: 1000;
-    animation: fadeIn 0.5s ease;
+    z-index: 9999;
+    display: none;
+}
+
+.popup-success.popup-loading {
+    animation: fade-in-out 3s linear;
+}
+
+@keyframes fade-in-out {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
 }
 
 .success-content {
@@ -1380,10 +1393,23 @@ document.getElementById("rateForm").addEventListener("submit", function () {
 
 // 显示成功提交弹窗
 function showSuccessPopup() {
-    document.getElementById("successPopup").style.display = "block";
+    const successPopup = document.getElementById("successPopup");
+    successPopup.style.display = "block";
+    successPopup.classList.add("popup-loading");
+
+    // 3秒后隐藏弹窗
     setTimeout(function() {
-        document.getElementById("successPopup").style.display = "none";
-    }, 3000); // 3秒后自动关闭
+        successPopup.style.display = "none";
+        successPopup.classList.remove("popup-loading");
+    }, 3000);
+}
+
+// 页面滚动至底部
+function scrollToBottom() {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth" // 平滑滚动效果
+    });
 }
 
 // 评分逻辑
