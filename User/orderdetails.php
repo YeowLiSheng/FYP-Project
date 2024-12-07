@@ -336,21 +336,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         background: #e0a800;
     }
 
-	.popup-container {
+
+.popup-container {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #fff;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
     z-index: 1000;
     border-radius: 10px;
     width: 400px;
+    max-width: 90%;
 }
 
 .popup-content {
     text-align: center;
+}
+
+.product-select-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.selected-product-preview {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.selected-product-preview img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin-right: 10px;
+    object-fit: cover;
 }
 
 .rating-stars {
@@ -370,12 +391,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     color: #FFD700;
 }
 
+textarea {
+    width: 100%;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
 .submit-button, .cancel-button {
     margin-top: 10px;
     padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 14px;
 }
 
 .submit-button {
@@ -388,6 +419,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     color: white;
     margin-left: 10px;
 }
+
 </style>
 </head>
 <body class="animsition">
@@ -762,20 +794,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<?php if ($order['order_status'] === 'Complete') { ?>
 		<a href="javascript:void(0);" class="rate-button" onclick="openPopup()">⭐ Rate Order</a>
 <?php } ?>
-<!-- 弹出评价窗口 -->
 <div id="ratePopup" class="popup-container" style="display: none;">
     <div class="popup-content">
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
+            <!-- 产品选择 -->
             <label for="productSelect">Select Product:</label>
-            <select id="productSelect" name="product_id" required>
-                <?php while ($detail = $details_result->fetch_assoc()) { ?>
-                    <option value="<?= $detail['product_id'] ?>">
-                        <?= $detail['product_name'] ?>
-                    </option>
-                <?php } ?>
-            </select>
+            <div class="product-select-container">
+                <select id="productSelect" name="product_id" required>
+                    <option value="" disabled selected>Select a product</option>
+                    <?php while ($detail = $details_result->fetch_assoc()) { ?>
+                        <option value="<?= $detail['product_id'] ?>" 
+                                data-img="<?= $detail['product_image'] ?>">
+                            <?= $detail['product_name'] ?>
+                        </option>
+                    <?php } ?>
+                </select>
+                <div class="selected-product-preview" id="productPreview">
+                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
+                    <span id="productName"></span>
+                </div>
+            </div>
 
+            <!-- 评分 -->
             <label for="rating">Rating:</label>
             <div id="stars" class="rating-stars">
                 <?php for ($i = 1; $i <= 5; $i++) { ?>
@@ -784,17 +825,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <input type="hidden" id="rating" name="rating" value="" required>
 
+            <!-- 评论 -->
             <label for="comment">Comment:</label>
             <textarea id="comment" name="comment" rows="4" required></textarea>
 
+            <!-- 上传图片 -->
             <label for="image">Upload Image (optional):</label>
             <input type="file" id="image" name="image" accept="image/*">
 
+            <!-- 按钮 -->
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="closePopup()">Cancel</button>
         </form>
     </div>
 </div>
+
 </div>
 </div>
 
@@ -1224,19 +1269,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-		// 打开弹出窗口
+// 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
 
-// 关闭弹出窗口
+// 关闭弹窗
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
     document.getElementById("rateForm").reset();
     resetStars();
+    resetProductPreview();
 }
 
-// 控制星星点击功能
+// 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
     star.addEventListener("click", function () {
@@ -1250,10 +1296,34 @@ stars.forEach(star => {
     });
 });
 
-// 重置星星状态
 function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
-	</script>
+
+// 产品预览逻辑
+const productSelect = document.getElementById("productSelect");
+const productImage = document.getElementById("productImage");
+const productName = document.getElementById("productName");
+
+productSelect.addEventListener("change", function () {
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    const imgSrc = selectedOption.getAttribute("data-img");
+    const name = selectedOption.textContent;
+
+    if (imgSrc) {
+        productImage.src = imgSrc;
+        productImage.style.display = "block";
+    } else {
+        productImage.style.display = "none";
+    }
+
+    productName.textContent = name;
+});
+
+function resetProductPreview() {
+    productImage.style.display = "none";
+    productName.textContent = "";
+}
+</script>
 </body>
 </html>
