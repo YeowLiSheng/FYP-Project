@@ -368,41 +368,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-/* 弹窗样式 */
 .popup-container {
-    display: none;  /* 默认隐藏 */
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: white;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    z-index: 1000;
-    border-radius: 8px;
+    z-index: 2000;
+    border-radius: 10px;
     width: 400px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
 }
 
 .popup-content {
-    text-align: left;
+    text-align: center;
 }
 
 .product-select-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    position: relative;
+    margin-bottom: 20px;
 }
 
 .selected-product-preview {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* 垂直对齐 */
     align-items: center;
-}
-
-.product-image {
-    width: 100px;
-    height: auto;
-    border-radius: 4px;
+    margin-top: 10px;
 }
 
 .selected-product-preview img {
