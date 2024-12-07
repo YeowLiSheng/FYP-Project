@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -10,11 +10,13 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -26,6 +28,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
@@ -36,6 +39,7 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -50,6 +54,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
+
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -77,9 +82,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
-// Close the statement and connection
+// Close the statement
 $stmt->close();
-$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -645,86 +649,67 @@ $conn->close();
 
 						<!-- - -->
 						<div class="tab-pane fade" id="reviews" role="tabpanel">
-							<div class="row">
-								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-									<div class="p-b-30 m-lr-15-sm">
-										<!-- Review -->
-										<div class="flex-w flex-t p-b-68">
-											<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-												<img src="images/avatar-01.jpg" alt="AVATAR">
-											</div>
+    <div class="row">
+        <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+            <div class="p-b-30 m-lr-15-sm">
+                <?php
+                // Fetch reviews for the current product
+                $reviews_query = "
+                    SELECT r.review_text, r.rating, u.username, u.profile_image 
+                    FROM review r 
+                    JOIN user u ON r.user_id = u.user_id 
+                    WHERE r.product_id = ?
+                ";
+                $stmt = $conn->prepare($reviews_query);
+                $stmt->bind_param("i", $product_id);
+                $stmt->execute();
+                $reviews_result = $stmt->get_result();
 
-											<div class="size-207">
-												<div class="flex-w flex-sb-m p-b-17">
-													<span class="mtext-107 cl2 p-r-20">
-														Ariana Grande
-													</span>
+                if ($reviews_result->num_rows > 0) {
+                    while ($review = $reviews_result->fetch_assoc()) {
+                ?>
+                    <!-- Display individual review -->
+                    <div class="flex-w flex-t p-b-68">
+                        <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                            <img src="images/<?php echo htmlspecialchars($review['profile_image']); ?>" alt="USER">
+                        </div>
 
-													<span class="fs-18 cl11">
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star-half"></i>
-													</span>
-												</div>
+                        <div class="size-207">
+                            <div class="flex-w flex-sb-m p-b-17">
+                                <span class="mtext-107 cl2 p-r-20">
+                                    <?php echo htmlspecialchars($review['username']); ?>
+                                </span>
 
-												<p class="stext-102 cl6">
-													Quod autem in homine praestantissimum atque optimum est, id deseruit. Apud ceteros autem philosophos
-												</p>
-											</div>
-										</div>
-										
-										<!-- Add review -->
-										<form class="w-full">
-											<h5 class="mtext-108 cl2 p-b-7">
-												Add a review
-											</h5>
+                                <span class="fs-18 cl11">
+                                    <?php
+                                    for ($i = 0; $i < floor($review['rating']); $i++) {
+                                        echo '<i class="zmdi zmdi-star"></i>';
+                                    }
+                                    if ($review['rating'] - floor($review['rating']) >= 0.5) {
+                                        echo '<i class="zmdi zmdi-star-half"></i>';
+                                    }
+                                    ?>
+                                </span>
+                            </div>
 
-											<p class="stext-102 cl6">
-												Your email address will not be published. Required fields are marked *
-											</p>
+                            <p class="stext-102 cl6">
+                                <?php echo htmlspecialchars($review['review_text']); ?>
+                            </p>
+                        </div>
+                    </div>
+                <?php
+                    }
+                } else {
+                    echo "<p class='stext-102 cl6'>No reviews for this product yet.</p>";
+                }
 
-											<div class="flex-w flex-m p-t-50 p-b-23">
-												<span class="stext-102 cl3 m-r-16">
-													Your Rating
-												</span>
+                $stmt->close();
+                ?>
+            </div>
+        </div>
+    </div>
+</div>
 
-												<span class="wrap-rating fs-18 cl11 pointer">
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<input class="dis-none" type="number" name="rating">
-												</span>
-											</div>
-
-											<div class="row p-b-25">
-												<div class="col-12 p-b-5">
-													<label class="stext-102 cl3" for="review">Your review</label>
-													<textarea class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10" id="review" name="review"></textarea>
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="name">Name</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name" type="text" name="name">
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="email">Email</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="email" type="text" name="email">
-												</div>
-											</div>
-
-											<button class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
-												Submit
-											</button>
-										</form>
-									</div>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
