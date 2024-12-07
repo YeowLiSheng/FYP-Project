@@ -1,5 +1,5 @@
 <?php
-session_start();
+session_start(); 
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -10,13 +10,11 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -28,7 +26,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
-
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
@@ -39,7 +36,6 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
-
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -54,7 +50,6 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -82,8 +77,21 @@ $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
-// Close the statement
+$reviews_query = "
+    SELECT r.rating, r.comment, r.created_at, 
+           u.user_name, u.user_image 
+    FROM review r 
+    JOIN user u ON r.user_id = u.user_id 
+    WHERE r.product_id = ? 
+    ORDER BY r.created_at DESC";
+$stmt_reviews = $conn->prepare($reviews_query);
+$stmt_reviews->bind_param("i", $product_id);
+$stmt_reviews->execute();
+$reviews_result = $stmt_reviews->get_result();
+
+// Close the statement and connection
 $stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -652,64 +660,52 @@ $stmt->close();
     <div class="row">
         <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
             <div class="p-b-30 m-lr-15-sm">
-                <?php
-                // Fetch reviews for the current product
-                $reviews_query = "
-                    SELECT r.review_text, r.rating, u.username, u.profile_image 
-                    FROM review r 
-                    JOIN user u ON r.user_id = u.user_id 
-                    WHERE r.product_id = ?
-                ";
-                $stmt = $conn->prepare($reviews_query);
-                $stmt->bind_param("i", $product_id);
-                $stmt->execute();
-                $reviews_result = $stmt->get_result();
-
-                if ($reviews_result->num_rows > 0) {
-                    while ($review = $reviews_result->fetch_assoc()) {
-                ?>
-                    <!-- Display individual review -->
-                    <div class="flex-w flex-t p-b-68">
-                        <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                            <img src="images/<?php echo htmlspecialchars($review['profile_image']); ?>" alt="USER">
-                        </div>
-
-                        <div class="size-207">
-                            <div class="flex-w flex-sb-m p-b-17">
-                                <span class="mtext-107 cl2 p-r-20">
-                                    <?php echo htmlspecialchars($review['username']); ?>
-                                </span>
-
-                                <span class="fs-18 cl11">
-                                    <?php
-                                    for ($i = 0; $i < floor($review['rating']); $i++) {
-                                        echo '<i class="zmdi zmdi-star"></i>';
-                                    }
-                                    if ($review['rating'] - floor($review['rating']) >= 0.5) {
-                                        echo '<i class="zmdi zmdi-star-half"></i>';
-                                    }
-                                    ?>
-                                </span>
+                <?php if ($reviews_result->num_rows > 0): ?>
+                    <?php while ($review = $reviews_result->fetch_assoc()): ?>
+                        <!-- Display each review -->
+                        <div class="flex-w flex-t p-b-68">
+                            <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                <img src="images/<?php echo htmlspecialchars($review['user_image']); ?>" alt="AVATAR">
                             </div>
 
-                            <p class="stext-102 cl6">
-                                <?php echo htmlspecialchars($review['review_text']); ?>
-                            </p>
-                        </div>
-                    </div>
-                <?php
-                    }
-                } else {
-                    echo "<p class='stext-102 cl6'>No reviews for this product yet.</p>";
-                }
+                            <div class="size-207">
+                                <div class="flex-w flex-sb-m p-b-17">
+                                    <span class="mtext-107 cl2 p-r-20">
+                                        <?php echo htmlspecialchars($review['user_name']); ?>
+                                    </span>
 
-                $stmt->close();
-                ?>
+                                    <span class="fs-18 cl11">
+                                        <?php 
+                                        // Display star ratings
+                                        for ($i = 0; $i < 5; $i++) {
+                                            if ($i < $review['rating']) {
+                                                echo '<i class="zmdi zmdi-star"></i>';
+                                            } else {
+                                                echo '<i class="zmdi zmdi-star-outline"></i>';
+                                            }
+                                        }
+                                        ?>
+                                    </span>
+                                </div>
+
+                                <p class="stext-102 cl6">
+                                    <?php echo htmlspecialchars($review['comment']); ?>
+                                </p>
+                                <p class="stext-102 cl6">
+                                    <small><?php echo date("F j, Y", strtotime($review['created_at'])); ?></small>
+                                </p>
+                            </div>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p class="stext-102 cl6">No reviews for this product yet.</p>
+                <?php endif; ?>
+
+                <?php $stmt_reviews->close(); ?>
             </div>
         </div>
     </div>
 </div>
-
 					</div>
 				</div>
 			</div>
