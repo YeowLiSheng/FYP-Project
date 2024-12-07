@@ -95,7 +95,7 @@ while ($detail = $details_result->fetch_assoc())
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
+    // 移除 sleep(3);
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
@@ -138,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
     $stmt->execute();
 }
+
 
 ?>
 
