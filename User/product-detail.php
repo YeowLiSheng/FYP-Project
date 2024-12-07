@@ -86,6 +86,7 @@ $review_query = "
     SELECT 
         r.comment, 
         r.rating, 
+		r.image
         u.user_name, 
         u.user_image 
     FROM 
@@ -695,6 +696,12 @@ $conn->close();
                                 <p class="stext-102 cl6">
                                     <?php echo htmlspecialchars($review['comment']); ?>
                                 </p>
+								<?php if (!empty($review['image'])) { ?>
+                                    <div class="review-image">
+                                        <img src="<?php echo $review['image']; ?>" alt="Review Image" 
+                                             style="max-width: 100%; height: auto; border-radius: 5px; margin-top: 10px;">
+                                    </div>
+                                <?php } ?>
                             </div>
                         </div>
                     <?php } ?>
