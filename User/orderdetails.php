@@ -139,19 +139,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
-		// 提交成功时显示弹窗特效并重定向
-		echo "<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				showSuccessPopup();
-				setTimeout(function() {
-					window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-				}, 3000); // 3秒后重定向
-			});
-		</script>";
-	} else {
-		// 提交失败时显示错误消息
-		echo "<script>alert('Error saving review. Please try again later.');</script>";
-	}
+    // 提交成功时显示弹窗特效并重定向
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showSuccessPopup();
+            setTimeout(function() {
+                window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+            }, 3000); // 3秒后重定向
+        });
+    </script>";
+} else {
+    // 提交失败时显示错误消息
+    echo "<script>alert('Error saving review. Please try again later.');</script>";
+}
 }
 ?>
 
@@ -383,23 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     width: 400px;
     max-width: 90%;
 }
-.popup-container, .popup-success {
-    display: none;
-    position: fixed; /* 固定位置，不会干扰页面结构 */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9999; /* 确保弹窗在最上层 */
-    visibility: hidden; /* 默认隐藏 */
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-.popup-container.active, .popup-success.active {
-    display: block; /* 显示弹窗 */
-    visibility: visible;
-}
+
 .popup-content {
     text-align: center;
 }
@@ -1376,7 +1360,6 @@ textarea {
 	<script>
 // 打开弹窗
 // 打开弹窗
-// 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
@@ -1393,36 +1376,6 @@ function closePopup() {
 document.getElementById("rateForm").addEventListener("submit", function () {
     document.querySelector(".submit-button").disabled = true;
 });
-
-// 禁用页面滚动
-function disableScroll() {
-    document.body.style.overflow = "hidden";
-}
-
-// 启用页面滚动
-function enableScroll() {
-    document.body.style.overflow = "";
-}
-
-// 显示弹窗时禁用滚动
-function showSuccessPopup() {
-    const successPopup = document.getElementById("successPopup");
-    successPopup.style.display = "block";
-    disableScroll(); // 禁用滚动
-
-    setTimeout(function () {
-        successPopup.style.display = "none";
-        enableScroll(); // 恢复滚动
-    }, 3000);
-}
-
-// 页面滚动至底部
-function scrollToBottom() {
-    window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth" // 平滑滚动效果
-    });
-}
 
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
@@ -1465,6 +1418,14 @@ productSelect.addEventListener("change", function () {
 function resetProductPreview() {
     productImage.style.display = "none";
     productName.textContent = "";
+}
+
+// 显示成功提交弹窗
+function showSuccessPopup() {
+    document.getElementById("successPopup").style.display = "block";
+    setTimeout(function() {
+        document.getElementById("successPopup").style.display = "none";
+    }, 3000); // 3秒后自动关闭
 }
 </script>
 </body>
