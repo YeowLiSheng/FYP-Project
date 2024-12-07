@@ -10,11 +10,13 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -26,6 +28,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
@@ -36,6 +39,7 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -50,6 +54,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
+
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -72,6 +77,12 @@ $product_id = $_GET['id']; // 获取 URL 中的 product_id
 // 查询产品详细信息
 $product_query = "SELECT * FROM product WHERE product_id = ?";
 $product_stmt = $conn->prepare($product_query);
+
+// Check if the query preparation was successful
+if ($product_stmt === false) {
+    die('MySQL prepare error: ' . $conn->error);
+}
+
 $product_stmt->bind_param("i", $product_id);
 $product_stmt->execute();
 $product_result = $product_stmt->get_result();
@@ -87,14 +98,20 @@ $reviews_query = "
     WHERE r.product_id = ?
     ORDER BY r.created_at DESC";
 $reviews_stmt = $conn->prepare($reviews_query);
+
+// Check if the query preparation was successful
+if ($reviews_stmt === false) {
+    die('MySQL prepare error: ' . $conn->error);
+}
+
 $reviews_stmt->bind_param("i", $product_id);
 $reviews_stmt->execute();
 $reviews_result = $reviews_stmt->get_result();
 $reviews_stmt->close();
 
 $conn->close();
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
