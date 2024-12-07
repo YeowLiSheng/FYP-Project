@@ -55,7 +55,7 @@ if (!isset($_GET['order_id'])) {
 
 
 
-$order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+$order_id = intval($_GET['order_id']);
 
 // 使用预处理语句获取订单信息
 $order_stmt = $conn->prepare("
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
 			}, 3000); // 3秒后重定向
 		</script>";
-		
+		exit;
 	} 
 }
 ?>
@@ -1370,9 +1370,7 @@ function closePopup() {
 // 禁用重复提交
 document.getElementById("rateForm").addEventListener("submit", function () {
     document.querySelector(".submit-button").disabled = true;
-    showLoadingSpinner(); // 可选显示加载动画
 });
-
 
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
