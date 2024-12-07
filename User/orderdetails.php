@@ -1373,8 +1373,11 @@ function closePopup() {
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function () {
-    document.querySelector(".submit-button").disabled = true;
+document.getElementById("rateForm").addEventListener("submit", function (e) {
+
+
+    // 提交表单后显示成功提示
+    document.getElementById("successPopup").style.display = "block";  
 });
 
 function redirectToPage() {
