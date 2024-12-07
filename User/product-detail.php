@@ -10,13 +10,11 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
@@ -28,7 +26,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
-
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
@@ -39,7 +36,6 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
-
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -54,7 +50,6 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -72,46 +67,20 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     exit;
 }
 
-$product_id = $_GET['id']; // 获取 URL 中的 product_id
+$product_id = $_GET['id']; // Get the product ID from the URL
 
-// 查询产品详细信息
-$product_query = "SELECT * FROM product WHERE product_id = ?";
-$product_stmt = $conn->prepare($product_query);
+// Fetch product details based on product_id
+$query = "SELECT * FROM product WHERE product_id = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$product = $result->fetch_assoc();
 
-// Check if the query preparation was successful
-if ($product_stmt === false) {
-    die('MySQL prepare error: ' . $conn->error);
-}
-
-$product_stmt->bind_param("i", $product_id);
-$product_stmt->execute();
-$product_result = $product_stmt->get_result();
-$product = $product_result->fetch_assoc();
-$product_stmt->close();
-
-// 查询评论信息
-$reviews_query = "
-    SELECT r.review_id, r.comment, r.rating, r.created_at, 
-           u.user_name, u.user_image 
-    FROM review r
-    JOIN user u ON r.user_id = u.user_id
-    WHERE r.product_id = ?
-    ORDER BY r.created_at DESC";
-$reviews_stmt = $conn->prepare($reviews_query);
-
-// Check if the query preparation was successful
-if ($reviews_stmt === false) {
-    die('MySQL prepare error: ' . $conn->error);
-}
-
-$reviews_stmt->bind_param("i", $product_id);
-$reviews_stmt->execute();
-$reviews_result = $reviews_stmt->get_result();
-$reviews_stmt->close();
-
+// Close the statement and connection
+$stmt->close();
 $conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -467,7 +436,7 @@ $conn->close();
                             <!-- Quick View Images -->
                             <div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View1']; ?>">
                                 <div class="wrap-pic-w pos-relative">
-                                    <img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
+									<img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
                                     <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04"  href="images/<?php echo $product['Quick_View1']; ?>">
                                         <i class="fa fa-expand"></i>
                                     </a>
@@ -505,88 +474,86 @@ $conn->close();
                     </span>
 
                     <!--  -->
-                    <div class="p-t-33">
-                        <div class="flex-w flex-r-m p-b-10">
-                            <div class="size-203 flex-c-m respon6">
-                                Size
-                            </div>
+					<div class="p-t-33">
+						<div class="flex-w flex-r-m p-b-10">
+							<div class="size-203 flex-c-m respon6">
+								Size
+							</div>
 
-                            <div class="size-204 respon6-next">
-                                <div class="rs1-select2 bor8 bg0">
-                                    <select class="js-select2" name="size">
-                                        <option>Choose an option</option>
-                                        <option value="size1"><?php echo $product['size1']; ?></option>
-                                        <option value="size2"><?php echo $product['size2']; ?></option>
-                                    </select>
-                                    <div class="dropDownSelect2"></div>
-                                </div>
-                            </div>
-                        </div>
+							<div class="size-204 respon6-next">
+								<div class="rs1-select2 bor8 bg0">
+									<select class="js-select2" name="time">
+										<option>Choose an option</option>
+										<option value="size1"><?php echo $product['size1']; ?></option>
+                						<option value="size2"><?php echo $product['size2']; ?></option>
+									</select>
+									<div class="dropDownSelect2"></div>
+								</div>
+							</div>
+						</div>
 
-                        <div class="flex-w flex-r-m p-b-10">
-                            <div class="size-203 flex-c-m respon6">
-                                Color
-                            </div>
+						<div class="flex-w flex-r-m p-b-10">
+							<div class="size-203 flex-c-m respon6">
+								Color
+							</div>
 
-                            <div class="size-204 respon6-next">
-                                <div class="rs1-select2 bor8 bg0">
-                                    <select class="js-select2" name="color">
-                                        <option>Choose an option</option>
-                                        <option value="color1"><?php echo $product['color1']; ?></option>
-                                        <option value="color2"><?php echo $product['color2']; ?></option>
-                                    </select>
-                                    <div class="dropDownSelect2"></div>
-                                </div>
-                            </div>
-                        </div>
+							<div class="size-204 respon6-next">
+								<div class="rs1-select2 bor8 bg0">
+									<select class="js-select2" name="time">
+										<option>Choose an option</option>
+										<option value="color1"><?php echo $product['color1']; ?></option>
+                						<option value="color2"><?php echo $product['color2']; ?></option>
+									</select>
+									<div class="dropDownSelect2"></div>
+								</div>
+							</div>
+						</div>
 
-                        <!-- Add to Cart Section -->
-                        <div class="flex-w flex-r-m p-b-10">
-                            <div class="size-204 flex-w flex-m respon6-next">
-                                <div class="wrap-num-product flex-w m-r-20 m-tb-10">
-                                    <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                                        <i class="fs-16 zmdi zmdi-minus"></i>
-                                    </div>
+                    	<!-- Add to Cart Section -->
+                    	<div class="flex-w flex-r-m p-b-10">
+                        	<div class="size-204 flex-w flex-m respon6-next">
+                            	<div class="wrap-num-product flex-w m-r-20 m-tb-10">
+                                	<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                                    	<i class="fs-16 zmdi zmdi-minus"></i>
+                                	</div>
 
-                                    <input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+                                	<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
 
-                                    <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                                        <i class="fs-16 zmdi zmdi-plus"></i>
-                                    </div>
-                                </div>
+                                	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                                    	<i class="fs-16 zmdi zmdi-plus"></i>
+                                	</div>
+                            	</div>
 
-                                <button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-                                    Add to cart
-                                </button>
-                            </div>
-                        </div> 
-                        <!--  -->
-                        <div class="flex-w flex-m p-l-100 p-t-40 respon7">
-                            <div class="flex-m bor9 p-r-10 m-r-11">
-                                <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100" data-tooltip="Add to Wishlist">
-                                    <i class="zmdi zmdi-favorite"></i>
-                                </a>
-                            </div>
+                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                                	Add to cart
+                            	</button>
+                        	</div>
+                    	</div> 
+						<!--  -->
+						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
+							<div class="flex-m bor9 p-r-10 m-r-11">
+								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100" data-tooltip="Add to Wishlist">
+									<i class="zmdi zmdi-favorite"></i>
+								</a>
+							</div>
 
-                            <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Facebook">
-                                <i class="fa fa-facebook"></i>
-                            </a>
+							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Facebook">
+								<i class="fa fa-facebook"></i>
+							</a>
 
-                            <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Twitter">
-                                <i class="fa fa-twitter"></i>
-                            </a>
+							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Twitter">
+								<i class="fa fa-twitter"></i>
+							</a>
 
-                            <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
-                                <i class="fa fa-google-plus"></i>
-                            </a>
-                        </div> 
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-		
+							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
+								<i class="fa fa-google-plus"></i>
+							</a>
+						</div> 
+                	</div>
+            	</div>
+        	</div>
+    	</div>
+	</div>			
 
 			<div class="bor10 m-t-50 p-t-43 p-b-40">
 				<!-- Tab01 -->
@@ -677,51 +644,87 @@ $conn->close();
 						</div>
 
 						<!-- - -->
-						<div class="tab-pane fade" id="reviews" role="tabpanel"> 
-    <div class="row">
-        <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-            <div class="p-b-30 m-lr-15-sm">
-                <?php if ($reviews_result->num_rows > 0): ?>
-                    <!-- Review Section -->
-                    <?php while ($review = $reviews_result->fetch_assoc()): ?>
-                        <div class="flex-w flex-t p-b-68">
-                            <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                <img src="<?= htmlspecialchars($review['user_image']) ?>" alt="User Avatar">
-                            </div>
-                            <div class="size-207">
-                                <div class="flex-w flex-sb-m p-b-17">
-                                    <span class="mtext-107 cl2 p-r-20">
-                                        <?= htmlspecialchars($review['user_name']) ?>
-                                    </span>
-                                    <span class="fs-18 cl11">
-                                        <?php 
-                                        // Render stars based on the rating
-                                        for ($i = 1; $i <= 5; $i++) {
-                                            if ($i <= $review['rating']) {
-                                                echo '<i class="zmdi zmdi-star"></i>';
-                                            } else {
-                                                echo '<i class="zmdi zmdi-star-outline"></i>';
-                                            }
-                                        }
-                                        ?>
-                                    </span>
-                                </div>
-                                <p class="stext-102 cl6">
-                                    <?= htmlspecialchars($review['comment']) ?>
-                                </p>
-                                <small class="text-muted">
-                                    Posted on <?= date('F j, Y', strtotime($review['created_at'])) ?>
-                                </small>
-                            </div>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <p class="stext-102 cl6">No reviews for this product yet.</p>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</div>
+						<div class="tab-pane fade" id="reviews" role="tabpanel">
+							<div class="row">
+								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+									<div class="p-b-30 m-lr-15-sm">
+										<!-- Review -->
+										<div class="flex-w flex-t p-b-68">
+											<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+												<img src="images/avatar-01.jpg" alt="AVATAR">
+											</div>
+
+											<div class="size-207">
+												<div class="flex-w flex-sb-m p-b-17">
+													<span class="mtext-107 cl2 p-r-20">
+														Ariana Grande
+													</span>
+
+													<span class="fs-18 cl11">
+														<i class="zmdi zmdi-star"></i>
+														<i class="zmdi zmdi-star"></i>
+														<i class="zmdi zmdi-star"></i>
+														<i class="zmdi zmdi-star"></i>
+														<i class="zmdi zmdi-star-half"></i>
+													</span>
+												</div>
+
+												<p class="stext-102 cl6">
+													Quod autem in homine praestantissimum atque optimum est, id deseruit. Apud ceteros autem philosophos
+												</p>
+											</div>
+										</div>
+										
+										<!-- Add review -->
+										<form class="w-full">
+											<h5 class="mtext-108 cl2 p-b-7">
+												Add a review
+											</h5>
+
+											<p class="stext-102 cl6">
+												Your email address will not be published. Required fields are marked *
+											</p>
+
+											<div class="flex-w flex-m p-t-50 p-b-23">
+												<span class="stext-102 cl3 m-r-16">
+													Your Rating
+												</span>
+
+												<span class="wrap-rating fs-18 cl11 pointer">
+													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+													<input class="dis-none" type="number" name="rating">
+												</span>
+											</div>
+
+											<div class="row p-b-25">
+												<div class="col-12 p-b-5">
+													<label class="stext-102 cl3" for="review">Your review</label>
+													<textarea class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10" id="review" name="review"></textarea>
+												</div>
+
+												<div class="col-sm-6 p-b-5">
+													<label class="stext-102 cl3" for="name">Name</label>
+													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name" type="text" name="name">
+												</div>
+
+												<div class="col-sm-6 p-b-5">
+													<label class="stext-102 cl3" for="email">Email</label>
+													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="email" type="text" name="email">
+												</div>
+											</div>
+
+											<button class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
+												Submit
+											</button>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
