@@ -139,19 +139,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
-    // 提交成功时显示弹窗特效并重定向
-    echo "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            showSuccessPopup();
-            setTimeout(function() {
-                window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-            }, 3000); // 3秒后重定向
-        });
-    </script>";
-} else {
-    // 提交失败时显示错误消息
-    echo "<script>alert('Error saving review. Please try again later.');</script>";
-}
+		// 提交成功时触发弹窗和重定向
+		echo "<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				showLoadingPopup(); // 显示Loading效果
+				setTimeout(function() {
+					showSuccessPopup(); // 3秒后显示成功弹窗
+				}, 3000);
+			});
+		</script>";
+	} else {
+		// 提交失败时显示错误消息
+		echo "<script>alert('Error saving review. Please try again later.');</script>";
+	}
 }
 ?>
 
@@ -490,7 +490,43 @@ textarea {
     font-size: 20px;
     color: #333;
 }
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 背景半透明 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
+/* 弹窗内容样式 */
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading动画 */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #ccc;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 /* 淡入动画 */
 @keyframes fadeIn {
     from {
@@ -921,12 +957,19 @@ textarea {
         </form>
     </div>
 </div>
-<div id="successPopup" class="popup-success" style="display: none;">
-    <div class="success-content">
-        <div class="success-icon">
-            <i class="fa fa-check-circle"></i>
-        </div>
-        <h3>Review Submitted Successfully!</h3>
+<!-- Loading 特效 -->
+<div id="loadingPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+        <p>Processing your review...</p>
+        <div class="loading-spinner"></div> <!-- Loading动画 -->
+    </div>
+</div>
+
+<!-- 成功弹窗 -->
+<div id="successPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+        <p>Review submitted successfully!</p>
+        <button onclick="redirectToOrderPage()">OK</button>
     </div>
 </div>
 </div>
@@ -1421,11 +1464,27 @@ function resetProductPreview() {
 }
 
 // 显示成功提交弹窗
+function showLoadingPopup() {
+    document.getElementById("loadingPopup").style.display = "flex";
+}
+
+// 显示成功弹窗
 function showSuccessPopup() {
-    document.getElementById("successPopup").style.display = "block";
-    setTimeout(function() {
-        document.getElementById("successPopup").style.display = "none";
-    }, 3000); // 3秒后自动关闭
+    document.getElementById("loadingPopup").style.display = "none"; // 隐藏Loading特效
+    document.getElementById("successPopup").style.display = "flex"; // 显示成功弹窗
+}
+
+// 重定向逻辑
+function redirectToOrderPage() {
+    document.getElementById("successPopup").style.display = "none";
+    window.location.href = "orderdetails.php?order_id=" + getOrderId(); // 替换为正确的order_id参数
+}
+
+// 获取订单ID（根据需要替换为实际逻辑）
+function getOrderId() {
+    // 假设通过URL传递order_id
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("order_id") || ""; 
 }
 </script>
 </body>
