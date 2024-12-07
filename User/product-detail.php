@@ -106,6 +106,11 @@ if (!$stmt) {
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
+$review_count = 0; // 初始化评论数量为 0
+if ($reviews_result) {
+    $row = $reviews_result->fetch_assoc();
+    $review_count = $row['review_count']; // 从结果中获取评论数量
+}
 
 // Close the connection
 $conn->close();
