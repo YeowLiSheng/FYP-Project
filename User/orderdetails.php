@@ -138,17 +138,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-   if ($stmt->execute()) {
+	if ($stmt->execute()) {
+    // 提交成功时显示弹窗特效并重定向
     echo "<script>
-        showSuccessPopup();
-        setTimeout(function() {
-            window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-        }, 3000); // 3秒后重定向
+        document.addEventListener('DOMContentLoaded', function() {
+            showSuccessPopup();
+            setTimeout(function() {
+                window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+            }, 3000); // 3秒后重定向
+        });
     </script>";
-    exit;
 } else {
-        echo "<script>alert('Failed to submit review. Please try again.');</script>";
-    }
+    // 提交失败时显示错误消息
+    echo "<script>alert('Error saving review. Please try again later.');</script>";
+}
 }
 ?>
 
@@ -457,7 +460,48 @@ textarea {
     color: white;
     margin-left: 10px;
 }
+.popup-success {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    z-index: 1000;
+    animation: fadeIn 0.5s ease;
+}
 
+.success-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #28a745; /* 绿色图标 */
+    margin-bottom: 15px;
+}
+
+.popup-success h3 {
+    font-size: 20px;
+    color: #333;
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
 </style>
 </head>
 <body class="animsition">
@@ -1374,6 +1418,14 @@ productSelect.addEventListener("change", function () {
 function resetProductPreview() {
     productImage.style.display = "none";
     productName.textContent = "";
+}
+
+// 显示成功提交弹窗
+function showSuccessPopup() {
+    document.getElementById("successPopup").style.display = "block";
+    setTimeout(function() {
+        document.getElementById("successPopup").style.display = "none";
+    }, 3000); // 3秒后自动关闭
 }
 </script>
 </body>
