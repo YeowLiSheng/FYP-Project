@@ -138,15 +138,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-	if ($stmt->execute()) {
-		echo "<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				showSuccessPopup(); // 显示成功弹窗
-			});
-		</script>";
-	} else {
-		echo "<script>alert('Error saving review. Please try again later.');</script>";
-	}
+    if ($stmt->execute()) {
+        echo "<script>
+            document.addEventListener('DOMContentLoaded', function () {
+                showSuccessPopup(); // 显示成功弹窗
+            });
+        </script>";
+    } else {
+        echo "<script>alert('Error saving review. Please try again later.');</script>";
+    }
 }
 ?>
 
@@ -1384,14 +1384,11 @@ function closePopup() {
 
 // 提交成功后显示特效和按钮
 function showSuccessPopup() {
-    document.getElementById("successPopup").style.display = "block";
-    document.getElementById("overlay").style.display = "block";
+    const successPopup = document.getElementById("successPopup");
+    const overlay = document.getElementById("overlay");
 
-    // 3秒后自动隐藏 loading 提示，并显示 OK 按钮
-    setTimeout(() => {
-        document.querySelector(".submit-button").style.display = "block";
-        document.querySelector("#successPopup p").style.display = "none";
-    }, 3000);
+    successPopup.style.display = "block";
+    overlay.style.display = "block";
 }
 
 // 用户点击 OK 按钮后返回页面
@@ -1400,8 +1397,27 @@ function redirectToPage() {
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function () {
-    document.querySelector(".submit-button").disabled = true;
+document.getElementById("rateForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // 阻止默认提交行为
+
+    const submitButton = document.querySelector(".submit-button");
+    const overlay = document.getElementById("overlay");
+    const loadingText = document.createElement("p");
+
+    // 显示加载动画
+    loadingText.textContent = "Processing...";
+    submitButton.style.display = "none";
+    overlay.style.display = "block";
+    document.querySelector(".success-content").appendChild(loadingText);
+
+    // 延迟 3 秒后提交表单
+    setTimeout(() => {
+        // 提交表单
+        this.submit();
+
+        // 移除加载提示
+        loadingText.remove();
+    }, 3000);
 });
 
 // 评分逻辑
