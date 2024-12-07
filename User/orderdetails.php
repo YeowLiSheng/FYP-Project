@@ -139,19 +139,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
-		// 提交成功时触发特效并加载到页面底部
+		// 提交成功时显示弹窗特效并重定向
 		echo "<script>
 			document.addEventListener('DOMContentLoaded', function() {
 				showSuccessPopup();
 				setTimeout(function() {
-					window.scrollTo(0, document.body.scrollHeight); // 滑动到页面底部
-					setTimeout(function() {
-						window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-					}, 3000); // 3秒后重定向
-				}, 500); // 添加延迟以确保动画执行
+					window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+				}, 3000); // 3秒后重定向
 			});
 		</script>";
-		exit; // 避免输出额外的内容
 	} else {
 		// 提交失败时显示错误消息
 		echo "<script>alert('Error saving review. Please try again later.');</script>";
@@ -470,21 +466,12 @@ textarea {
     left: 50%;
     transform: translate(-50%, -50%);
     background: #fff;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 20px 40px;
+    border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    z-index: 9999;
-    display: none;
-}
-
-.popup-success.popup-loading {
-    animation: fade-in-out 3s linear;
-}
-
-@keyframes fade-in-out {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 1; }
+    z-index: 1000;
+    animation: fadeIn 0.5s ease;
 }
 
 .success-content {
