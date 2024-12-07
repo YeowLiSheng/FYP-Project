@@ -410,7 +410,7 @@ function add_check() {
             <form method="POST" action="" class="searchbar">
                 <div class="ss">
                     <ion-icon class="magni" name="search-outline"></ion-icon>
-                    <input type="text" class="input" placeholder="Search with name" name="search" style="">
+                    <input type="text" class="input" placeholder="Search with name" name="search" >
                 </div>
                 <?php
                 $c = mysqli_query($connect, "SELECT * FROM category");
