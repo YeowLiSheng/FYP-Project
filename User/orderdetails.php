@@ -146,9 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			}, 3000); // 3秒后重定向
 		</script>";
 		exit;
-	} else {
-        echo "<script>alert('Failed to submit review. Please try again.');</script>";
-    }
+	} 
 }
 ?>
 
