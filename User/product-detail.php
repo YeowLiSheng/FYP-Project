@@ -87,8 +87,7 @@ $review_query = "
         r.comment, 
         r.rating, 
         u.user_name, 
-        u.user_image, 
-        COUNT(*) as review_count
+        u.user_image 
     FROM 
         reviews r
     JOIN 
@@ -96,11 +95,7 @@ $review_query = "
     JOIN 
         order_details od ON r.detail_id = od.detail_id
     WHERE 
-        od.product_id = ?
-    GROUP BY 
-        r.comment, r.rating, u.user_name, u.user_image";
-
-		
+        od.product_id = ?";
 $stmt = $conn->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $conn->error); // 输出 SQL 错误
@@ -108,11 +103,6 @@ if (!$stmt) {
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
-$review_count = 0; // 设置默认评论数量为 0
-if ($reviews_result) {
-    $row = $reviews_result->fetch_assoc();
-    $review_count = $row['review_count']; // 从查询结果中获取评论数量
-}
 
 // Close the connection
 $conn->close();
@@ -605,7 +595,7 @@ $conn->close();
 						</li>
 
 						<li class="nav-item p-b-10">
-						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo htmlspecialchars($review_count); ?>)</a>
+							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
 						</li>
 					</ul>
 
