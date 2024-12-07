@@ -1373,7 +1373,7 @@ function closePopup() {
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function (e) {
+document.getElementById("rateForm").addEventListener("submit", function () {
 
 
     // 提交表单后显示成功提示
