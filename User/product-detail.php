@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -10,23 +10,25 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
+    header("Location: login.php");
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
 
-// Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
     $row = mysqli_fetch_assoc($result);
 } else {
     echo "User not found.";
     exit;
 }
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+
+// Fetch and combine cart items for the logged-in user
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
            SUM(sc.qty) AS total_qty, 
@@ -36,6 +38,7 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -48,16 +51,16 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     } else {
         echo json_encode(null);
     }
-    exit; // Stop further script execution
+    exit;
 }
+
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-    $user_id = $_SESSION['id']; // Get the logged-in user ID
+    $user_id = $_SESSION['id'];
 
-    // Insert data into shopping_cart table, including the user_id
     $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
     if ($conn->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
@@ -67,9 +70,8 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     exit;
 }
 
-$product_id = $_GET['id']; // Get the product ID from the URL
+$product_id = $_GET['id'];
 
-// Fetch product details based on product_id
 $query = "SELECT * FROM product WHERE product_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $product_id);
@@ -77,8 +79,33 @@ $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
-// Close the statement and connection
 $stmt->close();
+
+// Fetch reviews for the product
+$review_query = "
+    SELECT 
+        r.comment, 
+        r.rating, 
+		r.image,
+        u.user_name, 
+        u.user_image 
+    FROM 
+        reviews r
+    JOIN 
+        user u ON r.user_id = u.user_id
+    JOIN 
+        order_details od ON r.detail_id = od.detail_id
+    WHERE 
+        od.product_id = ?";
+$stmt = $conn->prepare($review_query);
+if (!$stmt) {
+    die("SQL prepare failed: " . $conn->error); // 输出 SQL 错误
+}
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$reviews_result = $stmt->get_result();
+
+// Close the connection
 $conn->close();
 ?>
 
@@ -643,88 +670,56 @@ $conn->close();
 							</div>
 						</div>
 
-						<!-- - -->
 						<div class="tab-pane fade" id="reviews" role="tabpanel">
-							<div class="row">
-								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-									<div class="p-b-30 m-lr-15-sm">
-										<!-- Review -->
-										<div class="flex-w flex-t p-b-68">
-											<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-												<img src="images/avatar-01.jpg" alt="AVATAR">
-											</div>
+    <div class="row">
+        <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+            <div class="p-b-30 m-lr-15-sm">
+                <!-- Check if there are reviews -->
+                <?php if ($reviews_result->num_rows > 0) { ?>
+                    <?php while ($review = $reviews_result->fetch_assoc()) { ?>
+                        <div class="flex-w flex-t p-b-68">
+                            <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User "
+								style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
+                            </div>
+                            <div class="size-207">
+                                <div class="flex-w flex-sb-m p-b-17">
+                                    <span class="mtext-107 cl2 p-r-20">
+                                        <?php echo htmlspecialchars($review['user_name']); ?>
+                                    </span>
+                                    <span class="fs-18 cl11">
+                                        <?php for ($i = 1; $i <= 5; $i++) { ?>
+                                            <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
+                                        <?php } ?>
+                                    </span>
+                                </div>
+                                <p class="stext-102 cl6">
+                                    <?php echo htmlspecialchars($review['comment']); ?>
+                                </p>
+								<?php if (!empty($review['image'])) { ?>
+                                    <div class="review-image">
+    <img src="<?php echo $review['image']; ?>" alt="Review Image" 
+         style="width: 150px; height: 150px; border-radius: 10px; object-fit: cover; margin-top: 10px; cursor: pointer;" 
+         onclick="openModal('<?php echo $review['image']; ?>')">
+</div>
 
-											<div class="size-207">
-												<div class="flex-w flex-sb-m p-b-17">
-													<span class="mtext-107 cl2 p-r-20">
-														Ariana Grande
-													</span>
+<!-- 模态框 -->
+<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
+    <span style="position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer;" onclick="closeModal()">&times;</span>
+    <img id="modalImage" src="" alt="Full Image" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
+</div>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+                <?php } else { ?>
+                    <p class="stext-102 cl6">No reviews to show</p>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
 
-													<span class="fs-18 cl11">
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star-half"></i>
-													</span>
-												</div>
-
-												<p class="stext-102 cl6">
-													Quod autem in homine praestantissimum atque optimum est, id deseruit. Apud ceteros autem philosophos
-												</p>
-											</div>
-										</div>
-										
-										<!-- Add review -->
-										<form class="w-full">
-											<h5 class="mtext-108 cl2 p-b-7">
-												Add a review
-											</h5>
-
-											<p class="stext-102 cl6">
-												Your email address will not be published. Required fields are marked *
-											</p>
-
-											<div class="flex-w flex-m p-t-50 p-b-23">
-												<span class="stext-102 cl3 m-r-16">
-													Your Rating
-												</span>
-
-												<span class="wrap-rating fs-18 cl11 pointer">
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<input class="dis-none" type="number" name="rating">
-												</span>
-											</div>
-
-											<div class="row p-b-25">
-												<div class="col-12 p-b-5">
-													<label class="stext-102 cl3" for="review">Your review</label>
-													<textarea class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10" id="review" name="review"></textarea>
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="name">Name</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name" type="text" name="name">
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="email">Email</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="email" type="text" name="email">
-												</div>
-											</div>
-
-											<button class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
-												Submit
-											</button>
-										</form>
-									</div>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -1472,6 +1467,17 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 	<script src="js/main.js"></script>
+	<script> function openModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+        modal.style.display = 'flex';
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }</script>
 
 </body>
 </html>
