@@ -704,7 +704,7 @@ $conn->close();
 </div>
 
 <!-- 模态框 -->
-<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center;">
+<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
     <span style="position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer;" onclick="closeModal()">&times;</span>
     <img id="modalImage" src="" alt="Full Image" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
 </div>
