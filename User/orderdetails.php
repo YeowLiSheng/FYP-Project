@@ -1373,34 +1373,10 @@ function closePopup() {
 
 // 禁用重复提交
 document.getElementById("rateForm").addEventListener("submit", function (e) {
-    e.preventDefault();  // 阻止默认提交行为
+    e.preventDefault();  // 防止默认提交行为
 
-    // 显示 Processing 弹窗
-    document.getElementById("processingPopup").style.display = "block";
-
-    // 模拟延迟提交表单到服务器
-    setTimeout(function () {
-        // 发送表单数据到服务器
-        const formData = new FormData(document.getElementById("rateForm"));
-
-        fetch("orderdetails.php?order_id=<?= $order_id ?>", {
-            method: "POST",
-            body: formData,
-        })
-        .then(response => response.text())
-        .then(data => {
-            // 关闭 Processing 弹窗
-            document.getElementById("processingPopup").style.display = "none";
-
-            // 显示成功弹窗
-            document.getElementById("successPopup").style.display = "block";
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("提交失败，请重试！");
-            document.getElementById("processingPopup").style.display = "none";
-        });
-    }, 3000);  // 模拟 3 秒延迟
+    // 提交表单后显示成功提示
+    document.getElementById("successPopup").style.display = "block";  
 });
 
 function redirectToPage() {
