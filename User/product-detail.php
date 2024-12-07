@@ -669,38 +669,42 @@ $conn->close();
 							</div>
 						</div>
 
-						<!-- - -->
 						<div class="tab-pane fade show active" id="reviews" role="tabpanel">
-            <div class="row">
-                <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-                    <div class="p-b-30 m-lr-15-sm">
-                        <!-- Display Reviews -->
-                        <?php while ($review = $reviews_result->fetch_assoc()) { ?>
-                            <div class="flex-w flex-t p-b-68">
-                                <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                    <img src="images/<?php echo $review['user_image']; ?>" alt="User Avatar">
-                                </div>
-                                <div class="size-207">
-                                    <div class="flex-w flex-sb-m p-b-17">
-                                        <span class="mtext-107 cl2 p-r-20">
-                                            <?php echo $review['user_name']; ?>
-                                        </span>
-                                        <span class="fs-18 cl11">
-                                            <?php for ($i = 1; $i <= 5; $i++) { ?>
-                                                <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
-                                            <?php } ?>
-                                        </span>
-                                    </div>
-                                    <p class="stext-102 cl6">
-                                        <?php echo $review['comment']; ?>
-                                    </p>
-                                </div>
+    <div class="row">
+        <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+            <div class="p-b-30 m-lr-15-sm">
+                <!-- Check if there are reviews -->
+                <?php if ($reviews_result->num_rows > 0) { ?>
+                    <?php while ($review = $reviews_result->fetch_assoc()) { ?>
+                        <div class="flex-w flex-t p-b-68">
+                            <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User Avatar">
                             </div>
-                        <?php } ?>
-                    </div>
-                </div>
+                            <div class="size-207">
+                                <div class="flex-w flex-sb-m p-b-17">
+                                    <span class="mtext-107 cl2 p-r-20">
+                                        <?php echo htmlspecialchars($review['user_name']); ?>
+                                    </span>
+                                    <span class="fs-18 cl11">
+                                        <?php for ($i = 1; $i <= 5; $i++) { ?>
+                                            <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
+                                        <?php } ?>
+                                    </span>
+                                </div>
+                                <p class="stext-102 cl6">
+                                    <?php echo htmlspecialchars($review['comment']); ?>
+                                </p>
+                            </div>
+                        </div>
+                    <?php } ?>
+                <?php } else { ?>
+                    <p class="stext-102 cl6">No reviews to show</p>
+                <?php } ?>
             </div>
         </div>
+    </div>
+</div>
+
 					</div>
 				</div>
 			</div>
