@@ -1311,12 +1311,11 @@ textarea {
 	<script src="js/main.js"></script>
 	<script>
 // 打开弹窗
-// 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
 
-// 关闭弹窗并重置表单
+// 关闭弹窗
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
     document.getElementById("rateForm").reset();
