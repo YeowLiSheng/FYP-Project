@@ -138,21 +138,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-
     if ($stmt->execute()) {
-        // 重定向以防止页面刷新后重复弹窗
-        header("Location: orderdetails.php?order_id=$order_id&review=success");
+        echo "<script>
+            alert('Review submitted successfully!');
+            closePopup(); // 调用关闭弹窗函数
+            document.getElementById('rateForm').reset(); // 重置表单
+        </script>";
+        // 重定向到订单详情页面，避免重复提交
+        header("Location: orderdetails.php?order_id=" . $order_id);
         exit;
     } else {
         echo "<script>alert('Failed to submit review. Please try again.');</script>";
     }
 }
-
-// 显示成功消息
-if (isset($_GET['review']) && $_GET['review'] === 'success') {
-    echo "<script>alert('Review submitted successfully!');</script>";
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -370,34 +368,41 @@ if (isset($_GET['review']) && $_GET['review'] === 'success') {
     }
 
 
+/* 弹窗样式 */
 .popup-container {
+    display: none;  /* 默认隐藏 */
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: white;
     padding: 20px;
-    z-index: 2000;
-    border-radius: 10px;
+    z-index: 1000;
+    border-radius: 8px;
     width: 400px;
-    max-width: 90%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .popup-content {
-    text-align: center;
+    text-align: left;
 }
 
 .product-select-container {
-    position: relative;
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .selected-product-preview {
     display: flex;
-    flex-direction: column; /* 垂直对齐 */
+    flex-direction: column;
     align-items: center;
-    margin-top: 10px;
+}
+
+.product-image {
+    width: 100px;
+    height: auto;
+    border-radius: 4px;
 }
 
 .selected-product-preview img {
@@ -842,19 +847,19 @@ textarea {
             <!-- 产品选择 -->
             <label for="productSelect">Select Product:</label>
             <div class="product-select-container">
-			<select id="productSelect" name="product_id" required>
-    <option value="" disabled selected>Select a product</option>
-    <?php foreach ($order_details as $detail) { ?>
-        <option value="<?= $detail['product_id'] ?>" 
-        data-img="images/<?= $detail['product_image'] ?>">
-            <?= $detail['product_name'] ?>
-        </option>
-    <?php } ?>
-</select>
+                <select id="productSelect" name="product_id" required>
+                    <option value="" disabled selected>Select a product</option>
+                    <?php foreach ($order_details as $detail) { ?>
+                        <option value="<?= $detail['product_id'] ?>" 
+                                data-img="images/<?= $detail['product_image'] ?>">
+                            <?= $detail['product_name'] ?>
+                        </option>
+                    <?php } ?>
+                </select>
                 <div class="selected-product-preview" id="productPreview">
                     <img id="productImage" src="" alt="Product Image" style="display: none;" />
-					<span id="productName" style="display: block;"></span>
-					</div>
+                    <span id="productName" style="display: block;"></span>
+                </div>
             </div>
 
             <!-- 评分 -->
@@ -880,7 +885,6 @@ textarea {
         </form>
     </div>
 </div>
-
 </div>
 </div>
 
@@ -1311,6 +1315,7 @@ textarea {
 	<script src="js/main.js"></script>
 	<script>
 // 打开弹窗
+// 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
@@ -1318,10 +1323,15 @@ function openPopup() {
 // 关闭弹窗
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
-    document.getElementById("rateForm").reset();
-    resetStars();
-    resetProductPreview();
+    document.getElementById("rateForm").reset(); // 重置表单
+    resetStars();   // 重置评分星星
+    resetProductPreview(); // 重置产品预览
 }
+
+// 禁用重复提交
+document.getElementById("rateForm").addEventListener("submit", function () {
+    document.querySelector(".submit-button").disabled = true;
+});
 
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
