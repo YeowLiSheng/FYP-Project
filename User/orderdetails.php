@@ -136,13 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-    if ($stmt->execute()) {
-        echo "<script>
-                window.onload = function() {
-                    document.getElementById('successPopup').style.display = 'block';
-                }
-              </script>";
-    }
+    $stmt->execute();
 }
 
 
@@ -1378,7 +1372,12 @@ function closePopup() {
     resetProductPreview(); // 重置产品预览
 }
 
+// 禁用重复提交
+document.getElementById("rateForm").addEventListener("submit", function (e) {
 
+    // 提交表单后显示成功提示z
+    document.getElementById("successPopup").style.display = "block";  
+});
 
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
