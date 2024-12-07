@@ -186,24 +186,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<!--===============================================================================================-->
 <style>
     /* 全局样式 */
-	html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    box-sizing: border-box;
-}
+	
     .main-container {
     display: flex;
     flex-direction: row;
     width: 100%; /* 确保容器宽度为全屏 */
-    min-height: 100%; /* 确保主容器占满页面 */
 
 }
     .sidebar {
 	width: 250px;
     padding: 20px;
-    height: calc(100vh - 40px); /* 确保高度填满父容器 */
+    height: 100%;
     position: static; /* 保持 static */
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
@@ -274,8 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         padding: 20px;
         margin: 0;
         flex: 1; /* 让容器填满 sidebar 旁边的剩余空间 */
-		min-height: 100%; /* 填充剩余高度 */
-    box-sizing: border-box;
+
     }
     .card {
         background: #ffffff;
