@@ -90,6 +90,9 @@ $review_query = "
 $stmt = $conn->prepare($review_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
+if (!$stmt) {
+    die("SQL prepare failed: " . $conn->error); // 输出 SQL 错误
+}
 $reviews_result = $stmt->get_result();
 
 // Close the connection
