@@ -101,6 +101,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['id'];
     $image_path = null;
 
+    // 获取 detail_id
+    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
+    $detail_query->bind_param("ii", $product_id, $order_id);
+    $detail_query->execute();
+    $detail_result = $detail_query->get_result();
+
+    if ($detail_result->num_rows === 0) {
+        echo "<script>alert('Invalid product selection. Please try again.');</script>";
+        exit;
+    }
+
+    $detail = $detail_result->fetch_assoc();
+    $detail_id = $detail['detail_id'];
+
     // 处理上传图片
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
@@ -112,6 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
             $image_path = $target_path;
+        } else {
+            echo "<script>alert('Failed to upload image. Please try again.');</script>";
+            exit;
         }
     }
 
@@ -120,13 +137,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
         VALUES (?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param("iissi", $product_id, $rating, $comment, $image_path, $user_id);
+    $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
     if ($stmt->execute()) {
         echo "<script>alert('Review submitted successfully!');</script>";
     } else {
         echo "<script>alert('Failed to submit review. Please try again.');</script>";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
