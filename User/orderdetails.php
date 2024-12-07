@@ -55,7 +55,7 @@ if (!isset($_GET['order_id'])) {
 
 
 
-$order_id = intval($_GET['order_id']); 
+$order_id = intval($_GET['order_id']); // 或使用适当的获取方式
 
 // 使用预处理语句获取订单信息
 $order_stmt = $conn->prepare("
@@ -138,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
     $stmt->execute();
 }
+
 
 ?>
 
@@ -1372,15 +1373,16 @@ function closePopup() {
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function () {
+document.getElementById("rateForm").addEventListener("submit", function (e) {
+    e.preventDefault();  // 防止默认提交行为
 
-// 提交表单后显示成功提示z
-document.getElementById("successPopup").style.display = "block";  
+    // 提交表单后显示成功提示
+    document.getElementById("successPopup").style.display = "block";  
 });
 
 function redirectToPage() {
-window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
-
+    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
+}
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
