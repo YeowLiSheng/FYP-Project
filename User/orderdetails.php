@@ -139,14 +139,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
+		// 提交成功时显示弹窗特效并重定向
 		echo "<script>
-			showSuccessPopup();
-			setTimeout(function() {
-				window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-			}, 3000); // 3秒后重定向
+			document.addEventListener('DOMContentLoaded', function() {
+				showSuccessPopup();
+				setTimeout(function() {
+					window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+				}, 3000); // 3秒后重定向
+			});
 		</script>";
-		exit;
-	} 
+	} else {
+		// 提交失败时显示错误消息
+		echo "<script>alert('Error saving review. Please try again later.');</script>";
+	}
 }
 ?>
 
@@ -1355,6 +1360,7 @@ textarea {
 	<script>
 // 打开弹窗
 // 打开弹窗
+// 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
@@ -1371,6 +1377,14 @@ function closePopup() {
 document.getElementById("rateForm").addEventListener("submit", function () {
     document.querySelector(".submit-button").disabled = true;
 });
+
+// 显示成功提交弹窗
+function showSuccessPopup() {
+    document.getElementById("successPopup").style.display = "block";
+    setTimeout(function() {
+        document.getElementById("successPopup").style.display = "none";
+    }, 3000); // 3秒后自动关闭
+}
 
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
@@ -1413,14 +1427,6 @@ productSelect.addEventListener("change", function () {
 function resetProductPreview() {
     productImage.style.display = "none";
     productName.textContent = "";
-}
-
-// 显示成功提交弹窗
-function showSuccessPopup() {
-    document.getElementById("successPopup").style.display = "block";
-    setTimeout(function() {
-        document.getElementById("successPopup").style.display = "none";
-    }, 3000); // 3秒后自动关闭
 }
 </script>
 </body>
