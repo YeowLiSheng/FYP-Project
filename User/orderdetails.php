@@ -88,6 +88,12 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
+$order_details = [];
+while ($detail = $details_result->fetch_assoc()) 
+{
+    $order_details[] = $detail;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
@@ -766,7 +772,7 @@ textarea {
                 </tr>
             </thead>
             <tbody>
-                <?php while ($detail = $details_result->fetch_assoc()) { ?>
+			<?php foreach ($order_details as $detail) { ?>
                 <tr>
                     <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
                     <td><?= $detail['product_name'] ?></td>
@@ -801,15 +807,15 @@ textarea {
             <!-- 产品选择 -->
             <label for="productSelect">Select Product:</label>
             <div class="product-select-container">
-                <select id="productSelect" name="product_id" required>
-                    <option value="" disabled selected>Select a product</option>
-                    <?php while ($detail = $details_result->fetch_assoc()) { ?>
-                        <option value="<?= $detail['product_id'] ?>" 
-                                data-img="<?= $detail['product_image'] ?>">
-                            <?= $detail['product_name'] ?>
-                        </option>
-                    <?php } ?>
-                </select>
+			<select id="productSelect" name="product_id" required>
+    <option value="" disabled selected>Select a product</option>
+    <?php foreach ($order_details as $detail) { ?>
+        <option value="<?= $detail['product_id'] ?>" 
+                data-img="<?= $detail['product_image'] ?>">
+            <?= $detail['product_name'] ?>
+        </option>
+    <?php } ?>
+</select>
                 <div class="selected-product-preview" id="productPreview">
                     <img id="productImage" src="" alt="Product Image" style="display: none;" />
                     <span id="productName"></span>
