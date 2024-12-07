@@ -138,11 +138,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
+
     if ($stmt->execute()) {
-        echo "<script>alert('Review submitted successfully!');</script>";
+        // 重定向以防止页面刷新后重复弹窗
+        header("Location: orderdetails.php?order_id=$order_id&review=success");
+        exit;
     } else {
         echo "<script>alert('Failed to submit review. Please try again.');</script>";
     }
+}
+
+// 显示成功消息
+if (isset($_GET['review']) && $_GET['review'] === 'success') {
+    echo "<script>alert('Review submitted successfully!');</script>";
 }
 
 ?>
@@ -1303,11 +1311,12 @@ textarea {
 	<script src="js/main.js"></script>
 	<script>
 // 打开弹窗
+// 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
 
-// 关闭弹窗
+// 关闭弹窗并重置表单
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
     document.getElementById("rateForm").reset();
