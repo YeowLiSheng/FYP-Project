@@ -95,9 +95,14 @@ while ($detail = $details_result->fetch_assoc())
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['product_id']) || empty($_POST['product_id'])) {
+        echo "<script>alert('Please select a product before submitting the review.');</script>";
+        exit;
+    }
+
     $product_id = intval($_POST['product_id']);
-    $rating = intval($_POST['rating']);
-    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
+    $rating = isset($_POST['rating']) ? intval($_POST['rating']) : 0; // 默认评分为 0
+    $comment = htmlspecialchars($_POST['comment'] ?? '', ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
@@ -139,14 +144,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
     if ($stmt->execute()) {
-		echo "<script>alert('Review submitted successfully!');</script>";
-		header("Location: order_details.php?order_id=$order_id"); // 重定向到当前页面
-		exit;
-	} else {
-		echo "<script>alert('Failed to submit review. Please try again.');</script>";
-	}
+        echo "<script>alert('Review submitted successfully!');</script>";
+        header("Location: order_details.php?order_id=$order_id"); // 重定向到当前页面
+        exit;
+    } else {
+        echo "<script>alert('Failed to submit review. Please try again.');</script>";
+    }
 }
-
 ?>
 
 <!DOCTYPE html>
