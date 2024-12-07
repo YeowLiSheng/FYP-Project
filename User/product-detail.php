@@ -100,11 +100,6 @@ $review_query = "
     GROUP BY 
         r.comment, r.rating, u.user_name, u.user_image";
 
-		$review_count = 0; // 初始化评论数量为 0
-		if ($reviews_result) {
-			$row = $reviews_result->fetch_assoc();
-			$review_count = $row['review_count']; // 从结果中获取评论数量
-		}
 		
 $stmt = $conn->prepare($review_query);
 if (!$stmt) {
@@ -113,6 +108,11 @@ if (!$stmt) {
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
+$review_count = 0; // 设置默认评论数量为 0
+if ($reviews_result) {
+    $row = $reviews_result->fetch_assoc();
+    $review_count = $row['review_count']; // 从查询结果中获取评论数量
+}
 
 // Close the connection
 $conn->close();
