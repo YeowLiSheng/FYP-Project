@@ -88,6 +88,8 @@ $review_query = "
         r.rating, 
         u.user_name, 
         u.user_image 
+		COUNT(*) as review_count 
+
     FROM 
         reviews r
     JOIN 
@@ -595,7 +597,7 @@ $conn->close();
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
+						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo $review_count; ?>)</a>
 						</li>
 					</ul>
 
