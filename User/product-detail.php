@@ -678,7 +678,8 @@ $conn->close();
                     <?php while ($review = $reviews_result->fetch_assoc()) { ?>
                         <div class="flex-w flex-t p-b-68">
                             <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User Avatar">
+                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User "
+								style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
                             </div>
                             <div class="size-207">
                                 <div class="flex-w flex-sb-m p-b-17">
