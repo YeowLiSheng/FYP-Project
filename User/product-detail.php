@@ -77,17 +77,17 @@ $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
+
 $reviews_query = "
-    SELECT r.rating, r.comment, r.created_at, 
-           u.user_name, u.user_image 
-    FROM review r 
-    JOIN user u ON r.user_id = u.user_id 
-    WHERE r.product_id = ? 
-    ORDER BY r.created_at DESC";
-$stmt_reviews = $conn->prepare($reviews_query);
-$stmt_reviews->bind_param("i", $product_id);
-$stmt_reviews->execute();
-$reviews_result = $stmt_reviews->get_result();
+    SELECT r.comment, r.rating, u.user_name, u.user_image 
+    FROM review r
+    JOIN user u ON r.user_id = u.user_id
+    WHERE r.product_id = ?
+";
+$reviews_stmt = $conn->prepare($reviews_query);
+$reviews_stmt->bind_param("i", $product_id);
+$reviews_stmt->execute();
+$reviews_result = $reviews_stmt->get_result();
 
 // Close the statement and connection
 $stmt->close();
@@ -662,10 +662,10 @@ $conn->close();
             <div class="p-b-30 m-lr-15-sm">
                 <?php if ($reviews_result->num_rows > 0): ?>
                     <?php while ($review = $reviews_result->fetch_assoc()): ?>
-                        <!-- Display each review -->
+                        <!-- Review -->
                         <div class="flex-w flex-t p-b-68">
                             <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                <img src="images/<?php echo htmlspecialchars($review['user_image']); ?>" alt="AVATAR">
+                                <img src="images/<?php echo htmlspecialchars($review['user_image']); ?>" alt="User Image">
                             </div>
 
                             <div class="size-207">
@@ -675,10 +675,10 @@ $conn->close();
                                     </span>
 
                                     <span class="fs-18 cl11">
-                                        <?php 
-                                        // Display star ratings
-                                        for ($i = 0; $i < 5; $i++) {
-                                            if ($i < $review['rating']) {
+                                        <?php
+                                        // Display star rating
+                                        for ($i = 1; $i <= 5; $i++) {
+                                            if ($i <= $review['rating']) {
                                                 echo '<i class="zmdi zmdi-star"></i>';
                                             } else {
                                                 echo '<i class="zmdi zmdi-star-outline"></i>';
@@ -691,21 +691,19 @@ $conn->close();
                                 <p class="stext-102 cl6">
                                     <?php echo htmlspecialchars($review['comment']); ?>
                                 </p>
-                                <p class="stext-102 cl6">
-                                    <small><?php echo date("F j, Y", strtotime($review['created_at'])); ?></small>
-                                </p>
                             </div>
                         </div>
                     <?php endwhile; ?>
                 <?php else: ?>
-                    <p class="stext-102 cl6">No reviews for this product yet.</p>
+                    <p class="stext-102 cl6">No reviews available for this product.</p>
                 <?php endif; ?>
-
-                <?php $stmt_reviews->close(); ?>
             </div>
         </div>
     </div>
 </div>
+<?php
+$reviews_stmt->close();
+?>
 					</div>
 				</div>
 			</div>
