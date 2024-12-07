@@ -95,7 +95,6 @@ while ($detail = $details_result->fetch_assoc())
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    sleep(3);  // 模拟服务器端延迟
 
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
@@ -486,32 +485,7 @@ textarea {
     font-size: 20px;
     color: #333;
 }
-/* Processing 弹窗样式 */
-.popup-processing, .popup-success {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
 /* 淡入动画 */
 @keyframes fadeIn {
     from {
@@ -943,12 +917,7 @@ textarea {
     </div>
 </div>
 <div id="overlay" style="display: none;"></div>
-<div id="processingPopup" class="popup-processing" style="display: none;">
-    <div class="processing-content">
-        <div class="spinner"></div>
-        <h3>Processing...</h3>
-    </div>
-</div>
+
 <div id="successPopup" class="popup-success" style="display: none;">
     <div class="success-content">
         <div class="success-icon">
@@ -1406,33 +1375,12 @@ function closePopup() {
 document.getElementById("rateForm").addEventListener("submit", function (e) {
     e.preventDefault();  // 阻止默认提交行为
 
-    // 显示 Processing 弹窗
-    document.getElementById("processingPopup").style.display = "block";
 
-    // 模拟延迟提交表单到服务器
-    setTimeout(function () {
-        // 发送表单数据到服务器
-        const formData = new FormData(document.getElementById("rateForm"));
-
-        fetch("orderdetails.php?order_id=<?= $order_id ?>", {
-            method: "POST",
-            body: formData,
-        })
-        .then(response => response.text())
-        .then(data => {
-            // 关闭 Processing 弹窗
-            document.getElementById("processingPopup").style.display = "none";
 
             // 显示成功弹窗
             document.getElementById("successPopup").style.display = "block";
         })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("提交失败，请重试！");
-            document.getElementById("processingPopup").style.display = "none";
-        });
-    }, 3000);  // 模拟 3 秒延迟
-});
+
 
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
