@@ -67,7 +67,18 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     exit;
 }
 
-$product_id = $_GET['id']; // Get the product ID from the URL
+$product_id = $_GET['id']; // 获取 URL 中的 product_id
+
+// 查询产品详细信息
+$product_query = "SELECT * FROM product WHERE product_id = ?";
+$product_stmt = $conn->prepare($product_query);
+$product_stmt->bind_param("i", $product_id);
+$product_stmt->execute();
+$product_result = $product_stmt->get_result();
+$product = $product_result->fetch_assoc();
+$product_stmt->close();
+
+// 查询评论信息
 $reviews_query = "
     SELECT r.review_id, r.comment, r.rating, r.created_at, 
            u.user_name, u.user_image 
@@ -75,21 +86,14 @@ $reviews_query = "
     JOIN user u ON r.user_id = u.user_id
     WHERE r.product_id = ?
     ORDER BY r.created_at DESC";
-$stmt = $conn->prepare($reviews_query);
+$reviews_stmt = $conn->prepare($reviews_query);
+$reviews_stmt->bind_param("i", $product_id);
+$reviews_stmt->execute();
+$reviews_result = $reviews_stmt->get_result();
+$reviews_stmt->close();
 
-// Fetch product details based on product_id
-$query = "SELECT * FROM product WHERE product_id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$reviews_result = $stmt->get_result();
-
-$product = $result->fetch_assoc();
-
-// Close the statement and connection
-$stmt->close();
 $conn->close();
+
 ?>
 
 <!DOCTYPE html>
