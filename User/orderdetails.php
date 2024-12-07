@@ -138,15 +138,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-    if ($stmt->execute()) {
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function () {
-                showSuccessPopup(); // 显示成功弹窗
-            });
-        </script>";
-    } else {
-        echo "<script>alert('Error saving review. Please try again later.');</script>";
-    }
+	if ($stmt->execute()) {
+    // 提交成功时显示弹窗特效并重定向
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showSuccessPopup();
+            setTimeout(function() {
+                window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+            }, 3000); // 3秒后重定向
+        });
+    </script>";
+} else {
+    // 提交失败时显示错误消息
+    echo "<script>alert('Error saving review. Please try again later.');</script>";
+}
 }
 ?>
 
@@ -1370,54 +1375,19 @@ textarea {
 // 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
-    document.getElementById("overlay").style.display = "block";
 }
 
-// 关闭弹窗时隐藏遮罩层
+// 关闭弹窗
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
-    document.getElementById("overlay").style.display = "none";
-    document.getElementById("rateForm").reset();
-    resetStars();
-    resetProductPreview();
-}
-
-// 提交成功后显示特效和按钮
-function showSuccessPopup() {
-    const successPopup = document.getElementById("successPopup");
-    const overlay = document.getElementById("overlay");
-
-    successPopup.style.display = "block";
-    overlay.style.display = "block";
-}
-
-// 用户点击 OK 按钮后返回页面
-function redirectToPage() {
-    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
+    document.getElementById("rateForm").reset(); // 重置表单
+    resetStars();   // 重置评分星星
+    resetProductPreview(); // 重置产品预览
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function (event) {
-    event.preventDefault(); // 阻止默认提交行为
-
-    const submitButton = document.querySelector(".submit-button");
-    const overlay = document.getElementById("overlay");
-    const loadingText = document.createElement("p");
-
-    // 显示加载动画
-    loadingText.textContent = "Processing...";
-    submitButton.style.display = "none";
-    overlay.style.display = "block";
-    document.querySelector(".success-content").appendChild(loadingText);
-
-    // 延迟 3 秒后提交表单
-    setTimeout(() => {
-        // 提交表单
-        this.submit();
-
-        // 移除加载提示
-        loadingText.remove();
-    }, 3000);
+document.getElementById("rateForm").addEventListener("submit", function () {
+    document.querySelector(".submit-button").disabled = true;
 });
 
 // 评分逻辑
@@ -1463,6 +1433,13 @@ function resetProductPreview() {
     productName.textContent = "";
 }
 
+// 显示成功提交弹窗
+function showSuccessPopup() {
+    document.getElementById("successPopup").style.display = "block";
+    setTimeout(function() {
+        document.getElementById("successPopup").style.display = "none";
+    }, 3000); // 3秒后自动关闭
+}
 </script>
 </body>
 </html>
