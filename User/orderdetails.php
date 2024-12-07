@@ -137,9 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
     $stmt->execute();
-
-	echo "<script>document.getElementById('successPopup').style.display = 'block';</script>";
-
 }
 
 
@@ -928,7 +925,7 @@ textarea {
             <i class="fa fa-check-circle"></i>
         </div>
         <h3>Review Submitted Successfully!</h3>
-        <button class="submit-button" id="okButton">OK</button>
+		<button class="submit-button" onclick="redirectToPage()">OK</button>
 
     </div>
 </div>
@@ -1376,9 +1373,15 @@ function closePopup() {
 }
 
 // 禁用重复提交
-document.getElementById("okButton").addEventListener("click", function () {
-    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
+document.getElementById("rateForm").addEventListener("submit", function (e) {
+
+    // 提交表单后显示成功提示z
+    document.getElementById("successPopup").style.display = "block";  
 });
+
+function redirectToPage() {
+    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
+}
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
