@@ -88,6 +88,39 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $product_id = intval($_POST['product_id']);
+    $rating = intval($_POST['rating']);
+    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
+    $user_id = $_SESSION['id'];
+    $image_path = null;
+
+    // 处理上传图片
+    if (!empty($_FILES['image']['name'])) {
+        $upload_dir = "uploads/reviews/";
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        $image_name = uniqid() . "_" . basename($_FILES['image']['name']);
+        $target_path = $upload_dir . $image_name;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
+            $image_path = $target_path;
+        }
+    }
+
+    // 插入数据到数据库
+    $stmt = $conn->prepare("
+        INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param("iissi", $product_id, $rating, $comment, $image_path, $user_id);
+    if ($stmt->execute()) {
+        echo "<script>alert('Review submitted successfully!');</script>";
+    } else {
+        echo "<script>alert('Failed to submit review. Please try again.');</script>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -302,6 +335,59 @@ $details_result = $details_stmt->get_result();
     .rate-button:hover {
         background: #e0a800;
     }
+
+	.popup-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    z-index: 1000;
+    border-radius: 10px;
+    width: 400px;
+}
+
+.popup-content {
+    text-align: center;
+}
+
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.rating-stars .fa-star {
+    font-size: 25px;
+    color: #ccc;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.rating-stars .fa-star.active {
+    color: #FFD700;
+}
+
+.submit-button, .cancel-button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+    margin-left: 10px;
+}
 </style>
 </head>
 <body class="animsition">
@@ -674,8 +760,41 @@ $details_result = $details_stmt->get_result();
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
-    <a href="rate_order.php?order_id=<?= $order['order_id'] ?>" class="rate-button">⭐ Rate Order</a>
+		<a href="javascript:void(0);" class="rate-button" onclick="openPopup()">⭐ Rate Order</a>
 <?php } ?>
+<!-- 弹出评价窗口 -->
+<div id="ratePopup" class="popup-container" style="display: none;">
+    <div class="popup-content">
+        <h2>Rate Product</h2>
+        <form id="rateForm" method="POST" enctype="multipart/form-data">
+            <label for="productSelect">Select Product:</label>
+            <select id="productSelect" name="product_id" required>
+                <?php while ($detail = $details_result->fetch_assoc()) { ?>
+                    <option value="<?= $detail['product_id'] ?>">
+                        <?= $detail['product_name'] ?>
+                    </option>
+                <?php } ?>
+            </select>
+
+            <label for="rating">Rating:</label>
+            <div id="stars" class="rating-stars">
+                <?php for ($i = 1; $i <= 5; $i++) { ?>
+                    <i class="fa fa-star" data-value="<?= $i ?>"></i>
+                <?php } ?>
+            </div>
+            <input type="hidden" id="rating" name="rating" value="" required>
+
+            <label for="comment">Comment:</label>
+            <textarea id="comment" name="comment" rows="4" required></textarea>
+
+            <label for="image">Upload Image (optional):</label>
+            <input type="file" id="image" name="image" accept="image/*">
+
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="closePopup()">Cancel</button>
+        </form>
+    </div>
+</div>
 </div>
 </div>
 
@@ -1104,5 +1223,37 @@ $details_result = $details_stmt->get_result();
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script>
+		// 打开弹出窗口
+function openPopup() {
+    document.getElementById("ratePopup").style.display = "block";
+}
+
+// 关闭弹出窗口
+function closePopup() {
+    document.getElementById("ratePopup").style.display = "none";
+    document.getElementById("rateForm").reset();
+    resetStars();
+}
+
+// 控制星星点击功能
+const stars = document.querySelectorAll(".rating-stars .fa-star");
+stars.forEach(star => {
+    star.addEventListener("click", function () {
+        const value = this.getAttribute("data-value");
+        document.getElementById("rating").value = value;
+
+        stars.forEach(s => s.classList.remove("active"));
+        for (let i = 0; i < value; i++) {
+            stars[i].classList.add("active");
+        }
+    });
+});
+
+// 重置星星状态
+function resetStars() {
+    stars.forEach(star => star.classList.remove("active"));
+}
+	</script>
 </body>
 </html>
