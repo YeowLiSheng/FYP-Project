@@ -139,19 +139,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
-    // 提交成功时显示弹窗特效并重定向
-    echo "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            showSuccessPopup();
-            setTimeout(function() {
-                window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-            }, 3000); // 3秒后重定向
-        });
-    </script>";
-} else {
-    // 提交失败时显示错误消息
-    echo "<script>alert('Error saving review. Please try again later.');</script>";
-}
+		echo "<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				showSuccessPopup(); // 显示成功弹窗
+			});
+		</script>";
+	} else {
+		echo "<script>alert('Error saving review. Please try again later.');</script>";
+	}
 }
 ?>
 
@@ -460,6 +455,15 @@ textarea {
     color: white;
     margin-left: 10px;
 }
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
 .popup-success {
     position: fixed;
     top: 50%;
@@ -470,7 +474,7 @@ textarea {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    z-index: 1000;
+	z-index: 2000;
     animation: fadeIn 0.5s ease;
 }
 
@@ -921,12 +925,16 @@ textarea {
         </form>
     </div>
 </div>
+<div id="overlay" style="display: none;"></div>
+
 <div id="successPopup" class="popup-success" style="display: none;">
     <div class="success-content">
         <div class="success-icon">
             <i class="fa fa-check-circle"></i>
         </div>
         <h3>Review Submitted Successfully!</h3>
+		<button class="submit-button" onclick="redirectToPage()">OK</button>
+
     </div>
 </div>
 </div>
@@ -1362,14 +1370,33 @@ textarea {
 // 打开弹窗
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
 }
 
-// 关闭弹窗
+// 关闭弹窗时隐藏遮罩层
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
-    document.getElementById("rateForm").reset(); // 重置表单
-    resetStars();   // 重置评分星星
-    resetProductPreview(); // 重置产品预览
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("rateForm").reset();
+    resetStars();
+    resetProductPreview();
+}
+
+// 提交成功后显示特效和按钮
+function showSuccessPopup() {
+    document.getElementById("successPopup").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
+
+    // 3秒后自动隐藏 loading 提示，并显示 OK 按钮
+    setTimeout(() => {
+        document.querySelector(".submit-button").style.display = "block";
+        document.querySelector("#successPopup p").style.display = "none";
+    }, 3000);
+}
+
+// 用户点击 OK 按钮后返回页面
+function redirectToPage() {
+    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
 }
 
 // 禁用重复提交
@@ -1420,13 +1447,6 @@ function resetProductPreview() {
     productName.textContent = "";
 }
 
-// 显示成功提交弹窗
-function showSuccessPopup() {
-    document.getElementById("successPopup").style.display = "block";
-    setTimeout(function() {
-        document.getElementById("successPopup").style.display = "none";
-    }, 3000); // 3秒后自动关闭
-}
 </script>
 </body>
 </html>
