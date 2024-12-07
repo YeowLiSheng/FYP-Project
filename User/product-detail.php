@@ -82,16 +82,17 @@ $product = $result->fetch_assoc();
 $stmt->close();
 
 // Fetch reviews for the product
-$reviews_query = "
+$review_query = "
     SELECT r.comment, r.rating, u.user_name, u.user_image 
     FROM review r 
     JOIN user u ON r.user_id = u.user_id 
     WHERE r.product_id = ?";
-$stmt = $conn->prepare($reviews_query);
-
+$stmt = $conn->prepare($review_query);
+if (!$stmt) {
+    die("SQL prepare failed: " . $conn->error); // 输出 SQL 错误
+}
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
-
 $reviews_result = $stmt->get_result();
 
 // Close the connection
