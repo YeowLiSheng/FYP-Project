@@ -1,5 +1,5 @@
 <?php
-session_start(); 
+session_start();
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -10,23 +10,25 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
+    header("Location: login.php");
     exit;
 }
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 $result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
 
-// Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
     $row = mysqli_fetch_assoc($result);
 } else {
     echo "User not found.";
     exit;
 }
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+
+// Fetch and combine cart items for the logged-in user
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
            SUM(sc.qty) AS total_qty, 
@@ -36,6 +38,7 @@ $cart_items_query = "
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
 $cart_items_result = $conn->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -48,16 +51,16 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     } else {
         echo json_encode(null);
     }
-    exit; // Stop further script execution
+    exit;
 }
+
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-    $user_id = $_SESSION['id']; // Get the logged-in user ID
+    $user_id = $_SESSION['id'];
 
-    // Insert data into shopping_cart table, including the user_id
     $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
     if ($conn->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
@@ -67,9 +70,8 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     exit;
 }
 
-$product_id = $_GET['id']; // Get the product ID from the URL
+$product_id = $_GET['id'];
 
-// Fetch product details based on product_id
 $query = "SELECT * FROM product WHERE product_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $product_id);
@@ -77,20 +79,20 @@ $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
-
-$reviews_query = "
-    SELECT r.comment, r.rating, u.user_name, u.user_image 
-    FROM review r
-    JOIN user u ON r.user_id = u.user_id
-    WHERE r.product_id = ?
-";
-$reviews_stmt = $conn->prepare($reviews_query);
-$reviews_stmt->bind_param("i", $product_id);
-$reviews_stmt->execute();
-$reviews_result = $reviews_stmt->get_result();
-
-// Close the statement and connection
 $stmt->close();
+
+// Fetch reviews for the product
+$review_query = "
+    SELECT r.comment, r.rating, u.user_name, u.user_image 
+    FROM review r 
+    JOIN user u ON r.user_id = u.user_id 
+    WHERE r.product_id = ?";
+$stmt = $conn->prepare($review_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$reviews_result = $stmt->get_result();
+
+// Close the connection
 $conn->close();
 ?>
 
@@ -656,54 +658,37 @@ $conn->close();
 						</div>
 
 						<!-- - -->
-						<div class="tab-pane fade" id="reviews" role="tabpanel">
-    <div class="row">
-        <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-            <div class="p-b-30 m-lr-15-sm">
-                <?php if ($reviews_result->num_rows > 0): ?>
-                    <?php while ($review = $reviews_result->fetch_assoc()): ?>
-                        <!-- Review -->
-                        <div class="flex-w flex-t p-b-68">
-                            <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                <img src="images/<?php echo htmlspecialchars($review['user_image']); ?>" alt="User Image">
-                            </div>
-
-                            <div class="size-207">
-                                <div class="flex-w flex-sb-m p-b-17">
-                                    <span class="mtext-107 cl2 p-r-20">
-                                        <?php echo htmlspecialchars($review['user_name']); ?>
-                                    </span>
-
-                                    <span class="fs-18 cl11">
-                                        <?php
-                                        // Display star rating
-                                        for ($i = 1; $i <= 5; $i++) {
-                                            if ($i <= $review['rating']) {
-                                                echo '<i class="zmdi zmdi-star"></i>';
-                                            } else {
-                                                echo '<i class="zmdi zmdi-star-outline"></i>';
-                                            }
-                                        }
-                                        ?>
-                                    </span>
+						<div class="tab-pane fade show active" id="reviews" role="tabpanel">
+            <div class="row">
+                <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+                    <div class="p-b-30 m-lr-15-sm">
+                        <!-- Display Reviews -->
+                        <?php while ($review = $reviews_result->fetch_assoc()) { ?>
+                            <div class="flex-w flex-t p-b-68">
+                                <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                    <img src="images/<?php echo $review['user_image']; ?>" alt="User Avatar">
                                 </div>
-
-                                <p class="stext-102 cl6">
-                                    <?php echo htmlspecialchars($review['comment']); ?>
-                                </p>
+                                <div class="size-207">
+                                    <div class="flex-w flex-sb-m p-b-17">
+                                        <span class="mtext-107 cl2 p-r-20">
+                                            <?php echo $review['user_name']; ?>
+                                        </span>
+                                        <span class="fs-18 cl11">
+                                            <?php for ($i = 1; $i <= 5; $i++) { ?>
+                                                <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
+                                            <?php } ?>
+                                        </span>
+                                    </div>
+                                    <p class="stext-102 cl6">
+                                        <?php echo $review['comment']; ?>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <p class="stext-102 cl6">No reviews available for this product.</p>
-                <?php endif; ?>
+                        <?php } ?>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-<?php
-$reviews_stmt->close();
-?>
 					</div>
 				</div>
 			</div>
