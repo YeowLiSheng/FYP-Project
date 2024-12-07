@@ -598,7 +598,7 @@ $conn->close();
 						</li>
 
 						<li class="nav-item p-b-10">
-						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo $review_count; ?>)</a>
+						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo htmlspecialchars($review_count); ?>)</a>
 						</li>
 					</ul>
 
