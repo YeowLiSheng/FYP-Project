@@ -95,7 +95,6 @@ while ($detail = $details_result->fetch_assoc())
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 移除 sleep(3);
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
@@ -109,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $detail_result = $detail_query->get_result();
 
     if ($detail_result->num_rows === 0) {
-        echo "<script>alert('Invalid product selection. Please try again.');</script>";
+        echo "error";
         exit;
     }
 
@@ -136,8 +135,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-    $stmt->execute();
+
+    if ($stmt->execute()) {
+        echo "success"; // 向前端返回成功状态
+    } else {
+        echo "error"; // 向前端返回错误状态
+    }
+    exit;
 }
+
 
 
 ?>
@@ -1373,8 +1379,32 @@ function closePopup() {
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function () {
-    document.getElementById("successPopup").style.display = "block";  
+document.getElementById("rateForm").addEventListener("submit", function (e) {
+    // 阻止默认表单提交行为
+    e.preventDefault();
+
+    // 获取表单元素
+    const form = e.target;
+    const formData = new FormData(form);
+
+    // 发送表单数据到后端
+    fetch(window.location.href, {
+        method: "POST",
+        body: formData
+    })
+        .then(response => response.text())
+        .then(data => {
+            // 检查后端响应
+            if (data.trim() === "success") {
+                // 显示成功弹窗
+                document.getElementById("successPopup").style.display = "block";
+            } else {
+                alert("Failed to submit review. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error submitting review:", error);
+        });
 });
 
 function redirectToPage() {
