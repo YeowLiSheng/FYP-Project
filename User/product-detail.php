@@ -450,7 +450,7 @@ $conn->close();
                             <!-- Quick View Images -->
                             <div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View1']; ?>">
                                 <div class="wrap-pic-w pos-relative">
-									<img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
+                                    <img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
                                     <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04"  href="images/<?php echo $product['Quick_View1']; ?>">
                                         <i class="fa fa-expand"></i>
                                     </a>
@@ -488,86 +488,88 @@ $conn->close();
                     </span>
 
                     <!--  -->
-					<div class="p-t-33">
-						<div class="flex-w flex-r-m p-b-10">
-							<div class="size-203 flex-c-m respon6">
-								Size
-							</div>
+                    <div class="p-t-33">
+                        <div class="flex-w flex-r-m p-b-10">
+                            <div class="size-203 flex-c-m respon6">
+                                Size
+                            </div>
 
-							<div class="size-204 respon6-next">
-								<div class="rs1-select2 bor8 bg0">
-									<select class="js-select2" name="time">
-										<option>Choose an option</option>
-										<option value="size1"><?php echo $product['size1']; ?></option>
-                						<option value="size2"><?php echo $product['size2']; ?></option>
-									</select>
-									<div class="dropDownSelect2"></div>
-								</div>
-							</div>
-						</div>
+                            <div class="size-204 respon6-next">
+                                <div class="rs1-select2 bor8 bg0">
+                                    <select class="js-select2" name="size">
+                                        <option>Choose an option</option>
+                                        <option value="size1"><?php echo $product['size1']; ?></option>
+                                        <option value="size2"><?php echo $product['size2']; ?></option>
+                                    </select>
+                                    <div class="dropDownSelect2"></div>
+                                </div>
+                            </div>
+                        </div>
 
-						<div class="flex-w flex-r-m p-b-10">
-							<div class="size-203 flex-c-m respon6">
-								Color
-							</div>
+                        <div class="flex-w flex-r-m p-b-10">
+                            <div class="size-203 flex-c-m respon6">
+                                Color
+                            </div>
 
-							<div class="size-204 respon6-next">
-								<div class="rs1-select2 bor8 bg0">
-									<select class="js-select2" name="time">
-										<option>Choose an option</option>
-										<option value="color1"><?php echo $product['color1']; ?></option>
-                						<option value="color2"><?php echo $product['color2']; ?></option>
-									</select>
-									<div class="dropDownSelect2"></div>
-								</div>
-							</div>
-						</div>
+                            <div class="size-204 respon6-next">
+                                <div class="rs1-select2 bor8 bg0">
+                                    <select class="js-select2" name="color">
+                                        <option>Choose an option</option>
+                                        <option value="color1"><?php echo $product['color1']; ?></option>
+                                        <option value="color2"><?php echo $product['color2']; ?></option>
+                                    </select>
+                                    <div class="dropDownSelect2"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                    	<!-- Add to Cart Section -->
-                    	<div class="flex-w flex-r-m p-b-10">
-                        	<div class="size-204 flex-w flex-m respon6-next">
-                            	<div class="wrap-num-product flex-w m-r-20 m-tb-10">
-                                	<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                                    	<i class="fs-16 zmdi zmdi-minus"></i>
-                                	</div>
+                        <!-- Add to Cart Section -->
+                        <div class="flex-w flex-r-m p-b-10">
+                            <div class="size-204 flex-w flex-m respon6-next">
+                                <div class="wrap-num-product flex-w m-r-20 m-tb-10">
+                                    <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                                        <i class="fs-16 zmdi zmdi-minus"></i>
+                                    </div>
 
-                                	<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+                                    <input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
 
-                                	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                                    	<i class="fs-16 zmdi zmdi-plus"></i>
-                                	</div>
-                            	</div>
+                                    <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                                        <i class="fs-16 zmdi zmdi-plus"></i>
+                                    </div>
+                                </div>
 
-                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-                                	Add to cart
-                            	</button>
-                        	</div>
-                    	</div> 
-						<!--  -->
-						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
-							<div class="flex-m bor9 p-r-10 m-r-11">
-								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100" data-tooltip="Add to Wishlist">
-									<i class="zmdi zmdi-favorite"></i>
-								</a>
-							</div>
+                                <button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                                    Add to cart
+                                </button>
+                            </div>
+                        </div> 
+                        <!--  -->
+                        <div class="flex-w flex-m p-l-100 p-t-40 respon7">
+                            <div class="flex-m bor9 p-r-10 m-r-11">
+                                <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100" data-tooltip="Add to Wishlist">
+                                    <i class="zmdi zmdi-favorite"></i>
+                                </a>
+                            </div>
 
-							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Facebook">
-								<i class="fa fa-facebook"></i>
-							</a>
+                            <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Facebook">
+                                <i class="fa fa-facebook"></i>
+                            </a>
 
-							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Twitter">
-								<i class="fa fa-twitter"></i>
-							</a>
+                            <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Twitter">
+                                <i class="fa fa-twitter"></i>
+                            </a>
 
-							<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
-								<i class="fa fa-google-plus"></i>
-							</a>
-						</div> 
-                	</div>
-            	</div>
-        	</div>
-    	</div>
-	</div>			
+                            <a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
+                                <i class="fa fa-google-plus"></i>
+                            </a>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+		
 
 			<div class="bor10 m-t-50 p-t-43 p-b-40">
 				<!-- Tab01 -->
