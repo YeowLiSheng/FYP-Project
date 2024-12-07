@@ -95,14 +95,9 @@ while ($detail = $details_result->fetch_assoc())
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['product_id']) || empty($_POST['product_id'])) {
-        echo "<script>alert('Please select a product before submitting the review.');</script>";
-        exit;
-    }
-
     $product_id = intval($_POST['product_id']);
-    $rating = isset($_POST['rating']) ? intval($_POST['rating']) : 0; // 默认评分为 0
-    $comment = htmlspecialchars($_POST['comment'] ?? '', ENT_QUOTES);
+    $rating = intval($_POST['rating']);
+    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
@@ -145,12 +140,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
     if ($stmt->execute()) {
         echo "<script>alert('Review submitted successfully!');</script>";
-        header("Location: order_details.php?order_id=$order_id"); // 重定向到当前页面
-        exit;
     } else {
         echo "<script>alert('Failed to submit review. Please try again.');</script>";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -368,19 +362,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 
-	.popup-container {
-    display: none;
+.popup-container {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1000;
-    background: white;
-    padding: 20px;
+    background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 100%;
-    overflow: hidden; /* 防止内容溢出 */
+    padding: 20px;
+    z-index: 2000;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
 }
 
 .popup-content {
@@ -1364,12 +1357,6 @@ function resetProductPreview() {
     productImage.style.display = "none";
     productName.textContent = "";
 }
-
-document.getElementById("rateForm").addEventListener("submit", function () {
-    closePopup(); // 关闭弹窗
-    resetProductPreview(); // 重置产品预览
-    resetStars(); // 重置评分
-});
 </script>
 </body>
 </html>
