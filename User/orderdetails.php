@@ -139,12 +139,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 	if ($stmt->execute()) {
+		// 提交成功时显示弹窗特效并重定向
 		echo "<script>
 			document.addEventListener('DOMContentLoaded', function() {
 				showSuccessPopup();
+				setTimeout(function() {
+					window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
+				}, 3000); // 3秒后重定向
 			});
 		</script>";
 	} else {
+		// 提交失败时显示错误消息
 		echo "<script>alert('Error saving review. Please try again later.');</script>";
 	}
 }
