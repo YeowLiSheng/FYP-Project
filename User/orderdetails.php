@@ -95,6 +95,8 @@ while ($detail = $details_result->fetch_assoc())
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    sleep(3);  // 模拟服务器端延迟
+
     $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
@@ -115,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $detail = $detail_result->fetch_assoc();
     $detail_id = $detail['detail_id'];
 
-    // 处理上传图片
+    // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
         if (!is_dir($upload_dir)) {
@@ -126,33 +128,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
             $image_path = $target_path;
-        } else {
-            echo "<script>alert('Failed to upload image. Please try again.');</script>";
-            exit;
         }
     }
 
-    // 插入数据到数据库
+    // 插入评论数据
     $stmt = $conn->prepare("
         INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
         VALUES (?, ?, ?, ?, ?)
     ");
     $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-	if ($stmt->execute()) {
-    // 提交成功时显示弹窗特效并重定向
-    echo "<script>
-        document.addEventListener('DOMContentLoaded', function() {
-            showSuccessPopup();
-            setTimeout(function() {
-                window.location.href = 'orderdetails.php?order_id=" . $order_id . "';
-            }, 3000); // 3秒后重定向
-        });
-    </script>";
-} else {
-    // 提交失败时显示错误消息
-    echo "<script>alert('Error saving review. Please try again later.');</script>";
+    $stmt->execute();
 }
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -499,7 +486,32 @@ textarea {
     font-size: 20px;
     color: #333;
 }
+/* Processing 弹窗样式 */
+.popup-processing {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
+.processing-content .spinner {
+    width: 50px;
+    height: 50px;
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 /* 淡入动画 */
 @keyframes fadeIn {
     from {
@@ -931,7 +943,12 @@ textarea {
     </div>
 </div>
 <div id="overlay" style="display: none;"></div>
-
+<div id="processingPopup" class="popup-processing" style="display: none;">
+    <div class="processing-content">
+        <div class="spinner"></div>
+        <h3>Processing...</h3>
+    </div>
+</div>
 <div id="successPopup" class="popup-success" style="display: none;">
     <div class="success-content">
         <div class="success-icon">
@@ -1386,10 +1403,23 @@ function closePopup() {
 }
 
 // 禁用重复提交
-document.getElementById("rateForm").addEventListener("submit", function () {
+document.getElementById("rateForm").addEventListener("submit", function (e) {
+    e.preventDefault();  // 防止默认提交行为
+
+    // 禁用按钮和显示Processing弹窗
     document.querySelector(".submit-button").disabled = true;
+    document.getElementById("processingPopup").style.display = "block";
+
+    // 模拟延迟存入数据库
+    setTimeout(function () {
+        document.getElementById("processingPopup").style.display = "none"; 
+        document.getElementById("successPopup").style.display = "block";  
+    }, 3000);  // 模拟 3 秒延迟
 });
 
+function redirectToPage() {
+    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
+}
 // 评分逻辑
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
@@ -1433,13 +1463,8 @@ function resetProductPreview() {
     productName.textContent = "";
 }
 
-// 显示成功提交弹窗
-function showSuccessPopup() {
-    document.getElementById("successPopup").style.display = "block";
-    setTimeout(function() {
-        document.getElementById("successPopup").style.display = "none";
-    }, 3000); // 3秒后自动关闭
-}
+
+
 </script>
 </body>
 </html>
