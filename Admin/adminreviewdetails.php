@@ -1,6 +1,11 @@
 <?php
 include 'dataconnection.php';
 include 'admin_sidebar.php';
+
+$category = "SELECT category_name FROM category";
+$categoryresult=$connect->query($category);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -242,11 +247,23 @@ include 'admin_sidebar.php';
                 <label>Filter by:</label>
                 <select id="filter-status">
                     <option value="" selected>- General -</option>
-                    <optgroup label="Delivery Status">
-                        <option value="Processing">Processing</option>
-                        <option value="Shipping">Shipping</option>
-                        <option value="Completed">Completed</option>
-                    </optgroup>
+                    <?php if ($result->num_rows > 0): ?>
+
+                        <optgroup label="Category">
+                           <?php while ($row=$categoryresult->fetch_assoc()):?>
+                                <option value="<?=htmlspecialchars($row['category_name'])?>">
+                                    <?= htmlspecialchars($row['category_name']) ?>
+
+
+                                </option>
+                            
+                           <?php endwhile; ?> 
+                        </optgroup>
+                    <?php else: ?>
+                        <optgroup label="Category">
+                            <option value="">No categories available</option>
+                        </optgroup>
+                    <?php endif;?>    
                 </select>
                 <label>Sort by:</label>
                 <select id="sort-order">
