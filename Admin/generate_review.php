@@ -9,6 +9,23 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
+// Function to convert AVIF to JPEG
+function convertImageToSupportedFormat($source_path, $target_path) {
+    if (mime_content_type($source_path) === 'image/avif') {
+        try {
+            $imagick = new Imagick($source_path);
+            $imagick->setImageFormat('jpeg');
+            $imagick->writeImage($target_path);
+            $imagick->clear();
+            $imagick->destroy();
+            return $target_path;
+        } catch (Exception $e) {
+            return false; // Return false if conversion fails
+        }
+    }
+    return $source_path; // Return original path if not AVIF
+}
+
 // Create PDF instance
 $pdf = new FPDF();
 $pdf->AddPage();
@@ -65,7 +82,10 @@ $result = $connect->query($review);
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $product_name = $row['product_name'];
-        $product_image = '../User/images/' . $row['product_image']; // Adjusted path
+        $product_image = '../User/images/' . $row['product_image'];
+        $converted_image = '../User/images/converted_' . basename($product_image); // Converted path
+        $image_to_use = convertImageToSupportedFormat($product_image, $converted_image);
+
         $category = $row['category_name'];
         $total_reviews = $row['total_reviews'];
         $avg_rating = $row['avg_rating'];
@@ -74,8 +94,8 @@ if ($result->num_rows > 0) {
         $pdf->SetX(10);
 
         // Product image
-        if (file_exists($product_image)) {
-            $pdf->Cell(25, 25, $pdf->Image($product_image, $pdf->GetX() + 2, $pdf->GetY() + 2, 20, 20), 1, 0, 'C', false);
+        if ($image_to_use && file_exists($image_to_use)) {
+            $pdf->Cell(25, 25, $pdf->Image($image_to_use, $pdf->GetX() + 2, $pdf->GetY() + 2, 20, 20), 1, 0, 'C', false);
         } else {
             $pdf->Cell(25, 25, 'No Image', 1, 0, 'C');
         }
