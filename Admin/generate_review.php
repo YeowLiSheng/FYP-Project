@@ -70,12 +70,35 @@ if ($reviewresult->num_rows > 0) {
         $avg_rating = $row['avg_rating'];
         $latest_review = date('d/m/Y', strtotime($row['latest_review']));
 
+        // Calculate max number of lines required
+        $line_count = max(
+            ceil($pdf->GetStringWidth($product_name) / 60),
+            ceil($pdf->GetStringWidth($category_name) / 40),
+            1
+        );
+        $cell_height = 6 * $line_count;
+
+        // Product Name (multi-line)
         $pdf->SetX($left_margin);
-        $pdf->Cell(60, 10, $product_name, 1, 0, 'C');
-        $pdf->Cell(40, 10, $category_name, 1, 0, 'C');
-        $pdf->Cell(30, 10, $total_reviews, 1, 0, 'C');
-        $pdf->Cell(30, 10, $avg_rating, 1, 0, 'C');
-        $pdf->Cell(30, 10, $latest_review, 1, 1, 'C');
+        $pdf->MultiCell(60, 6, $product_name, 1, 'C');
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+
+        // Category
+        $pdf->SetXY($x + 60, $y - $cell_height);
+        $pdf->MultiCell(40, 6, $category_name, 1, 'C');
+
+        // Total Reviews
+        $pdf->SetXY($x + 100, $y - $cell_height);
+        $pdf->Cell(30, $cell_height, $total_reviews, 1, 0, 'C');
+
+        // Average Rating
+        $pdf->SetXY($x + 130, $y - $cell_height);
+        $pdf->Cell(30, $cell_height, $avg_rating, 1, 0, 'C');
+
+        // Latest Review
+        $pdf->SetXY($x + 160, $y - $cell_height);
+        $pdf->Cell(30, $cell_height, $latest_review, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
