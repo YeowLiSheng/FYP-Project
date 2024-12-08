@@ -266,7 +266,7 @@ $review = "
                 <label>Filter by:</label>
                 <select id="filter-status">
                     <option value="" selected>- General -</option>
-                    <?php if ($result->num_rows > 0): ?>
+                    <?php if ($categoryresult->num_rows > 0): ?>
 
                         <optgroup label="Category">
                            <?php while ($row=$categoryresult->fetch_assoc()):?>
