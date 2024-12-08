@@ -431,19 +431,12 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
         }
 
         function filterTable() { 
-    const status = document.getElementById("filter-status").value.trim();
+    const selectedCategory = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        // 获取表格中的类别名称（假设是第5列）
-        const categoryName = row.cells[5].textContent.trim();
-
-        // 检查是否匹配，显示或隐藏
-        if (status === "" || categoryName === status) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
+        const productCategory = row.cells[2].textContent.trim(); // 获取产品类别
+        row.style.display = (productCategory === selectedCategory || selectedCategory === "") ? "" : "none";
     });
 }
 
