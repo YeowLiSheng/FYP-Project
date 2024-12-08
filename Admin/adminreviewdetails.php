@@ -337,8 +337,7 @@ $review = "
     </div>
     <script>
 
-document.getElementById("filter-status").addEventListener("change", filterTable);
-document.getElementById("sort-order").addEventListener("change", sortTable);
+
 
         $(function () {
             $("#start-date, #end-date").datepicker({
