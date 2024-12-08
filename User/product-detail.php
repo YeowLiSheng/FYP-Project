@@ -85,7 +85,15 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     }
     exit;
 }
+// Count distinct product IDs in the shopping cart for the logged-in user
+$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+$distinct_products_result = $conn->query($distinct_products_query);
+$distinct_count = 0;
 
+if ($distinct_products_result) {
+    $row = $distinct_products_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
 $product_id = $_GET['id'];
 
 $query = "SELECT * FROM product WHERE product_id = ?";
@@ -266,7 +274,7 @@ $conn->close();
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" >
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>" >
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
