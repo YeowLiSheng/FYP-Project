@@ -672,8 +672,10 @@ function add_check() {
                     </form>
                 </div>
             </div>
-        </div><!-- modal end--
-        
+        </div><!-- modal end-->
+
+ 
+
         <hr>
         <?php
         $query = "SELECT 
@@ -783,95 +785,7 @@ function add_check() {
                         while ($row = mysqli_fetch_assoc($result)) {
                             ?>
                             <tr>
-                                <div class="modal fade" id="v<?php echo $row["product_id"]; ?>" tabindex="-1"
-                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered modal-lg" style="width:40%;">
-                                        <div class="modal-content">
-                                            <!-- Modal Header -->
-                                            <div class="modal-header">
-                                                <h4 class="modal-title">View Product</h4>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <!-- Modal body -->
-                                            <div class="modal-body">
-                                                <div class="up">
-                                                    <img src="../User/images/<?php echo $row['image'] ?>"
-                                                        style="max-height:200px; width:auto;display: block;margin-left: auto; margin-right: auto;" />
-                                                    <hr>
-                                                    <div class="p_info">
-                                                        <div class="form-group">
-                                                            <b><?php echo $row['product_name'] ?></b>
-                                                            <hr><br>
-                                                        </div>
-                                                        <div class="lr">
-                                                            <div class="v_left">
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:25px;">
-                                                                        <b>Tags</b>
-                                                                    </label>
-                                                                    <?php echo $row['tags'] ?>
-                                                                </div>
-
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:9px;">
-                                                                        <b>Colors</b>
-                                                                    </label>
-                                                                    <?php echo $row['color1'] ?>, <?php echo $row['color2'] ?>
-                                                                </div>
-
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:9px;">
-                                                                        <b>Sizes</b>
-                                                                    </label>
-                                                                    <?php echo $row['size1'] ?>, <?php echo $row['size2'] ?>
-                                                                </div>
-
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:5px;">
-                                                                        <b>Category</b>
-                                                                    </label>
-                                                                    <?php echo str_replace("_", " ", $row['category_name']); ?>
-                                                                </div>
-                                                            </div>
-                                                            <div class="v_right" style="margin-left:22px;">
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:16.5px;">
-                                                                        <b>Stock</b>
-                                                                    </label>
-                                                                    <?php echo $row['stock'] ?>
-                                                                </div>
-
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:19px;">
-                                                                        <b>Price</b>
-                                                                    </label>
-                                                                    RM<?php echo $row['price'] ?>
-                                                                </div>
-
-                                                                <div class="form-group mb-4">
-                                                                    <label style="margin-right:9px;">
-                                                                        <b>Status</b>
-                                                                    </label>
-                                                                    <?php echo $row['product_status'] ?>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <hr>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label><b>Description:</b></label><br>
-                                                    <?php echo $row['product_desc'] ?>
-                                                </div>
-                                            </div>
-                                            <!-- Modal footer -->
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-danger"
-                                                    data-bs-dismiss="modal">Close</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div><!-- modal end-->
+                               
 
 
                                 <!-- First table row -->
