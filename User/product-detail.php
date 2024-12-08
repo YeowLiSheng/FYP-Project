@@ -87,6 +87,7 @@ $review_query = "
         r.comment, 
         r.rating, 
 		r.image,
+		r.created_at,
         u.user_name, 
         u.user_image 
     FROM 
@@ -105,6 +106,13 @@ $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
 
+
+$review_count_query = "SELECT COUNT(*) as review_count FROM reviews r JOIN order_details od ON r.detail_id = od.detail_id WHERE od.product_id = ?";
+$stmt = $conn->prepare($review_count_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$review_count_result = $stmt->get_result();
+$review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 // Close the connection
 $conn->close();
 ?>
@@ -598,7 +606,7 @@ $conn->close();
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
+						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo $review_count; ?>)</a>
 						</li>
 					</ul>
 
@@ -686,9 +694,15 @@ $conn->close();
                             </div>
                             <div class="size-207">
                                 <div class="flex-w flex-sb-m p-b-17">
+								<div class="flex-w align-items-center">
+
                                     <span class="mtext-107 cl2 p-r-20">
                                         <?php echo htmlspecialchars($review['user_name']); ?>
                                     </span>
+									<span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+                                            <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['created_at']))); ?>
+                                        </span>
+										</div>
                                     <span class="fs-18 cl11">
                                         <?php for ($i = 1; $i <= 5; $i++) { ?>
                                             <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
