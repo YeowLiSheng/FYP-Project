@@ -350,7 +350,7 @@ $review = "
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_order.php";
+            window.location.href = "generate_review.php";
 
         }
 
@@ -464,8 +464,8 @@ function searchTable() {
     });
 }
 
-        function viewOrderDetails(orderId) {
-            window.location.href = `order_details.php?order_id=${orderId}`;
+        function viewReviewDetails(productId) {
+            window.location.href = `review_details.php?product_id=${productId}`;
         }
     </script>
 </body>
