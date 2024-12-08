@@ -43,7 +43,16 @@ $sql = "
     ) top_products ON p.product_id = top_products.product_id
     ORDER BY p.product_id DESC;
 ";
-
+// Fetch and combine cart items for the logged-in user where the product_id is the same
+$cart_items_query = "
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price,
+           SUM(sc.qty) AS total_qty, 
+           SUM(sc.total_price) AS total_price 
+    FROM shopping_cart sc 
+    JOIN product p ON sc.product_id = p.product_id 
+    WHERE sc.user_id = $user_id 
+    GROUP BY sc.product_id";
+$cart_items_result = $connect->query($cart_items_query);
 $product_result = $connect->query($sql);
 ?>
 
@@ -337,7 +346,6 @@ $product_result = $connect->query($sql);
 		</div>
 	</header>
 
-	<!-- Cart -->
 	<div class="wrap-header-cart js-panel-cart">
 		<div class="s-full js-hide-cart"></div>
 
@@ -353,67 +361,45 @@ $product_result = $connect->query($sql);
 			</div>
 			
 			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full">
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-01.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								White Shirt Pleat
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $19.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-02.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Converse All Star
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $39.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-03.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Nixon Porter Leather
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $17.00
-							</span>
-						</div>
-					</li>
+				<ul class="header-cart-wrapitem w-full" id="cart-items">
+					<?php
+					// Display combined cart items
+					$total_price = 0;
+					if ($cart_items_result->num_rows > 0) {
+						while($cart_item = $cart_items_result->fetch_assoc()) {
+							$total_price += $cart_item['total_price'];
+							echo '
+							<li class="header-cart-item flex-w flex-t m-b-12">
+								<div class="header-cart-item-img">
+									<img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+								</div>
+								<div class="header-cart-item-txt p-t-8">
+									<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+										' . $cart_item['product_name'] . '
+									</a>
+									<span class="header-cart-item-info">
+										' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+									</span>
+								</div>
+							</li>';
+						}
+					} else {
+						echo '<p>Your cart is empty.</p>';
+					}
+					?>
 				</ul>
 				
 				<div class="w-full">
 					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
+						Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
 					</div>
 
 					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+						<a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
 							View Cart
 						</a>
 
-						<a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
 							Check Out
 						</a>
 					</div>

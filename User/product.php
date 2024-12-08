@@ -57,15 +57,42 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $total_price = doubleval($_POST['total_price']);
     $user_id = $_SESSION['id']; // Get the logged-in user ID
 
-    // Insert data into shopping_cart table, including the user_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-    if ($conn->query($cart_query) === TRUE) {
-        echo json_encode(['success' => true]);
+    // Step 1: Fetch the current stock for the product
+    $stock_query = "SELECT product_stock FROM product WHERE product_id = $product_id";
+    $stock_result = $conn->query($stock_query);
+
+    if ($stock_result && $stock_result->num_rows > 0) {
+        $row = $stock_result->fetch_assoc();
+        $current_stock = intval($row['product_stock']);
+
+        // Step 2: Check if enough stock is available
+        if ($qty > $current_stock) {
+            echo json_encode(['success' => false, 'error' => 'Not enough stock available.']);
+            exit;
+        }
+
+        // Step 3: Deduct stock from the product table
+        $new_stock = $current_stock - $qty;
+        $update_stock_query = "UPDATE product SET product_stock = $new_stock WHERE product_id = $product_id";
+        if ($conn->query($update_stock_query) !== TRUE) {
+            echo json_encode(['success' => false, 'error' => 'Failed to update stock: ' . $conn->error]);
+            exit;
+        }
+
+        // Step 4: Add the product to the shopping cart
+        $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) 
+                       VALUES ($user_id, $product_id, $qty, $total_price)";
+        if ($conn->query($cart_query) === TRUE) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Failed to add to cart: ' . $conn->error]);
+        }
     } else {
-        echo json_encode(['success' => false, 'error' => $conn->error]);
+        echo json_encode(['success' => false, 'error' => 'Product not found.']);
     }
     exit;
 }
+
 
 $selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
 // Fetch categories
@@ -1005,7 +1032,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 											<i class="fs-16 zmdi zmdi-minus"></i>
 										</div>
 
-										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1" min="1">
 
 										<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-plus"></i>
@@ -1016,6 +1043,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 										Add to cart
 									</button>
 								</div>
+								<p class="stock-warning" style="color: red; display: none;">Quantity exceeds available stock.</p>
 							</div>	
 						</div>
 
@@ -1128,9 +1156,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                     $('.mtext-106').text('$' + response.product_price);
                     $('.stext-102').text(response.product_des);
 
-                    // Store the product ID for later access
+                    // Store the product ID and stock for later access
                     $('.js-addcart-detail').data('id', productId);
-                    
+                    $('.js-addcart-detail').data('stock', response.product_stock);
+
                     // Update Quick View images
                     $('.gallery-lb .item-slick3').each(function(index) {
                         var imagePath = 'images/' + response['Quick_View' + (index + 1)];
@@ -1138,19 +1167,20 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         $(this).find('.wrap-pic-w a').attr('href', imagePath);
                         $(this).attr('data-thumb', imagePath);
                     });
-					                // Update size options
-									var sizeSelect = $('select[name="time"]');
-                sizeSelect.empty(); // Clear existing options
-                sizeSelect.append('<option>Choose an option</option>'); // Default option
-                if (response.size1) sizeSelect.append('<option>' + response.size1 + '</option>');
-                if (response.size2) sizeSelect.append('<option>' + response.size2 + '</option>');
+					// Update size options
+                    var sizeSelect = $('select[name="time"]');
+                    sizeSelect.empty(); // Clear existing options
+                    sizeSelect.append('<option>Choose an option</option>'); // Default option
+                    if (response.size1) sizeSelect.append('<option>' + response.size1 + '</option>');
+                    if (response.size2) sizeSelect.append('<option>' + response.size2 + '</option>');
 
-                // Update color options
-                var colorSelect = $('select[name="color"]');
-                colorSelect.empty(); // Clear existing options
-                colorSelect.append('<option>Choose an option</option>'); // Default option
-                if (response.color1) colorSelect.append('<option>' + response.color1 + '</option>');
-                if (response.color2) colorSelect.append('<option>' + response.color2 + '</option>');
+                    // Update color options
+                    var colorSelect = $('select[name="color"]');
+                    colorSelect.empty(); // Clear existing options
+                    colorSelect.append('<option>Choose an option</option>'); // Default option
+                    if (response.color1) colorSelect.append('<option>' + response.color1 + '</option>');
+                    if (response.color2) colorSelect.append('<option>' + response.color2 + '</option>');
+
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
                 } else {
@@ -1163,42 +1193,100 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         });
     });
 
-    // Update the 'Add to Cart' functionality to use the correct product ID
-    $(document).on('click', '.js-addcart-detail', function(event) {
-        event.preventDefault();
-        
-        const productId = $(this).data('id'); // Get product ID from the modal button data
-        const productName = $('.js-name-detail').text();
-        const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
-        const productQuantity = parseInt($('.num-product').val());
-        const totalPrice = productPrice * productQuantity;
+    $(document).ready(function () {
+        // Update product quantity and enforce stock rules
+        $(document).on('click', '.btn-num-product-up', function () {
+			const $input = $(this).siblings('.num-product');
+			const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0; // Ensure `productStock` is an integer
+			let currentVal = parseInt($input.val()) || 0; // Ensure `currentVal` is an integer
+			
+			if (currentVal < productStock) {
+				$input.val(currentVal ++);
+				$('.stock-warning').hide();
+			} else {
+				$('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
+				$input.val(productStock); // Prevent further increment
+			}
+		});
 
-        $.ajax({
-            url: '', // Use the same PHP file
-            type: 'POST',
-            data: {
-                add_to_cart: true,
-                product_id: productId,
-                qty: productQuantity,
-                total_price: totalPrice
-            },
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    alert(`${productName} has been added to your cart!`);
-					location.reload(); // Refresh the page after a successful addition
-                } else {
-                    alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
-                }
-                updateCart();
-                $('.js-modal1').removeClass('show-modal1');
-            },
-            error: function() {
-                alert('An error occurred while adding to the cart.');
+		$(document).on('click', '.btn-num-product-down', function () {
+			const $input = $(this).siblings('.num-product');
+			let currentVal = parseInt($input.val()) || 0; // Ensure `currentVal` is an integer
+			
+			if (currentVal > 1) {
+				$input.val(currentVal - 1);
+				$('.stock-warning').hide();
+			}
+		});
+
+        // Add to cart functionality
+        $(document).on('click', '.js-addcart-detail', function (event) {
+            event.preventDefault();
+
+            const productId = $(this).data('id');
+            const productName = $('.js-name-detail').text();
+            const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
+            const productQuantity = parseInt($('.num-product').val());
+            const productStock = $(this).data('stock') || 0;
+
+            if (productQuantity > productStock) {
+                $('.stock-warning').text(`Cannot add more than ${productStock} items.`).show();
+                return;
+            } else if (productQuantity === 0) {
+                $('.stock-warning').text('Quantity cannot be zero.').show();
+                return;
             }
+
+            const totalPrice = productPrice * productQuantity;
+
+            $.ajax({
+                url: '', // Use the same PHP file
+                type: 'POST',
+                data: {
+                    add_to_cart: true,
+                    product_id: productId,
+                    qty: productQuantity,
+                    total_price: totalPrice
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        alert(`${productName} has been added to your cart!`);
+                        location.reload(); // Refresh the page after a successful addition
+                    } else {
+                        alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                    }
+                    updateCart();
+                    $('.js-modal1').removeClass('show-modal1');
+                },
+                error: function () {
+                    alert('An error occurred while adding to the cart.');
+                }
+            });
         });
     });
+	// Clear input data when the modal is closed
+	$(document).on('click', '.js-hide-modal1', function() {
+		$('.js-modal1').removeClass('show-modal1');
+
+		// Reset input fields and warnings
+		$('.num-product').val('1'); // Reset quantity to 1
+		$('select[name="time"]').empty().append('<option>Choose an option</option>'); // Reset size
+		$('select[name="color"]').empty().append('<option>Choose an option</option>'); // Reset color
+		$('.stock-warning').hide(); // Hide stock warning
+		$('.js-name-detail').text(''); // Clear product name
+		$('.mtext-106').text(''); // Clear product price
+		$('.stext-102').text(''); // Clear product description
+
+		// Reset gallery images
+		$('.gallery-lb .item-slick3').each(function() {
+			$(this).find('.wrap-pic-w img').attr('src', '');
+			$(this).find('.wrap-pic-w a').attr('href', '');
+			$(this).attr('data-thumb', '');
+		});
+	});
 </script>
+
 <script>
 // Initialize filters with 'all' default values for price, color, tag, and category.
 let filters = { price: 'all', color: 'all', tag: 'all', category: 'all' };
