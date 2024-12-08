@@ -14,29 +14,28 @@ $pdf = new FPDF();
 $pdf->AddPage();
 
 // Logo at the top-left
-$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
+$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30);
 $pdf->SetFont('Arial', 'B', 16);
-$pdf->SetXY(50, 15); // Set position for title to the right of the logo
-$pdf->Cell(0, 10, 'YLS Atelier - Product Reviews Summary', 0, 1, 'L');
+$pdf->SetXY(50, 15);
+$pdf->Cell(0, 10, 'YLS Atelier - Product Reviews', 0, 1, 'L');
 
-$pdf->Ln(20); // Add spacing below title
+$pdf->Ln(20);
 
 // Table Header
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->SetFillColor(230, 230, 230); // Light gray background for the header
-$pdf->SetDrawColor(180, 180, 180); // Border color
+$pdf->SetFillColor(230, 230, 230); // Light gray background
+$pdf->SetDrawColor(180, 180, 180);
 
 $header = [
-    ['Product Name', 50],
-    ['Category', 40],
-    ['Total Reviews', 40],
-    ['Average Rating', 40],
-    ['Latest Review', 40],
+    ['Product Image', 30],
+    ['Product Name', 40],
+    ['Category', 35],
+    ['Total Reviews', 25],
+    ['Avg Rating', 25],
+    ['Latest Review', 35]
 ];
 
-// Adjust left margin
-$left_margin = 10; 
-$pdf->SetX($left_margin);
+// Set table header
 foreach ($header as $col) {
     $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
 }
@@ -46,7 +45,9 @@ $pdf->Ln();
 $pdf->SetFont('Arial', '', 10);
 $review = "
     SELECT 
+        p.product_id, 
         p.product_name, 
+        p.product_image, 
         c.category_name, 
         COUNT(r.review_id) AS total_reviews,
         ROUND(AVG(r.rating), 1) AS avg_rating,
@@ -56,30 +57,38 @@ $review = "
     INNER JOIN order_details od ON p.product_id = od.product_id
     INNER JOIN reviews r ON od.detail_id = r.detail_id
     WHERE r.status = 'active'
-    GROUP BY p.product_name, c.category_name
+    GROUP BY p.product_id, p.product_name, p.product_image, c.category_name
     ORDER BY latest_review DESC
 ";
+$result = $connect->query($review);
 
-$reviewresult = $connect->query($review);
-
-if ($reviewresult->num_rows > 0) {
-    while ($row = $reviewresult->fetch_assoc()) {
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
         $product_name = $row['product_name'];
         $category_name = $row['category_name'];
         $total_reviews = $row['total_reviews'];
         $avg_rating = $row['avg_rating'];
-        $latest_review = date('d/m/Y', strtotime($row['latest_review']));
+        $latest_review = date('d/m/Y H:i:s', strtotime($row['latest_review']));
+        $product_image = '../User/images/' . $row['product_image'];
 
-        $pdf->SetX($left_margin);
-        $pdf->Cell(50, 10, $product_name, 1, 0, 'C');
-        $pdf->Cell(40, 10, $category_name, 1, 0, 'C');
-        $pdf->Cell(40, 10, $total_reviews, 1, 0, 'C');
-        $pdf->Cell(40, 10, $avg_rating, 1, 0, 'C');
-        $pdf->Cell(40, 10, $latest_review, 1, 1, 'C');
+        // Product Image
+        $x = $pdf->GetX(); 
+        $y = $pdf->GetY(); 
+        $pdf->Cell(30, 20, '', 1, 0, 'C');
+        if (file_exists($product_image)) {
+            $pdf->Image($product_image, $x + 5, $y + 3, 20, 15);
+        }
+        $pdf->SetXY($x + 30, $y);
+
+        // Other columns
+        $pdf->Cell(40, 20, $product_name, 1, 0, 'C');
+        $pdf->Cell(35, 20, $category_name, 1, 0, 'C');
+        $pdf->Cell(25, 20, $total_reviews, 1, 0, 'C');
+        $pdf->Cell(25, 20, $avg_rating, 1, 0, 'C');
+        $pdf->Cell(35, 20, $latest_review, 1, 1, 'C');
     }
 } else {
-    $pdf->SetX($left_margin);
-    $pdf->Cell(0, 10, 'No reviews found.', 1, 1, 'C');
+    $pdf->Cell(0, 10, 'No reviewed products found.', 1, 1, 'C');
 }
 
 // Footer
@@ -88,5 +97,5 @@ $pdf->SetY(-15);
 $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
 // Output the PDF
-$pdf->Output('D', 'Product_Reviews_Summary.pdf');
+$pdf->Output('D', 'Product_Reviews.pdf');
 ?>
