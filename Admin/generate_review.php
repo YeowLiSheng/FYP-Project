@@ -42,8 +42,8 @@ $pdf->SetDrawColor(180, 180, 180);
 $header = [
     ['Product Name', 40],
     ['Category', 35],
-    ['Total Reviews', 25],
-    ['Avg Rating', 25],
+    ['Total Reviews', 35],
+    ['Average Rating', 35],
     ['Latest Review', 35]
 ];
 
@@ -87,8 +87,8 @@ if ($result->num_rows > 0) {
         // Other columns
         $pdf->Cell(40, 20, $product_name, 1, 0, 'C');
         $pdf->Cell(35, 20, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, 20, $total_reviews, 1, 0, 'C');
-        $pdf->Cell(25, 20, $avg_rating, 1, 0, 'C');
+        $pdf->Cell(35, 20, $total_reviews, 1, 0, 'C');
+        $pdf->Cell(35, 20, $avg_rating, 1, 0, 'C');
         $pdf->Cell(35, 20, $latest_review, 1, 1, 'C');
     }
 } else {
