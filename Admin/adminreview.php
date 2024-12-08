@@ -909,8 +909,56 @@ function add_check() {
                                     ?>
 
 
-                                   
-                                   <!-- end unav modal -->
+                                    <div class="modal fade" id="av<?php echo $row["product_id"]; ?>">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalLabel">
+                                                        Current status: <b style="color:#0EAF09;">Available</b>
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    Set this product to status: <b style="color:red;">Unavailable</b>?<br>
+                                                    <img src="../User/images/<?php echo $row["image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <p><?php echo $row["product_name"] ?></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <a href="a_product.php?action=unavailable&product_id=<?php echo $row["product_id"]; ?>">
+                                                        <button type="button" class="btn btn-primary">Yes</button>
+                                                    </a>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Modal for setting product to available -->
+                                    <div class="modal fade" id="unav<?php echo $row["product_id"]; ?>">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalLabel">
+                                                        Current status: <b style="color:red;">Unavailable</b>
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    Set this product to status: <b style="color:#0EAF09;">Available</b>?<br>
+                                                    <img src="../User/images/<?php echo $row["image"] ?>" alt="Product Image" class="img-fluid">
+                                                    <p><?php echo $row["product_name"] ?></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <a href="a_product.php?action=available&product_id=<?php echo $row["product_id"]; ?>">
+                                                     <button type="button" class="btn btn-primary">Yes</button>
+                                                    </a>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- end unav modal -->
                                 </div>
                             </td>
                             </tr>
