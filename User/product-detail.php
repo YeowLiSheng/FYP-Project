@@ -53,7 +53,7 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit;
 }
-
+$query = "SELECT *, stock AS product_stock FROM product WHERE product_id = ?";
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -538,7 +538,7 @@ $conn->close();
 
                     	<!-- Add to Cart Section -->
                     	<div class="flex-w flex-r-m p-b-10">
-                        	<div class="size-204 flex-w flex-m respon6-next">
+                        	<div class="size-204 flex-w flex-m respon6-next warning">
                             	<div class="wrap-num-product flex-w m-r-20 m-tb-10">
                                 	<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
                                     	<i class="fs-16 zmdi zmdi-minus"></i>
@@ -551,9 +551,11 @@ $conn->close();
                                 	</div>
                             	</div>
 
-                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-                                	Add to cart
-                            	</button>
+                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
+									data-id="<?php echo $product['product_id']; ?>"
+									data-stock="<?php echo $product['product_stock']; ?>">
+									Add to cart
+								</button>
                         	</div>
                     	</div> 
 						<!--  -->
@@ -1318,102 +1320,149 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</div>
 
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-	<script src="vendor/animsition/js/animsition.min.js"></script>
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-	<script src="vendor/select2/select2.min.js"></script>
-	<script>
-		$(".js-select2").each(function(){
-			$(this).select2({
-				minimumResultsForSearch: 20,
-				dropdownParent: $(this).next('.dropDownSelect2')
-			});
-		})
-	</script>
-	<script src="vendor/daterangepicker/moment.min.js"></script>
-	<script src="vendor/daterangepicker/daterangepicker.js"></script>
-	<script src="vendor/slick/slick.min.js"></script>
-	<script src="js/slick-custom.js"></script>
-	<script src="vendor/parallax100/parallax100.js"></script>
-	<script>
-        $('.parallax100').parallax100();
-	</script>
-	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
-	<script>
-		$('.gallery-lb').each(function() { // the containers for all your galleries
-			$(this).magnificPopup({
-		        delegate: 'a', // the selector for gallery item
-		        type: 'image',
-		        gallery: {
-		        	enabled:true
-		        },
-		        mainClass: 'mfp-fade'
-		    });
-		});
-	</script>
-	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
-	<script src="vendor/sweetalert/sweetalert.min.js"></script>
-	<script>
-		$('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
-			e.preventDefault();
-		});
+<script src="vendor/animsition/js/animsition.min.js"></script>
+<script src="vendor/bootstrap/js/popper.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<script src="vendor/select2/select2.min.js"></script>
+<script>
+    $(".js-select2").each(function(){
+        $(this).select2({
+            minimumResultsForSearch: 20,
+            dropdownParent: $(this).next('.dropDownSelect2')
+        });
+    });
+</script>
+<script src="vendor/daterangepicker/moment.min.js"></script>
+<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<script src="vendor/slick/slick.min.js"></script>
+<script src="js/slick-custom.js"></script>
+<script src="vendor/parallax100/parallax100.js"></script>
+<script>
+    $('.parallax100').parallax100();
+</script>
+<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+<script>
+    $('.gallery-lb').each(function() {
+        $(this).magnificPopup({
+            delegate: 'a',
+            type: 'image',
+            gallery: { enabled: true },
+            mainClass: 'mfp-fade'
+        });
+    });
+</script>
+<script src="vendor/isotope/isotope.pkgd.min.js"></script>
+<script src="vendor/sweetalert/sweetalert.min.js"></script>
+<script>
+    $('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
+        e.preventDefault();
+    });
 
-		$('.js-addwish-b2').each(function(){
-			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
+    $('.js-addwish-b2').each(function(){
+        var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
+        $(this).on('click', function(){
+            swal(nameProduct, "is added to wishlist!", "success");
+            $(this).addClass('js-addedwish-b2');
+            $(this).off('click');
+        });
+    });
 
-				$(this).addClass('js-addedwish-b2');
-				$(this).off('click');
-			});
-		});
+    $('.js-addwish-detail').each(function(){
+        var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
+        $(this).on('click', function(){
+            swal(nameProduct, "is added to wishlist!", "success");
+            $(this).addClass('js-addedwish-detail');
+            $(this).off('click');
+        });
+    });
 
-		$('.js-addwish-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
+	$(document).ready(function () {
+    // Show stock warning
+    function showStockWarning(message) {
+        $('.stock-warning').remove(); // Remove existing warnings
+        const warning = `<div class="stock-warning" style="color: red; margin-top: 10px;">${message}</div>`;
+        $('.warning').append(warning);
+    }
 
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
+    // Clear stock warning
+    function clearStockWarning() {
+        $('.stock-warning').remove();
+    }
 
-				$(this).addClass('js-addedwish-detail');
-				$(this).off('click');
-			});
-		});
+    // Button Up Quantity Adjustment
+    $(document).on('click', '.btn-num-product-up', function () {
+        const $input = $(this).siblings('.num-product');
+        const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0;
+        let currentVal = parseInt($input.val()) || 0;
 
-		$('.js-addcart-detail').each(function(){
-    var nameProduct = $(this).closest('.p-r-50').find('.js-name-detail').html();
-    var productId = <?php echo json_encode($product['product_id']); ?>; // Fetch product_id from PHP
-    $(this).on('click', function(){
-        var qty = parseInt($(this).closest('.size-204').find('.num-product').val()); // Quantity
-        var price = <?php echo json_encode($product['product_price']); ?>; // Fetch product price from PHP
-        var totalPrice = qty * price;
+        if (currentVal < productStock) {
+            $input.val(currentVal + 1);
+            clearStockWarning();
+        } else {
+            showStockWarning(`Only ${productStock} items are available in stock.`);
+            $input.val(productStock);
+        }
+    });
 
-        // Send AJAX request to add product to cart
+    // Button Down Quantity Adjustment
+    $(document).on('click', '.btn-num-product-down', function () {
+        const $input = $(this).siblings('.num-product');
+        let currentVal = parseInt($input.val()) || 0;
+
+        if (currentVal > 1) {
+            $input.val(currentVal - 1);
+            clearStockWarning();
+        }
+    });
+
+    // Add to Cart Functionality
+    $(document).on('click', '.js-addcart-detail', function (event) {
+        event.preventDefault();
+
+        const productId = $(this).data('id');
+        const productName = $('.js-name-detail').text();
+        const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
+        const productQuantity = parseInt($('.num-product').val());
+        const productStock = parseInt($(this).data('stock')) || 0;
+
+        if (productQuantity > productStock) {
+            showStockWarning(`Cannot add more than ${productStock} items.`);
+            return;
+        } else if (productQuantity === 0) {
+            showStockWarning('Quantity cannot be zero.');
+            return;
+        }
+
+        const totalPrice = productPrice * productQuantity;
+
+        // Send data to the server via AJAX
         $.ajax({
-            url: '', // Set URL to your PHP file that handles the add to cart logic
+            url: '', // Replace with your PHP URL to handle adding to the cart
             type: 'POST',
             data: {
                 add_to_cart: true,
                 product_id: productId,
-                qty: qty,
+                qty: productQuantity,
                 total_price: totalPrice
             },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
-                    swal(nameProduct, "is added to cart!", "success");
+                    swal(`${productName} has been added to your cart!`, "", "success");
+                    clearStockWarning();
                 } else {
-                    swal("Error", response.error, "error");
+                    showStockWarning(response.error || "Failed to add product to cart.");
                 }
             },
-            error: function() {
-                swal("Error", "An error occurred while adding the product to the cart.", "error");
+            error: function () {
+                showStockWarning("An error occurred while adding to the cart.");
             }
         });
     });
 });
 
-	
-	</script>
+
+</script>
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 	<script>
 		$('.js-pscroll').each(function(){

@@ -57,38 +57,12 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $total_price = doubleval($_POST['total_price']);
     $user_id = $_SESSION['id']; // Get the logged-in user ID
 
-    // Step 1: Fetch the current stock for the product
-    $stock_query = "SELECT product_stock FROM product WHERE product_id = $product_id";
-    $stock_result = $conn->query($stock_query);
-
-    if ($stock_result && $stock_result->num_rows > 0) {
-        $row = $stock_result->fetch_assoc();
-        $current_stock = intval($row['product_stock']);
-
-        // Step 2: Check if enough stock is available
-        if ($qty > $current_stock) {
-            echo json_encode(['success' => false, 'error' => 'Not enough stock available.']);
-            exit;
-        }
-
-        // Step 3: Deduct stock from the product table
-        $new_stock = $current_stock - $qty;
-        $update_stock_query = "UPDATE product SET product_stock = $new_stock WHERE product_id = $product_id";
-        if ($conn->query($update_stock_query) !== TRUE) {
-            echo json_encode(['success' => false, 'error' => 'Failed to update stock: ' . $conn->error]);
-            exit;
-        }
-
-        // Step 4: Add the product to the shopping cart
-        $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) 
-                       VALUES ($user_id, $product_id, $qty, $total_price)";
-        if ($conn->query($cart_query) === TRUE) {
-            echo json_encode(['success' => true]);
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Failed to add to cart: ' . $conn->error]);
-        }
+    // Insert data into shopping_cart table, including the user_id
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+    if ($conn->query($cart_query) === TRUE) {
+        echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'error' => 'Product not found.']);
+        echo json_encode(['success' => false, 'error' => $conn->error]);
     }
     exit;
 }
