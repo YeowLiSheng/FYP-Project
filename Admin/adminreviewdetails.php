@@ -320,7 +320,7 @@ $review = "
                                 echo "<tr onclick=\"viewReviewDetails('{$row['product_id']}')\">";
                                 echo "<td><img src='../User/images/{$row['product_image']}' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
                                 echo "<td>{$row['product_name']}</td>";
-                                echo "<td>{$row['category_id']}</td>";
+                                echo "<td>{$row['category_name']}</td>";
                                 echo "<td>{$row['total_reviews']}</td>";
                                 echo "<td>{$row['avg_rating']}</td>";
                                 echo "<td>{$row['latest_review']}</td>";
