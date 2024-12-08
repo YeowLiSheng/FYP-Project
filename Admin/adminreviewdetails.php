@@ -356,55 +356,71 @@ $review = "
 
  
         function exportExcel() {
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Order List",
-        Author: "YLS Atelier",
-    };
 
-    // Prepare data for the table with formatted dates
-    const table = document.querySelector(".table");
-    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
+    // Load xlsx-populate library
+    XlsxPopulate.fromBlankAsync().then(workbook => {
+        const sheet = workbook.sheet(0);
+        sheet.name("Product Reviews");
+
+        // Add headers (excluding Product Image)
+        const headers = ["Product Name", "Category", "Total Reviews", "Average Rating", "Latest Review"];
+        headers.forEach((header, index) => {
+            sheet.cell(1, index + 2).value(header).style("bold", true);
+        });
+
+        // Get table rows
+        const rows = document.querySelectorAll("#table-body tr");
+        rows.forEach((row, rowIndex) => {
+            const cells = row.querySelectorAll("td");
+
+            // Insert image into the first column
+            const imgCell = sheet.cell(rowIndex + 2, 1); // First column for images
+            const imgTag = cells[0].querySelector("img");
+            if (imgTag) {
+                const imgSrc = imgTag.src;
+
+                // Add the image to the cell (requires converting URL to base64)
+                fetch(imgSrc)
+                    .then(response => response.blob())
+                    .then(blob => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const base64 = reader.result.split(",")[1]; // Extract base64 string
+                            workbook.addImage(base64, { base64: true })
+                                .then(image => {
+                                    imgCell.value("");
+                                    sheet.addImage(image, {
+                                        top: imgCell.row().rowNumber() - 1,
+                                        left: imgCell.column().columnNumber() - 1,
+                                        width: 50, // Adjust size as needed
+                                        height: 50,
+                                    });
+                                });
+                        };
+                        reader.readAsDataURL(blob);
+                    });
+            }
+
+            // Insert text data into the remaining columns
+            cells.forEach((cell, cellIndex) => {
+                if (cellIndex > 0) { // Skip the first column (Product Image)
+                    const colIndex = cellIndex + 1;
+                    sheet.cell(rowIndex + 2, colIndex).value(cell.textContent.trim());
+                }
+            });
+        });
+
+        // Save the workbook
+        workbook.outputAsync()
+            .then(blob => {
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "Product_Review_List_With_Images.xlsx";
+                a.click();
+            });
     });
 
-    // Add headers
-    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
-    rows.unshift(headers);
 
-    // Create worksheet from updated data
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Set column widths
-    ws['!cols'] = [
-        { wch: 15 }, // Order# column
-        { wch: 20 }, // Customer Name column
-        { wch: 25 }, // Order Time column
-        { wch: 50 }, // Shipped To column
-        { wch: 15 }, // Total column
-        { wch: 20 }, // Order Status column
-    ];
-
-    // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
-
-    // Save the workbook
-    XLSX.writeFile(wb, "Order_List.xlsx");
 }
 
         
