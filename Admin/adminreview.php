@@ -122,8 +122,8 @@ include 'admin_sidebar.php';
                             $status = $row['total_reviews'] > 0 ? 'Active' : 'No Reviews';
                     ?>
                         <tr onclick="viewProductReviews('<?php echo $row['product_id']; ?>')">
-                            <td><img src="<?php echo $row['product_image']; ?>" alt="Product Image" class="product-img"></td>
-                            <td><?php echo $row['product_name']; ?></td>
+                        echo "<td><img src='images/{$row['product_image']}' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
+                        <td><?php echo $row['product_name']; ?></td>
                             <td><?php echo $row['total_reviews']; ?></td>
                             <td><?php echo $avg_rating; ?></td>
                             <td><?php echo $status; ?></td>
