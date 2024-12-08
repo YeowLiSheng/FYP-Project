@@ -15,7 +15,7 @@ if ($conn->connect_error) {
 }
 
 if (!isset($_SESSION['id']) || !isset($_GET['order_id'])) {
-    header("Location: login.php");
+    header("Location: admin_login.php");
     exit;
 }
 
