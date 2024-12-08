@@ -9,23 +9,6 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Function to convert AVIF to JPEG
-function convertImageToSupportedFormat($source_path, $target_path) {
-    if (mime_content_type($source_path) === 'image/avif') {
-        try {
-            $imagick = new Imagick($source_path);
-            $imagick->setImageFormat('jpeg');
-            $imagick->writeImage($target_path);
-            $imagick->clear();
-            $imagick->destroy();
-            return $target_path;
-        } catch (Exception $e) {
-            return false; // Return false if conversion fails
-        }
-    }
-    return $source_path; // Return original path if not AVIF
-}
-
 // Create PDF instance
 $pdf = new FPDF();
 $pdf->AddPage();
@@ -34,9 +17,9 @@ $pdf->AddPage();
 $pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetXY(50, 15); // Set position for title to the right of the logo
-$pdf->Cell(0, 10, 'YLS Atelier - Reviewed Products', 0, 1, 'L'); // Align title with logo
+$pdf->Cell(0, 10, 'YLS Atelier - Product Reviews Summary', 0, 1, 'L');
 
-$pdf->Ln(20); // Add spacing below title (adjusted to move table down)
+$pdf->Ln(20); // Add spacing below title
 
 // Table Header
 $pdf->SetFont('Arial', 'B', 12);
@@ -44,15 +27,16 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background for the header
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Image', 25],
-    ['Product Name', 40],
-    ['Category', 30],
+    ['Product Name', 60],
+    ['Category', 40],
     ['Total Reviews', 30],
-    ['Avg Rating', 25],
-    ['Latest Review', 40]
+    ['Average Rating', 30],
+    ['Latest Review', 30],
 ];
 
-$pdf->SetX(10); // Adjust left margin
+// Adjust left margin
+$left_margin = 10; 
+$pdf->SetX($left_margin);
 foreach ($header as $col) {
     $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
 }
@@ -63,7 +47,6 @@ $pdf->SetFont('Arial', '', 10);
 $review = "
     SELECT 
         p.product_name, 
-        p.product_image, 
         c.category_name, 
         COUNT(r.review_id) AS total_reviews,
         ROUND(AVG(r.rating), 1) AS avg_rating,
@@ -73,43 +56,30 @@ $review = "
     INNER JOIN order_details od ON p.product_id = od.product_id
     INNER JOIN reviews r ON od.detail_id = r.detail_id
     WHERE r.status = 'active'
-    GROUP BY p.product_id, p.product_name, p.product_image, c.category_name
+    GROUP BY p.product_name, c.category_name
     ORDER BY latest_review DESC
 ";
 
-$result = $connect->query($review);
+$reviewresult = $connect->query($review);
 
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
+if ($reviewresult->num_rows > 0) {
+    while ($row = $reviewresult->fetch_assoc()) {
         $product_name = $row['product_name'];
-        $product_image = '../User/images/' . $row['product_image'];
-        $converted_image = '../User/images/converted_' . basename($product_image); // Converted path
-        $image_to_use = convertImageToSupportedFormat($product_image, $converted_image);
-
-        $category = $row['category_name'];
+        $category_name = $row['category_name'];
         $total_reviews = $row['total_reviews'];
         $avg_rating = $row['avg_rating'];
-        $latest_review = date('d/m/Y H:i:s', strtotime($row['latest_review']));
+        $latest_review = date('d/m/Y', strtotime($row['latest_review']));
 
-        $pdf->SetX(10);
-
-        // Product image
-        if ($image_to_use && file_exists($image_to_use)) {
-            $pdf->Cell(25, 25, $pdf->Image($image_to_use, $pdf->GetX() + 2, $pdf->GetY() + 2, 20, 20), 1, 0, 'C', false);
-        } else {
-            $pdf->Cell(25, 25, 'No Image', 1, 0, 'C');
-        }
-
-        // Other columns
-        $pdf->Cell(40, 25, $product_name, 1, 0, 'C');
-        $pdf->Cell(30, 25, $category, 1, 0, 'C');
-        $pdf->Cell(30, 25, $total_reviews, 1, 0, 'C');
-        $pdf->Cell(25, 25, $avg_rating, 1, 0, 'C');
-        $pdf->Cell(40, 25, $latest_review, 1, 1, 'C');
+        $pdf->SetX($left_margin);
+        $pdf->Cell(60, 10, $product_name, 1, 0, 'C');
+        $pdf->Cell(40, 10, $category_name, 1, 0, 'C');
+        $pdf->Cell(30, 10, $total_reviews, 1, 0, 'C');
+        $pdf->Cell(30, 10, $avg_rating, 1, 0, 'C');
+        $pdf->Cell(30, 10, $latest_review, 1, 1, 'C');
     }
 } else {
-    $pdf->SetX(10);
-    $pdf->Cell(0, 10, 'No reviewed products found.', 1, 1, 'C');
+    $pdf->SetX($left_margin);
+    $pdf->Cell(0, 10, 'No reviews found.', 1, 1, 'C');
 }
 
 // Footer
@@ -118,5 +88,5 @@ $pdf->SetY(-15);
 $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
 // Output the PDF
-$pdf->Output('D', 'Reviewed_Products.pdf');
+$pdf->Output('D', 'Product_Reviews_Summary.pdf');
 ?>
