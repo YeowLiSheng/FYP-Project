@@ -87,7 +87,7 @@ $review_query = "
         r.comment, 
         r.rating, 
 		r.image,
-		r.created_at
+		r.created_at,
         u.user_name, 
         u.user_image 
     FROM 
