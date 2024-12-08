@@ -40,7 +40,6 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background
 $pdf->SetDrawColor(180, 180, 180);
 
 $header = [
-    ['Product Image', 30],
     ['Product Name', 40],
     ['Category', 35],
     ['Total Reviews', 25],
@@ -82,31 +81,8 @@ if ($result->num_rows > 0) {
         $total_reviews = $row['total_reviews'];
         $avg_rating = $row['avg_rating'];
         $latest_review = date('d/m/Y H:i:s', strtotime($row['latest_review']));
-        $product_image = '../User/images/' . $row['product_image'];
 
-        // Check if image is supported
-        $supported_extensions = ['jpg', 'jpeg', 'png', 'gif'];
-        $image_extension = strtolower(pathinfo($product_image, PATHINFO_EXTENSION));
         
-        if ($image_extension === 'avif') {
-            $converted_image = convertAvifToJpeg($product_image, '../User/images/temp.jpg');
-            if ($converted_image) {
-                $product_image = $converted_image; // Use converted image
-            } else {
-                $product_image = '../User/images/placeholder.png'; // Use placeholder if conversion fails
-            }
-        } elseif (!in_array($image_extension, $supported_extensions)) {
-            $product_image = '../User/images/placeholder.png'; // Use placeholder for unsupported formats
-        }
-
-        // Product Image
-        $x = $pdf->GetX(); 
-        $y = $pdf->GetY(); 
-        $pdf->Cell(30, 20, '', 1, 0, 'C');
-        if (file_exists($product_image)) {
-            $pdf->Image($product_image, $x + 5, $y + 3, 20, 15);
-        }
-        $pdf->SetXY($x + 30, $y);
 
         // Other columns
         $pdf->Cell(40, 20, $product_name, 1, 0, 'C');
