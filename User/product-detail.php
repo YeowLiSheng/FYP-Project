@@ -688,15 +688,16 @@ $conn->close();
                                     <span class="mtext-107 cl2 p-r-20">
                                         <?php echo htmlspecialchars($review['user_name']); ?>
                                     </span>
-									<p class="stext-101 cl4">
-                                    <?php echo "Reviewed on: " . htmlspecialchars(date('Y-m-d H:i', strtotime($review['created_at']))); ?>
-                                </p>
+									
                                     <span class="fs-18 cl11">
                                         <?php for ($i = 1; $i <= 5; $i++) { ?>
                                             <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
                                         <?php } ?>
                                     </span>
                                 </div>
+								<p class="stext-101 cl4">
+                                    <?php echo "" . htmlspecialchars(date('Y-m-d H:i', strtotime($review['created_at']))); ?>
+                                </p>
                                 <p class="stext-102 cl6">
                                     <?php echo htmlspecialchars($review['comment']); ?>
                                 </p>
