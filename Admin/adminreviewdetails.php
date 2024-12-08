@@ -6,20 +6,22 @@ $category = "SELECT category_name FROM category";
 $categoryresult=$connect->query($category);
 
 $review = "
-        SELECT 
-            p.product_id, 
-            p.product_name, 
-            p.product_image, 
-            p.category_id, 
-            COUNT(r.review_id) AS total_reviews,
-            ROUND(AVG(r.rating), 1) AS avg_rating,
-            MAX(r.created_at) AS latest_review
-        FROM product p
-        INNER JOIN reviews r ON r.detail_id = p.product_id
-        WHERE r.status = 'active'
-        GROUP BY p.product_id, p.product_name, p.product_image, p.category_id
-        ORDER BY MAX(r.created_at) DESC
-    ";
+    SELECT 
+        p.product_id, 
+        p.product_name, 
+        p.product_image, 
+        p.category_id, 
+        COUNT(r.review_id) AS total_reviews,
+        ROUND(AVG(r.rating), 1) AS avg_rating,
+        MAX(r.created_at) AS latest_review
+    FROM product p
+    INNER JOIN order_details od ON p.product_id = od.product_id
+    INNER JOIN reviews r ON od.detail_id = r.detail_id
+    WHERE r.status = 'active'
+    GROUP BY p.product_id, p.product_name, p.product_image, p.category_id
+    ORDER BY latest_review DESC
+";
+
 
     $reviewresult = $connect->query($review);
 
