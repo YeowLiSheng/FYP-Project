@@ -71,11 +71,11 @@ if ($reviewresult->num_rows > 0) {
         $latest_review = date('d/m/Y', strtotime($row['latest_review']));
 
         $pdf->SetX($left_margin);
-        $pdf->Cell(60, 10, $product_name, 1, 0, 'C');
+        $pdf->Cell(50, 10, $product_name, 1, 0, 'C');
         $pdf->Cell(40, 10, $category_name, 1, 0, 'C');
-        $pdf->Cell(30, 10, $total_reviews, 1, 0, 'C');
-        $pdf->Cell(30, 10, $avg_rating, 1, 0, 'C');
-        $pdf->Cell(30, 10, $latest_review, 1, 1, 'C');
+        $pdf->Cell(40, 10, $total_reviews, 1, 0, 'C');
+        $pdf->Cell(40, 10, $avg_rating, 1, 0, 'C');
+        $pdf->Cell(40, 10, $latest_review, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
