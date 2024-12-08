@@ -491,7 +491,22 @@ function add_check() {
                 </div>
             </form>
         </div>
-        
+        <?php
+        if (isset($_SESSION['title']) && $_SESSION['title'] != '') {
+            ?>
+            <script>
+                Swal.fire({
+                    title: "<?php echo $_SESSION['title']; ?>",
+                    text: "<?php echo $_SESSION['text']; ?>",
+                    icon: "<?php echo $_SESSION['icon']; ?>"
+                });
+            </script>
+            <?php
+            unset($_SESSION['title']);
+            unset($_SESSION['text']);
+            unset($_SESSION['icon']);
+        }
+        ?>
 
         <!-- modal start-->
         <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -657,29 +672,8 @@ function add_check() {
                     </form>
                 </div>
             </div>
-        </div><!-- modal end-->
-
-        <div id="category-container">
-                <h2 id="category-title">Our Categories</h2>
-            <div id="category-boxes">
-                <div class="category-box">
-                    <span class="icon-cat"> <ion-icon name="bag-handle-outline"></ion-icon></span>
-                    <span id="WomenCount">0</span>
-                    <p>Women Bag</p>
-                </div>
-                <div class="category-box">
-                    <span class="icon-cat"><ion-icon name="bag-outline"></ion-icon></span>
-                    <span id="MenCount">0</span>
-                    <p>Men Bag</p>
-                </div>
-                <div class="category-box">
-                    <span class="icon-cat"><ion-icon name="glasses-outline"></ion-icon></span>
-                    <span id="AccessoriesCount">0</span>
-                    <p>Accessories</p>
-                </div>
-            </div>
-        </div>
-
+        </div><!-- modal end--
+        
         <hr>
         <?php
         $query = "SELECT 
