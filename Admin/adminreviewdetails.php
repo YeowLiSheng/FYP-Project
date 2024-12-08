@@ -21,7 +21,7 @@ $review = "
         ORDER BY MAX(r.created_at) DESC
     ";
 
-    $reviewresult = $conn->query($review);
+    $reviewresult = $connect->query($review);
 
 ?>
 
