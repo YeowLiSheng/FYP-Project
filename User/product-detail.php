@@ -54,6 +54,22 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     exit;
 }
 $query = "SELECT *, stock AS product_stock FROM product WHERE product_id = ?";
+if (isset($_GET['check_cart_qty']) && isset($_GET['product_id'])) {
+    $product_id = intval($_GET['product_id']);
+    $user_id = $_SESSION['id'];
+
+    $query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
+    $result = $conn->query($query);
+
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $total_qty = $row['total_qty'] ?? 0;
+        echo json_encode(['total_qty' => $total_qty]);
+    } else {
+        echo json_encode(['total_qty' => 0]);
+    }
+    exit;
+}
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -1403,18 +1419,56 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         $('.stock-warning').remove();
     }
 
+    // Function to lock quantity input
+    function lockQuantityInput() {
+        $('.num-product').val(0).prop('readonly', true); // Set value to 0 and lock the input
+        $('.btn-num-product-up, .btn-num-product-down').prop('disabled', true); // Disable buttons
+    }
+
+    // Fetch total quantity in cart for the product
+    function checkCartQuantity(productId, productStock) {
+        return new Promise((resolve) => {
+            $.ajax({
+                url: '', // Replace with your URL to fetch cart quantity
+                type: 'GET',
+                data: { check_cart_qty: true, product_id: productId },
+                dataType: 'json',
+                success: function (response) {
+                    if (response && response.total_qty) {
+                        const totalCartQty = parseInt(response.total_qty) || 0;
+                        resolve(totalCartQty >= productStock);
+                    } else {
+                        resolve(false);
+                    }
+                },
+                error: function () {
+                    resolve(false);
+                }
+            });
+        });
+    }
+
     // Button Up Quantity Adjustment
-    $(document).on('click', '.btn-num-product-up', function () {
+    $(document).on('click', '.btn-num-product-up', async function () {
         const $input = $(this).siblings('.num-product');
         const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0;
-        let currentVal = parseInt($input.val()) || 0;
+        const productId = $('.js-addcart-detail').data('id');
 
-        if (currentVal < productStock) {
-            $input.val(currentVal + 1);
-            clearStockWarning();
+        const exceedsStock = await checkCartQuantity(productId, productStock);
+
+        if (exceedsStock) {
+            showStockWarning("Your quantity in the cart for this product already reached the maximum.");
+            $input.val(0);
         } else {
-            showStockWarning(`Only ${productStock} items are available in stock.`);
-            $input.val(productStock);
+            let currentVal = parseInt($input.val()) || 0;
+
+            if (currentVal < productStock) {
+                $input.val(currentVal++);
+                clearStockWarning();
+            } else {
+                showStockWarning(`Only ${productStock} items are available in stock.`);
+				$input.val(productStock);
+            }
         }
     });
 
@@ -1430,7 +1484,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 
     // Add to Cart Functionality
-    $(document).on('click', '.js-addcart-detail', function (event) {
+    $(document).on('click', '.js-addcart-detail', async function (event) {
         event.preventDefault();
 
         const productId = $(this).data('id');
@@ -1438,6 +1492,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
         const productQuantity = parseInt($('.num-product').val());
         const productStock = parseInt($(this).data('stock')) || 0;
+
+        const exceedsStock = await checkCartQuantity(productId, productStock);
+
+        if (exceedsStock) {
+            showStockWarning("Your quantity in the cart for this product already reached the maximum.");
+            lockQuantityInput();
+            return;
+        }
 
         if (productQuantity > productStock) {
             showStockWarning(`Cannot add more than ${productStock} items.`);
@@ -1474,6 +1536,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         });
     });
 });
+
 
 
 </script>
