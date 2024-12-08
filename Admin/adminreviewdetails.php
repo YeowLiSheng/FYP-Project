@@ -5,6 +5,23 @@ include 'admin_sidebar.php';
 $category = "SELECT category_name FROM category";
 $categoryresult=$connect->query($category);
 
+$review = "
+        SELECT 
+            p.product_id, 
+            p.product_name, 
+            p.product_image, 
+            p.category_id, 
+            COUNT(r.review_id) AS total_reviews,
+            ROUND(AVG(r.rating), 1) AS avg_rating,
+            MAX(r.created_at) AS latest_review
+        FROM product p
+        INNER JOIN reviews r ON r.detail_id = p.product_id
+        WHERE r.status = 'active'
+        GROUP BY p.product_id, p.product_name, p.product_image, p.category_id
+        ORDER BY MAX(r.created_at) DESC
+    ";
+
+    $reviewresult = $conn->query($review);
 
 ?>
 
@@ -275,7 +292,7 @@ $categoryresult=$connect->query($category);
                 </select>
             </div>
             <div class="date-range">
-                <label for="start-date">From:</label>
+                <label for="start-date">Latest From:</label>
                 <input type="text" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
                 <input type="text" id="end-date" placeholder="End Date">
@@ -295,26 +312,22 @@ $categoryresult=$connect->query($category);
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <?php
-                    $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
-                    $result = mysqli_query($connect, $order);
-
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
-                                <td><?php echo $row["order_id"]; ?></td>
-                                <td><?php echo $row["user_name"]; ?></td>
-                                <td><?php echo $row["order_datetime"]; ?></td>
-                                <td><?php echo $row["shipping_address"]; ?></td>
-                                <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
-                                <td><?php echo $row["order_status"]; ?></td>
-                            </tr>
-                        <?php }
-                    } else { ?>
-                        <tr>
-                            <td colspan="6">No review found.</td>
-                        </tr>
-                    <?php } ?>
+                <?php    
+                          if ($reviewresult->num_rows > 0) {
+                            while ($row = $reviewresult->fetch_assoc()) {
+                                echo "<tr onclick=\"viewReviewDetails('{$row['product_id']}')\">";
+                                echo "<td><img src='{$row['product_image']}' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
+                                echo "<td>{$row['product_name']}</td>";
+                                echo "<td>{$row['category_id']}</td>";
+                                echo "<td>{$row['total_reviews']}</td>";
+                                echo "<td>{$row['avg_rating']}</td>";
+                                echo "<td>{$row['latest_review']}</td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='6'>No reviewed products found</td></tr>";
+                        }
+                ?>         
                 </tbody>
             </table>
         </div>
