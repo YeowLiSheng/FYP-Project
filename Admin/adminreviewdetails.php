@@ -265,7 +265,7 @@ $review = "
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
-                <select id="filter-status">
+                <select id="filter-status"onchange="filterTable()">
                     <option value="" selected>- General -</option>
                     <?php if ($categoryresult->num_rows > 0): ?>
 
