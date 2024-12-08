@@ -409,25 +409,26 @@ $review = "
 
         
 
-        function filterByDate() {
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-            const rows = document.querySelectorAll("#table-body tr");
+function filterByDate() { 
+    const startDate = $("#start-date").val();
+    const endDate = $("#end-date").val();
+    const rows = document.querySelectorAll("#table-body tr");
 
-            rows.forEach(row => {
-                const orderDateTime = row.cells[2].textContent; 
-                const orderDate = orderDateTime.split(" ")[0];
+    rows.forEach(row => {
+        const latestReviewDate = row.cells[5].textContent.trim(); // 获取"最新评论"列的日期
+        const reviewDate = latestReviewDate.split(" ")[0]; // 假设日期和时间可能存在分离
 
-                const start = startDate || null;
-                const end = endDate || null;
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+        const currentReviewDate = new Date(reviewDate);
 
-                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
+        if ((!start || currentReviewDate >= start) && (!end || currentReviewDate <= end)) {
+            row.style.display = ""; // 显示符合条件的行
+        } else {
+            row.style.display = "none"; // 隐藏不符合条件的行
         }
+    });
+}
 
         function filterTable() { 
     const selectedCategory = document.getElementById("filter-status").value;
