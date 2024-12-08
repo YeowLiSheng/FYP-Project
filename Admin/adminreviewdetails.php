@@ -286,7 +286,7 @@ $review = "
                     <?php endif;?>    
                 </select>
                 <label>Sort by:</label>
-                <select id="sort-order">
+                <select id="sort-order"onchange="sortTable()">
                     <option value="" selected>- General -</option>
                     <option value="newest">Newest</option>
                     <option value="oldest">Oldest</option>
@@ -446,15 +446,18 @@ function sortTable() {
 
     rows.sort((a, b) => {
         if (sortOrder === "newest" || sortOrder === "oldest") {
-            const dateA = new Date(a.cells[2].textContent.trim());
-            const dateB = new Date(b.cells[2].textContent.trim());
+            // 根据最新评论日期排序
+            const dateA = new Date(a.cells[5].textContent.trim());
+            const dateB = new Date(b.cells[5].textContent.trim());
             return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+
         } else if (sortOrder === "highest" || sortOrder === "lowest") {
-            const totalA = parseFloat(a.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            const totalB = parseFloat(b.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
+            // 根据平均评分排序
+            const ratingA = parseFloat(a.cells[4].textContent.trim()) || 0;
+            const ratingB = parseFloat(b.cells[4].textContent.trim()) || 0;
+            return sortOrder === "highest" ? ratingB - ratingA : ratingA - ratingB;
         }
-        return 0;
+        return 0; // 默认不排序
     });
 
     const tbody = document.getElementById("table-body");
