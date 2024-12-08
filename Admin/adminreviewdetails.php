@@ -24,12 +24,7 @@ $review = "
 
 
     $reviewresult = $connect->query($review);
-    $imagePath = "images/{$row['product_image']}";
-    if (file_exists($imagePath)) {
-        echo "<td><img src='$imagePath' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
-    } else {
-        echo "<td>图片文件未找到: $imagePath</td>";
-    }
+
 ?>
 
 <!DOCTYPE html>
