@@ -106,6 +106,13 @@ $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
 
+
+$review_count_query = "SELECT COUNT(*) as review_count FROM reviews r JOIN order_details od ON r.detail_id = od.detail_id WHERE od.product_id = ?";
+$stmt = $conn->prepare($review_count_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$review_count_result = $stmt->get_result();
+$review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 // Close the connection
 $conn->close();
 ?>
@@ -597,7 +604,7 @@ $conn->close();
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
+						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo $review_count; ?>)</a>
 						</li>
 					</ul>
 
