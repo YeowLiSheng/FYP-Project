@@ -339,12 +339,7 @@ $review = "
 
 
 
-        $(function () {
-            $("#start-date, #end-date").datepicker({
-                dateFormat: "yy-mm-dd",
-                onSelect: filterByDate
-            });
-        });
+
 
         document.getElementById("export-pdf").addEventListener("click", exportPDF);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
