@@ -22,32 +22,29 @@ if ($product_id > 0) {
         exit;
     }
 
-    // Fetch reviews for the product
     $reviews_query = "
-        SELECT 
-            r.review_id, 
-            r.rating, 
-            r.comment, 
-            r.image AS review_image, 
-            r.admin_reply, 
-            u.user_name, 
-            u.user_image, 
-            r.created_at 
-        FROM reviews r
-        INNER JOIN users u ON r.user_id = u.user_id
-        WHERE r.detail_id IN (
-            SELECT detail_id 
-            FROM order_details 
-            WHERE product_id = $product_id
-        ) AND r.status = 'active'
-        ORDER BY r.created_at DESC
-    ";
-    $reviews_result = $connect->query($reviews_query);
+    SELECT 
+        r.review_id, 
+        r.rating, 
+        r.comment, 
+        r.image AS review_image, 
+        r.admin_reply, 
+        u.user_name, 
+        u.user_image, 
+        r.created_at 
+    FROM reviews r
+    INNER JOIN users u ON r.user_id = u.user_id
+    INNER JOIN order_details od ON r.detail_id = od.detail_id
+    WHERE od.product_id = $product_id 
+      AND r.status = 'active'
+    ORDER BY r.created_at DESC
+";
+$reviews_result = $connect->query($reviews_query);
 
-    if (!$reviews_result) {
-        echo "<script>alert('Failed to fetch reviews.');</script>";
-        $reviews_result = null;
-    }
+if (!$reviews_result) {
+    echo "<script>alert('Failed to fetch reviews. SQL Error: {$connect->error}');</script>";
+    $reviews_result = null;
+}
 } else {
     echo "<script>alert('Invalid product ID'); window.location.href = 'admin_review.php';</script>";
     exit;
