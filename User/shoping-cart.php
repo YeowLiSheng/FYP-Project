@@ -140,14 +140,15 @@ $total_price = 0;
 // Fetch and combine cart items with stock information
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
-           SUM(sc.qty) AS total_qty, 
+		   sc.color, sc.size,    
+		   SUM(sc.qty) AS total_qty, 
            SUM(sc.qty * p.product_price) AS total_price, 
            MAX(sc.final_total_price) AS final_total_price, 
            MAX(sc.voucher_applied) AS voucher_applied
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
+    GROUP BY sc.product_id, sc.color, sc.size";
 $cart_items_result = $conn->query($cart_items_query);
 
 $checkout_locked = false; // Flag to disable checkout button
@@ -639,11 +640,14 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
                                 <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
                                     ' . $cart_item['product_name'] . '
                                 </a>
                                 <span class="header-cart-item-info">
                                     ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+								<span class="header-cart-item-info">
+                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
                                 </span>
                             </div>
                         </li>';
