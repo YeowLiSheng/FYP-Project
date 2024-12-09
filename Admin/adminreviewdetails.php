@@ -13,7 +13,14 @@ if ($product_id > 0) {
         WHERE product_id = $product_id
     ";
     $product_result = $connect->query($product_query);
-    $product = $product_result->fetch_assoc();
+
+    if ($product_result && $product_result->num_rows > 0) {
+        $product = $product_result->fetch_assoc();
+    } else {
+        $product = null;
+        echo "<script>alert('Product not found.'); window.location.href = 'admin_review.php';</script>";
+        exit;
+    }
 
     // Fetch reviews for the product
     $reviews_query = "
@@ -36,6 +43,11 @@ if ($product_id > 0) {
         ORDER BY r.created_at DESC
     ";
     $reviews_result = $connect->query($reviews_query);
+
+    if (!$reviews_result) {
+        echo "<script>alert('Failed to fetch reviews.');</script>";
+        $reviews_result = null;
+    }
 } else {
     echo "<script>alert('Invalid product ID'); window.location.href = 'admin_review.php';</script>";
     exit;
@@ -65,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_review_id'
         echo "<script>alert('Failed to deactivate review.');</script>";
     }
 }
-
 ?>
 
 <div class="main">
@@ -91,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_review_id'
                 </tr>
             </thead>
             <tbody>
-                <?php if ($reviews_result->num_rows > 0): ?>
+                <?php if ($reviews_result && $reviews_result->num_rows > 0): ?>
                     <?php while ($row = $reviews_result->fetch_assoc()): ?>
                         <tr>
                             <td>
