@@ -30,12 +30,13 @@ if ($result && mysqli_num_rows($result) > 0) {
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price,
+           sc.color, sc.size, 
            SUM(sc.qty) AS total_qty, 
-           SUM(sc.total_price) AS total_price 
+           SUM(sc.total_price) AS total_price
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
+    GROUP BY sc.product_id, sc.color, sc.size";
 $cart_items_result = $connect->query($cart_items_query);
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
@@ -56,10 +57,13 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
+	$color = $connect->real_escape_string($_POST['color']);
+    $size = $connect->real_escape_string($_POST['size']);
     $user_id = $_SESSION['id']; // Get the logged-in user ID
 
     // Insert data into shopping_cart table, including the user_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price, color, size) 
+                   VALUES ($user_id, $product_id, $qty, $total_price, '$color', '$size')";
     if ($connect->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
@@ -421,11 +425,16 @@ body {
                                 <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+
                                     ' . $cart_item['product_name'] . '
                                 </a>
                                 <span class="header-cart-item-info">
                                     ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+								
+                                <span class="header-cart-item-info">
+                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
                                 </span>
                             </div>
                         </li>';
@@ -905,10 +914,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 								<div class="size-204 respon6-next">
 									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2" name="time">
+										<select class="js-select2" name="size">
 											<option>Choose an option</option>
-											<option><?php echo isset($product['size1']) ? $product['size1'] : 'Size 1 not available'; ?></option>
-											<option><?php echo isset($product['size2']) ? $product['size2'] : 'Size 2 not available'; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -922,10 +929,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 								<div class="size-204 respon6-next">
 									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2" name="time">
+										<select class="js-select2" name="color">
 											<option>Choose an option</option>
-											<option><?php echo $product['color1']; ?></option>
-                							<option><?php echo $product['color2']; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -1075,18 +1080,19 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         $(this).attr('data-thumb', imagePath);
                     });
 					// Update size options
-                    var sizeSelect = $('select[name="time"]');
-                    sizeSelect.empty(); // Clear existing options
-                    sizeSelect.append('<option>Choose an option</option>'); // Default option
-                    if (response.size1) sizeSelect.append('<option>' + response.size1 + '</option>');
-                    if (response.size2) sizeSelect.append('<option>' + response.size2 + '</option>');
+                    // Update size options
+					var sizeSelect = $('select[name="size"]');
+					sizeSelect.empty(); // Clear existing options
+					sizeSelect.append('<option value="">Choose an option</option>'); // Default option
+					if (response.size1) sizeSelect.append('<option value="' + response.size1 + '">' + response.size1 + '</option>');
+					if (response.size2) sizeSelect.append('<option value="' + response.size2 + '">' + response.size2 + '</option>');
 
-                    // Update color options
-                    var colorSelect = $('select[name="color"]');
-                    colorSelect.empty(); // Clear existing options
-                    colorSelect.append('<option>Choose an option</option>'); // Default option
-                    if (response.color1) colorSelect.append('<option>' + response.color1 + '</option>');
-                    if (response.color2) colorSelect.append('<option>' + response.color2 + '</option>');
+					// Update color options
+					var colorSelect = $('select[name="color"]');
+					colorSelect.empty(); // Clear existing options
+					colorSelect.append('<option value="">Choose an option</option>'); // Default option
+					if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
+					if (response.color2) colorSelect.append('<option value="' + response.color2 + '">' + response.color2 + '</option>');
 
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
@@ -1135,6 +1141,13 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
             const productQuantity = parseInt($('.num-product').val());
             const productStock = $(this).data('stock') || 0;
+			const selectedColor = $('select[name="color"]').val();
+   			const selectedSize = $('select[name="size"]').val();
+
+			if (!selectedColor || !selectedSize) {
+				alert('Please select a color and size.');
+				return;
+			}
 
             if (productQuantity > productStock) {
                 $('.stock-warning').text(`Cannot add more than ${productStock} items.`).show();
@@ -1153,7 +1166,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                     add_to_cart: true,
                     product_id: productId,
                     qty: productQuantity,
-                    total_price: totalPrice
+                    total_price: totalPrice,
+					color: selectedColor, 
+            		size: selectedSize
                 },
                 dataType: 'json',
                 success: function (response) {
