@@ -319,7 +319,7 @@ body {
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
+					<a href="dashboard.php" class="logo">
 						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 

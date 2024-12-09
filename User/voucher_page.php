@@ -175,7 +175,7 @@ if ($distinct_products_result) {
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
+					<a href="dashboard.php" class="logo">
 						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
@@ -191,11 +191,11 @@ if ($distinct_products_result) {
 								</ul>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
-							<li class="label1" data-label1="hot">
+							<li class="label1 active-menu" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
