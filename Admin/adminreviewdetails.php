@@ -2,11 +2,11 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// Get the product ID from the URL
+// 获取产品 ID
 $product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : 0;
 
 if ($product_id > 0) {
-    // Fetch product details
+    // 查询产品信息
     $product_query = "
         SELECT product_name, product_image
         FROM product
@@ -17,59 +17,59 @@ if ($product_id > 0) {
     if ($product_result && $product_result->num_rows > 0) {
         $product = $product_result->fetch_assoc();
     } else {
-        $product = null;
         echo "<script>alert('Product not found.'); window.location.href = 'admin_review.php';</script>";
         exit;
     }
 
+    // 查询评论信息
     $reviews_query = "
-    SELECT 
-        r.review_id, 
-        r.rating, 
-        r.comment, 
-        r.image AS review_image, 
-        r.admin_reply, 
-        u.user_name, 
-        u.user_image, 
-        r.created_at 
-    FROM reviews r
-    INNER JOIN users u ON r.user_id = u.user_id
-    INNER JOIN order_details od ON r.detail_id = od.detail_id
-    WHERE od.product_id = $product_id 
-      AND r.status = 'active'
-    ORDER BY r.created_at DESC
-";
-$reviews_result = $connect->query($reviews_query);
+        SELECT 
+            r.review_id, 
+            r.rating, 
+            r.comment, 
+            r.image AS review_image, 
+            r.admin_reply, 
+            u.user_name, 
+            u.user_image, 
+            r.created_at 
+        FROM reviews r
+        INNER JOIN users u ON r.user_id = u.user_id
+        INNER JOIN order_details od ON r.detail_id = od.detail_id
+        WHERE od.product_id = $product_id 
+          AND r.status = 'active'
+        ORDER BY r.created_at DESC
+    ";
+    $reviews_result = $connect->query($reviews_query);
 
-if (!$reviews_result) {
-    echo "<script>alert('Failed to fetch reviews. SQL Error: {$connect->error}');</script>";
-    $reviews_result = null;
-}
+    if (!$reviews_result) {
+        echo "<script>alert('Failed to fetch reviews. SQL Error: {$connect->error}');</script>";
+        $reviews_result = null;
+    }
 } else {
     echo "<script>alert('Invalid product ID'); window.location.href = 'admin_review.php';</script>";
     exit;
 }
 
-// Handle admin reply submission
+// 提交管理员回复
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['review_id']) && isset($_POST['admin_reply'])) {
     $review_id = intval($_POST['review_id']);
     $admin_reply = $connect->real_escape_string($_POST['admin_reply']);
 
     $query = "UPDATE reviews SET admin_reply = '$admin_reply' WHERE review_id = $review_id";
     if ($connect->query($query)) {
-        echo "<script>alert('Reply submitted successfully.'); window.location.reload();</script>";
+        echo "<script>alert('Reply submitted successfully.'); window.location.href = window.location.href;</script>";
     } else {
         echo "<script>alert('Failed to submit reply.');</script>";
     }
 }
 
-// Handle review deactivation
+// 禁用评论
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_review_id'])) {
     $review_id = intval($_POST['deactivate_review_id']);
 
     $query = "UPDATE reviews SET status = 'inactive' WHERE review_id = $review_id";
     if ($connect->query($query)) {
-        echo "<script>alert('Review deactivated successfully.'); window.location.reload();</script>";
+        echo "<script>alert('Review deactivated successfully.'); window.location.href = window.location.href;</script>";
     } else {
         echo "<script>alert('Failed to deactivate review.');</script>";
     }
@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_review_id'
 
     <?php if ($product): ?>
         <div class="product-info">
-            <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" style="width: 100px; height: auto;">
+            <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" style="width: 150px; height: auto;">
             <h2><?= htmlspecialchars($product['product_name']) ?></h2>
         </div>
     <?php endif; ?>
@@ -116,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deactivate_review_id'
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <form method="POST" style="display: flex; flex-direction: column;">
+                                <form method="POST">
                                     <textarea name="admin_reply" rows="3" style="width: 100%;"><?= htmlspecialchars($row['admin_reply']) ?></textarea>
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
                                     <button type="submit" style="margin-top: 5px;">Submit Reply</button>
