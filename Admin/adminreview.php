@@ -465,7 +465,7 @@ function searchTable() {
 }
 
         function viewReviewDetails(productId) {
-            window.location.href = `review_details.php?product_id=${productId}`;
+            window.location.href = `adminreviewdetails.php?product_id=${productId}`;
         }
     </script>
 </body>
