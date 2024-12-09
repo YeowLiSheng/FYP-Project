@@ -1,15 +1,8 @@
 <?php
-session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
+session_start(); // Start the session
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+// Include the database connection file
+include("dataconnection.php"); 
 
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
@@ -17,9 +10,14 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
+// Check if the database connection exists
+if (!isset($connect) || !$connect) { // Changed $connect to $conn
+    die("Database connection failed.");
+}
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
 
 // Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
@@ -33,17 +31,19 @@ if ($result && mysqli_num_rows($result) > 0) {
 $total_price = 0;
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items with stock information
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
-           SUM(sc.qty) AS total_qty, 
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
+		   sc.color, sc.size,    
+		   SUM(sc.qty) AS total_qty, 
            SUM(sc.qty * p.product_price) AS total_price, 
            MAX(sc.final_total_price) AS final_total_price, 
            MAX(sc.voucher_applied) AS voucher_applied
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
-$cart_items_result = $conn->query($cart_items_query);
+    GROUP BY sc.product_id, sc.color, sc.size";
+$cart_items_result = $connect->query($cart_items_query);
 
 // Calculate total price and final total price
 if ($cart_items_result && $cart_items_result->num_rows > 0) {
@@ -62,11 +62,11 @@ $voucher_query = "
     LEFT JOIN voucher_usage vu ON v.voucher_id = vu.voucher_id AND vu.user_id = $user_id
     WHERE v.voucher_status = 'active'
 ";
-$voucher_result = $conn->query($voucher_query);
+$voucher_result = $connect->query($voucher_query);
 
 // Count distinct product IDs in the shopping cart for the logged-in user
 $distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
-$distinct_products_result = $conn->query($distinct_products_query);
+$distinct_products_result = $connect->query($distinct_products_query);
 $distinct_count = 0;
 
 if ($distinct_products_result) {
@@ -266,7 +266,7 @@ if ($distinct_products_result) {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-				$cart_items_result = $conn->query($cart_items_query);
+				$cart_items_result = $connect->query($cart_items_query);
                 // Display combined cart items
                 $total_price = 0;
                 if ($cart_items_result->num_rows > 0) {
@@ -278,11 +278,14 @@ if ($distinct_products_result) {
                                 <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
                                     ' . $cart_item['product_name'] . '
                                 </a>
                                 <span class="header-cart-item-info">
                                     ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+								<span class="header-cart-item-info">
+                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
                                 </span>
                             </div>
                         </li>';
@@ -303,14 +306,14 @@ if ($distinct_products_result) {
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>
             </div>
         </div>
     </div>
-</div>	
+</div>
 
 		<!-- Voucher Table -->
 <form class="bg0 p-t-75 p-b-85" method="POST" action="">
