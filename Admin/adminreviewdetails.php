@@ -2,110 +2,195 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 获取产品 ID
-$product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : 0;
+$product_id = $_GET['product_id'] ?? null;
 
-// 查询产品评论
-$query = "
+if (!$product_id) {
+    echo "<p>Product not found.</p>";
+    exit;
+}
+
+// 获取产品信息
+$product_query = "
     SELECT 
-        r.review_id,
-        r.rating,
-        r.comment,
-        r.image,
-        r.status,
-        r.admin_reply,
-        r.created_at,
-        u.username AS user_name
-    FROM reviews r
-    INNER JOIN order_details od ON r.detail_id = od.detail_id
-    INNER JOIN users u ON r.user_id = u.user_id
-    WHERE od.product_id = $product_id
+        p.product_name, 
+        p.product_image 
+    FROM product p 
+    WHERE p.product_id = ?
+";
+$stmt = $connect->prepare($product_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$product = $stmt->get_result()->fetch_assoc();
+
+// 获取产品评论
+$review_query = "
+    SELECT 
+        r.review_id, 
+        r.rating, 
+        r.comment, 
+        r.image AS review_image, 
+        r.admin_reply, 
+        u.user_image, 
+        u.user_name 
+    FROM reviews r 
+    INNER JOIN users u ON r.user_id = u.user_id 
+    WHERE r.detail_id IN (
+        SELECT detail_id 
+        FROM order_details 
+        WHERE product_id = ?
+    ) 
+    AND r.status = 'active'
     ORDER BY r.created_at DESC
 ";
-$reviewResult = $connect->query($query);
+$stmt = $connect->prepare($review_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$reviews = $stmt->get_result();
+
+// 处理表单提交
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $review_id = $_POST['review_id'] ?? null;
+    $admin_reply = $_POST['admin_reply'] ?? '';
+
+    if (isset($_POST['reply']) && $review_id) {
+        $update_query = "
+            UPDATE reviews 
+            SET admin_reply = ? 
+            WHERE review_id = ?
+        ";
+        $stmt = $connect->prepare($update_query);
+        $stmt->bind_param("si", $admin_reply, $review_id);
+        $stmt->execute();
+        header("Location: admin_productreview.php?product_id=$product_id");
+        exit;
+    }
+
+    if (isset($_POST['deactivate']) && $review_id) {
+        $deactivate_query = "
+            UPDATE reviews 
+            SET status = 'inactive' 
+            WHERE review_id = ?
+        ";
+        $stmt = $connect->prepare($deactivate_query);
+        $stmt->bind_param("i", $review_id);
+        $stmt->execute();
+        header("Location: admin_productreview.php?product_id=$product_id");
+        exit;
+    }
+}
 ?>
 
+<!-- 前端页面布局 -->
 <div class="main">
-    <h1><ion-icon name="chatbubble-outline"></ion-icon> Product Reviews</h1>
-    
-    <div class="card">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Review ID</th>
-                    <th>Rating</th>
-                    <th>Comment</th>
-                    <th>Image</th>
-                    <th>Status</th>
-                    <th>Admin Reply</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($reviewResult->num_rows > 0): ?>
-                    <?php while ($row = $reviewResult->fetch_assoc()): ?>
+    <h1><ion-icon name="chatbubbles-outline"></ion-icon> Product Reviews</h1>
+
+    <div class="product-info">
+        <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>">
+        <h2><?= htmlspecialchars($product['product_name']) ?></h2>
+    </div>
+
+    <div class="review-container">
+        <?php if ($reviews->num_rows > 0): ?>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = $reviews->fetch_assoc()): ?>
                         <tr>
-                            <td><?= $row['review_id'] ?></td>
-                            <td><?= $row['rating'] ?> / 5</td>
-                            <td><?= htmlspecialchars($row['comment']) ?></td>
                             <td>
-                                <?php if ($row['image']): ?>
-                                    <img src="../User/images/<?= $row['image'] ?>" alt="Review Image" style="width: 50px; height: auto;">
-                                <?php else: ?>
-                                    No Image
+                                <img src="../User/images/<?= htmlspecialchars($row['user_image']) ?>" alt="<?= htmlspecialchars($row['user_name']) ?>" style="width: 50px; height: auto;">
+                                <p><?= htmlspecialchars($row['user_name']) ?></p>
+                            </td>
+                            <td><?= htmlspecialchars($row['rating']) ?> <ion-icon name="star-outline"></ion-icon></td>
+                            <td>
+                                <p><?= htmlspecialchars($row['comment']) ?></p>
+                                <?php if (!empty($row['review_image'])): ?>
+                                    <img src="../User/images/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" style="width: 100px; height: auto;">
                                 <?php endif; ?>
                             </td>
-                            <td><?= ucfirst($row['status']) ?></td>
-                            <td><?= htmlspecialchars($row['admin_reply']) ?: 'No Reply Yet' ?></td>
                             <td>
-                                <form method="post" style="display: inline-block;">
+                                <form method="post">
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
-                                    <?php if ($row['status'] === 'active'): ?>
-                                        <button type="submit" name="deactivate" class="btn btn-danger">Deactivate</button>
-                                    <?php else: ?>
-                                        <button type="submit" name="activate" class="btn btn-success">Activate</button>
-                                    <?php endif; ?>
+                                    <textarea name="admin_reply" placeholder="Write your reply..."><?= htmlspecialchars($row['admin_reply']) ?></textarea>
+                                    <button type="submit" name="reply">Reply</button>
+                                    <button type="submit" name="deactivate" class="danger">Deactivate</button>
                                 </form>
-                                <button onclick="replyReview(<?= $row['review_id'] ?>)" class="btn btn-primary">Reply</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
-                <?php else: ?>
-                    <tr><td colspan="7">No reviews found for this product.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>No reviews available for this product.</p>
+        <?php endif; ?>
     </div>
 </div>
 
-<script>
-function replyReview(reviewId) {
-    const reply = prompt("Enter your reply:");
-    if (reply) {
-        window.location.href = `adminreviewdetails.php?product_id=<?= $product_id ?>&review_id=${reviewId}&reply=${encodeURIComponent(reply)}`;
-    }
-}
-</script>
-
-<?php
-// 激活或禁用评论
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $review_id = intval($_POST['review_id']);
-    if (isset($_POST['deactivate'])) {
-        $connect->query("UPDATE reviews SET status = 'inactive' WHERE review_id = $review_id");
-    } elseif (isset($_POST['activate'])) {
-        $connect->query("UPDATE reviews SET status = 'active' WHERE review_id = $review_id");
-    }
-    header("Location: adminreviewdetails.php?product_id=$product_id");
-    exit;
+<!-- 前端样式 -->
+<style>
+/* 主样式 */
+.main {
+    padding: 20px;
 }
 
-// 回复评论
-if (isset($_GET['reply']) && isset($_GET['review_id'])) {
-    $review_id = intval($_GET['review_id']);
-    $reply = $connect->real_escape_string($_GET['reply']);
-    $connect->query("UPDATE reviews SET admin_reply = '$reply' WHERE review_id = $review_id");
-    header("Location: adminreviewdetails.php?product_id=$product_id");
-    exit;
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
-?>
+
+.product-info img {
+    width: 150px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.review-container {
+    margin-top: 30px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+textarea {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    cursor: pointer;
+}
+
+button.danger {
+    background-color: #e74c3c;
+    color: white;
+}
+
+button[type="submit"] {
+    background-color: #3498db;
+    color: white;
+    margin-right: 5px;
+}
+
+img {
+    max-width: 100px;
+    height: auto;
+}
+</style>
