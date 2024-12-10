@@ -28,35 +28,23 @@ $stmt->execute();
 $reviews = $stmt->get_result();
 
 // 处理管理员操作
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
-        $reviewId = $_POST['review_id'];
-        $adminReply = $_POST['admin_reply'];
-
-        $stmt = $connect->prepare("UPDATE reviews SET admin_reply = ? WHERE review_id = ?");
-        $stmt->bind_param('si', $adminReply, $reviewId);
+        $admin_reply = trim($_POST['admin_reply']);
+        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
+        $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
-        $stmt->close();
-    }
-
-    if (isset($_POST['toggle_status'])) {
-        $reviewId = $_POST['review_id'];
-        $newStatus = $_POST['new_status'];
-
-        $stmt = $connect->prepare("UPDATE reviews SET status = ? WHERE review_id = ?");
-        $stmt->bind_param('si', $newStatus, $reviewId);
+    } elseif (isset($_POST['toggle_status'])) {
+        $new_status = $_POST['new_status'];
+        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
+        $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
-        $stmt->close();
     }
-
-    // 确保没有其他输出
-    if (headers_sent()) {
-        die("Headers already sent. Cannot redirect.");
-    }
-
-    // 重定向到当前页面并保留 product_id 参数
-    header("Location: adminreviewdetails.php?product_id=" . $product_id);
-    exit;
+    header("Location: admin_reviewdetails.php?product_id=$product_id");
+    exit();
 }
 ?>
 
