@@ -164,7 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
                             <td>
                                 <?php if ($row['review_image']): ?>
-                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
+                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image"
+                                    onclick="openModal('<?php echo $review['image']; ?>')">
                                 <?php else: ?>
                                     <p>No Image</p>
                                 <?php endif; ?>
@@ -219,6 +220,17 @@ function openReplyForm(reviewId, replyText) {
 function closeReplyForm() {
     document.getElementById("reply-modal").style.display = "none";
 }
+ function openModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+        modal.style.display = 'flex';
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }
 </script>
 </body>
 </html>
