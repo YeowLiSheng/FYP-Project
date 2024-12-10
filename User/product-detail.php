@@ -633,41 +633,63 @@ $connect->close();
                     <?php while ($review = $reviews_result->fetch_assoc()) { ?>
                         <div class="flex-w flex-t p-b-68">
                             <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User "
-								style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
+                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User"
+                                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
                             </div>
                             <div class="size-207">
                                 <div class="flex-w flex-sb-m p-b-17">
-								<div class="flex-w align-items-center">
-
-                                    <span class="mtext-107 cl2 p-r-20">
-                                        <?php echo htmlspecialchars($review['user_name']); ?>
-                                    </span>
-									<span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+                                    <div class="flex-w align-items-center">
+                                        <span class="mtext-107 cl2 p-r-20">
+                                            <?php echo htmlspecialchars($review['user_name']); ?>
+                                        </span>
+                                        <span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
                                             <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['created_at']))); ?>
                                         </span>
-										</div>
+                                    </div>
                                     <span class="fs-18 cl11">
                                         <?php for ($i = 1; $i <= 5; $i++) { ?>
                                             <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
                                         <?php } ?>
                                     </span>
                                 </div>
-                                <p class="stext-102 cl6">
-                                    <?php echo htmlspecialchars($review['comment']); ?>
-                                </p>
-								<?php if (!empty($review['image'])) { ?>
-                                    <div class="review-image">
-    <img src="<?php echo $review['image']; ?>" alt="Review Image" 
-         style="width: 150px; height: 150px; border-radius: 10px; object-fit: cover; margin-top: 10px; cursor: pointer;" 
-         onclick="openModal('<?php echo $review['image']; ?>')">
-</div>
+                                
+                                <?php if ($review['status'] === 'inactive') { ?>
+                                    <p class="stext-102 cl6" style="color: red; font-style: italic;">
+                                        This review has been deleted.
+                                    </p>
+                                <?php } else { ?>
+                                    <p class="stext-102 cl6">
+                                        <?php echo htmlspecialchars($review['comment']); ?>
+                                    </p>
+                                    <?php if (!empty($review['image'])) { ?>
+                                        <div class="review-image">
+                                            <img src="<?php echo $review['image']; ?>" alt="Review Image"
+                                                 style="width: 150px; height: 150px; border-radius: 10px; object-fit: cover; margin-top: 10px; cursor: pointer;"
+                                                 onclick="openModal('<?php echo $review['image']; ?>')">
+                                        </div>
 
-<!-- 模态框 -->
-<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
-    <span style="position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer;" onclick="closeModal()">&times;</span>
-    <img id="modalImage" src="" alt="Full Image" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
-</div>
+                                        <!-- Modal -->
+                                        <div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
+                                            <span style="position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer;" onclick="closeModal()">&times;</span>
+                                            <img id="modalImage" src="" alt="Full Image" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
+                                        </div>
+                                    <?php } ?>
+                                <?php } ?>
+
+                                <!-- Admin Reply -->
+                                <?php if (!empty($review['admin_reply'])) { ?>
+                                    <div class="flex-w flex-t p-t-20">
+                                        <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                            <img src="images/admin-avatar.png" alt="Admin"
+                                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
+                                        </div>
+                                        <div>
+                                            <span class="mtext-107 cl2">Admin (Office)</span>
+                                            <p class="stext-102 cl6">
+                                                <?php echo htmlspecialchars($review['admin_reply']); ?>
+                                            </p>
+                                        </div>
+                                    </div>
                                 <?php } ?>
                             </div>
                         </div>
@@ -679,7 +701,6 @@ $connect->close();
         </div>
     </div>
 </div>
-
 					</div>
 				</div>
 			</div>
