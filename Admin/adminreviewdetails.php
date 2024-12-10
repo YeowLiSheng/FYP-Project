@@ -74,63 +74,86 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .btn-warning { background-color: #ffc107; color: black; }
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
+
         .modal {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 500px;
+            width: 450px;
             max-width: 90%;
-            background: linear-gradient(to bottom, #ffffff, #f4f4f4);
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
             z-index: 1000;
-            padding: 20px;
+            padding: 25px;
             font-family: Arial, sans-serif;
             color: #333;
         }
-        .modal-content { position: relative; text-align: center; }
-        .modal h2 { margin-bottom: 20px; font-size: 24px; font-weight: bold; color: #444; }
+
+        .modal-content {
+            text-align: center;
+            position: relative;
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #444;
+        }
+
         .modal textarea {
             width: 100%;
-            height: 150px;
+            height: 120px;
             resize: none;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             font-size: 14px;
             font-family: Arial, sans-serif;
             margin-bottom: 20px;
+            transition: border-color 0.3s ease;
         }
+
         .modal textarea:focus {
+            border-color: #007bff;
             outline: none;
-            border: 1px solid #007bff;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
         }
+
         .modal button {
-            padding: 10px 20px;
+            padding: 12px 20px;
             font-size: 16px;
             font-weight: bold;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             background-color: #007bff;
             color: white;
             transition: background-color 0.3s ease;
         }
-        .modal button:hover { background-color: #0056b3; }
+
+        .modal button:hover {
+            background-color: #0056b3;
+        }
+
         .close-btn {
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
-            color: #555;
+            color: #888;
             cursor: pointer;
             transition: color 0.3s ease;
         }
-        .close-btn:hover { color: #ff0000; }
+
+        .close-btn:hover {
+            color: #ff0000;
+        }
+
         .image-modal {
             display: none;
             position: fixed;
@@ -143,12 +166,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             align-items: center;
             z-index: 1000;
         }
+
         .image-modal img {
             max-width: 90%;
             max-height: 90%;
             object-fit: contain;
             border-radius: 10px;
         }
+
         .image-modal .close-btn {
             position: absolute;
             top: 10px;
@@ -220,7 +245,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
-                    <tr><td colspan="7">No reviews found.</td></tr>
+                    <tr>
+                        <td colspan="7" style="text-align: center;">No reviews found.</td>
+                    </tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -232,9 +259,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="modal-content">
         <h2>Reply to Review</h2>
         <form method="post">
-            <textarea id="replyTextarea" name="admin_reply" required></textarea>
+            <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
-            <button type="submit" name="reply">Save Reply</button>
+            <button type="submit" name="reply">Submit Reply</button>
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
@@ -242,24 +269,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!-- Image Modal -->
 <div class="image-modal" id="imageModal">
+    <img src="" alt="Review Image" id="imagePreview">
     <span class="close-btn" onclick="closeImageModal()">&times;</span>
-    <img id="modalImage" src="" alt="Review Image">
 </div>
 
 <script>
 function openReplyForm(reviewId, currentReply) {
-    document.getElementById('reviewIdInput').value = reviewId;
-    document.getElementById('replyTextarea').value = currentReply;
     document.getElementById('replyModal').style.display = 'block';
+    document.getElementById('replyTextarea').value = currentReply || '';
+    document.getElementById('reviewIdInput').value = reviewId;
 }
 
 function closeReplyForm() {
     document.getElementById('replyModal').style.display = 'none';
 }
 
-function openImageModal(imageSrc) {
-    document.getElementById('modalImage').src = imageSrc;
-    document.getElementById('imageModal').style.display = 'flex';
+function openImageModal(imageUrl) {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'flex';
+    document.getElementById('imagePreview').src = imageUrl;
 }
 
 function closeImageModal() {
