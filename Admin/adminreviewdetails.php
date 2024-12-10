@@ -77,83 +77,96 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         /* Redesigned Modal */
         .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 450px;
-            max-width: 90%;
-            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-            box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            z-index: 1000;
-            padding: 25px;
-            font-family: Arial, sans-serif;
-        }
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px;
+    max-width: 90%;
+    background: none;
+    padding: 0;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
 
-        .modal-content {
-            text-align: center;
-            position: relative;
-        }
+/* Modal Content */
+.modal-content {
+    position: relative;
+    text-align: center;
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+    padding: 25px;
+    border-radius: 15px;
+    color: #f0f0f0;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6), 0px 8px 20px rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
 
-        .modal h2 {
-            margin-bottom: 20px;
-            font-size: 22px;
-            font-weight: 700;
-            color: #333;
-        }
+/* Modal Header */
+.modal h2 {
+    margin-bottom: 20px;
+    font-size: 26px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #ffcccb; /* 温和的红色标题 */
+}
 
-        .modal textarea {
-            width: 100%;
-            height: 150px;
-            resize: none;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: Arial, sans-serif;
-            margin-bottom: 20px;
-            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-        }
+/* Textarea */
+.modal textarea {
+    width: 100%;
+    height: 150px;
+    resize: none;
+    padding: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
 
-        .modal textarea:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
-        }
+.modal textarea:focus {
+    box-shadow: 0px 0px 12px rgba(255, 255, 255, 0.7);
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.3);
+}
 
-        .modal button {
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            background: linear-gradient(to right, #007bff, #0056b3);
-            color: white;
-            transition: transform 0.2s ease, background-color 0.3s ease;
-        }
+/* Buttons */
+.modal button {
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    background: linear-gradient(to right, #ff6b6b, #d63031);
+    color: white;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
 
-        .modal button:hover {
-            background: linear-gradient(to right, #0056b3, #003d80);
-            transform: scale(1.05);
-        }
+.modal button:hover {
+    background: linear-gradient(to right, #d63031, #ff6b6b);
+    box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.5);
+    transform: scale(1.05);
+}
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
+/* Close Button */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
 
-        .close-btn:hover {
-            color: #ff0000;
-        }
+.close-btn:hover {
+    color: #ff6b6b;
+}
 
         .image-modal {
             display: none;
