@@ -56,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Product Review</title>
     <link rel="stylesheet" href="admin_styles.css">
     <style>
-        /* General Styles */
         .main { padding: 20px; }
         .product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
         .product-image, .user-image, .review-image {
@@ -76,22 +75,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
 
-        /* Modal Styles */
+        /* Redesigned Modal */
         .modal {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 400px;
+            width: 450px;
             max-width: 90%;
-            background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
-            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+            box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             z-index: 1000;
             padding: 25px;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #333;
+            font-family: Arial, sans-serif;
         }
 
         .modal-content {
@@ -100,49 +98,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .modal h2 {
-            font-size: 22px;
-            font-weight: bold;
             margin-bottom: 20px;
-            color: #444;
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
         }
 
         .modal textarea {
             width: 100%;
             height: 150px;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
             resize: none;
-            transition: all 0.3s ease-in-out;
-            background-color: #f7f7f7;
-            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            margin-bottom: 20px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .modal textarea:focus {
+            border-color: #007bff;
             outline: none;
-            background-color: #ffffff;
-            border: 1px solid #007bff;
-            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.2);
+            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
         }
 
-        .reply-btn {
-            padding: 12px 20px;
+        .modal button {
+            padding: 12px 25px;
             font-size: 16px;
             font-weight: bold;
-            color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 25px;
             cursor: pointer;
             background: linear-gradient(to right, #007bff, #0056b3);
-            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
-            transition: all 0.3s ease-in-out;
+            color: white;
+            transition: transform 0.2s ease, background-color 0.3s ease;
         }
 
-        .reply-btn:hover {
+        .modal button:hover {
             background: linear-gradient(to right, #0056b3, #003d80);
-            box-shadow: 0px 6px 15px rgba(0, 123, 255, 0.5);
-            transform: translateY(-2px);
+            transform: scale(1.05);
         }
 
         .close-btn {
@@ -150,14 +145,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             top: 10px;
             right: 15px;
             font-size: 20px;
-            color: #888;
+            font-weight: bold;
+            color: #999;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: color 0.3s ease;
         }
 
         .close-btn:hover {
-            color: #ff5a5a;
-            transform: scale(1.2);
+            color: #ff0000;
         }
 
         .image-modal {
@@ -192,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="main">
-    <h1>Product Reviews</h1>
+    <h1><ion-icon name="chatbubbles-outline"></ion-icon> Product Reviews</h1>
     <div class="product-info">
         <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="product-image">
         <h2><?= htmlspecialchars($product['product_name']) ?></h2>
@@ -214,46 +209,58 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php if ($reviews->num_rows > 0): ?>
                     <?php while ($row = $reviews->fetch_assoc()): ?>
                         <tr>
-                            <td><?= htmlspecialchars($row['user_name']) ?></td>
+                            <td>
+                                <p><?= htmlspecialchars($row['user_name']) ?></p>
+                            </td>
                             <td><?= htmlspecialchars($row['rating']) ?> / 5</td>
                             <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
                             <td>
                                 <?php if ($row['review_image']): ?>
-                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image" onclick="openImageModal('../User/<?= htmlspecialchars($row['review_image']) ?>')">
+                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" 
+                                         alt="Review Image" 
+                                         class="review-image" 
+                                         style="cursor: pointer;"
+                                         onclick="openImageModal('../User/<?= htmlspecialchars($row['review_image']) ?>')">
                                 <?php else: ?>
                                     <p>No Image</p>
                                 <?php endif; ?>
                             </td>
-                            <td><span class="<?= $row['status'] == 'active' ? 'status-active' : 'status-inactive' ?>"><?= ucfirst($row['status']) ?></span></td>
-                            <td><?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?></td>
+                            <td>
+                                <span class="<?= $row['status'] == 'active' ? 'status-active' : 'status-inactive' ?>">
+                                    <?= ucfirst($row['status']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?>
+                            </td>
                             <td>
                                 <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>')">Reply/Edit</button>
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
                                     <input type="hidden" name="new_status" value="<?= $row['status'] == 'active' ? 'inactive' : 'active' ?>">
-                                    <button type="submit" name="toggle_status" class="btn <?= $row['status'] == 'active' ? 'btn-warning' : 'btn-success' ?>"><?= $row['status'] == 'active' ? 'Deactivate' : 'Activate' ?></button>
+                                    <button type="submit" name="toggle_status" class="btn <?= $row['status'] == 'active' ? 'btn-warning' : 'btn-success' ?>">
+                                        <?= $row['status'] == 'active' ? 'Deactivate' : 'Activate' ?>
+                                    </button>
                                 </form>
                             </td>
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
-                    <tr>
-                        <td colspan="7">No reviews found for this product.</td>
-                    </tr>
+                    <tr><td colspan="7">No reviews found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Reply Modal -->
+<!-- Review Reply Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
         <h2>Reply to Review</h2>
         <form method="post">
-            <textarea id="replyTextarea" name="admin_reply" placeholder="Type your thoughtful reply here..." required></textarea>
+            <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
-            <button type="submit" name="reply" class="reply-btn">Submit Reply</button>
+            <button type="submit" name="reply">Submit Reply</button>
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
@@ -261,29 +268,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!-- Image Modal -->
 <div class="image-modal" id="imageModal">
+    <img src="" alt="Review Image" id="imagePreview">
     <span class="close-btn" onclick="closeImageModal()">&times;</span>
-    <img id="modalImage" src="" alt="Review Image">
 </div>
 
 <script>
-    function openReplyForm(reviewId, currentReply) {
-        document.getElementById('replyIdInput').value = reviewId;
-        document.getElementById('replyTextarea').value = currentReply || '';
-        document.getElementById('replyModal').style.display = 'block';
-    }
+function openReplyForm(reviewId, currentReply) {
+    document.getElementById('replyModal').style.display = 'block';
+    document.getElementById('replyTextarea').value = currentReply || '';
+    document.getElementById('reviewIdInput').value = reviewId;
+}
 
-    function closeReplyForm() {
-        document.getElementById('replyModal').style.display = 'none';
-    }
+function closeReplyForm() {
+    document.getElementById('replyModal').style.display = 'none';
+}
 
-    function openImageModal(imageSrc) {
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('imageModal').style.display = 'flex';
-    }
+function openImageModal(imageUrl) {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'flex';
+    document.getElementById('imagePreview').src = imageUrl;
+}
 
-    function closeImageModal() {
-        document.getElementById('imageModal').style.display = 'none';
-    }
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
 </script>
 </body>
 </html>
