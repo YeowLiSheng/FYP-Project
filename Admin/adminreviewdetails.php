@@ -31,14 +31,12 @@ $reviews = $stmt->get_result();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
-        // 回复或编辑回复
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
     } elseif (isset($_POST['toggle_status'])) {
-        // 激活或停用评论
         $new_status = $_POST['new_status'];
         $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
@@ -58,10 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Admin Product Review</title>
     <link rel="stylesheet" href="admin_styles.css">
     <style>
-        /* 主内容样式 */
         .main { padding: 20px; }
         .product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
+        .product-image, .user-image, .review-image {
+            width: auto;
+            height: 100px;
+            max-width: 100px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
         th { background-color: #f4f4f4; }
@@ -71,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .btn-warning { background-color: #ffc107; color: black; }
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
-        /* 弹窗样式 */
         .modal {
             display: none;
             position: fixed;
@@ -107,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
         }
         .modal button {
-            display: inline-block;
             padding: 10px 20px;
             font-size: 16px;
             font-weight: bold;
@@ -197,7 +198,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- Reply/Edit Form Modal -->
 <div id="reply-modal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
