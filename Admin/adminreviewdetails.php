@@ -85,23 +85,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     transform: translate(-50%, -50%);
     width: 450px;
     max-width: 90%;
-    background: white;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    border-radius: 12px;
+    background: #fff; /* 添加背景颜色 */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+    border-radius: 15px; /* 圆角边框 */
+    padding: 20px; /* 内边距 */
     z-index: 1000;
 }
 
 .modal-content {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    text-align: center;
 }
 
 .modal h2 {
-    margin-bottom: 15px;
-    font-size: 22px;
-    font-weight: bold;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 700;
     color: #333;
 }
 
@@ -109,23 +107,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     width: 100%;
     height: 150px;
     resize: none;
-    padding: 12px;
+    padding: 15px;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 14px;
     font-family: Arial, sans-serif;
-    margin-bottom: 15px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    background-color: #f9f9f9; /* 背景颜色 */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* 动态效果 */
 }
 
 .modal textarea:focus {
     border-color: #007bff;
+    box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5); /* 添加聚焦效果 */
     outline: none;
 }
 
 .modal button {
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 12px 25px;
+    font-size: 16px;
     font-weight: bold;
     border: none;
     border-radius: 25px;
@@ -137,23 +137,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 .modal button:hover {
     background: linear-gradient(to right, #0056b3, #003d80);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15); /* 添加悬停阴影 */
 }
 
 .close-btn {
-    position: absolute;
+    position: absolute; /* 设置按钮在右上角 */
     top: 10px;
     right: 15px;
     font-size: 20px;
-    color: #555;
-    cursor: pointer;
     font-weight: bold;
-    background: none;
-    border: none;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.3s ease;
 }
 
 .close-btn:hover {
-    color: #ff0000;
+    color: #ff0000; /* 添加悬停颜色 */
 }
+
+
+
         .image-modal {
             display: none;
             position: fixed;
