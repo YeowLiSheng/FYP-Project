@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         /* Redesigned Modal */
        /* 回复表单弹窗 */
-       .modal {
+.modal {
     display: none;
     position: fixed;
     top: 50%; /* 页面垂直居中 */
