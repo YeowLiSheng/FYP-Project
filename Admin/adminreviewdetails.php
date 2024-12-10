@@ -31,11 +31,18 @@ $reviews = $stmt->get_result();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
+        // 回复或编辑回复
         $admin_reply = trim($_POST['admin_reply']);
-        $status = $_POST['status'];
-        $query = "UPDATE reviews SET admin_reply = ?, status = ? WHERE review_id = ?";
+        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
-        $stmt->bind_param("ssi", $admin_reply, $status, $review_id);
+        $stmt->bind_param("si", $admin_reply, $review_id);
+        $stmt->execute();
+    } elseif (isset($_POST['toggle_status'])) {
+        // 激活或停用评论
+        $new_status = $_POST['new_status'];
+        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
+        $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
     }
     header("Location: admin_productreview.php?product_id=$product_id");
@@ -99,7 +106,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?>
                             </td>
                             <td>
-                                <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>', '<?= $row['status'] ?>')">Reply/Edit</button>
+                                <!-- Reply/Edit 按钮 -->
+                                <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>')">Reply/Edit</button>
+
+                                <!-- Activate/Deactivate 按钮 -->
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
+                                    <input type="hidden" name="new_status" value="<?= $row['status'] == 'active' ? 'inactive' : 'active' ?>">
+                                    <button type="submit" name="toggle_status" class="btn <?= $row['status'] == 'active' ? 'btn-warning' : 'btn-success' ?>">
+                                        <?= $row['status'] == 'active' ? 'Deactivate' : 'Activate' ?>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -119,19 +136,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method="post">
             <input type="hidden" name="review_id" id="modal-review-id">
             <textarea name="admin_reply" id="modal-admin-reply" placeholder="Enter your reply..." required></textarea>
-            <label for="status">Status:</label>
-            <select name="status" id="modal-status">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-            </select>
             <button type="submit" name="reply" class="btn btn-success">Save Changes</button>
         </form>
     </div>
 </div>
 
-<!-- 样式 -->
 <style>
-/* 布局样式 */
+/* 样式 */
 .main { padding: 20px; }
 
 .product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
@@ -139,34 +150,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 h2 { font-size: 24px; color: #333; }
 
-/* 表格样式 */
 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
 th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
 th { background-color: #f4f4f4; }
 
-/* 按钮样式 */
 .btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
 .btn-primary { background-color: #007bff; color: white; }
 .btn-success { background-color: #28a745; color: white; }
+.btn-warning { background-color: #ffc107; color: black; }
 
-/* 状态样式 */
 .status-active { color: green; font-weight: bold; }
 .status-inactive { color: red; font-weight: bold; }
 
-/* 弹窗样式 */
 .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; width: 400px; max-width: 90%; }
 .modal-content { position: relative; }
 .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
 .modal textarea { width: 100%; height: 100px; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; }
-.modal .btn-success { display: block; margin: 15px auto 0; }
 </style>
 
-<!-- JavaScript 功能 -->
 <script>
-function openReplyForm(reviewId, replyText, status) {
+function openReplyForm(reviewId, replyText) {
     document.getElementById("modal-review-id").value = reviewId;
     document.getElementById("modal-admin-reply").value = replyText || '';
-    document.getElementById("modal-status").value = status || 'active';
     document.getElementById("reply-modal").style.display = "block";
 }
 
