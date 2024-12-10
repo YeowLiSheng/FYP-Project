@@ -5,10 +5,7 @@ include 'admin_sidebar.php';
 $product_id = $_GET['product_id'] ?? 0;
 
 // 查询产品信息
-$product_query = "
-    SELECT product_name, product_image 
-    FROM product 
-    WHERE product_id = ?";
+$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
 $stmt = $connect->prepare($product_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
@@ -33,20 +30,13 @@ $reviews = $stmt->get_result();
 // 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
-    } elseif (isset($_POST['disable'])) {
-        $query = "UPDATE reviews SET status = 'inactive' WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
-        $stmt->bind_param("i", $review_id);
-        $stmt->execute();
     }
-
     header("Location: admin_productreview.php?product_id=$product_id");
     exit();
 }
@@ -105,17 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </span>
                             </td>
                             <td>
-                                <form method="post">
-                                    <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
-                                    <textarea name="admin_reply" placeholder="Reply here..."><?= htmlspecialchars($row['admin_reply']) ?></textarea>
-                                    <button type="submit" name="reply" class="btn btn-success">Submit Reply</button>
-                                </form>
+                                <?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?>
                             </td>
                             <td>
-                                <form method="post" onsubmit="return confirm('Are you sure to disable this review?')">
-                                    <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
-                                    <button type="submit" name="disable" class="btn btn-danger">Disable</button>
-                                </form>
+                                <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>)">Reply</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -127,81 +110,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
+<!-- Reply Form Modal -->
+<div id="reply-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeReplyForm()">&times;</span>
+        <h2>Reply to Review</h2>
+        <form method="post">
+            <input type="hidden" name="review_id" id="modal-review-id">
+            <textarea name="admin_reply" placeholder="Enter your reply..." required></textarea>
+            <button type="submit" name="reply" class="btn btn-success">Submit Reply</button>
+        </form>
+    </div>
+</div>
+
 <!-- 样式 -->
 <style>
-    .main {
-        padding: 20px;
-    }
+/* 布局样式 */
+.main { padding: 20px; }
 
-    .product-info {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
+.product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+.product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
 
-    .product-image, .user-image, .review-image {
-        width: 100px;
-        height: auto;
-        border-radius: 8px;
-    }
+h2 { font-size: 24px; color: #333; }
 
-    h2 {
-        font-size: 24px;
-        color: #333;
-    }
+/* 表格样式 */
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
+th { background-color: #f4f4f4; }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
+/* 按钮样式 */
+.btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
+.btn-primary { background-color: #007bff; color: white; }
+.btn-success { background-color: #28a745; color: white; }
 
-    th, td {
-        padding: 15px;
-        text-align: left;
-        border: 1px solid #ddd;
-    }
+/* 状态样式 */
+.status-active { color: green; font-weight: bold; }
+.status-inactive { color: red; font-weight: bold; }
 
-    th {
-        background-color: #f4f4f4;
-    }
-
-    textarea {
-        width: 100%;
-        height: 80px;
-        resize: none;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-
-    .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .status-active {
-        color: green;
-        font-weight: bold;
-    }
-
-    .status-inactive {
-        color: red;
-        font-weight: bold;
-    }
+/* 弹窗样式 */
+.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; width: 400px; max-width: 90%; }
+.modal-content { position: relative; }
+.close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+.modal textarea { width: 100%; height: 100px; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; }
+.modal .btn-success { display: block; margin: 15px auto 0; }
 </style>
+
+<!-- JavaScript 功能 -->
+<script>
+function openReplyForm(reviewId) {
+    document.getElementById("modal-review-id").value = reviewId;
+    document.getElementById("reply-modal").style.display = "block";
+}
+
+function closeReplyForm() {
+    document.getElementById("reply-modal").style.display = "none";
+}
+</script>
 </body>
 </html>
