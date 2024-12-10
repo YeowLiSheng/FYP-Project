@@ -75,118 +75,77 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
 
-        /* Redesigned Modal */
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: auto;
-    max-width: 500px;
-    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-    box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    z-index: 1000;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
-
-.modal-content {
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    position: relative;
-}
-
-.modal h2 {
-    margin: 0 0 10px;
-    font-size: 20px;
-    font-weight: 700;
-    color: #333;
-}
-
-.modal textarea {
-    width: 100%;
-    height: 120px;
-    resize: none;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: Arial, sans-serif;
-    margin-bottom: 15px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.modal textarea:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0px 3px 8px rgba(0, 123, 255, 0.2);
-}
-
-.modal button {
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: bold;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    background: linear-gradient(to right, #007bff, #0056b3);
-    color: white;
-    transition: transform 0.2s ease, background-color 0.3s ease;
-}
-
-.modal button:hover {
-    background: linear-gradient(to right, #0056b3, #003d80);
-    transform: scale(1.05);
-}
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #999;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.close-btn:hover {
-    color: #ff0000;
-}
-
-
-        .image-modal {
+        /* Simplified Reply Modal */
+        .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .image-modal img {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
             max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-            border-radius: 10px;
+            background: white;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            z-index: 1000;
+            padding: 20px;
+            font-family: Arial, sans-serif;
         }
 
-        .image-modal .close-btn {
+        .modal-content {
+            text-align: center;
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .modal textarea {
+            width: 100%;
+            height: 120px;
+            resize: none;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .modal textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .modal button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal button:hover {
+            background-color: #0056b3;
+        }
+
+        .close-btn {
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 24px;
-            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            color: #999;
             cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #ff0000;
         }
     </style>
 </head>
@@ -223,9 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?php if ($row['review_image']): ?>
                                     <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" 
                                          alt="Review Image" 
-                                         class="review-image" 
-                                         style="cursor: pointer;"
-                                         onclick="openImageModal('../User/<?= htmlspecialchars($row['review_image']) ?>')">
+                                         class="review-image">
                                 <?php else: ?>
                                     <p>No Image</p>
                                 <?php endif; ?>
@@ -258,10 +215,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- Review Reply Modal -->
+<!-- Simplified Reply Review Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
-        <h2>Reply to Review</h2>
+        <h2>Reply Review</h2>
         <form method="post">
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
@@ -269,12 +226,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
-</div>
-
-<!-- Image Modal -->
-<div class="image-modal" id="imageModal">
-    <img src="" alt="Review Image" id="imagePreview">
-    <span class="close-btn" onclick="closeImageModal()">&times;</span>
 </div>
 
 <script>
@@ -286,16 +237,6 @@ function openReplyForm(reviewId, currentReply) {
 
 function closeReplyForm() {
     document.getElementById('replyModal').style.display = 'none';
-}
-
-function openImageModal(imageUrl) {
-    const modal = document.getElementById('imageModal');
-    modal.style.display = 'flex';
-    document.getElementById('imagePreview').src = imageUrl;
-}
-
-function closeImageModal() {
-    document.getElementById('imageModal').style.display = 'none';
 }
 </script>
 </body>
