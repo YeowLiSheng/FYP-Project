@@ -5,7 +5,10 @@ include 'admin_sidebar.php';
 $product_id = $_GET['product_id'] ?? 0;
 
 // 查询产品信息
-$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
+$product_query = "
+    SELECT product_name, product_image 
+    FROM product 
+    WHERE product_id = ?";
 $stmt = $connect->prepare($product_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
@@ -30,13 +33,22 @@ $reviews = $stmt->get_result();
 // 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-    if (isset($_POST['reply'])) {
+    $action = $_POST['action'];
+
+    if ($action == 'reply') {
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
+    } elseif ($action == 'toggle_status') {
+        $new_status = $_POST['new_status'];
+        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
+        $stmt->bind_param("si", $new_status, $review_id);
+        $stmt->execute();
     }
+
     header("Location: admin_productreview.php?product_id=$product_id");
     exit();
 }
@@ -94,11 +106,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <?= ucfirst($row['status']) ?>
                                 </span>
                             </td>
+                            <td><?= nl2br(htmlspecialchars($row['admin_reply'] ?? 'No Reply')) ?></td>
                             <td>
-                                <?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?>
-                            </td>
-                            <td>
-                                <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>)">Reply</button>
+                                <button onclick="openReplyModal(<?= $row['review_id'] ?>, '<?= addslashes($row['admin_reply']) ?>')">Reply/Edit</button>
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
+                                    <input type="hidden" name="action" value="toggle_status">
+                                    <input type="hidden" name="new_status" value="<?= $row['status'] == 'active' ? 'inactive' : 'active' ?>">
+                                    <button type="submit"><?= $row['status'] == 'active' ? 'Deactivate' : 'Activate' ?></button>
+                                </form>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -110,59 +126,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- Reply Form Modal -->
+<!-- 回复弹窗 -->
 <div id="reply-modal" class="modal">
     <div class="modal-content">
-        <span class="close-btn" onclick="closeReplyForm()">&times;</span>
+        <span class="close" onclick="closeReplyModal()">&times;</span>
         <h2>Reply to Review</h2>
         <form method="post">
-            <input type="hidden" name="review_id" id="modal-review-id">
-            <textarea name="admin_reply" placeholder="Enter your reply..." required></textarea>
-            <button type="submit" name="reply" class="btn btn-success">Submit Reply</button>
+            <input type="hidden" name="review_id" id="review-id">
+            <input type="hidden" name="action" value="reply">
+            <textarea name="admin_reply" id="admin-reply" required></textarea>
+            <button type="submit" class="btn btn-success">Submit Reply</button>
         </form>
     </div>
 </div>
 
 <!-- 样式 -->
 <style>
-/* 布局样式 */
-.main { padding: 20px; }
-
-.product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-.product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
-
-h2 { font-size: 24px; color: #333; }
-
-/* 表格样式 */
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
-th { background-color: #f4f4f4; }
-
-/* 按钮样式 */
-.btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
-.btn-primary { background-color: #007bff; color: white; }
-.btn-success { background-color: #28a745; color: white; }
-
-/* 状态样式 */
-.status-active { color: green; font-weight: bold; }
-.status-inactive { color: red; font-weight: bold; }
-
-/* 弹窗样式 */
-.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; width: 400px; max-width: 90%; }
-.modal-content { position: relative; }
-.close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
-.modal textarea { width: 100%; height: 100px; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; }
-.modal .btn-success { display: block; margin: 15px auto 0; }
+    .main { padding: 20px; }
+    .product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
+    h2 { font-size: 24px; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
+    th { background-color: #f4f4f4; }
+    textarea { width: 100%; height: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
+    .btn-success { background-color: #28a745; color: white; }
+    .status-active { color: green; font-weight: bold; }
+    .status-inactive { color: red; font-weight: bold; }
+    .modal { display: none; position: fixed; z-index: 1000; padding-top: 100px; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: white; padding: 20px; margin: auto; width: 50%; border-radius: 5px; }
 </style>
 
-<!-- JavaScript 功能 -->
 <script>
-function openReplyForm(reviewId) {
-    document.getElementById("modal-review-id").value = reviewId;
+function openReplyModal(reviewId, reply) {
+    document.getElementById("review-id").value = reviewId;
+    document.getElementById("admin-reply").value = reply || '';
     document.getElementById("reply-modal").style.display = "block";
 }
 
-function closeReplyForm() {
+function closeReplyModal() {
     document.getElementById("reply-modal").style.display = "none";
 }
 </script>
