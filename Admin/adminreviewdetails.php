@@ -5,7 +5,10 @@ include 'admin_sidebar.php';
 $product_id = $_GET['product_id'] ?? 0;
 
 // 查询产品信息
-$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
+$product_query = "
+    SELECT product_name, product_image 
+    FROM product 
+    WHERE product_id = ?";
 $stmt = $connect->prepare($product_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
@@ -20,7 +23,8 @@ $review_query = "
     WHERE r.detail_id IN (
         SELECT detail_id FROM order_details WHERE product_id = ?
     )
-    ORDER BY r.created_at DESC";
+    ORDER BY r.created_at DESC
+";
 $stmt = $connect->prepare($review_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
@@ -30,19 +34,16 @@ $reviews = $stmt->get_result();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
 
-    if (isset($_POST['submit_reply'])) {
+    if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
-    }
-
-    if (isset($_POST['toggle_status'])) {
-        $status = $_POST['status'] == 'active' ? 'inactive' : 'active';
-        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
+    } elseif (isset($_POST['disable'])) {
+        $query = "UPDATE reviews SET status = 'inactive' WHERE review_id = ?";
         $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $status, $review_id);
+        $stmt->bind_param("i", $review_id);
         $stmt->execute();
     }
 
@@ -82,83 +83,125 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = $reviews->fetch_assoc()): ?>
-                    <tr>
-                        <td>
-                            <img src="../User/images/<?= htmlspecialchars($row['user_image']) ?>" class="user-image" alt="<?= htmlspecialchars($row['user_name']) ?>">
-                            <p><?= htmlspecialchars($row['user_name']) ?></p>
-                        </td>
-                        <td><?= htmlspecialchars($row['rating']) ?> / 5</td>
-                        <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
-                        <td>
-                            <?= $row['review_image'] ? "<img src='../User/images/{$row['review_image']}' class='review-image'>" : "No Image" ?>
-                        </td>
-                        <td>
-                            <span class="<?= $row['status'] == 'active' ? 'status-active' : 'status-inactive' ?>">
-                                <?= ucfirst($row['status']) ?>
-                            </span>
-                        </td>
-                        <td>
-                            <?= nl2br(htmlspecialchars($row['admin_reply'] ?? 'No Reply')) ?>
-                        </td>
-                        <td>
-                            <button class="btn btn-info" onclick="openReplyModal(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>')">Reply/Edit</button>
-                            <form method="post" onsubmit="return confirm('Are you sure?')">
-                                <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
-                                <input type="hidden" name="status" value="<?= $row['status'] ?>">
-                                <button type="submit" name="toggle_status" class="btn btn-warning">
-                                    <?= $row['status'] == 'active' ? 'Deactivate' : 'Activate' ?>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
+                <?php if ($reviews->num_rows > 0): ?>
+                    <?php while ($row = $reviews->fetch_assoc()): ?>
+                        <tr>
+                            <td>
+                                <img src="../User/images/<?= htmlspecialchars($row['user_image']) ?>" alt="<?= htmlspecialchars($row['user_name']) ?>" class="user-image">
+                                <p><?= htmlspecialchars($row['user_name']) ?></p>
+                            </td>
+                            <td><?= htmlspecialchars($row['rating']) ?> / 5</td>
+                            <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
+                            <td>
+                                <?php if ($row['review_image']): ?>
+                                    <img src="../User/images/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
+                                <?php else: ?>
+                                    <p>No Image</p>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <span class="<?= $row['status'] == 'active' ? 'status-active' : 'status-inactive' ?>">
+                                    <?= ucfirst($row['status']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post">
+                                    <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
+                                    <textarea name="admin_reply" placeholder="Reply here..."><?= htmlspecialchars($row['admin_reply']) ?></textarea>
+                                    <button type="submit" name="reply" class="btn btn-success">Submit Reply</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="post" onsubmit="return confirm('Are you sure to disable this review?')">
+                                    <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
+                                    <button type="submit" name="disable" class="btn btn-danger">Disable</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr><td colspan="7">No reviews found for this product.</td></tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- 弹窗表单 -->
-<div id="replyModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h2>Reply to Review</h2>
-        <form method="post">
-            <input type="hidden" id="reviewIdInput" name="review_id">
-            <textarea name="admin_reply" id="adminReplyInput" placeholder="Enter your reply..."></textarea>
-            <button type="submit" name="submit_reply" class="btn btn-success">Submit</button>
-        </form>
-    </div>
-</div>
-
+<!-- 样式 -->
 <style>
-.main { padding: 20px; }
-.product-info { display: flex; gap: 20px; margin-bottom: 20px; }
-.product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 15px; border: 1px solid #ddd; }
-th { background-color: #f4f4f4; }
-.status-active { color: green; font-weight: bold; }
-.status-inactive { color: red; font-weight: bold; }
-.btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
-.btn-success { background-color: #28a745; color: white; }
-.btn-warning { background-color: #ff9800; color: white; }
-.btn-info { background-color: #17a2b8; color: white; }
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); }
-.modal-content { background: white; padding: 20px; width: 400px; margin: 10% auto; border-radius: 8px; position: relative; }
-.close { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+    .main {
+        padding: 20px;
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .product-image, .user-image, .review-image {
+        width: 100px;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    h2 {
+        font-size: 24px;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    textarea {
+        width: 100%;
+        height: 80px;
+        resize: none;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .status-active {
+        color: green;
+        font-weight: bold;
+    }
+
+    .status-inactive {
+        color: red;
+        font-weight: bold;
+    }
 </style>
-
-<script>
-function openReplyModal(reviewId, adminReply) {
-    document.getElementById('replyModal').style.display = 'block';
-    document.getElementById('reviewIdInput').value = reviewId;
-    document.getElementById('adminReplyInput').value = adminReply || '';
-}
-
-function closeModal() {
-    document.getElementById('replyModal').style.display = 'none';
-}
-</script>
 </body>
 </html>
