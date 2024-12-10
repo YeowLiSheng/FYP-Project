@@ -29,33 +29,34 @@ $reviews = $stmt->get_result();
 
 // 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 检查是否是 reply 表单
     if (isset($_POST['reply'])) {
         $reviewId = $_POST['review_id'];
         $adminReply = $_POST['admin_reply'];
 
-        // 更新数据库中的 admin_reply
         $stmt = $connect->prepare("UPDATE reviews SET admin_reply = ? WHERE review_id = ?");
         $stmt->bind_param('si', $adminReply, $reviewId);
         $stmt->execute();
         $stmt->close();
     }
 
-    // 检查是否是 toggle_status 表单
     if (isset($_POST['toggle_status'])) {
         $reviewId = $_POST['review_id'];
         $newStatus = $_POST['new_status'];
 
-        // 更新数据库中的 status
         $stmt = $connect->prepare("UPDATE reviews SET status = ? WHERE review_id = ?");
         $stmt->bind_param('si', $newStatus, $reviewId);
         $stmt->execute();
         $stmt->close();
     }
 
-    // 重定向到当前页面
+    // 确保没有其他输出
+    if (headers_sent()) {
+        die("Headers already sent. Cannot redirect.");
+    }
+
+    // 重定向到当前页面并保留 product_id 参数
     header("Location: adminreviewdetails.php?product_id=" . $product_id);
-    exit; // 确保后续代码不会执行
+    exit;
 }
 ?>
 
