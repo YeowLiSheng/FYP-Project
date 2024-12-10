@@ -82,61 +82,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 450px;
+            width: 600px;
             max-width: 90%;
-            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-            box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
             border-radius: 15px;
-            z-index: 1000;
-            padding: 25px;
-            font-family: Arial, sans-serif;
-        }
-
-        .modal-content {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+            color: white;
             text-align: center;
-            position: relative;
+            z-index: 1000;
         }
 
         .modal h2 {
-            margin-bottom: 20px;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 700;
-            color: #333;
+            margin-bottom: 20px;
         }
 
         .modal textarea {
             width: 100%;
             height: 150px;
-            resize: none;
             padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: Arial, sans-serif;
+            border: none;
+            border-radius: 8px;
+            resize: none;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
             margin-bottom: 20px;
-            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .modal textarea:focus {
-            border-color: #007bff;
             outline: none;
-            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
+            background: rgba(255, 255, 255, 0.4);
         }
 
         .modal button {
             padding: 12px 25px;
             font-size: 16px;
-            font-weight: bold;
             border: none;
             border-radius: 25px;
-            cursor: pointer;
-            background: linear-gradient(to right, #007bff, #0056b3);
+            background: linear-gradient(45deg, #007bff, #0056b3);
             color: white;
-            transition: transform 0.2s ease, background-color 0.3s ease;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
         .modal button:hover {
-            background: linear-gradient(to right, #0056b3, #003d80);
+            background: linear-gradient(45deg, #0056b3, #003d80);
             transform: scale(1.05);
         }
 
@@ -144,12 +137,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #999;
+            font-size: 24px;
+            color: white;
             cursor: pointer;
-            transition: color 0.3s ease;
         }
+
 
         .close-btn:hover {
             color: #ff0000;
@@ -256,12 +248,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!-- Review Reply Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
-        <h2 class="modal-title">Reply to Review</h2>
+        <h2>Reply to Review</h2>
         <form method="post">
-            <label for="replyTextarea" class="modal-label">Your Reply</label>
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
-            <button type="submit" name="reply" class="modal-btn">Submit Reply</button>
+            <button type="submit" name="reply">Submit Reply</button>
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
