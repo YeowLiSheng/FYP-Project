@@ -32,9 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
-        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
+        $status = $_POST['status'];
+        $query = "UPDATE reviews SET admin_reply = ?, status = ? WHERE review_id = ?";
         $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $admin_reply, $review_id);
+        $stmt->bind_param("ssi", $admin_reply, $status, $review_id);
         $stmt->execute();
     }
     header("Location: admin_productreview.php?product_id=$product_id");
@@ -98,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?>
                             </td>
                             <td>
-                                <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>)">Reply</button>
+                                <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>', '<?= $row['status'] ?>')">Reply/Edit</button>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -110,15 +111,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- Reply Form Modal -->
+<!-- Reply/Edit Form Modal -->
 <div id="reply-modal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
-        <h2>Reply to Review</h2>
+        <h2>Reply/Edit Review</h2>
         <form method="post">
             <input type="hidden" name="review_id" id="modal-review-id">
-            <textarea name="admin_reply" placeholder="Enter your reply..." required></textarea>
-            <button type="submit" name="reply" class="btn btn-success">Submit Reply</button>
+            <textarea name="admin_reply" id="modal-admin-reply" placeholder="Enter your reply..." required></textarea>
+            <label for="status">Status:</label>
+            <select name="status" id="modal-status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <button type="submit" name="reply" class="btn btn-success">Save Changes</button>
         </form>
     </div>
 </div>
@@ -157,8 +163,10 @@ th { background-color: #f4f4f4; }
 
 <!-- JavaScript 功能 -->
 <script>
-function openReplyForm(reviewId) {
+function openReplyForm(reviewId, replyText, status) {
     document.getElementById("modal-review-id").value = reviewId;
+    document.getElementById("modal-admin-reply").value = replyText || '';
+    document.getElementById("modal-status").value = status || 'active';
     document.getElementById("reply-modal").style.display = "block";
 }
 
