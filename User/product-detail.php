@@ -113,6 +113,7 @@ $review_query = "
 		r.created_at,
 		r.status,
 		r.admin_reply,
+		r.admin_reply_updated_at,
         u.user_name, 
         u.user_image 
     FROM 
@@ -679,20 +680,27 @@ $connect->close();
                                 <?php } ?>
 
                                 <!-- Admin Reply -->
-                                <?php if (!empty($review['admin_reply'])) { ?>
-                                    <div class="flex-w flex-t p-t-20">
-                                        <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                            <img src="images/admin-avatar.png" alt="Admin"
-                                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
-                                        </div>
-                                        <div>
-                                            <span class="mtext-107 cl2">Admin (YLS Atelier)</span>
-                                            <p class="stext-102 cl6">
-                                                <?php echo htmlspecialchars($review['admin_reply']); ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                <?php } ?>
+<?php if (!empty($review['admin_reply'])) { ?>
+    <div class="flex-w flex-t p-t-20">
+        <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+            <img src="images/admin-avatar.png" alt="Admin"
+                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
+        </div>
+        <div>
+            <div class="flex-w align-items-center">
+                <span class="mtext-107 cl2">Admin (YLS Atelier)</span>
+                <span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+                    <?php 
+                    echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['admin_reply_updated_at']))); 
+                    ?>
+                </span>
+            </div>
+            <p class="stext-102 cl6">
+                <?php echo htmlspecialchars($review['admin_reply']); ?>
+            </p>
+        </div>
+    </div>
+<?php } ?>
                             </div>
                         </div>
                     <?php } ?>
