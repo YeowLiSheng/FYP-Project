@@ -76,84 +76,99 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .status-inactive { color: red; font-weight: bold; }
 
         /* Redesigned Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 450px;
-            max-width: 90%;
-            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
-            box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            z-index: 1000;
-            padding: 25px;
-            font-family: Arial, sans-serif;
-        }
+        #replyModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+}
 
-        .modal-content {
-            text-align: center;
-            position: relative;
-        }
+#replyModal .modal-content {
+    background: linear-gradient(to right, #fff0f5, #f8f9fa);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 30px;
+    border-radius: 15px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.6);
+    transform: scale(0.9);
+    animation: scaleUp 0.3s ease-in-out forwards;
+    text-align: center;
+    position: relative;
+}
 
-        .modal h2 {
-            margin-bottom: 20px;
-            font-size: 22px;
-            font-weight: 700;
-            color: #333;
-        }
+#replyModal h2 {
+    color: #333;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
 
-        .modal textarea {
-            width: 100%;
-            height: 150px;
-            resize: none;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 14px;
-            font-family: Arial, sans-serif;
-            margin-bottom: 20px;
-            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-        }
+#replyModal textarea {
+    width: 100%;
+    height: 150px;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    margin-bottom: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    resize: none;
+}
 
-        .modal textarea:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
-        }
+#replyModal textarea:focus {
+    outline: none;
+    box-shadow: 0px 4px 12px rgba(0, 123, 255, 0.4);
+}
 
-        .modal button {
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            background: linear-gradient(to right, #007bff, #0056b3);
-            color: white;
-            transition: transform 0.2s ease, background-color 0.3s ease;
-        }
+#replyModal button {
+    background: linear-gradient(to right, #007bff, #0056b3);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        .modal button:hover {
-            background: linear-gradient(to right, #0056b3, #003d80);
-            transform: scale(1.05);
-        }
+#replyModal button:hover {
+    background: linear-gradient(to right, #0056b3, #003d80);
+    transform: scale(1.05);
+}
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
 
-        .close-btn:hover {
-            color: #ff0000;
-        }
+.close-btn:hover {
+    color: #ff0000;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.9); }
+    to { transform: scale(1); }
+}
 
         .image-modal {
             display: none;
@@ -256,12 +271,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!-- Review Reply Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
-        <h2 class="modal-title">Reply to Review</h2>
+        <h2>Reply to Review</h2>
         <form method="post">
-            <label for="replyTextarea" class="modal-label">Your Reply</label>
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
-            <button type="submit" name="reply" class="modal-btn">Submit Reply</button>
+            <button type="submit" name="reply">Submit Reply</button>
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
