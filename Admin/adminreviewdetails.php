@@ -28,23 +28,34 @@ $stmt->execute();
 $reviews = $stmt->get_result();
 
 // 处理管理员操作
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $review_id = $_POST['review_id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 检查是否是 reply 表单
     if (isset($_POST['reply'])) {
-        $admin_reply = trim($_POST['admin_reply']);
-        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $admin_reply, $review_id);
+        $reviewId = $_POST['review_id'];
+        $adminReply = $_POST['admin_reply'];
+
+        // 更新数据库中的 admin_reply
+        $stmt = $connect->prepare("UPDATE reviews SET admin_reply = ? WHERE review_id = ?");
+        $stmt->bind_param('si', $adminReply, $reviewId);
         $stmt->execute();
-    } elseif (isset($_POST['toggle_status'])) {
-        $new_status = $_POST['new_status'];
-        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $new_status, $review_id);
-        $stmt->execute();
+        $stmt->close();
     }
-    header("Location: admin_productreview.php?product_id=$product_id");
-    exit();
+
+    // 检查是否是 toggle_status 表单
+    if (isset($_POST['toggle_status'])) {
+        $reviewId = $_POST['review_id'];
+        $newStatus = $_POST['new_status'];
+
+        // 更新数据库中的 status
+        $stmt = $connect->prepare("UPDATE reviews SET status = ? WHERE review_id = ?");
+        $stmt->bind_param('si', $newStatus, $reviewId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    // 重定向到当前页面
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit; // 确保后续代码不会执行
 }
 ?>
 
