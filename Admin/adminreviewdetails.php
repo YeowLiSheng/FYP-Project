@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 重定向到当前页面
-    header("Location: " . $_SERVER['PHP_SELF']);
+    header("Location: adminreviewdetails.php?product_id=" . $product_id);
     exit; // 确保后续代码不会执行
 }
 ?>
