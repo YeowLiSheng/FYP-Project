@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
                             <td>
                                 <?php if ($row['review_image']): ?>
-                                    <img src="../User/uploads/reviews<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
+                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
                                 <?php else: ?>
                                     <p>No Image</p>
                                 <?php endif; ?>
