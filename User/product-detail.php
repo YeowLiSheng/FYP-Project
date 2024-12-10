@@ -111,6 +111,7 @@ $review_query = "
         r.rating, 
 		r.image,
 		r.created_at,
+		r.status,
         u.user_name, 
         u.user_image 
     FROM 
