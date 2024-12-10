@@ -1339,5 +1339,5 @@ $(document).on('click', '.filter-tope-group button', function(event) {
 
 <?php
 // Close the connection
-$conn->close();
+$connect->close();
 ?>
