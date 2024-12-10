@@ -157,17 +157,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <?php while ($row = $reviews->fetch_assoc()): ?>
                         <tr>
                             <td>
-                                <img src="../User/uploads/<?= htmlspecialchars($row['user_image']) ?>" alt="<?= htmlspecialchars($row['user_name']) ?>" class="user-image">
+                                <img src="../User/uploads/<?= htmlspecialchars($row['user_image']) ?>" 
+                                alt="<?= htmlspecialchars($row['user_name']) ?>" 
+                                class="user-image"
+                                style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                                 <p><?= htmlspecialchars($row['user_name']) ?></p>
                             </td>
                             <td><?= htmlspecialchars($row['rating']) ?> / 5</td>
                             <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
                             <td>
-                                <?php if ($row['review_image']): ?>
-                                    <img src="../User/images/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
-                                <?php else: ?>
-                                    <p>No Image</p>
-                                <?php endif; ?>
+                            <?php if (!empty($row['review_image'])): ?>
+    <img src="../User/uploads/<?= htmlspecialchars($row['review_image']) ?>" 
+         alt="Review Image" 
+         class="review-image"
+         style="width: 100px; height: 100px; border-radius: 5px; object-fit: cover; cursor: pointer;"
+         onclick="openModal('../User/uploads/<?= htmlspecialchars($row['review_image']) ?>')">
+<?php else: ?>
+    <p>No Image</p>
+<?php endif; ?>
                             </td>
                             <td>
                                 <span class="<?= $row['status'] == 'active' ? 'status-active' : 'status-inactive' ?>">
