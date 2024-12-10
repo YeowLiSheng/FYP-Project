@@ -31,34 +31,20 @@ $reviews = $stmt->get_result();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
-        $review_id = $_POST['review_id'];
-        $admin_reply = $_POST['admin_reply'];
-    
-        // 更新数据库逻辑
-        $sql = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($sql);
+        $admin_reply = trim($_POST['admin_reply']);
+        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
-    
-        // 重新加载当前页面
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
-    }
-    
-    if (isset($_POST['toggle_status'])) {
-        $review_id = $_POST['review_id'];
+    } elseif (isset($_POST['toggle_status'])) {
         $new_status = $_POST['new_status'];
-    
-        // 更新数据库逻辑
-        $sql = "UPDATE reviews SET status = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($sql);
+        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
-    
-        // 重新加载当前页面
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit;
     }
+    header("Location: admin_productreview.php?product_id=$product_id");
+    exit();
 }
 ?>
 
@@ -260,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </td>
                             <td>
                                 <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>')">Reply/Edit</button>
-                                <form method="post" action="" style="display:inline;">
+                                <form method="post" style="display:inline;">
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
                                     <input type="hidden" name="new_status" value="<?= $row['status'] == 'active' ? 'inactive' : 'active' ?>">
                                     <button type="submit" name="toggle_status" class="btn <?= $row['status'] == 'active' ? 'btn-warning' : 'btn-success' ?>">
@@ -283,8 +269,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
         <h2>Reply to Review</h2>
-        <form method="post" action="">
-        <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
+        <form method="post">
+            <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
         </form>
