@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <?php while ($row = $reviews->fetch_assoc()): ?>
                         <tr>
                             <td>
-                                <img src="../User/uploads/<?= htmlspecialchars($row['user_image']) ?>" alt="<?= htmlspecialchars($row['user_name']) ?>" class="user-image">
+                                <img src="/<?= htmlspecialchars($row['user_image']) ?>" alt="<?= htmlspecialchars($row['user_name']) ?>" class="user-image">
                                 <p><?= htmlspecialchars($row['user_name']) ?></p>
                             </td>
                             <td><?= htmlspecialchars($row['rating']) ?> / 5</td>
