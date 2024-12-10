@@ -131,6 +131,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             transition: color 0.3s ease;
         }
         .close-btn:hover { color: #ff0000; }
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        .image-modal .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -164,7 +190,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
                             <td>
                                 <?php if ($row['review_image']): ?>
-                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
+                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" 
+                                         alt="Review Image" 
+                                         class="review-image" 
+                                         style="cursor: pointer;"
+                                         onclick="openImageModal('../User/<?= htmlspecialchars($row['review_image']) ?>')">
                                 <?php else: ?>
                                     <p>No Image</p>
                                 <?php endif; ?>
@@ -190,36 +220,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
-                    <tr><td colspan="7">No reviews found for this product.</td></tr>
+                    <tr><td colspan="7">No reviews found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </div>
 
-<div id="reply-modal" class="modal">
+<!-- Review Reply Modal -->
+<div class="modal" id="replyModal">
     <div class="modal-content">
-        <span class="close-btn" onclick="closeReplyForm()">&times;</span>
-        <h2>Reply/Edit Review</h2>
+        <h2>Reply to Review</h2>
         <form method="post">
-            <input type="hidden" name="review_id" id="modal-review-id">
-            <textarea name="admin_reply" id="modal-admin-reply" placeholder="Enter your reply here..." required></textarea>
-            <button type="submit" name="reply">Save Changes</button>
+            <textarea id="replyTextarea" name="admin_reply" required></textarea>
+            <input type="hidden" name="review_id" id="reviewIdInput">
+            <button type="submit" name="reply">Save Reply</button>
         </form>
+        <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
 </div>
 
+<!-- Image Modal -->
+<div class="image-modal" id="imageModal">
+    <span class="close-btn" onclick="closeImageModal()">&times;</span>
+    <img id="modalImage" src="" alt="Review Image">
+</div>
+
 <script>
-function openReplyForm(reviewId, replyText) {
-    document.getElementById("modal-review-id").value = reviewId;
-    document.getElementById("modal-admin-reply").value = replyText || '';
-    document.getElementById("reply-modal").style.display = "block";
+function openReplyForm(reviewId, currentReply) {
+    document.getElementById('reviewIdInput').value = reviewId;
+    document.getElementById('replyTextarea').value = currentReply;
+    document.getElementById('replyModal').style.display = 'block';
 }
 
 function closeReplyForm() {
-    document.getElementById("reply-modal").style.display = "none";
+    document.getElementById('replyModal').style.display = 'none';
 }
 
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModal').style.display = 'flex';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
 </script>
 </body>
 </html>
