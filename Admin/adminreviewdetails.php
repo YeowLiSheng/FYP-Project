@@ -80,27 +80,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
        .modal {
     display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 50%; /* 页面垂直居中 */
+    left: 50%; /* 页面水平居中 */
     transform: translate(-50%, -50%);
     width: 450px;
     max-width: 90%;
-    background: #fff; /* 添加背景颜色 */
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* 添加阴影 */
-    border-radius: 15px; /* 圆角边框 */
-    padding: 20px; /* 内边距 */
+    background: none; /* 移除背景颜色 */
+    padding: 0; /* 移除额外的内边距 */
     z-index: 1000;
 }
 
 .modal-content {
     text-align: center;
+    background: rgba(0, 0, 0, 0.6); /* 半透明黑色背景 */
+    padding: 20px;
+    border-radius: 10px; /* 圆角 */
+    color: white; /* 文本颜色设置为白色 */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3); /* 添加阴影 */
 }
 
 .modal h2 {
     margin-bottom: 20px;
     font-size: 24px;
     font-weight: 700;
-    color: #333;
+    color: #fff;
 }
 
 .modal textarea {
@@ -108,19 +111,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     height: 150px;
     resize: none;
     padding: 15px;
-    border: 1px solid #ddd;
+    border: none; /* 移除边框 */
     border-radius: 10px;
     font-size: 14px;
     font-family: Arial, sans-serif;
     margin-bottom: 20px;
-    background-color: #f9f9f9; /* 背景颜色 */
-    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* 动态效果 */
+    background-color: rgba(255, 255, 255, 0.2); /* 半透明背景 */
+    color: white; /* 文本颜色 */
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .modal textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5); /* 添加聚焦效果 */
+    box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.5); /* 聚焦效果 */
     outline: none;
+    background-color: rgba(255, 255, 255, 0.3); /* 增加聚焦时的亮度 */
 }
 
 .modal button {
@@ -130,32 +134,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     border: none;
     border-radius: 25px;
     cursor: pointer;
-    background: linear-gradient(to right, #007bff, #0056b3);
+    background: linear-gradient(to right, #ff6b6b, #d63031);
     color: white;
     transition: background 0.3s ease;
 }
 
 .modal button:hover {
-    background: linear-gradient(to right, #0056b3, #003d80);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15); /* 添加悬停阴影 */
+    background: linear-gradient(to right, #d63031, #ff6b6b);
+    box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.3);
 }
 
 .close-btn {
     position: absolute; /* 设置按钮在右上角 */
-    top: 10px;
-    right: 15px;
-    font-size: 20px;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
     font-weight: bold;
-    color: #aaa;
+    color: white;
     cursor: pointer;
     transition: color 0.3s ease;
 }
 
 .close-btn:hover {
-    color: #ff0000; /* 添加悬停颜色 */
+    color: #ff6b6b; /* 添加悬停颜色 */
 }
-
-
 
         .image-modal {
             display: none;
