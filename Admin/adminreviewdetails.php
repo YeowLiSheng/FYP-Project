@@ -277,6 +277,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
+            <button type="submit" name="delete_reply" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this reply?')">Delete Reply</button>
+
         </form>
     </div>
 </div>
@@ -289,9 +291,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <script>
 function openReplyForm(reviewId, currentReply) {
+    const replyTextarea = document.getElementById('replyTextarea');
+    const deleteButton = document.querySelector('button[name="delete_reply"]');
+
     document.getElementById('replyModal').style.display = 'block';
-    document.getElementById('replyTextarea').value = currentReply || '';
+    replyTextarea.value = currentReply || '';
     document.getElementById('reviewIdInput').value = reviewId;
+
+    // 如果当前回复为空，隐藏删除按钮
+    if (!currentReply) {
+        deleteButton.style.display = 'none';
+    } else {
+        deleteButton.style.display = 'inline-block';
+    }
 }
 
 function closeReplyForm() {
