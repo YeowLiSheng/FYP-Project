@@ -686,7 +686,7 @@ $connect->close();
                                                  style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
                                         </div>
                                         <div>
-                                            <span class="mtext-107 cl2">Admin (Office)</span>
+                                            <span class="mtext-107 cl2">Admin (YLS Atelier)</span>
                                             <p class="stext-102 cl6">
                                                 <?php echo htmlspecialchars($review['admin_reply']); ?>
                                             </p>
