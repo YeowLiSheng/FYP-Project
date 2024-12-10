@@ -47,8 +47,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
     }
+
+    
     echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
     exit();
+
+    if (isset($_POST['delete_reply'])) {
+        $review_id = $_POST['review_id'];
+        $query = "UPDATE reviews 
+                  SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP 
+                  WHERE review_id = ?";
+        $stmt = $connect->prepare($query);
+        $stmt->bind_param("i", $review_id);
+        $stmt->execute();
+        echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
+        exit();
+    }
 }
 ?>
 
