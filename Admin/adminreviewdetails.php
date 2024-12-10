@@ -48,56 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-<?php
-include 'dataconnection.php';
-include 'admin_sidebar.php';
-
-$product_id = $_GET['product_id'] ?? 0;
-
-// 查询产品信息
-$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
-$stmt = $connect->prepare($product_query);
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
-$product = $stmt->get_result()->fetch_assoc();
-
-// 查询产品评论
-$review_query = "
-    SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
-           u.user_name, u.user_image, r.admin_reply, r.status
-    FROM reviews r 
-    INNER JOIN user u ON r.user_id = u.user_id 
-    WHERE r.detail_id IN (
-        SELECT detail_id FROM order_details WHERE product_id = ?
-    )
-    ORDER BY r.created_at DESC
-";
-$stmt = $connect->prepare($review_query);
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
-$reviews = $stmt->get_result();
-
-// 处理管理员操作
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $review_id = $_POST['review_id'];
-    if (isset($_POST['reply'])) {
-        $admin_reply = trim($_POST['admin_reply']);
-        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $admin_reply, $review_id);
-        $stmt->execute();
-    } elseif (isset($_POST['toggle_status'])) {
-        $new_status = $_POST['new_status'];
-        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $new_status, $review_id);
-        $stmt->execute();
-    }
-    header("Location: admin_productreview.php?product_id=$product_id");
-    exit();
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -140,7 +90,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-family: Arial, sans-serif;
             color: #333;
         }
-        .modal img { width: 100%; border-radius: 10px; }
+        .modal-content { position: relative; text-align: center; }
+        .modal h2 { margin-bottom: 20px; font-size: 24px; font-weight: bold; color: #444; }
+        .modal textarea {
+            width: 100%;
+            height: 150px;
+            resize: none;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            margin-bottom: 20px;
+        }
+        .modal textarea:focus {
+            outline: none;
+            border: 1px solid #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .modal button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .modal button:hover { background-color: #0056b3; }
         .close-btn {
             position: absolute;
             top: 10px;
@@ -185,8 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <td><?= nl2br(htmlspecialchars($row['comment'])) ?></td>
                             <td>
                                 <?php if ($row['review_image']): ?>
-                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image"
-                                         onclick="openModal('../User/<?= htmlspecialchars($row['review_image']) ?>')">
+                                    <img src="../User/<?= htmlspecialchars($row['review_image']) ?>" alt="Review Image" class="review-image">
                                 <?php else: ?>
                                     <p>No Image</p>
                                 <?php endif; ?>
@@ -219,12 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- Image Modal -->
-<div id="imageModal" class="modal">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <img id="modalImage" src="" alt="Review Image">
-</div>
-
 <div id="reply-modal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
@@ -248,16 +220,6 @@ function closeReplyForm() {
     document.getElementById("reply-modal").style.display = "none";
 }
 
-function openModal(imageSrc) {
-    const modal = document.getElementById("imageModal");
-    const modalImage = document.getElementById("modalImage");
-    modalImage.src = imageSrc;
-    modal.style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById("imageModal").style.display = "none";
-}
 </script>
 </body>
 </html>
