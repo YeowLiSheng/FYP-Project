@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         /* Redesigned Modal */
        /* 回复表单弹窗 */
-.modal {
+       .modal {
     display: none;
     position: fixed;
     top: 50%;
@@ -85,19 +85,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     transform: translate(-50%, -50%);
     width: 450px;
     max-width: 90%;
-    background: none;
-    padding: 0;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
     z-index: 1000;
 }
 
 .modal-content {
-    text-align: center;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .modal h2 {
     margin-bottom: 15px;
     font-size: 22px;
-    font-weight: 700;
+    font-weight: bold;
     color: #333;
 }
 
@@ -105,12 +109,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     width: 100%;
     height: 150px;
     resize: none;
-    padding: 15px;
+    padding: 12px;
     border: 1px solid #ddd;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 14px;
     font-family: Arial, sans-serif;
     margin-bottom: 15px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .modal textarea:focus {
@@ -119,14 +124,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 .modal button {
-    padding: 12px 25px;
-    font-size: 16px;
+    padding: 10px 20px;
+    font-size: 14px;
     font-weight: bold;
     border: none;
     border-radius: 25px;
     cursor: pointer;
     background: linear-gradient(to right, #007bff, #0056b3);
     color: white;
+    transition: background 0.3s ease;
 }
 
 .modal button:hover {
@@ -134,14 +140,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 .close-btn {
-    display: none;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    color: #555;
+    cursor: pointer;
+    font-weight: bold;
+    background: none;
+    border: none;
 }
 
-
-        .close-btn:hover {
-            color: #ff0000;
-        }
-
+.close-btn:hover {
+    color: #ff0000;
+}
         .image-modal {
             display: none;
             position: fixed;
@@ -247,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <form method="post">
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
-            <button type="submit" name="reply">Submit Reply</button>
+            <button type="submit" name="reply">Save changes</button>
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
