@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
     }
-    header("Location: admin_reviewdetails.php?product_id=$product_id");
+    header("Location: adminreviewdetails.php?product_id=$product_id");
     exit();
 }
 ?>
