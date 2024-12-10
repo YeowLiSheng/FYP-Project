@@ -17,12 +17,12 @@ $product = $stmt->get_result()->fetch_assoc();
 // 查询产品评论
 $review_query = "
     SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
-           u.user_name, u.user_image, r.admin_reply 
+           u.user_name, u.user_image, r.admin_reply, r.status
     FROM reviews r 
     INNER JOIN user u ON r.user_id = u.user_id 
     WHERE r.detail_id IN (
         SELECT detail_id FROM order_details WHERE product_id = ?
-    ) AND r.status = 'active'
+    )
     ORDER BY r.created_at DESC
 ";
 $stmt = $connect->prepare($review_query);
@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <th>Rating</th>
                     <th>Comment</th>
                     <th>Review Image</th>
+                    <th>Status</th>
                     <th>Admin Reply</th>
                     <th>Actions</th>
                 </tr>
@@ -99,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?php endif; ?>
                             </td>
                             <td>
+                                <span class="<?= $row['status'] == 'active' ? 'status-active' : 'status-inactive' ?>">
+                                    <?= ucfirst($row['status']) ?>
+                                </span>
+                            </td>
+                            <td>
                                 <form method="post">
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
                                     <textarea name="admin_reply" placeholder="Reply here..."><?= htmlspecialchars($row['admin_reply']) ?></textarea>
@@ -114,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
-                    <tr><td colspan="6">No reviews found for this product.</td></tr>
+                    <tr><td colspan="7">No reviews found for this product.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -185,6 +191,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     .btn-danger {
         background-color: #dc3545;
         color: white;
+    }
+
+    .status-active {
+        color: green;
+        font-weight: bold;
+    }
+
+    .status-inactive {
+        color: red;
+        font-weight: bold;
     }
 </style>
 </body>
