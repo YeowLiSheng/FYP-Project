@@ -57,16 +57,88 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Product Review</title>
     <link rel="stylesheet" href="admin_styles.css">
+    <style>
+        /* 主内容样式 */
+        .main { padding: 20px; }
+        .product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
+        th { background-color: #f4f4f4; }
+        .btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .status-active { color: green; font-weight: bold; }
+        .status-inactive { color: red; font-weight: bold; }
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            max-width: 90%;
+            background: linear-gradient(to bottom, #ffffff, #f4f4f4);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            z-index: 1000;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .modal-content { position: relative; text-align: center; }
+        .modal h2 { margin-bottom: 20px; font-size: 24px; font-weight: bold; color: #444; }
+        .modal textarea {
+            width: 100%;
+            height: 150px;
+            resize: none;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            margin-bottom: 20px;
+        }
+        .modal textarea:focus {
+            outline: none;
+            border: 1px solid #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .modal button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .modal button:hover { background-color: #0056b3; }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close-btn:hover { color: #ff0000; }
+    </style>
 </head>
 <body>
 <div class="main">
     <h1><ion-icon name="chatbubbles-outline"></ion-icon> Product Reviews</h1>
-
     <div class="product-info">
         <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="product-image">
         <h2><?= htmlspecialchars($product['product_name']) ?></h2>
     </div>
-
     <div class="card">
         <table class="table">
             <thead>
@@ -106,10 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <?= htmlspecialchars($row['admin_reply']) ?: '<em>No reply yet</em>' ?>
                             </td>
                             <td>
-                                <!-- Reply/Edit 按钮 -->
                                 <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>')">Reply/Edit</button>
-
-                                <!-- Activate/Deactivate 按钮 -->
                                 <form method="post" style="display:inline;">
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
                                     <input type="hidden" name="new_status" value="<?= $row['status'] == 'active' ? 'inactive' : 'active' ?>">
@@ -135,38 +204,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h2>Reply/Edit Review</h2>
         <form method="post">
             <input type="hidden" name="review_id" id="modal-review-id">
-            <textarea name="admin_reply" id="modal-admin-reply" placeholder="Enter your reply..." required></textarea>
-            <button type="submit" name="reply" class="btn btn-success">Save Changes</button>
+            <textarea name="admin_reply" id="modal-admin-reply" placeholder="Enter your reply here..." required></textarea>
+            <button type="submit" name="reply">Save Changes</button>
         </form>
     </div>
 </div>
-
-<style>
-/* 样式 */
-.main { padding: 20px; }
-
-.product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-.product-image, .user-image, .review-image { width: 100px; height: auto; border-radius: 8px; }
-
-h2 { font-size: 24px; color: #333; }
-
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
-th { background-color: #f4f4f4; }
-
-.btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
-.btn-primary { background-color: #007bff; color: white; }
-.btn-success { background-color: #28a745; color: white; }
-.btn-warning { background-color: #ffc107; color: black; }
-
-.status-active { color: green; font-weight: bold; }
-.status-inactive { color: red; font-weight: bold; }
-
-.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px; z-index: 1000; width: 400px; max-width: 90%; }
-.modal-content { position: relative; }
-.close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
-.modal textarea { width: 100%; height: 100px; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; }
-</style>
 
 <script>
 function openReplyForm(reviewId, replyText) {
