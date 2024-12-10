@@ -256,11 +256,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!-- Review Reply Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
-        <h2>Reply to Review</h2>
+        <h2 class="modal-title">Reply to Review</h2>
         <form method="post">
+            <label for="replyTextarea" class="modal-label">Your Reply</label>
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
-            <button type="submit" name="reply">Submit Reply</button>
+            <button type="submit" name="reply" class="modal-btn">Submit Reply</button>
         </form>
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
     </div>
