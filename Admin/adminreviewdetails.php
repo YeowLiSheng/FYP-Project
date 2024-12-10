@@ -31,20 +31,34 @@ $reviews = $stmt->get_result();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
-        $admin_reply = trim($_POST['admin_reply']);
-        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
+        $review_id = $_POST['review_id'];
+        $admin_reply = $_POST['admin_reply'];
+    
+        // 更新数据库逻辑
+        $sql = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
+        $stmt = $conn->prepare($sql);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
-    } elseif (isset($_POST['toggle_status'])) {
+    
+        // 重新加载当前页面
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+    
+    if (isset($_POST['toggle_status'])) {
+        $review_id = $_POST['review_id'];
         $new_status = $_POST['new_status'];
-        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
-        $stmt = $connect->prepare($query);
+    
+        // 更新数据库逻辑
+        $sql = "UPDATE reviews SET status = ? WHERE review_id = ?";
+        $stmt = $conn->prepare($sql);
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
+    
+        // 重新加载当前页面
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
     }
-    header("Location: admin_productreview.php?product_id=$product_id");
-    exit();
 }
 ?>
 
