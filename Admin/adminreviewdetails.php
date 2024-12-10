@@ -75,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
 
-        /* Redesigned Modal */
-        .modal {
+       /* Redesigned Modal */
+.modal {
     display: none;
     position: fixed;
     top: 50%;
@@ -94,21 +94,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 .modal-content {
     position: relative;
     text-align: center;
-    background: radial-gradient(circle, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+    background: white; /* 白色背景 */
     padding: 25px;
     border-radius: 15px;
-    color: #f0f0f0;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6), 0px 8px 20px rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+    color: #333; /* 深灰文本颜色 */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* 轻微阴影 */
 }
 
 /* Modal Header */
 .modal h2 {
     margin-bottom: 20px;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: bold;
-    letter-spacing: 1px;
-    color: #ffcccb; /* 温和的红色标题 */
+    letter-spacing: 0.5px;
+    color: #333; /* 深灰标题颜色 */
 }
 
 /* Textarea */
@@ -117,20 +116,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     height: 150px;
     resize: none;
     padding: 15px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid #ccc; /* 浅灰边框 */
     border-radius: 10px;
     font-size: 14px;
     font-family: Arial, sans-serif;
     margin-bottom: 20px;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    background-color: #f9f9f9; /* 浅灰背景 */
+    color: #333; /* 深灰文本颜色 */
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .modal textarea:focus {
-    box-shadow: 0px 0px 12px rgba(255, 255, 255, 0.7);
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1); /* 聚焦效果 */
     outline: none;
-    background-color: rgba(255, 255, 255, 0.3);
+    border-color: #666; /* 聚焦时边框颜色 */
 }
 
 /* Buttons */
@@ -141,14 +140,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     border: none;
     border-radius: 25px;
     cursor: pointer;
-    background: linear-gradient(to right, #ff6b6b, #d63031);
-    color: white;
+    background: #333; /* 深灰背景 */
+    color: white; /* 白色按钮文本 */
     transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .modal button:hover {
-    background: linear-gradient(to right, #d63031, #ff6b6b);
-    box-shadow: 0px 4px 10px rgba(255, 107, 107, 0.5);
+    background: #555; /* 浅灰悬停效果 */
     transform: scale(1.05);
 }
 
@@ -159,13 +157,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     right: 20px;
     font-size: 24px;
     font-weight: bold;
-    color: white;
+    color: #333; /* 深灰关闭按钮 */
     cursor: pointer;
     transition: color 0.3s ease;
 }
 
 .close-btn:hover {
-    color: #ff6b6b;
+    color: #555; /* 悬停时的按钮颜色 */
 }
 
         .image-modal {
