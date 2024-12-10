@@ -32,13 +32,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
-        $query = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
+        $query = "UPDATE reviews 
+                  SET admin_reply = ?, admin_reply_updated_at = CURRENT_TIMESTAMP 
+                  WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
     } elseif (isset($_POST['toggle_status'])) {
         $new_status = $_POST['new_status'];
-        $query = "UPDATE reviews SET status = ? WHERE review_id = ?";
+        $query = "UPDATE reviews 
+                  SET status = ?, status_updated_at = CURRENT_TIMESTAMP 
+                  WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
