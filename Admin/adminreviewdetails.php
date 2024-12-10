@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
         // 更新数据库逻辑
         $sql = "UPDATE reviews SET admin_reply = ? WHERE review_id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $connect->prepare($sql);
         $stmt->bind_param("si", $admin_reply, $review_id);
         $stmt->execute();
     
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
         // 更新数据库逻辑
         $sql = "UPDATE reviews SET status = ? WHERE review_id = ?";
-        $stmt = $conn->prepare($sql);
+        $stmt = $connect->prepare($sql);
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
     
