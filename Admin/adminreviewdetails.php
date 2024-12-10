@@ -82,54 +82,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 600px;
+            width: 450px;
             max-width: 90%;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 30px;
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+            box-shadow: 0px 12px 25px rgba(0, 0, 0, 0.3);
             border-radius: 15px;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
-            color: white;
-            text-align: center;
             z-index: 1000;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+        }
+
+        .modal-content {
+            text-align: center;
+            position: relative;
         }
 
         .modal h2 {
-            font-size: 24px;
-            font-weight: 700;
             margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
         }
 
         .modal textarea {
             width: 100%;
             height: 150px;
-            padding: 15px;
-            border: none;
-            border-radius: 8px;
             resize: none;
-            font-size: 16px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
             margin-bottom: 20px;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .modal textarea:focus {
+            border-color: #007bff;
             outline: none;
-            background: rgba(255, 255, 255, 0.4);
+            box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.3);
         }
 
         .modal button {
             padding: 12px 25px;
             font-size: 16px;
+            font-weight: bold;
             border: none;
             border-radius: 25px;
-            background: linear-gradient(45deg, #007bff, #0056b3);
-            color: white;
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
+            background: linear-gradient(to right, #007bff, #0056b3);
+            color: white;
+            transition: transform 0.2s ease, background-color 0.3s ease;
         }
 
         .modal button:hover {
-            background: linear-gradient(45deg, #0056b3, #003d80);
+            background: linear-gradient(to right, #0056b3, #003d80);
             transform: scale(1.05);
         }
 
@@ -137,11 +144,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             position: absolute;
             top: 10px;
             right: 15px;
-            font-size: 24px;
-            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            color: #999;
             cursor: pointer;
+            transition: color 0.3s ease;
         }
-
 
         .close-btn:hover {
             color: #ff0000;
