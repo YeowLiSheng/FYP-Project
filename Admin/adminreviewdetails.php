@@ -158,7 +158,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 .close-btn:hover {
     color: #ff6b6b; /* 添加悬停颜色 */
 }
+.close-btn {
+    display: none;
+}
 
+
+        .close-btn:hover {
+            color: #ff0000;
+        }
 
         .image-modal {
             display: none;
