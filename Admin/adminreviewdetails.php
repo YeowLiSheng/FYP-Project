@@ -246,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </td>
                             <td>
                                 <button class="btn btn-primary" onclick="openReplyForm(<?= $row['review_id'] ?>, '<?= htmlspecialchars($row['admin_reply']) ?>')">Reply/Edit</button>
-                                <form method="post" style="display:inline;">
+                                <form method="post" action="" style="display:inline;">
                                     <input type="hidden" name="review_id" value="<?= $row['review_id'] ?>">
                                     <input type="hidden" name="new_status" value="<?= $row['status'] == 'active' ? 'inactive' : 'active' ?>">
                                     <button type="submit" name="toggle_status" class="btn <?= $row['status'] == 'active' ? 'btn-warning' : 'btn-success' ?>">
@@ -269,8 +269,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
         <h2>Reply to Review</h2>
-        <form method="post">
-            <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
+        <form method="post" action="">
+        <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
         </form>
