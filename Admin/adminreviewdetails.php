@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
