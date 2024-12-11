@@ -133,7 +133,7 @@ $stmt->execute();
 $reviews_result = $stmt->get_result();
 
 
-$review_count_query = "SELECT COUNT(*) as review_count FROM reviews r JOIN order_details od ON r.detail_id = od.detail_id WHERE od.product_id = ?";
+$review_count_query = "SELECT COUNT(*) as review_count FROM reviews r JOIN order_details od ON r.detail_id = od.detail_id WHERE od.product_id = ? AND r.status = 'active'";
 $stmt = $connect->prepare($review_count_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
