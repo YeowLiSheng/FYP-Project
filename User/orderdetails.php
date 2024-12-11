@@ -115,6 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $detail = $detail_result->fetch_assoc();
     $detail_id = $detail['detail_id'];
 
+
+	
     // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
@@ -129,18 +131,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 插入评论数据
-    $stmt = $conn->prepare("
-        INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
+    // 检查是否存在重复评论
+$check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
+$check_stmt->bind_param("ii", $detail_id, $user_id);
+$check_stmt->execute();
+$check_result = $check_stmt->get_result();
 
-    if ($stmt->execute()) {
-        echo "success"; // 向前端返回成功状态
-    } else {
-        echo "error"; // 向前端返回错误状态
-    }
+if ($check_result->num_rows > 0) {
+    echo "duplicate"; // 返回重复状态
+    exit;
+}
+
+// 插入评论数据
+$stmt = $conn->prepare("
+    INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
+    VALUES (?, ?, ?, ?, ?)
+");
+$stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
+
+if ($stmt->execute()) {
+    echo "success"; // 向前端返回成功状态
+} else {
+    echo "error"; // 向前端返回错误状态
+}
     exit;
 }
 
@@ -1395,12 +1408,14 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         .then(response => response.text())
         .then(data => {
             // 检查后端响应
-            if (data.trim() === "success") {
-                // 显示成功弹窗
-                document.getElementById("successPopup").style.display = "block";
-            } else {
-                alert("Failed to submit review. Please try again.");
-            }
+			if (data.trim() === "success") {
+    // 显示成功弹窗
+    document.getElementById("successPopup").style.display = "block";
+} else if (data.trim() === "duplicate") {
+    alert("You have already reviewed this product.");
+} else {
+    alert("Failed to submit review. Please try again.");
+}
         })
         .catch(error => {
             console.error("Error submitting review:", error);
