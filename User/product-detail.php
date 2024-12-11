@@ -139,6 +139,19 @@ $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $review_count_result = $stmt->get_result();
 $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
+
+
+$staff_id = $review['staff_id']; // 从 reviews 表获取 staff_id
+$admin_query = "SELECT admin_id FROM admin WHERE staff_id = ?";
+$stmt = $connect->prepare($admin_query);
+$stmt->bind_param("i", $staff_id);
+$stmt->execute();
+$admin_result = $stmt->get_result();
+$admin = $admin_result->fetch_assoc();
+
+$admin_display_name = $admin ? htmlspecialchars($admin['admin_id']  ) : "Admin (Unknown)";
+
+
 // Close the connection
 $connect->close();
 ?>
@@ -685,8 +698,8 @@ $connect->close();
                                         </div>
                                         <div>
                                             <div class="flex-w align-items-center">
-                                                <span class="mtext-107 cl2">Admin (YLS Atelier)</span>
-                                                <span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+											<span class="mtext-107 cl2"><?php echo $admin_display_name; ?></span>
+											<span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
                                                     <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['admin_reply_updated_at']))); ?>
                                                 </span>
                                             </div>
