@@ -149,7 +149,7 @@ $stmt->execute();
 $admin_result = $stmt->get_result();
 $admin = $admin_result->fetch_assoc();
 
-$admin_display_name = $admin ? htmlspecialchars($admin['admin_id']  ) : "Admin (Unknown)";
+$admin_display_name = $admin ? htmlspecialchars($admin['admin_id']  ) : "admin_id";
 
 
 // Close the connection
