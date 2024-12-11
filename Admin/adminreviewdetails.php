@@ -2,6 +2,7 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
+
 $product_id = $_GET['product_id'] ?? 0;
 
 // 查询产品信息
@@ -30,13 +31,15 @@ $reviews = $stmt->get_result();
 // 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
+    $staff_id = $_SESSION['staff_id']; // 假设登录时已将管理员 ID 存入会话
+
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews 
-                  SET admin_reply = ?, admin_reply_updated_at = CURRENT_TIMESTAMP 
+                  SET admin_reply = ?, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = ? 
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
-        $stmt->bind_param("si", $admin_reply, $review_id);
+        $stmt->bind_param("sii", $admin_reply, $staff_id, $review_id);
         $stmt->execute();
     } elseif (isset($_POST['toggle_status'])) {
         $new_status = $_POST['new_status'];
@@ -46,21 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
-    }   elseif (isset($_POST['delete_reply'])) {
-        $review_id = $_POST['review_id']; // 获取评论的 ID
+    } elseif (isset($_POST['delete_reply'])) {
         $query = "UPDATE reviews 
-                  SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP 
+                  SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = NULL 
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
-        $stmt->bind_param("i", $review_id); // 绑定评论 ID
-        $stmt->execute(); // 执行查询
+        $stmt->bind_param("i", $review_id);
+        $stmt->execute();
+    }
 
-    
     echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
     exit();
-
-    
-}
 }
 ?>
 
