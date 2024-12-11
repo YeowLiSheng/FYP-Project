@@ -289,8 +289,6 @@ a.sidebar-link:hover {
                         <ion-icon name="apps-outline" style="font-size:110%; position:relative; top:3.5px;"></ion-icon>
                         <!-- <img src="image/<//?php echo $_SESSION['pic']; ?>"> -->
                         <?php echo $_SESSION['admin_id']; ?>
-                        <?php $_SESSION['staff_id'] = $admin['staff_id'];?>
-
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                         <li><a class="dropdown-item" href="admin_edit_profile.php?staff_id=<?php echo $_SESSION['id']; ?>">Edit
