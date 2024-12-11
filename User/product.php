@@ -1281,7 +1281,7 @@ function adjustFooterPosition() {
     // Calculate total height of the page (content + footer)
     var totalHeight = contentHeight + footerHeight;
 
-    // If content height is smaller than the window height, adjust it
+    // If content height is smaller than the window height, adjust i
     if (totalHeight < windowHeight) {
         // Set the container's height to fill the remaining space
         container.css('min-height', windowHeight - footerHeight);
