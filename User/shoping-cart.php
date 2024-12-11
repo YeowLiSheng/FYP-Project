@@ -935,7 +935,7 @@ $(document).ready(function() {
     $('.btn-num-product-down').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
-        if (currentValue > 1) {
+        if (currentValue > 0) {
             input.val(currentValue - 1);
         } else {
             input.val(0); // Prevent quantity from dropping below 1
