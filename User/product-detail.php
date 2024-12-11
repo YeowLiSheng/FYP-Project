@@ -109,24 +109,28 @@ $review_query = "
     SELECT 
         r.comment, 
         r.rating, 
-		r.image,
-		r.created_at,
-		r.status,
-		r.admin_reply,
-		r.admin_reply_updated_at,
+        r.image,
+        r.created_at,
+        r.status,
+        r.admin_reply,
+        r.admin_reply_updated_at,
         u.user_name, 
-        u.user_image 
+        u.user_image, 
+        a.admin_id 
     FROM 
         reviews r
     JOIN 
         user u ON r.user_id = u.user_id
     JOIN 
         order_details od ON r.detail_id = od.detail_id
+    LEFT JOIN 
+        admin a ON r.staff_id = a.staff_id
     WHERE 
-        od.product_id = ? AND r.status = 'active'"; // 只获取 active 状态的评论
+        od.product_id = ? AND r.status = 'active'";
+        
 $stmt = $connect->prepare($review_query);
 if (!$stmt) {
-    die("SQL prepare failed: " . $connect->error); // 输出 SQL 错误
+    die("SQL prepare failed: " . $connect->error); 
 }
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
@@ -139,6 +143,8 @@ $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $review_count_result = $stmt->get_result();
 $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
+
+
 // Close the connection
 $connect->close();
 ?>
@@ -685,8 +691,8 @@ $connect->close();
                                         </div>
                                         <div>
                                             <div class="flex-w align-items-center">
-                                                <span class="mtext-107 cl2">Admin (YLS Atelier)</span>
-                                                <span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+											<?php echo htmlspecialchars($review['admin_id'] ?? 'Admin'); ?>
+											<span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
                                                     <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['admin_reply_updated_at']))); ?>
                                                 </span>
                                             </div>
