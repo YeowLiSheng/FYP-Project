@@ -42,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $connect->prepare($query);
         $stmt->bind_param("sii", $admin_reply, $staff_id, $review_id);
         $stmt->execute();
+        if (!$stmt->execute()) {
+            die("SQL 执行失败：" . $stmt->error);
+        }
     } elseif (isset($_POST['toggle_status'])) {
         $new_status = $_POST['new_status'];
         $query = "UPDATE reviews 
