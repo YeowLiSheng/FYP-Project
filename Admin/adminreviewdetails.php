@@ -1,5 +1,4 @@
 <?php
-
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
@@ -32,8 +31,7 @@ $reviews = $stmt->get_result();
 // 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-
-    $staff_id = $_SESSION['staff_id']; // 确保使用统一的键名
+    $staff_id = $_SESSION['id']; // 使用 login.php 中的键名
 
 
     if (isset($_POST['reply'])) {
