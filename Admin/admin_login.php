@@ -42,7 +42,7 @@ if (isset($_POST["admin_login"])) {
             } else {
                 // Successful login
                 $_SESSION['id'] = $row['staff_id'];
-                $_SESSION['admin_id'] = $id;
+                $_SESSION['admin_id'] = $row['admin_id'];
                 $_SESSION['login_text'] = "Successful login"; // Success message
                 $_SESSION['login_icon'] = "success"; // For success
                 header("location: admin_sidebar.php");
