@@ -142,14 +142,15 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 
 
 $staff_id = $review['staff_id']; // 从 reviews 表获取 staff_id
-$admin_query = "SELECT admin_id FROM admin WHERE staff_id = ?";
+$admin_query = "SELECT admin_id, admin_name FROM admin WHERE staff_id = ?";
 $stmt = $connect->prepare($admin_query);
 $stmt->bind_param("i", $staff_id);
 $stmt->execute();
 $admin_result = $stmt->get_result();
 $admin = $admin_result->fetch_assoc();
 
-$admin_display_name = $admin ? htmlspecialchars($admin['admin_id']  ) : "admin_id";
+// 显示管理员信息
+$admin_display_name = $admin ? htmlspecialchars($admin['admin_id'] . " (" . $admin['admin_name'] . ")") : "Admin (Unknown)";
 
 
 // Close the connection
