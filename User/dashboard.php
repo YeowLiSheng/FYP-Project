@@ -140,12 +140,13 @@ $product_result = $connect->query($sql);
 						</a>
 
 						
-
+						<div>
 						<select id="language-selector" onchange="translatePage(this.value)">
         				<option value="en">English</option>
         				<option value="ms">Malay</option>
         				<option value="zh-CN">Chinese</option>
     					</select>
+						</div>
 						<div id="google_translate_element" style="display:none;"></div>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
@@ -1049,10 +1050,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script type="text/javascript">
-        // 初始化 Google Translate
         function googleTranslateElementInit() {
             new google.translate.TranslateElement(
-                {pageLanguage: 'en'}, // 默认页面语言
+                {pageLanguage: 'en'},
                 'google_translate_element'
             );
         }
@@ -1060,14 +1060,15 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
     <script>
-        // 动态翻译页面
         function translatePage(language) {
+            // 检查 Google Translate 是否加载完成
             var googleFrame = document.querySelector("iframe.goog-te-banner-frame");
             if (!googleFrame) {
                 alert("Translation widget not fully loaded yet. Please try again in a moment.");
                 return;
             }
 
+            // 获取 Google Translate 下拉框
             var select = googleFrame.contentDocument.querySelector("select.goog-te-combo");
             if (select) {
                 select.value = language; // 设置语言
