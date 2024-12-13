@@ -55,7 +55,7 @@ if (!isset($_GET['order_id'])) {
 
 
 
-$order_id = intval($_GET['order_id']);
+$order_id = intval($_GET['order_id']); // 或使用适当的获取方式
 
 // 使用预处理语句获取订单信息
 $order_stmt = $conn->prepare("
@@ -87,6 +87,78 @@ $details_stmt = $conn->prepare("
 $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
+
+$order_details = [];
+while ($detail = $details_result->fetch_assoc()) 
+{
+    $order_details[] = $detail;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $product_id = intval($_POST['product_id']);
+    $rating = intval($_POST['rating']);
+    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
+    $user_id = $_SESSION['id'];
+    $image_path = null;
+
+    // 获取 detail_id
+    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
+    $detail_query->bind_param("ii", $product_id, $order_id);
+    $detail_query->execute();
+    $detail_result = $detail_query->get_result();
+
+    if ($detail_result->num_rows === 0) {
+        echo "error";
+        exit;
+    }
+
+    $detail = $detail_result->fetch_assoc();
+    $detail_id = $detail['detail_id'];
+
+
+	
+    // 处理图片上传
+    if (!empty($_FILES['image']['name'])) {
+        $upload_dir = "uploads/reviews/";
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        $image_name = uniqid() . "_" . basename($_FILES['image']['name']);
+        $target_path = $upload_dir . $image_name;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_path)) {
+            $image_path = $target_path;
+        }
+    }
+
+    // 检查是否存在重复评论
+$check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
+$check_stmt->bind_param("ii", $detail_id, $user_id);
+$check_stmt->execute();
+$check_result = $check_stmt->get_result();
+
+if ($check_result->num_rows > 0) {
+    echo "duplicate"; // 返回重复状态
+    exit;
+}
+
+// 插入评论数据
+$stmt = $conn->prepare("
+    INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
+    VALUES (?, ?, ?, ?, ?)
+");
+$stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
+
+if ($stmt->execute()) {
+    echo "success"; // 向前端返回成功状态
+} else {
+    echo "error"; // 向前端返回错误状态
+}
+    exit;
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -128,6 +200,7 @@ $details_result = $details_stmt->get_result();
 	<!--===============================================================================================-->
 <style>
     /* 全局样式 */
+	
     .main-container {
     display: flex;
     flex-direction: row;
@@ -285,6 +358,165 @@ $details_result = $details_stmt->get_result();
         margin: 8px 0;
         font-weight: bold;
     }
+	.rate-button {
+        display: inline-block;
+        padding: 10px 25px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        cursor: pointer;
+        background: #28a745; /* 使用黄色作为评分按钮颜色 */
+        transition: 0.3s;
+    }
+
+    .rate-button:hover {
+        background: #e0a800;
+    }
+
+
+.popup-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    z-index: 2000;
+    border-radius: 10px;
+    width: 400px;
+    max-width: 90%;
+}
+
+.popup-content {
+    text-align: center;
+}
+
+.product-select-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.selected-product-preview {
+    display: flex;
+    flex-direction: column; /* 垂直对齐 */
+    align-items: center;
+    margin-top: 10px;
+}
+
+.selected-product-preview img {
+    width: 100px; /* 调整图片大小 */
+    height: 100px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+input[type="file"] {
+    display: block;
+    margin: 0 auto; /* 居中 */
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.rating-stars {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.rating-stars .fa-star {
+    font-size: 25px;
+    color: #ccc;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.rating-stars .fa-star.active {
+    color: #FFD700;
+}
+
+textarea {
+    width: 100%;
+    resize: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.submit-button, .cancel-button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+    margin-left: 10px;
+}
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+.popup-success {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+	z-index: 2000;
+    animation: fadeIn 0.5s ease;
+}
+
+.success-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #28a745; /* 绿色图标 */
+    margin-bottom: 15px;
+}
+
+.popup-success h3 {
+    font-size: 20px;
+    color: #333;
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
 </style>
 </head>
 <body class="animsition">
@@ -631,7 +863,7 @@ $details_result = $details_stmt->get_result();
                 </tr>
             </thead>
             <tbody>
-                <?php while ($detail = $details_result->fetch_assoc()) { ?>
+			<?php foreach ($order_details as $detail) { ?>
                 <tr>
                     <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
                     <td><?= $detail['product_name'] ?></td>
@@ -656,6 +888,66 @@ $details_result = $details_stmt->get_result();
     <!-- 操作按钮 -->
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
+	<?php if ($order['order_status'] === 'Complete') { ?>
+		<a href="javascript:void(0);" class="rate-button" onclick="openPopup()">⭐ Rate Order</a>
+<?php } ?>
+<div id="ratePopup" class="popup-container" style="display: none;">
+    <div class="popup-content">
+        <h2>Rate Product</h2>
+        <form id="rateForm" method="POST" enctype="multipart/form-data">
+            <!-- 产品选择 -->
+            <label for="productSelect">Select Product:</label>
+            <div class="product-select-container">
+                <select id="productSelect" name="product_id" required>
+                    <option value="" disabled selected>Select a product</option>
+                    <?php foreach ($order_details as $detail) { ?>
+                        <option value="<?= $detail['product_id'] ?>" 
+                                data-img="images/<?= $detail['product_image'] ?>">
+                            <?= $detail['product_name'] ?>
+                        </option>
+                    <?php } ?>
+                </select>
+                <div class="selected-product-preview" id="productPreview">
+                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
+                    <span id="productName" style="display: block;"></span>
+                </div>
+            </div>
+
+            <!-- 评分 -->
+            <label for="rating">Rating:</label>
+            <div id="stars" class="rating-stars">
+                <?php for ($i = 1; $i <= 5; $i++) { ?>
+                    <i class="fa fa-star" data-value="<?= $i ?>"></i>
+                <?php } ?>
+            </div>
+            <input type="hidden" id="rating" name="rating" value="" required>
+
+            <!-- 评论 -->
+            <label for="comment">Comment:</label>
+            <textarea id="comment" name="comment" rows="4" required></textarea>
+
+            <!-- 上传图片 -->
+            <label for="image">Upload Image (optional):</label>
+            <input type="file" id="image" name="image" accept="image/*">
+
+            <!-- 按钮 -->
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="button" class="cancel-button" onclick="closePopup()">Cancel</button>
+        </form>
+    </div>
+</div>
+<div id="overlay" style="display: none;"></div>
+
+<div id="successPopup" class="popup-success" style="display: none;">
+    <div class="success-content">
+        <div class="success-icon">
+            <i class="fa fa-check-circle"></i>
+        </div>
+        <h3>Review Submitted Successfully!</h3>
+		<button class="submit-button" onclick="redirectToPage()">OK</button>
+
+    </div>
+</div>
 </div>
 </div>
 
@@ -1084,5 +1376,100 @@ $details_result = $details_stmt->get_result();
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script>
+// 打开弹窗
+// 打开弹窗
+function openPopup() {
+    document.getElementById("ratePopup").style.display = "block";
+}
+
+// 关闭弹窗
+function closePopup() {
+    document.getElementById("ratePopup").style.display = "none";
+    document.getElementById("rateForm").reset(); // 重置表单
+    resetStars();   // 重置评分星星
+    resetProductPreview(); // 重置产品预览
+}
+
+// 禁用重复提交
+document.getElementById("rateForm").addEventListener("submit", function (e) {
+    // 阻止默认表单提交行为
+    e.preventDefault();
+
+    // 获取表单元素
+    const form = e.target;
+    const formData = new FormData(form);
+
+    // 发送表单数据到后端
+    fetch(window.location.href, {
+        method: "POST",
+        body: formData
+    })
+        .then(response => response.text())
+        .then(data => {
+            // 检查后端响应
+			if (data.trim() === "success") {
+    // 显示成功弹窗
+    document.getElementById("successPopup").style.display = "block";
+} else if (data.trim() === "duplicate") {
+    alert("You have already reviewed this product.");
+} else {
+    alert("Failed to submit review. Please try again.");
+}
+        })
+        .catch(error => {
+            console.error("Error submitting review:", error);
+        });
+});
+
+function redirectToPage() {
+    window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
+}
+// 评分逻辑
+const stars = document.querySelectorAll(".rating-stars .fa-star");
+stars.forEach(star => {
+    star.addEventListener("click", function () {
+        const value = this.getAttribute("data-value");
+        document.getElementById("rating").value = value;
+
+        stars.forEach(s => s.classList.remove("active"));
+        for (let i = 0; i < value; i++) {
+            stars[i].classList.add("active");
+        }
+    });
+});
+
+function resetStars() {
+    stars.forEach(star => star.classList.remove("active"));
+}
+
+// 产品预览逻辑
+const productSelect = document.getElementById("productSelect");
+const productImage = document.getElementById("productImage");
+const productName = document.getElementById("productName");
+
+productSelect.addEventListener("change", function () {
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    const imgSrc = selectedOption.getAttribute("data-img");
+    const name = selectedOption.textContent;
+
+    if (imgSrc) {
+        productImage.src = imgSrc;
+        productImage.style.display = "block";
+    } else {
+        productImage.style.display = "none";
+    }
+
+    productName.textContent = name;
+});
+
+function resetProductPreview() {
+    productImage.style.display = "none";
+    productName.textContent = "";
+}
+
+
+
+</script>
 </body>
 </html>

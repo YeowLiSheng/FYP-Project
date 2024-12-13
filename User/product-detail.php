@@ -1,32 +1,33 @@
 <?php
-session_start(); 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
+session_start(); // Start the session
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Include the database connection file
+include("dataconnection.php"); 
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
+// Check if the database connection exists
+if (!isset($connect) || !$connect) { // Changed $connect to $conn
+    die("Database connection failed.");
+}
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
 
 // Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
+    $user_data = mysqli_fetch_assoc($result);
 } else {
     echo "User not found.";
     exit;
 }
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+
+// Fetch and combine cart items for the logged-in user
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
            SUM(sc.qty) AS total_qty, 
@@ -35,12 +36,13 @@ $cart_items_query = "
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
     GROUP BY sc.product_id";
-$cart_items_result = $conn->query($cart_items_query);
+$cart_items_result = $connect->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
     $query = "SELECT * FROM product WHERE product_id = $product_id";
-    $result = $conn->query($query);
+    $result = $connect->query($query);
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
@@ -48,38 +50,103 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     } else {
         echo json_encode(null);
     }
-    exit; // Stop further script execution
+    exit;
+}
+$query = "SELECT *, stock AS product_stock FROM product WHERE product_id = ?";
+if (isset($_GET['check_cart_qty']) && isset($_GET['product_id'])) {
+    $product_id = intval($_GET['product_id']);
+    $user_id = $_SESSION['id'];
+
+    $query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
+    $result = $connect->query($query);
+
+    if ($result) {
+        $row = $result->fetch_assoc();
+        $total_qty = $row['total_qty'] ?? 0;
+        echo json_encode(['total_qty' => $total_qty]);
+    } else {
+        echo json_encode(['total_qty' => 0]);
+    }
+    exit;
 }
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-    $user_id = $_SESSION['id']; // Get the logged-in user ID
+    $user_id = $_SESSION['id'];
 
-    // Insert data into shopping_cart table, including the user_id
     $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-    if ($conn->query($cart_query) === TRUE) {
+    if ($connect->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'error' => $conn->error]);
+        echo json_encode(['success' => false, 'error' => $connect->error]);
     }
     exit;
 }
+// Count distinct product IDs in the shopping cart for the logged-in user
+$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+$distinct_products_result = $connect->query($distinct_products_query);
+$distinct_count = 0;
 
-$product_id = $_GET['id']; // Get the product ID from the URL
+if ($distinct_products_result) {
+    $row = $distinct_products_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+$product_id = $_GET['id'];
 
-// Fetch product details based on product_id
 $query = "SELECT * FROM product WHERE product_id = ?";
-$stmt = $conn->prepare($query);
+$stmt = $connect->prepare($query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
-// Close the statement and connection
 $stmt->close();
-$conn->close();
+
+// Fetch reviews for the product
+$review_query = "
+    SELECT 
+        r.comment, 
+        r.rating, 
+        r.image,
+        r.created_at,
+        r.status,
+        r.admin_reply,
+        r.admin_reply_updated_at,
+        u.user_name, 
+        u.user_image, 
+        a.admin_id 
+    FROM 
+        reviews r
+    JOIN 
+        user u ON r.user_id = u.user_id
+    JOIN 
+        order_details od ON r.detail_id = od.detail_id
+    LEFT JOIN 
+        admin a ON r.staff_id = a.staff_id
+    WHERE 
+        od.product_id = ? AND r.status = 'active'";
+        
+$stmt = $connect->prepare($review_query);
+if (!$stmt) {
+    die("SQL prepare failed: " . $connect->error); 
+}
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$reviews_result = $stmt->get_result();
+
+
+$review_count_query = "SELECT COUNT(*) as review_count FROM reviews r JOIN order_details od ON r.detail_id = od.detail_id WHERE od.product_id = ? AND r.status = 'active'";
+$stmt = $connect->prepare($review_count_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$review_count_result = $stmt->get_result();
+$review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
+
+
+// Close the connection
+$connect->close();
 ?>
 
 <!DOCTYPE html>
@@ -128,12 +195,29 @@ $conn->close();
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 300px;"></span> 
+							New user will get 10% discount!!!<span style="padding-left: 300px;"></span>
+							Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+							<span style="padding-left: 300px;"></span> Free shipping for standard order over $10000 
+							<span style="padding-left: 300px;"></span> New user will get 10% discount!!! 
+							<span style="padding-left: 300px;"></span> Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+							@keyframes marquee {
+								0% {
+									transform: translateX(0);
+								}
+								100% {
+									transform: translateX(-55%);
+								}
+							}
+						</style>
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
+						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
 
@@ -150,9 +234,9 @@ $conn->close();
 
 
 
-                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
                             <?php
-                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+								echo "HI '" . htmlspecialchars($user_data['user_name']);
                             ?>
                         </a>
 
@@ -171,8 +255,8 @@ $conn->close();
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
@@ -187,12 +271,12 @@ $conn->close();
 								</ul>
 							</li>
 
-							<li>
+							<li class="active-menu">
 								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.php">Features</a>
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
@@ -200,11 +284,11 @@ $conn->close();
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -215,7 +299,7 @@ $conn->close();
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" >
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
@@ -225,102 +309,6 @@ $conn->close();
 					</div>
 				</nav>
 			</div>	
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->		
-			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" >
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" >
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="index.html">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.html">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
-				</li>
-			</ul>
 		</div>
 
 		<!-- Modal Search -->
@@ -511,7 +499,7 @@ $conn->close();
 
                     	<!-- Add to Cart Section -->
                     	<div class="flex-w flex-r-m p-b-10">
-                        	<div class="size-204 flex-w flex-m respon6-next">
+                        	<div class="size-204 flex-w flex-m respon6-next warning">
                             	<div class="wrap-num-product flex-w m-r-20 m-tb-10">
                                 	<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
                                     	<i class="fs-16 zmdi zmdi-minus"></i>
@@ -524,9 +512,11 @@ $conn->close();
                                 	</div>
                             	</div>
 
-                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-                                	Add to cart
-                            	</button>
+                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
+									data-id="<?php echo $product['product_id']; ?>"
+									data-stock="<?php echo $product['product_stock']; ?>">
+									Add to cart
+								</button>
                         	</div>
                     	</div> 
 						<!--  -->
@@ -569,7 +559,7 @@ $conn->close();
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
+						<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (<?php echo $review_count; ?>)</a>
 						</li>
 					</ul>
 
@@ -643,88 +633,85 @@ $conn->close();
 							</div>
 						</div>
 
-						<!-- - -->
-						<div class="tab-pane fade" id="reviews" role="tabpanel">
-							<div class="row">
-								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
-									<div class="p-b-30 m-lr-15-sm">
-										<!-- Review -->
-										<div class="flex-w flex-t p-b-68">
-											<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-												<img src="images/avatar-01.jpg" alt="AVATAR">
-											</div>
-
-											<div class="size-207">
-												<div class="flex-w flex-sb-m p-b-17">
-													<span class="mtext-107 cl2 p-r-20">
-														Ariana Grande
-													</span>
-
-													<span class="fs-18 cl11">
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star-half"></i>
-													</span>
-												</div>
-
-												<p class="stext-102 cl6">
-													Quod autem in homine praestantissimum atque optimum est, id deseruit. Apud ceteros autem philosophos
-												</p>
-											</div>
-										</div>
-										
-										<!-- Add review -->
-										<form class="w-full">
-											<h5 class="mtext-108 cl2 p-b-7">
-												Add a review
-											</h5>
-
-											<p class="stext-102 cl6">
-												Your email address will not be published. Required fields are marked *
-											</p>
-
-											<div class="flex-w flex-m p-t-50 p-b-23">
-												<span class="stext-102 cl3 m-r-16">
-													Your Rating
-												</span>
-
-												<span class="wrap-rating fs-18 cl11 pointer">
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<input class="dis-none" type="number" name="rating">
-												</span>
-											</div>
-
-											<div class="row p-b-25">
-												<div class="col-12 p-b-5">
-													<label class="stext-102 cl3" for="review">Your review</label>
-													<textarea class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10" id="review" name="review"></textarea>
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="name">Name</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name" type="text" name="name">
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="email">Email</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="email" type="text" name="email">
-												</div>
-											</div>
-
-											<button class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
-												Submit
-											</button>
-										</form>
-									</div>
-								</div>
-							</div>
-						</div>
+						<div class="tab-pane fade" id="reviews" role="tabpanel"> 
+    <div class="row">
+        <div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+            <div class="p-b-30 m-lr-15-sm">
+                <!-- Check if there are reviews -->
+                <?php if ($reviews_result->num_rows > 0) { ?>
+                    <?php while ($review = $reviews_result->fetch_assoc()) { ?>
+                        <div class="flex-w flex-t p-b-68">
+                            <!-- User Image -->
+                            <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                <img src="<?php echo !empty($review['user_image']) ? $review['user_image'] : 'images/default-avatar.png'; ?>" alt="User"
+                                     style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
+                            </div>
+                            <!-- Review Content -->
+                            <div class="size-207">
+                                <!-- Header: Username and Rating -->
+                                <div class="flex-w flex-sb-m p-b-17">
+                                    <div class="flex-w align-items-center">
+                                        <span class="mtext-107 cl2 p-r-20">
+                                            <?php echo htmlspecialchars($review['user_name']); ?>
+                                        </span>
+                                        <span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+                                            <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['created_at']))); ?>
+                                        </span>
+                                    </div>
+                                    <!-- Rating -->
+                                    <span class="fs-18 cl11">
+                                        <?php for ($i = 1; $i <= 5; $i++) { ?>
+                                            <i class="zmdi zmdi-star<?php echo $i <= $review['rating'] ? '' : '-outline'; ?>"></i>
+                                        <?php } ?>
+                                    </span>
+                                </div>
+                                <!-- Comment -->
+                                <p class="stext-102 cl6">
+                                    <?php echo htmlspecialchars($review['comment']); ?>
+                                </p>
+                                <!-- Review Image -->
+                                <?php if (!empty($review['image'])) { ?>
+                                    <div class="review-image">
+                                        <img src="<?php echo $review['image']; ?>" alt="Review Image"
+                                             style="width: 150px; height: 150px; border-radius: 10px; object-fit: cover; margin-top: 10px; cursor: pointer;"
+                                             onclick="openModal('<?php echo $review['image']; ?>')">
+                                    </div>
+                                    <!-- Modal -->
+                                    <div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
+                                        <span style="position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer;" onclick="closeModal()">&times;</span>
+                                        <img id="modalImage" src="" alt="Full Image" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
+                                    </div>
+                                <?php } ?>
+                                <!-- Admin Reply -->
+                                <?php if (!empty($review['admin_reply'])) { ?>
+                                    <div class="flex-w flex-t p-t-20">
+                                        <div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                            <img src="images/admin-avatar.png" alt="Admin"
+                                                 style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
+                                        </div>
+                                        <div>
+                                            <div class="flex-w align-items-center">
+											<?php echo htmlspecialchars($review['admin_id'] ?? 'Admin'); ?>
+											<span class="stext-101 cl4" style="font-size: 12px; color: #888; margin-left: 10px;">
+                                                    <?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($review['admin_reply_updated_at']))); ?>
+                                                </span>
+                                            </div>
+                                            <p class="stext-102 cl6">
+                                                <?php echo htmlspecialchars($review['admin_reply']); ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    <?php } ?>
+                <?php } else { ?>
+                    <p class="stext-102 cl6">No reviews to show.</p>
+                <?php } ?>
+            </div>
+        </div>
+    </div>
+</div>
 					</div>
 				</div>
 			</div>
@@ -1323,102 +1310,196 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</div>
 
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-	<script src="vendor/animsition/js/animsition.min.js"></script>
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-	<script src="vendor/select2/select2.min.js"></script>
-	<script>
-		$(".js-select2").each(function(){
-			$(this).select2({
-				minimumResultsForSearch: 20,
-				dropdownParent: $(this).next('.dropDownSelect2')
-			});
-		})
-	</script>
-	<script src="vendor/daterangepicker/moment.min.js"></script>
-	<script src="vendor/daterangepicker/daterangepicker.js"></script>
-	<script src="vendor/slick/slick.min.js"></script>
-	<script src="js/slick-custom.js"></script>
-	<script src="vendor/parallax100/parallax100.js"></script>
-	<script>
-        $('.parallax100').parallax100();
-	</script>
-	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
-	<script>
-		$('.gallery-lb').each(function() { // the containers for all your galleries
-			$(this).magnificPopup({
-		        delegate: 'a', // the selector for gallery item
-		        type: 'image',
-		        gallery: {
-		        	enabled:true
-		        },
-		        mainClass: 'mfp-fade'
-		    });
-		});
-	</script>
-	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
-	<script src="vendor/sweetalert/sweetalert.min.js"></script>
-	<script>
-		$('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
-			e.preventDefault();
-		});
+<script src="vendor/animsition/js/animsition.min.js"></script>
+<script src="vendor/bootstrap/js/popper.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<script src="vendor/select2/select2.min.js"></script>
+<script>
+    $(".js-select2").each(function(){
+        $(this).select2({
+            minimumResultsForSearch: 20,
+            dropdownParent: $(this).next('.dropDownSelect2')
+        });
+    });
+</script>
+<script src="vendor/daterangepicker/moment.min.js"></script>
+<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<script src="vendor/slick/slick.min.js"></script>
+<script src="js/slick-custom.js"></script>
+<script src="vendor/parallax100/parallax100.js"></script>
+<script>
+    $('.parallax100').parallax100();
+</script>
+<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+<script>
+    $('.gallery-lb').each(function() {
+        $(this).magnificPopup({
+            delegate: 'a',
+            type: 'image',
+            gallery: { enabled: true },
+            mainClass: 'mfp-fade'
+        });
+    });
+</script>
+<script src="vendor/isotope/isotope.pkgd.min.js"></script>
+<script src="vendor/sweetalert/sweetalert.min.js"></script>
+<script>
+    $('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
+        e.preventDefault();
+    });
 
-		$('.js-addwish-b2').each(function(){
-			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
+    $('.js-addwish-b2').each(function(){
+        var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
+        $(this).on('click', function(){
+            swal(nameProduct, "is added to wishlist!", "success");
+            $(this).addClass('js-addedwish-b2');
+            $(this).off('click');
+        });
+    });
 
-				$(this).addClass('js-addedwish-b2');
-				$(this).off('click');
-			});
-		});
+    $('.js-addwish-detail').each(function(){
+        var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
+        $(this).on('click', function(){
+            swal(nameProduct, "is added to wishlist!", "success");
+            $(this).addClass('js-addedwish-detail');
+            $(this).off('click');
+        });
+    });
 
-		$('.js-addwish-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
+	$(document).ready(function () {
+    // Show stock warning
+    function showStockWarning(message) {
+        $('.stock-warning').remove(); // Remove existing warnings
+        const warning = `<div class="stock-warning" style="color: red; margin-top: 10px;">${message}</div>`;
+        $('.warning').append(warning);
+    }
 
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
+    // Clear stock warning
+    function clearStockWarning() {
+        $('.stock-warning').remove();
+    }
 
-				$(this).addClass('js-addedwish-detail');
-				$(this).off('click');
-			});
-		});
+    // Function to lock quantity input
+    function lockQuantityInput() {
+        $('.num-product').val(0).prop('readonly', true); // Set value to 0 and lock the input
+        $('.btn-num-product-up, .btn-num-product-down').prop('disabled', true); // Disable buttons
+    }
 
-		$('.js-addcart-detail').each(function(){
-    var nameProduct = $(this).closest('.p-r-50').find('.js-name-detail').html();
-    var productId = <?php echo json_encode($product['product_id']); ?>; // Fetch product_id from PHP
-    $(this).on('click', function(){
-        var qty = parseInt($(this).closest('.size-204').find('.num-product').val()); // Quantity
-        var price = <?php echo json_encode($product['product_price']); ?>; // Fetch product price from PHP
-        var totalPrice = qty * price;
+    // Fetch total quantity in cart for the product
+    function checkCartQuantity(productId, productStock) {
+        return new Promise((resolve) => {
+            $.ajax({
+                url: '', // Replace with your URL to fetch cart quantity
+                type: 'GET',
+                data: { check_cart_qty: true, product_id: productId },
+                dataType: 'json',
+                success: function (response) {
+                    if (response && response.total_qty) {
+                        const totalCartQty = parseInt(response.total_qty) || 0;
+                        resolve(totalCartQty >= productStock);
+                    } else {
+                        resolve(false);
+                    }
+                },
+                error: function () {
+                    resolve(false);
+                }
+            });
+        });
+    }
 
-        // Send AJAX request to add product to cart
+    // Button Up Quantity Adjustment
+    $(document).on('click', '.btn-num-product-up', async function () {
+        const $input = $(this).siblings('.num-product');
+        const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0;
+        const productId = $('.js-addcart-detail').data('id');
+
+        const exceedsStock = await checkCartQuantity(productId, productStock);
+
+        if (exceedsStock) {
+            showStockWarning("Your quantity in the cart for this product already reached the maximum.");
+            $input.val(0);
+        } else {
+            let currentVal = parseInt($input.val()) || 0;
+
+            if (currentVal < productStock) {
+                $input.val(currentVal++);
+                clearStockWarning();
+            } else {
+                showStockWarning(`Only ${productStock} items are available in stock.`);
+				$input.val(productStock);
+            }
+        }
+    });
+
+    // Button Down Quantity Adjustment
+    $(document).on('click', '.btn-num-product-down', function () {
+        const $input = $(this).siblings('.num-product');
+        let currentVal = parseInt($input.val()) || 0;
+
+        if (currentVal > 1) {
+            $input.val(currentVal - 1);
+            clearStockWarning();
+        }
+    });
+
+    // Add to Cart Functionality
+    $(document).on('click', '.js-addcart-detail', async function (event) {
+        event.preventDefault();
+
+        const productId = $(this).data('id');
+        const productName = $('.js-name-detail').text();
+        const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
+        const productQuantity = parseInt($('.num-product').val());
+        const productStock = parseInt($(this).data('stock')) || 0;
+
+        const exceedsStock = await checkCartQuantity(productId, productStock);
+
+        if (exceedsStock) {
+            showStockWarning("Your quantity in the cart for this product already reached the maximum.");
+            lockQuantityInput();
+            return;
+        }
+
+        if (productQuantity > productStock) {
+            showStockWarning(`Cannot add more than ${productStock} items.`);
+            return;
+        } else if (productQuantity === 0) {
+            showStockWarning('Quantity cannot be zero.');
+            return;
+        }
+
+        const totalPrice = productPrice * productQuantity;
+
+        // Send data to the server via AJAX
         $.ajax({
-            url: '', // Set URL to your PHP file that handles the add to cart logic
+            url: '', // Replace with your PHP URL to handle adding to the cart
             type: 'POST',
             data: {
                 add_to_cart: true,
                 product_id: productId,
-                qty: qty,
+                qty: productQuantity,
                 total_price: totalPrice
             },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
-                    swal(nameProduct, "is added to cart!", "success");
+                    swal(`${productName} has been added to your cart!`, "", "success");
+                    clearStockWarning();
                 } else {
-                    swal("Error", response.error, "error");
+                    showStockWarning(response.error || "Failed to add product to cart.");
                 }
             },
-            error: function() {
-                swal("Error", "An error occurred while adding the product to the cart.", "error");
+            error: function () {
+                showStockWarning("An error occurred while adding to the cart.");
             }
         });
     });
 });
 
-	
-	</script>
+
+
+</script>
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 	<script>
 		$('.js-pscroll').each(function(){
@@ -1472,6 +1553,17 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 	<script src="js/main.js"></script>
+	<script> function openModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageSrc;
+        modal.style.display = 'flex';
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }</script>
 
 </body>
 </html>

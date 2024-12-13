@@ -1,46 +1,48 @@
 <?php
-session_start(); 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
+session_start(); // Start the session
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+// Include the database connection file
+include("dataconnection.php"); 
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+
+// Check if the database connection exists
+if (!isset($connect) || !$connect) { // Changed $connect to $conn
+    die("Database connection failed.");
+}
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
 
 // Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
+    $user_data = mysqli_fetch_assoc($result);
 } else {
     echo "User not found.";
     exit;
 }
+
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price,
+           sc.color, sc.size, 
            SUM(sc.qty) AS total_qty, 
-           SUM(sc.total_price) AS total_price 
+           SUM(sc.total_price) AS total_price
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
-$cart_items_result = $conn->query($cart_items_query);
+    GROUP BY sc.product_id, sc.color, sc.size";
+$cart_items_result = $connect->query($cart_items_query);
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
     $query = "SELECT * FROM product WHERE product_id = $product_id";
-    $result = $conn->query($query);
+    $result = $connect->query($query);
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
@@ -55,32 +57,42 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $product_id = intval($_POST['product_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
+	$color = $connect->real_escape_string($_POST['color']);
+    $size = $connect->real_escape_string($_POST['size']);
     $user_id = $_SESSION['id']; // Get the logged-in user ID
 
     // Insert data into shopping_cart table, including the user_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
-    if ($conn->query($cart_query) === TRUE) {
+    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price, color, size) 
+                   VALUES ($user_id, $product_id, $qty, $total_price, '$color', '$size')";
+    if ($connect->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'error' => $conn->error]);
+        echo json_encode(['success' => false, 'error' => $connect->error]);
     }
     exit;
 }
 
+
 $selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
 // Fetch categories
 $category_query = "SELECT * FROM category";
-$category_result = $conn->query($category_query);
+$category_result = $connect->query($category_query);
+
+// Count distinct product IDs in the shopping cart for the logged-in user
+$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+$distinct_products_result = $connect->query($distinct_products_query);
+$distinct_count = 0;
+
+if ($distinct_products_result) {
+    $row = $distinct_products_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+
 
 // Fetch products
 $product_query = "SELECT * FROM product WHERE 1";
 
-// Apply category filter if a valid category_id is provided
-if ($selected_category !== null) {
-    $product_query .= " AND category_id = $selected_category";
-}
-
-$product_result = $conn->query($product_query);
+$product_result = $connect->query($product_query);
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
 $price_filter = isset($_GET['price']) ? explode(',', $_GET['price']) : [];
@@ -95,7 +107,10 @@ $product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%
 if ($category_filter) {
     $product_query .= " AND category_id = $category_filter";
 }
-
+// Apply category filter if a valid category_id is provided
+if ($selected_category !== null) {
+    $product_query .= " AND category_id = $selected_category";
+}
 // Apply price filter if it's not 'all'
 if (!empty($price_filter) && $price_filter[0] !== 'all') {
     $price_conditions = [];
@@ -139,7 +154,7 @@ if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
     $product_query .= " AND (" . implode(" OR ", $tag_conditions) . ")";
 }
 
-$product_result = $conn->query($product_query);
+$product_result = $connect->query($product_query);
 
 // Render filtered products as HTML for AJAX response
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
@@ -248,12 +263,29 @@ body {
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 300px;"></span> 
+							New user will get 10% discount!!!<span style="padding-left: 300px;"></span>
+							Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+							<span style="padding-left: 300px;"></span> Free shipping for standard order over $10000 
+							<span style="padding-left: 300px;"></span> New user will get 10% discount!!! 
+							<span style="padding-left: 300px;"></span> Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+							@keyframes marquee {
+								0% {
+									transform: translateX(0);
+								}
+								100% {
+									transform: translateX(-55%);
+								}
+							}
+						</style>
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
+						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
 
@@ -270,9 +302,9 @@ body {
 
 
 
-                        <a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
                             <?php
-                                echo "HI '" . htmlspecialchars($row["user_name"]) ;
+								echo "HI '" . htmlspecialchars($user_data['user_name']);
                             ?>
                         </a>
 
@@ -291,8 +323,8 @@ body {
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
@@ -308,7 +340,7 @@ body {
 							</li>
 
 							<li class="active-menu">
-								<a href="product.html">Shop</a>
+								<a href="product.php">Shop</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -324,7 +356,7 @@ body {
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -335,7 +367,7 @@ body {
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" >
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
@@ -345,102 +377,6 @@ body {
 					</div>
 				</nav>
 			</div>	
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->		
-			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" >
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti">
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="dashboard.php">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.php">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.php" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
-				</li>
-			</ul>
 		</div>
 
 		<!-- Modal Search -->
@@ -489,11 +425,16 @@ body {
                                 <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+
                                     ' . $cart_item['product_name'] . '
                                 </a>
                                 <span class="header-cart-item-info">
                                     ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+								
+                                <span class="header-cart-item-info">
+                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
                                 </span>
                             </div>
                         </li>';
@@ -973,10 +914,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 								<div class="size-204 respon6-next">
 									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2" name="time">
+										<select class="js-select2" name="size">
 											<option>Choose an option</option>
-											<option><?php echo isset($product['size1']) ? $product['size1'] : 'Size 1 not available'; ?></option>
-											<option><?php echo isset($product['size2']) ? $product['size2'] : 'Size 2 not available'; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -990,10 +929,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 								<div class="size-204 respon6-next">
 									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2" name="time">
+										<select class="js-select2" name="color">
 											<option>Choose an option</option>
-											<option><?php echo $product['color1']; ?></option>
-                							<option><?php echo $product['color2']; ?></option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -1007,7 +944,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 											<i class="fs-16 zmdi zmdi-minus"></i>
 										</div>
 
-										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1" min="1">
 
 										<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-plus"></i>
@@ -1018,6 +955,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 										Add to cart
 									</button>
 								</div>
+								<p class="stock-warning" style="color: red; display: none;">Quantity exceeds available stock.</p>
 							</div>	
 						</div>
 
@@ -1130,9 +1068,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                     $('.mtext-106').text('$' + response.product_price);
                     $('.stext-102').text(response.product_des);
 
-                    // Store the product ID for later access
+                    // Store the product ID and stock for later access
                     $('.js-addcart-detail').data('id', productId);
-                    
+                    $('.js-addcart-detail').data('stock', response.product_stock);
+
                     // Update Quick View images
                     $('.gallery-lb .item-slick3').each(function(index) {
                         var imagePath = 'images/' + response['Quick_View' + (index + 1)];
@@ -1140,19 +1079,21 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         $(this).find('.wrap-pic-w a').attr('href', imagePath);
                         $(this).attr('data-thumb', imagePath);
                     });
-					                // Update size options
-									var sizeSelect = $('select[name="time"]');
-                sizeSelect.empty(); // Clear existing options
-                sizeSelect.append('<option>Choose an option</option>'); // Default option
-                if (response.size1) sizeSelect.append('<option>' + response.size1 + '</option>');
-                if (response.size2) sizeSelect.append('<option>' + response.size2 + '</option>');
+					// Update size options
+                    // Update size options
+					var sizeSelect = $('select[name="size"]');
+					sizeSelect.empty(); // Clear existing options
+					sizeSelect.append('<option value="">Choose an option</option>'); // Default option
+					if (response.size1) sizeSelect.append('<option value="' + response.size1 + '">' + response.size1 + '</option>');
+					if (response.size2) sizeSelect.append('<option value="' + response.size2 + '">' + response.size2 + '</option>');
 
-                // Update color options
-                var colorSelect = $('select[name="color"]');
-                colorSelect.empty(); // Clear existing options
-                colorSelect.append('<option>Choose an option</option>'); // Default option
-                if (response.color1) colorSelect.append('<option>' + response.color1 + '</option>');
-                if (response.color2) colorSelect.append('<option>' + response.color2 + '</option>');
+					// Update color options
+					var colorSelect = $('select[name="color"]');
+					colorSelect.empty(); // Clear existing options
+					colorSelect.append('<option value="">Choose an option</option>'); // Default option
+					if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
+					if (response.color2) colorSelect.append('<option value="' + response.color2 + '">' + response.color2 + '</option>');
+
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
                 } else {
@@ -1165,42 +1106,109 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         });
     });
 
-    // Update the 'Add to Cart' functionality to use the correct product ID
-    $(document).on('click', '.js-addcart-detail', function(event) {
-        event.preventDefault();
-        
-        const productId = $(this).data('id'); // Get product ID from the modal button data
-        const productName = $('.js-name-detail').text();
-        const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
-        const productQuantity = parseInt($('.num-product').val());
-        const totalPrice = productPrice * productQuantity;
+    $(document).ready(function () {
+        // Update product quantity and enforce stock rules
+        $(document).on('click', '.btn-num-product-up', function () {
+			const $input = $(this).siblings('.num-product');
+			const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0; // Ensure `productStock` is an integer
+			let currentVal = parseInt($input.val()) || 0; // Ensure `currentVal` is an integer
+			
+			if (currentVal < productStock) {
+				$input.val(currentVal ++);
+				$('.stock-warning').hide();
+			} else {
+				$('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
+				$input.val(productStock); // Prevent further increment
+			}
+		});
 
-        $.ajax({
-            url: '', // Use the same PHP file
-            type: 'POST',
-            data: {
-                add_to_cart: true,
-                product_id: productId,
-                qty: productQuantity,
-                total_price: totalPrice
-            },
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    alert(`${productName} has been added to your cart!`);
-					location.reload(); // Refresh the page after a successful addition
-                } else {
-                    alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
-                }
-                updateCart();
-                $('.js-modal1').removeClass('show-modal1');
-            },
-            error: function() {
-                alert('An error occurred while adding to the cart.');
+		$(document).on('click', '.btn-num-product-down', function () {
+			const $input = $(this).siblings('.num-product');
+			let currentVal = parseInt($input.val()) || 0; // Ensure `currentVal` is an integer
+			
+			if (currentVal > 1) {
+				$input.val(currentVal - 1);
+				$('.stock-warning').hide();
+			}
+		});
+
+        // Add to cart functionality
+        $(document).on('click', '.js-addcart-detail', function (event) {
+            event.preventDefault();
+
+            const productId = $(this).data('id');
+            const productName = $('.js-name-detail').text();
+            const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
+            const productQuantity = parseInt($('.num-product').val());
+            const productStock = $(this).data('stock') || 0;
+			const selectedColor = $('select[name="color"]').val();
+   			const selectedSize = $('select[name="size"]').val();
+
+			if (!selectedColor || !selectedSize) {
+				alert('Please select a color and size.');
+				return;
+			}
+
+            if (productQuantity > productStock) {
+                $('.stock-warning').text(`Cannot add more than ${productStock} items.`).show();
+                return;
+            } else if (productQuantity === 0) {
+                $('.stock-warning').text('Quantity cannot be zero.').show();
+                return;
             }
+
+            const totalPrice = productPrice * productQuantity;
+
+            $.ajax({
+                url: '', // Use the same PHP file
+                type: 'POST',
+                data: {
+                    add_to_cart: true,
+                    product_id: productId,
+                    qty: productQuantity,
+                    total_price: totalPrice,
+					color: selectedColor, 
+            		size: selectedSize
+                },
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        alert(`${productName} has been added to your cart!`);
+                        location.reload(); // Refresh the page after a successful addition
+                    } else {
+                        alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                    }
+                    updateCart();
+                    $('.js-modal1').removeClass('show-modal1');
+                },
+                error: function () {
+                    alert('An error occurred while adding to the cart.');
+                }
+            });
         });
     });
+	// Clear input data when the modal is closed
+	$(document).on('click', '.js-hide-modal1', function() {
+		$('.js-modal1').removeClass('show-modal1');
+
+		// Reset input fields and warnings
+		$('.num-product').val('1'); // Reset quantity to 1
+		$('select[name="time"]').empty().append('<option>Choose an option</option>'); // Reset size
+		$('select[name="color"]').empty().append('<option>Choose an option</option>'); // Reset color
+		$('.stock-warning').hide(); // Hide stock warning
+		$('.js-name-detail').text(''); // Clear product name
+		$('.mtext-106').text(''); // Clear product price
+		$('.stext-102').text(''); // Clear product description
+
+		// Reset gallery images
+		$('.gallery-lb .item-slick3').each(function() {
+			$(this).find('.wrap-pic-w img').attr('src', '');
+			$(this).find('.wrap-pic-w a').attr('href', '');
+			$(this).attr('data-thumb', '');
+		});
+	});
 </script>
+
 <script>
 // Initialize filters with 'all' default values for price, color, tag, and category.
 let filters = { price: 'all', color: 'all', tag: 'all', category: 'all' };
@@ -1273,7 +1281,7 @@ function adjustFooterPosition() {
     // Calculate total height of the page (content + footer)
     var totalHeight = contentHeight + footerHeight;
 
-    // If content height is smaller than the window height, adjust it
+    // If content height is smaller than the window height, adjust i
     if (totalHeight < windowHeight) {
         // Set the container's height to fill the remaining space
         container.css('min-height', windowHeight - footerHeight);
@@ -1331,5 +1339,5 @@ $(document).on('click', '.filter-tope-group button', function(event) {
 
 <?php
 // Close the connection
-$conn->close();
+$connect->close();
 ?>

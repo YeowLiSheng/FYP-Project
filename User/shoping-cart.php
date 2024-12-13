@@ -1,15 +1,8 @@
 <?php
-session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "fyp";
+session_start(); // Start the session
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+// Include the database connection file
+include("dataconnection.php"); 
 
 // Check if the user is logged in
 if (!isset($_SESSION['id'])) {
@@ -17,147 +10,164 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
+// Check if the database connection exists
+if (!isset($connect) || !$connect) { // Changed $connect to $conn
+    die("Database connection failed.");
+}
+
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($conn, "SELECT * FROM user WHERE user_id ='$user_id'");
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
 
 // Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_assoc($result);
+    $user_data = mysqli_fetch_assoc($result);
 } else {
     echo "User not found.";
     exit;
 }
 
 // Check if the user is updating the cart
+// Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     foreach ($_POST['product_qty'] as $product_id => $new_qty) {
         $new_qty = intval($new_qty);
 
-        // Get the current total quantity of the product in the shopping cart for this user
-        $current_qty_query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-        $current_qty_result = $conn->query($current_qty_query);
+        // Get the product price and current quantity
+        $current_query = "
+            SELECT qty, 
+                   (SELECT product_price FROM product WHERE product_id = $product_id) AS product_price 
+            FROM shopping_cart 
+            WHERE user_id = $user_id AND product_id = $product_id LIMIT 1";
+        $current_result = $connect->query($current_query);
 
-        if ($current_qty_result && $current_qty_result->num_rows > 0) {
-            $current_qty_row = $current_qty_result->fetch_assoc();
-            $current_total_qty = $current_qty_row['total_qty'];
+        if ($current_result && $current_result->num_rows > 0) {
+            $current_row = $current_result->fetch_assoc();
+            $current_qty = intval($current_row['qty']);
+            $product_price = floatval($current_row['product_price']);
 
-            // Calculate the quantity difference
-            $qty_difference = $new_qty - $current_total_qty;
+            // Calculate the new total price
+            $new_total_price = $new_qty * $product_price;
 
-            if ($qty_difference > 0) {
-                // Increase total quantity by adding the difference
+            if ($new_qty > 0) {
+                // Update quantity and total price in the database
                 $update_query = "
                     UPDATE shopping_cart 
-                    SET qty = qty + $qty_difference, 
-                        total_price = (qty + $qty_difference) * (SELECT product_price FROM product WHERE product_id = $product_id) 
-                    WHERE user_id = $user_id AND product_id = $product_id 
-                    LIMIT 1"; // Only apply to one row if there are multiple entries for this product
-                $conn->query($update_query);
-
-            } elseif ($qty_difference < 0) {
-                // Decrease total quantity by subtracting the difference
-                $reduce_qty = abs($qty_difference); // Positive value for decrement
-                $update_query = "
-                    UPDATE shopping_cart 
-                    SET qty = GREATEST(0, qty - $reduce_qty), 
-                        total_price = GREATEST(0, (qty - $reduce_qty) * (SELECT product_price FROM product WHERE product_id = $product_id)) 
-                    WHERE user_id = $user_id AND product_id = $product_id 
-                    LIMIT 1"; // Only apply to one row if there are multiple entries for this product
-                $conn->query($update_query);
-
-                // Remove any rows where qty becomes zero after update
-                $conn->query("DELETE FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id AND qty = 0");
+                    SET qty = $new_qty, 
+                        total_price = $new_total_price 
+                    WHERE user_id = $user_id AND product_id = $product_id LIMIT 1";
+                $connect->query($update_query);
+            } else {
+                // Remove the product if quantity is 0
+                $delete_query = "
+                    DELETE FROM shopping_cart 
+                    WHERE user_id = $user_id AND product_id = $product_id LIMIT 1";
+                $connect->query($delete_query);
             }
         }
     }
 
-    // Check if a voucher was previously applied and reapply if necessary
-    $voucher_applied_check_query = "SELECT MAX(voucher_applied) AS voucher_applied FROM shopping_cart WHERE user_id = $user_id";
-    $voucher_applied_check_result = $conn->query($voucher_applied_check_query);
-    $voucher_applied_row = $voucher_applied_check_result->fetch_assoc();
-    if ($voucher_applied_row['voucher_applied'] == 1) {
-        // Reapply the voucher to recalculate final total
-        reapplyVoucher($conn, $user_id, $total_price);
-    }
+    // Always recalculate voucher and final total price after cart updates
+    recalculateFinalTotalAndVoucher($connect, $user_id);
 
     // Reload the page to reflect changes
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
+// Function to recalculate final total price and voucher
+function recalculateFinalTotalAndVoucher($connect, $user_id) {
+    // Fetch the cart total price
+    $recalc_query = "
+        SELECT SUM(sc.qty * p.product_price) AS total_price 
+        FROM shopping_cart sc 
+        JOIN product p ON sc.product_id = p.product_id 
+        WHERE sc.user_id = $user_id";
+    $recalc_result = $connect->query($recalc_query);
+    $total_price = $recalc_result->fetch_assoc()['total_price'] ?? 0;
 
-// Reapply the voucher if previously applied
-function reapplyVoucher($conn, $user_id, &$final_total_price) {
-    $voucher_usage_query = "
-        SELECT v.discount_rate, v.minimum_amount, v.voucher_id 
+    // Fetch currently applied voucher
+    $voucher_query = "
+        SELECT v.discount_rate, v.minimum_amount, vu.voucher_id 
         FROM voucher_usage vu
         JOIN voucher v ON vu.voucher_id = v.voucher_id
         WHERE vu.user_id = $user_id AND vu.usage_num > 0";
-    $voucher_usage_result = $conn->query($voucher_usage_query);
+    $voucher_result = $connect->query($voucher_query);
 
-    if ($voucher_usage_result && $voucher = $voucher_usage_result->fetch_assoc()) {
+    if ($voucher_result && $voucher = $voucher_result->fetch_assoc()) {
         $discount_rate = $voucher['discount_rate'];
         $minimum_amount = $voucher['minimum_amount'];
+        $voucher_id = $voucher['voucher_id'];
 
-        // Recalculate the total price of the cart
-        $recalc_query = "
-            SELECT SUM(sc.qty * p.product_price) AS total_price 
-            FROM shopping_cart sc 
-            JOIN product p ON sc.product_id = p.product_id 
-            WHERE sc.user_id = $user_id";
-        $recalc_result = $conn->query($recalc_query);
-        $recalc_row = $recalc_result->fetch_assoc();
-        $total_price = $recalc_row['total_price'];
-
-        // Check if total meets minimum amount for voucher
         if ($total_price >= $minimum_amount) {
             $discount_amount = $total_price * ($discount_rate / 100);
             $final_total_price = $total_price - $discount_amount;
 
-            // Update shopping_cart with final total price, discount_amount, and voucher_applied
-            $update_final_total_query = "
+            // Update shopping cart
+            $update_query = "
                 UPDATE shopping_cart 
                 SET final_total_price = $final_total_price, 
                     discount_amount = $discount_amount, 
-                    voucher_applied = 1 
+                    voucher_applied = $voucher_id
                 WHERE user_id = $user_id";
-            $conn->query($update_final_total_query);
+            $connect->query($update_query);
         } else {
-            // Remove voucher if conditions no longer met
-            $update_remove_voucher_query = "
+            // Remove voucher if conditions are not met
+            $connect->query("
                 UPDATE shopping_cart 
                 SET final_total_price = total_price, 
                     discount_amount = 0, 
                     voucher_applied = 0 
-                WHERE user_id = $user_id";
-            $conn->query($update_remove_voucher_query);
+                WHERE user_id = $user_id");
         }
+    } else {
+        // Reset cart if no voucher is applied
+        $connect->query("
+            UPDATE shopping_cart 
+            SET final_total_price = total_price, 
+                discount_amount = 0, 
+                voucher_applied = 0 
+            WHERE user_id = $user_id");
     }
 }
+
+
 
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items with stock information
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
-           SUM(sc.qty) AS total_qty, 
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
+		   sc.color, sc.size,    
+		   SUM(sc.qty) AS total_qty, 
            SUM(sc.qty * p.product_price) AS total_price, 
            MAX(sc.final_total_price) AS final_total_price, 
            MAX(sc.voucher_applied) AS voucher_applied
     FROM shopping_cart sc 
     JOIN product p ON sc.product_id = p.product_id 
     WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
-$cart_items_result = $conn->query($cart_items_query);
+    GROUP BY sc.product_id, sc.color, sc.size";
+$cart_items_result = $connect->query($cart_items_query);
 
-// Calculate total price and final total price
+$checkout_locked = false; // Flag to disable checkout button
+$error_messages = []; // Array to store error messages for each product
+$cart_items = [];
+
 if ($cart_items_result && $cart_items_result->num_rows > 0) {
     while ($cart_item = $cart_items_result->fetch_assoc()) {
-        $total_price += $cart_item['total_price'];
+        $cart_items[] = $cart_item;
+		$total_price += $cart_item['total_price'];
+
+        // Check if product quantity exceeds stock
+        if ($cart_item['total_qty'] > $cart_item['product_stock']) {
+            $checkout_locked = true;
+            $error_messages[$cart_item['product_id']] = "Your {$cart_item['product_name']} is no longer available. Please adjust the quantity.";
+        }
     }
 }
+
 
 // Apply discount after verifying voucher code, if applicable
 $discount_amount = 0; // Initialize discount amount
@@ -165,13 +175,13 @@ $error_message = ""; // Initialize error message
 $final_total_price = $total_price;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !empty($_POST['coupon'])) {
-    $voucher_code = mysqli_real_escape_string($conn, $_POST['coupon']);
+    $voucher_code = mysqli_real_escape_string($connect, $_POST['coupon']);
     $voucher_query = "
         SELECT discount_rate, voucher_status, minimum_amount, usage_limit, voucher_id 
         FROM voucher 
         WHERE voucher_code = '$voucher_code' AND voucher_status = 'active' 
         LIMIT 1";
-    $voucher_result = $conn->query($voucher_query);
+    $voucher_result = $connect->query($voucher_query);
 
     if ($voucher_result && $voucher_result->num_rows > 0) {
 		$voucher = $voucher_result->fetch_assoc();
@@ -185,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
 			SELECT usage_num 
 			FROM voucher_usage 
 			WHERE user_id = $user_id AND voucher_id = $voucher_id";
-		$usage_result = $conn->query($usage_query);
+		$usage_result = $connect->query($usage_query);
 	
 		if ($usage_result && $usage_row = $usage_result->fetch_assoc()) {
 			$current_usage = $usage_row['usage_num'];
@@ -207,17 +217,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_voucher']) && !
                         discount_amount = $discount_amount, 
                         voucher_applied = $voucher_id 
 					WHERE user_id = $user_id";
-				$conn->query($update_final_total_query);
+				$connect->query($update_final_total_query);
 	
 				// Update or insert the voucher usage record
 				if ($current_usage > 0) {
-					$conn->query("
+					$connect->query("
 						UPDATE voucher_usage 
 						SET usage_num = usage_num + 1 
 						WHERE user_id = $user_id AND voucher_id = $voucher_id
 					");
 				} else {
-					$conn->query("
+					$connect->query("
 						INSERT INTO voucher_usage (user_id, voucher_id, usage_num) 
 						VALUES ($user_id, $voucher_id, 1)
 					");
@@ -238,9 +248,9 @@ $cart_total_query = "
     SELECT MAX(final_total_price) AS final_total_price, MAX(voucher_applied) AS voucher_applied 
     FROM shopping_cart 
     WHERE user_id = $user_id";
-$cart_total_result = $conn->query($cart_total_query);
+$cart_total_result = $connect->query($cart_total_query);
 if ($cart_total_result && $cart_total_row = $cart_total_result->fetch_assoc()) {
-    if ($cart_total_row['voucher_applied'] == 1) {
+    if ($cart_total_row['voucher_applied']) {
         $final_total_price = $cart_total_row['final_total_price']; // Use stored final total if voucher applied
     }
 }
@@ -252,7 +262,7 @@ if (isset($_POST['remove_voucher'])) {
     $voucher_id = $_POST['voucher_id'];
 
     // Reset voucher values in shopping_cart
-    $conn->query("
+    $connect->query("
         UPDATE shopping_cart 
         SET voucher_applied = 0, 
             discount_amount = 0, 
@@ -260,15 +270,15 @@ if (isset($_POST['remove_voucher'])) {
         WHERE user_id = $user_id");
 
     // Decrement usage in voucher_usage
-    $conn->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
+    $connect->query("UPDATE voucher_usage SET usage_num = usage_num - 1 WHERE user_id = $user_id AND voucher_id = $voucher_id");
 
     // Check if usage_num is 0, then delete the record
     $usage_check_query = "SELECT usage_num FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id";
-    $usage_check_result = $conn->query($usage_check_query);
+    $usage_check_result = $connect->query($usage_check_query);
     
     if ($usage_check_result && $usage_row = $usage_check_result->fetch_assoc()) {
         if ($usage_row['usage_num'] <= 0) {
-            $conn->query("DELETE FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id");
+            $connect->query("DELETE FROM voucher_usage WHERE user_id = $user_id AND voucher_id = $voucher_id");
         }
     }
 
@@ -283,10 +293,18 @@ $voucher_applied_query = "
     FROM shopping_cart sc
     JOIN voucher v ON v.voucher_id = sc.voucher_applied
     WHERE sc.user_id = $user_id AND sc.voucher_applied IS NOT NULL";
-$voucher_applied_result = $conn->query($voucher_applied_query);
+$voucher_applied_result = $connect->query($voucher_applied_query);
 $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_assoc() : null;
 
+// Count distinct product IDs in the shopping cart for the logged-in user
+$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+$distinct_products_result = $connect->query($distinct_products_query);
+$distinct_count = 0;
 
+if ($distinct_products_result) {
+    $row = $distinct_products_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -403,18 +421,33 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 300px;"></span> 
+							New user will get 10% discount!!!<span style="padding-left: 300px;"></span>
+							Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+							<span style="padding-left: 300px;"></span> Free shipping for standard order over $10000 
+							<span style="padding-left: 300px;"></span> New user will get 10% discount!!! 
+							<span style="padding-left: 300px;"></span> Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+							@keyframes marquee {
+								0% {
+									transform: translateX(0);
+								}
+								100% {
+									transform: translateX(-55%);
+								}
+							}
+						</style>
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
+						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							My Account
-						</a>
+						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -423,6 +456,23 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
+
+
+
+
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+								echo "HI '" . htmlspecialchars($user_data['user_name']);
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
+						</a>
+
+
+
 					</div>
 				</div>
 			</div>
@@ -431,8 +481,8 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
@@ -447,7 +497,7 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 								</ul>
 							</li>
 
-							<li>
+							<li class="active-menu">
 								<a href="product.php">Shop</a>
 							</li>
 
@@ -475,7 +525,7 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
@@ -485,102 +535,6 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 					</div>
 				</nav>
 			</div>	
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->		
-			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" >
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" >
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="index.html">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.html">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
-				</li>
-			</ul>
 		</div>
 
 		<!-- Modal Search -->
@@ -618,7 +572,7 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-				$cart_items_result = $conn->query($cart_items_query);
+				$cart_items_result = $connect->query($cart_items_query);
                 // Display combined cart items
                 $total_price = 0;
                 if ($cart_items_result->num_rows > 0) {
@@ -630,11 +584,14 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
                                 <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
                                     ' . $cart_item['product_name'] . '
                                 </a>
                                 <span class="header-cart-item-info">
                                     ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+								<span class="header-cart-item-info">
+                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
                                 </span>
                             </div>
                         </li>';
@@ -687,47 +644,49 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
             <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
                 <div class="m-l-25 m-r--38 m-lr-0-xl">
                     <div class="wrap-table-shopping-cart">
-                        <table class="table-shopping-cart">
-                            <tr class="table_head">
-                                <th class="column-1">Product</th>
-                                <th class="column-2"></th>
-                                <th class="column-3">Price</th>
-                                <th class="column-4">Quantity</th>
-                                <th class="column-5">Total</th>
-                            </tr>
-                            <?php
-                            if ($cart_items_result->num_rows > 0) {
-								$cart_items_result = $conn->query($cart_items_query);
-                                while ($cart_item = $cart_items_result->fetch_assoc()) {
-                                    echo '
-                                    <tr class="table_row">
-                                        <td class="column-1">
-                                            <div class="how-itemcart1">
-                                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                                            </div>
-                                        </td>
-                                        <td class="column-2">' . $cart_item['product_name'] . '</td>
-                                        <td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
-                                        <td class="column-4">
-                                            <div class="wrap-num-product flex-w m-l-auto m-r-0">
-                                                <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                                                    <i class="fs-16 zmdi zmdi-minus"></i>
-                                                </div>
-                                                <input type="hidden" name="product_id[]" value="' . $cart_item['product_id'] . '">
-                                                <input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[' . $cart_item['product_id'] . ']" value="' . $cart_item['total_qty'] . '" readonly>
-                                                <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                                                    <i class="fs-16 zmdi zmdi-plus"></i>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
-                                    </tr>';
-                                }
-                            } else {
-                                echo '<tr><td colspan="5">&emsp;&emsp;&emsp;&emsp;&emsp;Your cart is empty.</td></tr>';
-                            }
-                            ?>
-                        </table>
+					<table class="table-shopping-cart">
+						<tr class="table_head">
+							<th class="column-1">Product</th>
+							<th class="column-2"></th>
+							<th class="column-3">Price</th>
+							<th class="column-4">Quantity</th>
+							<th class="column-5">Total</th>
+						</tr>
+						<?php
+						if (!empty($cart_items)) {
+							foreach ($cart_items as $cart_item) {
+								$stock_exceeded = $cart_item['total_qty'] > $cart_item['product_stock'];
+								echo '
+								<tr class="table_row">
+									<td class="column-1">
+										<div class="how-itemcart1">
+											<img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+										</div>
+									</td>
+									<td class="column-2">' . $cart_item['product_name'] . '</td>
+									<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
+									<td class="column-4">
+										<div class="wrap-num-product flex-w m-l-auto m-r-0">
+											<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
+												<i class="fs-16 zmdi zmdi-minus"></i>
+											</div>
+											<input type="hidden" name="product_id[]" value="' . $cart_item['product_id'] . '">
+											<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[' . $cart_item['product_id'] . ']" value="' . $cart_item['total_qty'] . '" readonly>
+											<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
+												<i class="fs-16 zmdi zmdi-plus"></i>
+											</div>
+										</div>
+										' . ($stock_exceeded ? '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>' : '') . '
+									</td>
+									<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
+								</tr>';
+							}
+						} else {
+							echo '<tr><td colspan="5">&emsp;&emsp;&emsp;&emsp;&emsp;Your cart is empty.</td></tr>';
+						}
+						?>
+					</table>
+
                     </div>
 
                     <!-- Apply Coupon and Update Cart Buttons -->
@@ -773,10 +732,12 @@ $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_asso
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
-    					<!-- Check Out Button with form action to checkout.php -->
-						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-        					Check Out
-    					</button>
+    					<?php if ($checkout_locked): ?>
+							<p class="text-danger">You cannot proceed to checkout. Please adjust the quantities to match available stock.</p>
+						<?php endif; ?>
+						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10" <?php echo $checkout_locked ? 'disabled' : ''; ?>>
+							Check Out
+						</button>
 					</div>
                 </div>
             </div>
@@ -972,22 +933,39 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 	<script>
 $(document).ready(function() {
+    // Decrease quantity
     $('.btn-num-product-down').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
-        if (currentValue > 1) {
+        if (currentValue > 0) {
             input.val(currentValue - 1);
         } else {
-            input.val(0); // Set to 0 if quantity becomes 0
+            input.val(0); // Prevent quantity from dropping below 1
         }
     });
 
+    // Increase quantity
     $('.btn-num-product-up').off('click').click(function() {
         let input = $(this).siblings('.num-product');
         let currentValue = parseInt(input.val());
-        input.val(currentValue + 1);
+        let maxStock = parseInt($(this).data('stock'));
+
+        if (currentValue < maxStock) {
+            input.val(currentValue + 1);
+        } else {
+            // Display error message for exceeding stock
+            if (!$(this).next('.stock-error').length) {
+                $(this).after('<p class="stock-error text-danger">Product already reached the maximum quantity!</p>');
+            }
+        }
+    });
+
+    // Clear error messages on quantity change
+    $('.num-product').on('input', function() {
+        $(this).siblings('.stock-error').remove();
     });
 });
+
 </script>
 	<script src="js/main.js"></script>
 

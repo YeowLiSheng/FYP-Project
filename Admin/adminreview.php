@@ -1,6 +1,31 @@
 <?php
 include 'dataconnection.php';
 include 'admin_sidebar.php';
+
+$category = "SELECT category_name FROM category";
+$categoryresult=$connect->query($category);
+
+$review = "
+    SELECT 
+        p.product_id, 
+        p.product_name, 
+        p.product_image, 
+        c.category_name, 
+        COUNT(r.review_id) AS total_reviews,
+        ROUND(AVG(r.rating), 1) AS avg_rating,
+        MAX(r.created_at) AS latest_review
+    FROM product p
+    INNER JOIN category c ON p.category_id = c.category_id
+    INNER JOIN order_details od ON p.product_id = od.product_id
+    INNER JOIN reviews r ON od.detail_id = r.detail_id
+    WHERE r.status = 'active'
+    GROUP BY p.product_id, p.product_name, p.product_image, c.category_name
+    ORDER BY latest_review DESC
+";
+
+
+    $reviewresult = $connect->query($review);
+
 ?>
 
 <!DOCTYPE html>
@@ -8,7 +33,7 @@ include 'admin_sidebar.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Review</title>
+    <title>Manage Orders</title>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -220,11 +245,11 @@ include 'admin_sidebar.php';
 </head>
 <body>
     <div class="main">
-        <h1><ion-icon name="list-outline"></ion-icon> View Review</h1>
+        <h1><ion-icon name="star-outline"></ion-icon> View Review</h1>
         
         <div class="search-container">
     <ion-icon name="search-outline"></ion-icon>
-    <input type="text" id="search-input" placeholder="Search by product name" oninput="searchTable()">
+    <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
 
     <div class="btn-group">
     <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -240,25 +265,37 @@ include 'admin_sidebar.php';
         <div class="control-bar">
             <div class="filter-group">
                 <label>Filter by:</label>
-                <select id="filter-status">
+                <select id="filter-status"onchange="filterTable()">
                     <option value="" selected>- General -</option>
-                    <optgroup label="Delivery Status">
-                        <option value="Processing">Processing</option>
-                        <option value="Shipping">Shipping</option>
-                        <option value="Completed">Completed</option>
-                    </optgroup>
+                    <?php if ($categoryresult->num_rows > 0): ?>
+
+                        <optgroup label="Category">
+                           <?php while ($row=$categoryresult->fetch_assoc()):?>
+                                <option value="<?=htmlspecialchars($row['category_name'])?>">
+                                    <?= htmlspecialchars($row['category_name']) ?>
+
+
+                                </option>
+                            
+                           <?php endwhile; ?> 
+                        </optgroup>
+                    <?php else: ?>
+                        <optgroup label="Category">
+                            <option value="">No categories available</option>
+                        </optgroup>
+                    <?php endif;?>    
                 </select>
                 <label>Sort by:</label>
-                <select id="sort-order">
+                <select id="sort-order"onchange="sortTable()">
                     <option value="" selected>- General -</option>
                     <option value="newest">Newest</option>
                     <option value="oldest">Oldest</option>
-                    <option value="highest">Highest Total</option>
-                    <option value="lowest">Lowest Total</option>
+                    <option value="highest">Highest Rating</option>
+                    <option value="lowest">Lowest Rating</option>
                 </select>
             </div>
             <div class="date-range">
-                <label for="start-date">From:</label>
+                <label for="start-date">Latest From:</label>
                 <input type="text" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
                 <input type="text" id="end-date" placeholder="End Date">
@@ -269,43 +306,38 @@ include 'admin_sidebar.php';
             <table class="table">
                 <thead>
                     <tr>
-                        <th><ion-icon name="cart-outline"></ion-icon> Order#</th>
-                        <th><ion-icon name="person-outline"></ion-icon> Customers Name</th>
-                        <th><ion-icon name="time-outline"></ion-icon> Order Time</th>
-                        <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
-                        <th><ion-icon name="cash-outline"></ion-icon> Total</th>
-                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Order Status</th>
+                    <th><ion-icon name="image-outline"></ion-icon> Product Image</th>
+                        <th><ion-icon name="pricetag-outline"></ion-icon> Product Name</th>
+                        <th><ion-icon name="albums-outline"></ion-icon>Category</th>
+                        <th><ion-icon name="chatbubble-outline"></ion-icon> Total Reviews</th>
+                        <th><ion-icon name="star-half-outline"></ion-icon> Average Rating</th>
+                        <th><ion-icon name="time-outline"></ion-icon> Latest Review</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <?php
-                    $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
-                    $result = mysqli_query($connect, $order);
-
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
-                                <td><?php echo $row["order_id"]; ?></td>
-                                <td><?php echo $row["user_name"]; ?></td>
-                                <td><?php echo $row["order_datetime"]; ?></td>
-                                <td><?php echo $row["shipping_address"]; ?></td>
-                                <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
-                                <td><?php echo $row["order_status"]; ?></td>
-                            </tr>
-                        <?php }
-                    } else { ?>
-                        <tr>
-                            <td colspan="6">No orders found.</td>
-                        </tr>
-                    <?php } ?>
+                <?php    
+                          if ($reviewresult->num_rows > 0) {
+                            while ($row = $reviewresult->fetch_assoc()) {
+                                echo "<tr onclick=\"viewReviewDetails('{$row['product_id']}')\">";
+                                echo "<td><img src='../User/images/{$row['product_image']}' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
+                                echo "<td>{$row['product_name']}</td>";
+                                echo "<td>{$row['category_name']}</td>";
+                                echo "<td>{$row['total_reviews']}</td>";
+                                echo "<td>{$row['avg_rating']}</td>";
+                                echo "<td>{$row['latest_review']}</td>";
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='6'>No reviewed products found</td></tr>";
+                        }
+                ?>         
                 </tbody>
             </table>
         </div>
     </div>
     <script>
 
-document.getElementById("filter-status").addEventListener("change", filterTable);
-document.getElementById("sort-order").addEventListener("change", sortTable);
+
 
         $(function () {
             $("#start-date, #end-date").datepicker({
@@ -318,7 +350,7 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_order.php";
+            window.location.href = "generate_review.php";
 
         }
 
@@ -326,84 +358,75 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
         function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
-        Title: "Order List",
+        Title: "Product Review List",
         Author: "YLS Atelier",
     };
 
-    // Prepare data for the table with formatted dates
+    // Prepare data for the table
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
+
+        // Exclude the Product Image column (index 0)
+        return cells.slice(1).map(cell => cell.textContent.trim());
     });
 
-    // Add headers
-    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
+    // Add headers excluding the Product Image column
+    const headers = Array.from(table.querySelectorAll("thead th"))
+        .slice(1) // Skip the Product Image header
+        .map(header => header.textContent.trim());
     rows.unshift(headers);
 
     // Create worksheet from updated data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set column widths
+    // Set column widths (adjust according to your needs)
     ws['!cols'] = [
-        { wch: 15 }, // Order# column
-        { wch: 20 }, // Customer Name column
-        { wch: 25 }, // Order Time column
-        { wch: 50 }, // Shipped To column
-        { wch: 15 }, // Total column
-        { wch: 20 }, // Order Status column
+        { wch: 20 }, // Product Name
+        { wch: 15 }, // Category
+        { wch: 15 }, // Total Reviews
+        { wch: 15 }, // Average Rating
+        { wch: 25 }, // Latest Review
     ];
 
     // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    XLSX.utils.book_append_sheet(wb, ws, "Product Reviews");
 
     // Save the workbook
-    XLSX.writeFile(wb, "Order_List.xlsx");
+    XLSX.writeFile(wb, "Product_Review_List.xlsx");
 }
+
 
         
 
-        function filterByDate() {
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const orderDateTime = row.cells[2].textContent; 
-                const orderDate = orderDateTime.split(" ")[0];
-
-                const start = startDate || null;
-                const end = endDate || null;
-
-                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        function filterTable() {
-    const status = document.getElementById("filter-status").value;
+function filterByDate() { 
+    const startDate = $("#start-date").val();
+    const endDate = $("#end-date").val();
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const orderStatus = row.cells[5].textContent.trim(); // 确保去除空白字符
-        row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
+        const latestReviewDate = row.cells[5].textContent.trim(); // 获取"最新评论"列的日期
+        const reviewDate = latestReviewDate.split(" ")[0]; // 假设日期和时间可能存在分离
+
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+        const currentReviewDate = new Date(reviewDate);
+
+        if ((!start || currentReviewDate >= start) && (!end || currentReviewDate <= end)) {
+            row.style.display = ""; // 显示符合条件的行
+        } else {
+            row.style.display = "none"; // 隐藏不符合条件的行
+        }
+    });
+}
+
+        function filterTable() { 
+    const selectedCategory = document.getElementById("filter-status").value;
+    const rows = document.querySelectorAll("#table-body tr");
+
+    rows.forEach(row => {
+        const productCategory = row.cells[2].textContent.trim(); // 获取产品类别
+        row.style.display = (productCategory === selectedCategory || selectedCategory === "") ? "" : "none";
     });
 }
 
@@ -413,15 +436,18 @@ function sortTable() {
 
     rows.sort((a, b) => {
         if (sortOrder === "newest" || sortOrder === "oldest") {
-            const dateA = new Date(a.cells[2].textContent.trim());
-            const dateB = new Date(b.cells[2].textContent.trim());
+            // 根据最新评论日期排序
+            const dateA = new Date(a.cells[5].textContent.trim());
+            const dateB = new Date(b.cells[5].textContent.trim());
             return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+
         } else if (sortOrder === "highest" || sortOrder === "lowest") {
-            const totalA = parseFloat(a.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            const totalB = parseFloat(b.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
+            // 根据平均评分排序
+            const ratingA = parseFloat(a.cells[4].textContent.trim()) || 0;
+            const ratingB = parseFloat(b.cells[4].textContent.trim()) || 0;
+            return sortOrder === "highest" ? ratingB - ratingA : ratingA - ratingB;
         }
-        return 0;
+        return 0; // 默认不排序
     });
 
     const tbody = document.getElementById("table-body");
@@ -438,8 +464,8 @@ function searchTable() {
     });
 }
 
-        function viewOrderDetails(orderId) {
-            window.location.href = `order_details.php?order_id=${orderId}`;
+        function viewReviewDetails(productId) {
+            window.location.href = `adminreviewdetails.php?product_id=${productId}`;
         }
     </script>
 </body>
