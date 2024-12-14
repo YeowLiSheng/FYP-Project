@@ -1,181 +1,239 @@
-<?php 
+<?php
 include 'admin_sidebar.php';
 include 'dataconnection.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['generate_voucher'])) {
-        $voucher_code = trim($_POST['voucher_code']);
-        $discount_rate = trim($_POST['discount_rate']);
-        $usage_limit = trim($_POST['usage_limit']);
-        $minimum_amount = trim($_POST['minimum_amount']);
-        $voucher_des = trim($_POST['voucher_des']);
-        $voucher_pic = $_FILES['voucher_pic']['name'];
+// Handle Add Package
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package'])) {
+    $packageName = mysqli_real_escape_string($connect, $_POST['package_name']);
+    $product1 = mysqli_real_escape_string($connect, $_POST['product1']);
+    $product2 = mysqli_real_escape_string($connect, $_POST['product2']);
+    $product3 = !empty($_POST['product3']) ? mysqli_real_escape_string($connect, $_POST['product3']) : null;
+    $packagePrice = mysqli_real_escape_string($connect, $_POST['package_price']);
 
-        $target_dir = "../User/images/";
-        $target_file = $target_dir . basename($voucher_pic);
+    $query = "INSERT INTO product_package (package_name, product1_id, product2_id, product3_id, package_price)
+              VALUES ('$packageName', '$product1', '$product2', " . ($product3 ? "'$product3'" : "NULL") . ", '$packagePrice')";
+    mysqli_query($connect, $query);
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
 
-        if (move_uploaded_file($_FILES['voucher_pic']['tmp_name'], $target_file)) {
-            $query = "INSERT INTO voucher (voucher_code, discount_rate, usage_limit, minimum_amount, voucher_des, voucher_pic, voucher_status) VALUES ('$voucher_code', '$discount_rate', '$usage_limit', '$minimum_amount', '$voucher_des', '$voucher_pic', 'Active')";
+// Handle Delete Package
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_package'])) {
+    $packageId = mysqli_real_escape_string($connect, $_POST['delete_package']);
+    $query = "DELETE FROM product_package WHERE package_id = '$packageId'";
+    mysqli_query($connect, $query);
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
 
-            if (mysqli_query($connect, $query)) {
-                echo "<script>alert('Voucher generated successfully.');</script>";
-            } else {
-                echo "<script>alert('Error generating voucher.');</script>";
-            }
-        } else {
-            echo "<script>alert('Error uploading image.');</script>";
-        }
-    }
+// Handle Edit Package
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
+    $packageId = mysqli_real_escape_string($connect, $_POST['package_id']);
+    $packageName = mysqli_real_escape_string($connect, $_POST['package_name']);
+    $product1 = mysqli_real_escape_string($connect, $_POST['product1']);
+    $product2 = mysqli_real_escape_string($connect, $_POST['product2']);
+    $product3 = !empty($_POST['product3']) ? mysqli_real_escape_string($connect, $_POST['product3']) : null;
+    $packagePrice = mysqli_real_escape_string($connect, $_POST['package_price']);
 
-    if (isset($_POST['update_voucher'])) {
-        $voucher_code = trim($_POST['voucher_code']);
-        $discount_rate = trim($_POST['discount_rate']);
-        $usage_limit = trim($_POST['usage_limit']);
-        $minimum_amount = trim($_POST['minimum_amount']);
-        $voucher_des = trim($_POST['voucher_des']);
-
-        $voucher_pic = $_FILES['voucher_pic']['name'];
-        $pic_update = "";
-
-        if (!empty($voucher_pic)) {
-            $target_dir = "../User/images/";
-            $target_file = $target_dir . basename($voucher_pic);
-            if (move_uploaded_file($_FILES['voucher_pic']['tmp_name'], $target_file)) {
-                $pic_update = ", voucher_pic = '$voucher_pic'";
-            }
-        }
-
-        $query = "UPDATE voucher SET discount_rate = '$discount_rate', usage_limit = '$usage_limit', minimum_amount = '$minimum_amount', voucher_des = '$voucher_des' $pic_update WHERE voucher_code = '$voucher_code'";
-
-        if (mysqli_query($connect, $query)) {
-            echo "<script>alert('Voucher updated successfully.');</script>";
-        } else {
-            echo "<script>alert('Error updating voucher.');</script>";
-        }
-    }
-
-    if (isset($_POST['activate_voucher'])) {
-        $voucher_code = trim($_POST['activate_voucher']);
-        $query = "UPDATE voucher SET voucher_status = 'Active' WHERE voucher_code = '$voucher_code'";
-        mysqli_query($connect, $query);
-    }
-
-    if (isset($_POST['deactivate_voucher'])) {
-        $voucher_code = trim($_POST['deactivate_voucher']);
-        $query = "UPDATE voucher SET voucher_status = 'Inactive' WHERE voucher_code = '$voucher_code'";
-        mysqli_query($connect, $query);
-    }
+    $query = "UPDATE product_package SET 
+              package_name = '$packageName',
+              product1_id = '$product1',
+              product2_id = '$product2',
+              product3_id = " . ($product3 ? "'$product3'" : "NULL") . ",
+              package_price = '$packagePrice'
+              WHERE package_id = '$packageId'";
+    mysqli_query($connect, $query);
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
 ?>
 
-<!DOCTYPE html>
-<html>
 <head>
-    <script>
-        function filterTable() {
-            const input = document.getElementById("searchInput").value.toLowerCase();
-            const rows = document.querySelectorAll(".table tbody tr");
-
-            rows.forEach(row => {
-                const code = row.cells[1].textContent.toLowerCase();
-                const desc = row.cells[5].textContent.toLowerCase();
-                row.style.display = (code.includes(input) || desc.includes(input)) ? "" : "none";
-            });
-        }
-    </script>
-    <style>
-        .pagination { display: flex; justify-content: center; margin-top: 20px; }
-        .pagination button { margin: 0 5px; padding: 5px 10px; border: 1px solid #ccc; background-color: #fff; }
-        .pagination button:hover { background-color: #007bff; color: #fff; }
-    </style>
+<script>
+    function editPackage(packageId, packageName, product1, product2, product3, packagePrice) {
+        document.getElementById("edit_package_id").value = packageId;
+        document.getElementById("edit_package_name").value = packageName;
+        document.getElementById("edit_product1").value = product1;
+        document.getElementById("edit_product2").value = product2;
+        document.getElementById("edit_product3").value = product3;
+        document.getElementById("edit_package_price").value = packagePrice;
+        new bootstrap.Modal(document.getElementById("editPackageModal")).show();
+    }
+</script>
 </head>
-<body>
-<div class="main p-3">
-    <div class="dashboard-overview">
-        <div class="overview-card">
-            <h5>Total Vouchers</h5>
-            <h3><?php echo mysqli_num_rows(mysqli_query($connect, "SELECT * FROM voucher")); ?></h3>
-        </div>
-        <div class="overview-card">
-            <h5>Active Vouchers</h5>
-            <h3><?php echo mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(*) as count FROM voucher WHERE voucher_status = 'Active'"))['count']; ?></h3>
-        </div>
-        <div class="overview-card">
-            <h5>Inactive Vouchers</h5>
-            <h3><?php echo mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(*) as count FROM voucher WHERE voucher_status = 'Inactive'"))['count']; ?></h3>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-head mb-3">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generateModal">Generate Voucher</button>
+<body>
+    <div class="main p-3">
+        <div class="head" style="display:flex;">
+            <i class="lni lni-package" style="font-size:50px;"></i>
+            <h1 style="margin: 12px 0 0 30px;">Product Package Management</h1>
         </div>
-        <div class="modal" id="generateModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="POST" enctype="multipart/form-data">
-                        <div class="modal-header">
-                            <h4 class="modal-title">Generate Voucher</h4>
-                            <button class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="text" name="voucher_code" placeholder="Voucher Code" class="form-control mb-3" required>
-                            <input type="text" name="discount_rate" placeholder="Discount Rate (%)" class="form-control mb-3" required>
-                            <input type="number" name="usage_limit" placeholder="Usage Limit" class="form-control mb-3" required>
-                            <input type="text" name="minimum_amount" placeholder="Minimum Amount" class="form-control mb-3" required>
-                            <textarea name="voucher_des" placeholder="Description" class="form-control mb-3"></textarea>
-                            <input type="file" name="voucher_pic" class="form-control mb-3" required>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="submit" name="generate_voucher" class="btn btn-primary">Generate</button>
-                            <button class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                        </div>
-                    </form>
+        <hr>
+
+        <div class="card" style="width:100%;">
+            <div class="card-head" style="margin-bottom:30px;">
+                <button type="button" class="btn btn-success float-start" data-bs-toggle="modal" data-bs-target="#addPackageModal">Add Package</button>
+            </div>
+
+            <!-- Add Package Modal -->
+            <div class="modal" id="addPackageModal">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="POST">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Add Product Package</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Add form fields -->
+                                <label>Package Name</label>
+                                <input type="text" name="package_name" class="form-control" required>
+                                <label>Product 1</label>
+                                <select name="product1" class="form-control" required>
+                                    <option value="">Select Product</option>
+                                    <?php
+                                    $products = mysqli_query($connect, "SELECT product_id, product_name FROM product");
+                                    while ($product = mysqli_fetch_assoc($products)) {
+                                        echo "<option value='" . $product['product_id'] . "'>" . $product['product_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <label>Product 2</label>
+                                <select name="product2" class="form-control" required>
+                                    <option value="">Select Product</option>
+                                    <?php
+                                    $products = mysqli_query($connect, "SELECT product_id, product_name FROM product");
+                                    while ($product = mysqli_fetch_assoc($products)) {
+                                        echo "<option value='" . $product['product_id'] . "'>" . $product['product_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <label>Product 3 (Optional)</label>
+                                <select name="product3" class="form-control">
+                                    <option value="">Select Product</option>
+                                    <?php
+                                    $products = mysqli_query($connect, "SELECT product_id, product_name FROM product");
+                                    while ($product = mysqli_fetch_assoc($products)) {
+                                        echo "<option value='" . $product['product_id'] . "'>" . $product['product_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <label>Package Price</label>
+                                <input type="text" name="package_price" class="form-control" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" name="add_package" class="btn btn-primary">Add Package</button>
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
+
+            <!-- Edit Package Modal -->
+            <div class="modal" id="editPackageModal">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="POST">
+                            <input type="hidden" id="edit_package_id" name="package_id">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Edit Product Package</h4>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label>Package Name</label>
+                                <input type="text" id="edit_package_name" name="package_name" class="form-control" required>
+                                <label>Product 1</label>
+                                <select id="edit_product1" name="product1" class="form-control" required>
+                                    <option value="">Select Product</option>
+                                    <?php
+                                    $products = mysqli_query($connect, "SELECT product_id, product_name FROM product");
+                                    while ($product = mysqli_fetch_assoc($products)) {
+                                        echo "<option value='" . $product['product_id'] . "'>" . $product['product_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <label>Product 2</label>
+                                <select id="edit_product2" name="product2" class="form-control" required>
+                                    <option value="">Select Product</option>
+                                    <?php
+                                    $products = mysqli_query($connect, "SELECT product_id, product_name FROM product");
+                                    while ($product = mysqli_fetch_assoc($products)) {
+                                        echo "<option value='" . $product['product_id'] . "'>" . $product['product_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <label>Product 3 (Optional)</label>
+                                <select id="edit_product3" name="product3" class="form-control">
+                                    <option value="">Select Product</option>
+                                    <?php
+                                    $products = mysqli_query($connect, "SELECT product_id, product_name FROM product");
+                                    while ($product = mysqli_fetch_assoc($products)) {
+                                        echo "<option value='" . $product['product_id'] . "'>" . $product['product_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                                <label>Package Price</label>
+                                <input type="text" id="edit_package_price" name="package_price" class="form-control" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" name="edit_package" class="btn btn-primary">Save Changes</button>
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Package Name</th>
+                        <th>Products</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $packages = mysqli_query($connect, "SELECT * FROM product_package");
+                    while ($package = mysqli_fetch_assoc($packages)) {
+                        $products = [];
+                        if ($package['product1_id']) {
+                            $p1 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT product_name FROM product WHERE product_id = " . $package['product1_id']));
+                            $products[] = $p1['product_name'];
+                        }
+                        if ($package['product2_id']) {
+                            $p2 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT product_name FROM product WHERE product_id = " . $package['product2_id']));
+                            $products[] = $p2['product_name'];
+                        }
+                        if ($package['product3_id']) {
+                            $p3 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT product_name FROM product WHERE product_id = " . $package['product3_id']));
+                            $products[] = $p3['product_name'];
+                        }
+                        ?>
+                        <tr>
+                            <td><?php echo $package['package_name']; ?></td>
+                            <td><?php echo implode(', ', $products); ?></td>
+                            <td><?php echo "$" . number_format($package['package_price'], 2); ?></td>
+                            <td>
+                                <form method="POST" style="display:inline;">
+                                    <button type="submit" name="delete_package" value="<?php echo $package['package_id']; ?>" class="btn btn-danger">Delete</button>
+                                </form>
+                                <button type="button" class="btn btn-info" onclick="editPackage(
+                                    <?php echo $package['package_id']; ?>,
+                                    '<?php echo $package['package_name']; ?>',
+                                    '<?php echo $package['product1_id']; ?>',
+                                    '<?php echo $package['product2_id']; ?>',
+                                    '<?php echo $package['product3_id']; ?>',
+                                    '<?php echo $package['package_price']; ?>'
+                                )">Edit</button>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
-
-        <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control mb-3" placeholder="Search Vouchers">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Picture</th>
-                    <th>Code</th>
-                    <th>Rate</th>
-                    <th>Limit</th>
-                    <th>Min Amount</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $query = "SELECT * FROM voucher";
-                $result = mysqli_query($connect, $query);
-
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<tr>";
-                    echo "<td><img src='../User/images/" . $row['voucher_pic'] . "' style='width: 100px;'></td>";
-                    echo "<td>" . $row['voucher_code'] . "</td>";
-                    echo "<td>" . $row['discount_rate'] . "%</td>";
-                    echo "<td>" . $row['usage_limit'] . "</td>";
-                    echo "<td>" . $row['minimum_amount'] . "</td>";
-                    echo "<td>" . $row['voucher_des'] . "</td>";
-                    echo "<td>" . $row['voucher_status'] . "</td>";
-                    echo "<td>";
-                    echo "<form method='POST' style='display:inline;'>";
-                    echo ($row['voucher_status'] === 'Active')
-                        ? "<button name='deactivate_voucher' value='" . $row['voucher_code'] . "' class='btn btn-danger'>Deactivate</button>"
-                        : "<button name='activate_voucher' value='" . $row['voucher_code'] . "' class='btn btn-success'>Activate</button>";
-                    echo "</form>";
-                    echo "</td>";
-                    echo "</tr>";
-                }
-                ?>
-            </tbody>
-        </table>
     </div>
-</div>
 </body>
-</html>
+<?php mysqli_close($connect); ?>
