@@ -376,7 +376,7 @@ a.sidebar-link:hover {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="adminreview.php" class="sidebar-link">
+                    <a href="admin_feedback.php" class="sidebar-link">
                         <i class="lni lni-comments"></i>
                         <span>Feedback</span>
 
