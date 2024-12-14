@@ -140,10 +140,14 @@ $product_result = $connect->query($sql);
 						</a>
 
 						
-
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							EN
-						</a>
+						<div>
+						<select id="language-selector" onchange="translatePage(this.value)">
+        				<option value="en">English</option>
+        				<option value="ms">Malay</option>
+        				<option value="zh-CN">Chinese</option>
+    					</select>
+						</div>
+						<div id="google_translate_element" style="display:none;"></div>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
@@ -194,7 +198,7 @@ $product_result = $connect->query($sql);
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
@@ -310,7 +314,7 @@ $product_result = $connect->query($sql);
 				</li>
 
 				<li>
-					<a href="blog.html">Blog</a>
+					<a href="blog.php">Blog</a>
 				</li>
 
 				<li>
@@ -1045,6 +1049,32 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                {pageLanguage: 'en'},
+                'google_translate_element'
+            );
+        }
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
+    <script>
+        function translatePage(language) {
+            // 检查 Google Translate 是否加载完成
+            var googleFrame = document.querySelector("iframe.goog-te-banner-frame");
+            if (!googleFrame) {
+                alert("Translation widget not fully loaded yet. Please try again in a moment.");
+                return;
+            }
+
+            // 获取 Google Translate 下拉框
+            var select = googleFrame.contentDocument.querySelector("select.goog-te-combo");
+            if (select) {
+                select.value = language; // 设置语言
+                select.dispatchEvent(new Event("change")); // 触发语言切换
+            }
+        }
+    </script>
 </body>
 </html>

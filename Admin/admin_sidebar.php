@@ -376,7 +376,7 @@ a.sidebar-link:hover {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="adminreview.php" class="sidebar-link">
+                    <a href="admin_feedback.php" class="sidebar-link">
                         <i class="lni lni-comments"></i>
                         <span>Feedback</span>
 
@@ -387,6 +387,13 @@ a.sidebar-link:hover {
                     <a href="view_contact_us.php" class="sidebar-link">
                         <i class="lni lni-keyboard"></i>
                         <span>Contact Us</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="view_blog.php" class="sidebar-link">
+                        <i class="lni lni-stackoverflow"></i>
+                        <span>Blog</span>
                     </a>
                 </li>
 
