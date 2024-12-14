@@ -198,7 +198,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
         </div>
 
-        <!-- Table Section -->
+        <!-- Table and Bar Chart -->
         <div class="row">
             <div class="col-md-6">
                 <div class="table-container">
@@ -221,6 +221,14 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Category Sales Comparison</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryBarChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -256,6 +264,23 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                     data: salesTrendData,
                     borderColor: '#4BC0C0',
                     fill: false
+                }]
+            },
+            options: {
+                maintainAspectRatio: false
+            }
+        });
+
+        // Category Sales Bar Chart
+        const categoryBarData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        new Chart(document.getElementById('categoryBarChart'), {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Category Sales',
+                    data: categoryBarData,
+                    backgroundColor: '#FF6384'
                 }]
             },
             options: {
