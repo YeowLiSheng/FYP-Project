@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES ('$image_path', '$title', '$subtitle', '$description', '$date')";
 
         if (mysqli_query($connect, $sql)) {
-            echo "<script>alert('Blog added successfully.');window.location.href='add_blog.php';</script>";
+            echo "<script>alert('Blog added successfully.');window.location.href='view_blog.php';</script>";
         } else {
             echo "Error: " . mysqli_error($connect);
         }
@@ -145,11 +145,52 @@ mysqli_close($connect);
                 font-size: 16px;
             }
         }
+
+
+        /* General styles for the button */
+.close-btn {
+    display: inline-block;
+    text-decoration: none;
+    background-color: #ff4d4d; /* Red background */
+    color: #fff; /* White text */
+    font-size: 20px; /* Visible font size */
+    font-weight: bold;
+    border: none;
+    border-radius: 5px; /* Slightly rounded edges for modern look */
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    line-height: 40px; /* Center align the text */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effects */
+    cursor: pointer;
+    position: absolute; /* Allows precise positioning */
+    margin-top: -65px; /* Adjust top distance */
+    right: 360px; /* Align to the right */
+}
+
+/* Hover effect */
+.close-btn:hover {
+    background-color: #ff1a1a; /* Darker red on hover */
+    transform: scale(1.1); /* Slight zoom on hover */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+/* Focus outline for accessibility */
+.close-btn:focus {
+    outline: 2px solid #fff; /* White outline for focus */
+    outline-offset: 2px;
+}
+
+
+
+
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Add Blog</h2>
+        <a href="view_blog.php" class="close-btn" aria-label="Close">&times;</a>
         <form action="" method="POST" enctype="multipart/form-data">
             <label for="picture">Picture:</label>
             <input type="file" id="picture" name="picture" accept="image/*" required onchange="previewImage()">
