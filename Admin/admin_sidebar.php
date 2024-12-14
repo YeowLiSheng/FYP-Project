@@ -317,7 +317,7 @@ a.sidebar-link:hover {
                 </li>
                 <hr> -->
                 <li class="sidebar-item">
-                    <a href="admin_landing.php" class="sidebar-link" id="admin">
+                    <a href="admin_dashboard.php" class="sidebar-link" id="admin">
                         <i class="lni lni-home"></i>
                         <span>Home</span>
                     </a>
