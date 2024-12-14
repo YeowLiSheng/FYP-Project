@@ -3,41 +3,45 @@
 session_start();
 
 // Include the database connection file
-include("dataconnection.php"); 
+include("dataconnection.php");
 
+// Initialize variables
 $user_email = '';
+$user_name = '';
+$blog_id = 0;
+
 // Check if the user is logged in
 if (isset($_SESSION['id'])) {
-    // Check if the database connection exists
-    if (!isset($connect) || !$connect) {
-        die("Database connection failed.");
-    }
-
     // Retrieve the user information
     $user_id = $_SESSION['id'];
     $result = mysqli_query($connect, "SELECT * FROM user WHERE user_id = '$user_id'");
 
-    // Check if the query was successful and fetch user data
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
-        $user_name = htmlspecialchars($row["user_name"]); // Get the user name
-		 $user_email = $row['user_email'];
-    } else {
-        echo "User not found.";
-        exit;
+        $user_name = htmlspecialchars($row["user_name"]);
+        $user_email = htmlspecialchars($row['user_email']);
     }
 }
 
+// Retrieve the blog ID from the URL
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $blog_id = (int) $_GET['id']; // Sanitize the blog ID
+} else {
+    echo "Invalid blog ID.";
+    exit();
+}
 
+// Retrieve the specific blog details
+$sql = "SELECT * FROM blog WHERE blog_id = '$blog_id'";
+$result = mysqli_query($connect, $sql);
 
-
-
-
+if ($result && mysqli_num_rows($result) > 0) {
+    $blog = mysqli_fetch_assoc($result);
+} else {
+    echo "Blog not found.";
+    exit();
+}
 ?>
-
-
-
-
 
 
 <!DOCTYPE html>
@@ -71,6 +75,129 @@ if (isset($_SESSION['id'])) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 </head>
+
+
+<style>
+/* Style for the comment section */
+#comment-form {
+    max-width: 850px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Group Styling */
+#comment-form .form-group {
+    margin-bottom: 20px;
+}
+
+/* Label styling */
+#comment-form label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Input and textarea styling */
+#comment-form input[type="text"],
+#comment-form input[type="email"],
+#comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#comment-form input[type="text"]:focus,
+#comment-form input[type="email"]:focus,
+#comment-form textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Textarea styling */
+#comment-form textarea {
+    resize: vertical;
+}
+
+/* Submit button styling */
+#comment-form button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#comment-form button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Styling for read-only email input */
+#comment-form input[readonly] {
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+}
+
+/* Error message styling (optional) */
+#comment-form .form-group .error {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+
+
+/* General styles for the button */
+.close-btn {
+    display: inline-block;
+    text-decoration: none;
+    background-color: #ff4d4d; /* Red background */
+    color: #fff; /* White text */
+    font-size: 20px; /* Visible font size */
+    font-weight: bold;
+    border: none;
+    border-radius: 5px; /* Slightly rounded edges for modern look */
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    line-height: 40px; /* Center align the text */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effects */
+    cursor: pointer;
+    position: absolute; /* Allows precise positioning */
+    margin-top: 5px; /* Adjust top distance */
+    right: 200px; /* Align to the right */
+}
+
+/* Hover effect */
+.close-btn:hover {
+    background-color: #ff1a1a; /* Darker red on hover */
+    transform: scale(1.1); /* Slight zoom on hover */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+/* Focus outline for accessibility */
+.close-btn:focus {
+    outline: 2px solid #fff; /* White outline for focus */
+    outline-offset: 2px;
+}
+
+
+
+
+</style>
+
 <body class="animsition">
 	
 	<!-- Header -->
@@ -390,116 +517,77 @@ if (isset($_SESSION['id'])) {
 			</div>
 		</div>
 	</div>
-<!-- Title page -->
-<section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url('images/bg-02.jpg');">
-    <h2 class="ltext-105 cl0 txt-center">
-        Blog
-    </h2>
-</section>
-
-<?php
-// Number of blogs per page
-$blogsPerPage = 3;
-
-// Get the current page number from the URL, default to 1 if not provided
-$currentPage = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-
-// Calculate the offset
-$offset = ($currentPage - 1) * $blogsPerPage;
-
-// Fetch the total number of blogs
-$totalQuery = "SELECT COUNT(*) AS total FROM blog";
-$totalResult = $connect->query($totalQuery);
-$totalBlogs = $totalResult->fetch_assoc()['total'];
-
-// Calculate total pages
-$totalPages = ceil($totalBlogs / $blogsPerPage);
-
-// Fetch the blog data with LIMIT and OFFSET
-$query = "SELECT * FROM blog LIMIT $blogsPerPage OFFSET $offset";
-$result = $connect->query($query);
-?>
-
 <!-- Content page -->
-<section class="bg0 p-t-62 p-b-60">
+<section class="bg0 p-t-52 p-b-20">
     <div class="container">
+        <a href="blog.php" class="close-btn" aria-label="Close">&times;</a>
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-9 p-b-80">
                 <div class="p-r-45 p-r-0-lg">
-                    <?php if ($result && $result->num_rows > 0): ?>
-                        <?php while ($row = $result->fetch_assoc()): ?>
-                            <!-- Item blog -->
-                            <div class="p-b-63 text-center">
-                                <!-- Blog Image -->
-                                <a href="blog-detail.php?id=<?php echo $row['blog_id']; ?>" class="hov-img0 d-block mx-auto" style="position: relative; width: 100%;">
-                                    <?php
-                                    $imagePath = 'http://localhost/FYP-PROJECT/Admin/blog/' . $row['picture'];
-                                    if (getimagesize($imagePath)): ?>
-                                        <img src="<?php echo $imagePath; ?>" alt="IMG-BLOG" class="img-fluid">
-                                    <?php else: ?>
-                                        <p class="text-danger">Image not found: <?php echo $imagePath; ?></p>
-                                    <?php endif; ?>
+                    <!-- Blog Content -->
+                    <div class="p-b-63 text-center">
+                        <!-- Blog Image -->
+                        <a href="#" class="hov-img0 d-block mx-auto" style="position: relative; width: 100%;">
+                            <img src="http://localhost/FYP-PROJECT/Admin/blog/<?php echo $blog['picture']; ?>" alt="IMG-BLOG" class="img-fluid">
+                        </a>
 
-                                    <!-- Date overlay -->
-                                    <div class="date-overlay" style="position: absolute; top: 10px; left: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; text-align: center; border-radius: 5px;">
-                                        <span class="ltext-107 cl2" style="display: block; font-size: 24px; color: white;">
-                                            <?php echo date('d', strtotime($row['date'])); ?>
-                                        </span>
-                                        <span class="stext-109 cl3" style="display: block; font-size: 14px; color: white;">
-                                            <?php echo date('M Y', strtotime($row['date'])); ?>
-                                        </span>
-                                    </div>
-                                </a>
+                        <!-- Blog Title and Date -->
+                        <div class="p-t-32 text-left">
+                            <h4 class="p-b-15">
+                                <span class="ltext-108 cl2">
+                                    <?php echo htmlspecialchars($blog['title']); ?>
+                                </span>
+                            </h4>
+                            <p class="stext-117 cl6">
+                                <?php echo nl2br($blog['description']); ?>
+                            </p>
 
-                                <!-- Blog Content -->
-                                <div class="p-t-32 text-left">
-                                    <h4 class="p-b-15">
-                                        <a href="blog-detail.php?id=<?php echo $row['blog_id']; ?>" class="ltext-108 cl2 hov-cl1 trans-04">
-                                            <?php echo htmlspecialchars($row['title']); ?>
-                                        </a>
-                                    </h4>
-                                    <p class="stext-117 cl6">
-                                        <?php echo htmlspecialchars($row['subtitle']); ?>
-                                    </p>
-                                </div>
+                            <p class="stext-109 cl3">
+                                
+                                Posted on: <?php echo date('d M Y', strtotime($blog['date'])); ?>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Comment Form -->
+                    <div class="p-t-30">
+                        <h5 class="p-b-15">Leave a Comment</h5>
+                        <form method="POST" action="blog-detail.php?id=<?php echo $blog_id; ?>" id="comment-form">
+                            <div class="form-group">
+                                <?php if (isset($_SESSION['id'])): ?>
+                                    <!-- Display email if user is logged in -->
+                                    <label>Email:</label>
+                                    <input type="text" name="email_display" value="<?php echo $user_email; ?>" readonly>
+                                    <input type="hidden" name="email" value="<?php echo $user_email; ?>">
+                                <?php else: ?>
+                                    <!-- Show email input if user is not logged in -->
+                                    <label>Email:</label>
+                                    <input type="email" name="email" required>
+                                <?php endif; ?>
                             </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <p class="stext-117 cl6 text-center">No blogs available at the moment.</p>
-                    <?php endif; ?>
 
-                    <!-- Pagination -->
-                    <nav class="d-flex justify-content-center p-t-20">
-                        <ul class="pagination">
-                            <?php if ($currentPage > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $currentPage - 1; ?>">Previous</a>
-                                </li>
-                            <?php endif; ?>
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="page-item <?php echo $i == $currentPage ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                                </li>
-                            <?php endfor; ?>
-                            <?php if ($currentPage < $totalPages): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $currentPage + 1; ?>">Next</a>
-                                </li>
-                            <?php endif; ?>
-                        </ul>
-                    </nav>
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" name="name" id="name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="comment">Comment</label>
+                                <textarea class="form-control" name="comment" id="comment" rows="4" required></textarea>
+                            </div>
+
+                            <!-- Hidden field to store blog_id -->
+                            <input type="hidden" name="blog_id" value="<?php echo $blog_id; ?>">
+
+                            <button type="submit" class="btn btn-primary">Submit Comment</button>
+                        </form>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-
-<?php
-// Close the database connection
-$connect->close();
-?>
-
-
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
@@ -695,3 +783,22 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 </body>
 </html>
+
+
+
+<?php
+// Process form submission for comments
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = mysqli_real_escape_string($connect, $_POST['email']);
+    $name = mysqli_real_escape_string($connect, $_POST['name']);
+    $comment = mysqli_real_escape_string($connect, $_POST['comment']);
+
+    $insert_sql = "INSERT INTO blog_comment (blog_id, user_email, user_name, comment) 
+                   VALUES ('$blog_id', '$email', '$name', '$comment')";
+    if (mysqli_query($connect, $insert_sql)) {
+        echo '<script>alert("Comment submitted successfully!");</script>';
+    } else {
+        echo "Error: " . mysqli_error($connect);
+    }
+}
+?>

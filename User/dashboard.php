@@ -194,7 +194,7 @@ $product_result = $connect->query($sql);
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
@@ -310,7 +310,7 @@ $product_result = $connect->query($sql);
 				</li>
 
 				<li>
-					<a href="blog.html">Blog</a>
+					<a href="blog.php">Blog</a>
 				</li>
 
 				<li>
