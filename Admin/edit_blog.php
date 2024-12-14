@@ -3,6 +3,15 @@
 include 'dataconnection.php'; // Ensure this file contains the $connect variable
 include 'admin_sidebar.php';
 
+if (isset($_GET['id'])) {
+    $blog_id = $_GET['id'];
+
+    // Retrieve blog data from the database
+    $sql = "SELECT * FROM blog WHERE blog_id = $blog_id";
+    $result = mysqli_query($connect, $sql);
+    $row = mysqli_fetch_assoc($result);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve form data
     $title = $_POST['title'];
@@ -12,43 +21,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle file upload
     $target_dir = "blog/"; // Define directory to store the uploaded images
-
-    // Ensure the directory exists, create it if it doesn't
     if (!is_dir($target_dir)) {
         mkdir($target_dir, 0777, true);
     }
 
-    $filename = basename($_FILES["picture"]["name"]); // Get the filename only
-    $target_file = $target_dir . $filename;  // Path where the image will be saved
+    if (isset($_FILES["picture"]) && $_FILES["picture"]["error"] == 0) {
+        // Handle image upload
+        $filename = basename($_FILES["picture"]["name"]);
+        $target_file = $target_dir . $filename;
+        $uploadOk = move_uploaded_file($_FILES["picture"]["tmp_name"], $target_file);
 
-    $uploadOk = move_uploaded_file($_FILES["picture"]["tmp_name"], $target_file);
-
-    if ($uploadOk) {
-        // Store only the filename in the database
-        $image_path = $filename; // Store the file name only (e.g., "image.jpg")
-
-        // Insert into the database
-        $sql = "INSERT INTO blog (picture, title, subtitle, description, date) 
-                VALUES ('$image_path', '$title', '$subtitle', '$description', '$date')";
-
-        if (mysqli_query($connect, $sql)) {
-            echo "<script>alert('Blog added successfully.');window.location.href='add_blog.php';</script>";
+        if ($uploadOk) {
+            $image_path = $filename;
         } else {
-            echo "Error: " . mysqli_error($connect);
+            echo "<script>alert('Sorry, there was an error uploading your file.');window.location.href='edit_blog.php?id=$blog_id';</script>";
+            exit;
         }
     } else {
-        echo "<script>alert('Sorry, there was an error uploading your file.');window.location.href='add_blog.php';</script>";
+        // If no new image is uploaded, keep the old one
+        $image_path = $row['picture'];
+    }
+
+    // Update the blog data in the database
+    $sql = "UPDATE blog SET 
+            picture = '$image_path', 
+            title = '$title', 
+            subtitle = '$subtitle', 
+            description = '$description', 
+            date = '$date' 
+            WHERE blog_id = $blog_id";
+
+    if (mysqli_query($connect, $sql)) {
+        echo "<script>alert('Blog updated successfully.');window.location.href='edit_blog.php?id=$blog_id';</script>";
+    } else {
+        echo "Error: " . mysqli_error($connect);
     }
 }
 
 mysqli_close($connect);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Blog</title>
+    <title>Edit Blog</title>
     <style>
         .container {
             margin-top: 70px;
@@ -149,30 +167,31 @@ mysqli_close($connect);
 </head>
 <body>
     <div class="container">
-        <h2>Add Blog</h2>
+        <h2>Edit Blog</h2>
         <form action="" method="POST" enctype="multipart/form-data">
             <label for="picture">Picture:</label>
-            <input type="file" id="picture" name="picture" accept="image/*" required onchange="previewImage()">
+            <input type="file" id="picture" name="picture" accept="image/*" onchange="previewImage()">
             <div class="image-preview" id="imagePreview" onclick="document.getElementById('picture').click();">
-                <!-- The image will be displayed here -->
+                <?php if ($row['picture']): ?>
+                    <img src="blog/<?php echo $row['picture']; ?>" alt="Current Blog Image">
+                <?php endif; ?>
             </div>
 
             <label for="title">Title:</label>
-            <input type="text" id="title" name="title" required>
+            <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
 
             <label for="subtitle">Subtitle:</label>
-            <input type="text" id="subtitle" name="subtitle" required>
+            <input type="text" id="subtitle" name="subtitle" value="<?php echo htmlspecialchars($row['subtitle']); ?>" required>
 
             <label for="description">Description:</label>
-            <textarea id="description" name="description" rows="5" required></textarea>
+            <textarea id="description" name="description" rows="5" required><?php echo htmlspecialchars($row['description']); ?></textarea>
 
             <label for="date">Date (e.g., 12Jan2024):</label>
-            <input type="text" id="date" name="date" required>
+            <input type="text" id="date" name="date" value="<?php echo htmlspecialchars($row['date']); ?>" required>
 
-            <button type="submit">Add Blog</button>
+            <button type="submit">Update Blog</button>
         </form>
     </div>
-
 </body>
 </html>
 

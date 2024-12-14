@@ -27,6 +27,12 @@ if (isset($_SESSION['id'])) {
         exit;
     }
 }
+
+
+
+
+
+
 ?>
 
 
@@ -384,14 +390,12 @@ if (isset($_SESSION['id'])) {
 			</div>
 		</div>
 	</div>
-
 <!-- Title page -->
 <section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-image: url('images/bg-02.jpg');">
     <h2 class="ltext-105 cl0 txt-center">
         Blog
     </h2>
-</section>    
-
+</section>
 
 <!-- Content page -->
 <section class="bg0 p-t-62 p-b-60">
@@ -399,41 +403,72 @@ if (isset($_SESSION['id'])) {
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-9 p-b-80">
                 <div class="p-r-45 p-r-0-lg">
-                    <!-- item blog -->
-                    <div class="p-b-63 text-center">
-                        <a href="blog-detail.html" class="hov-img0 how-pos5-parent d-block mx-auto" style="width: 100%;">
-                            <img src="images/blog-04.jpg" alt="IMG-BLOG" class="img-fluid">
+                    <?php
+                    // Fetch the blog data from the database
+                    $query = "SELECT * FROM blog";
+                    $result = $connect->query($query);
+                    
+                    if ($result && $result->num_rows > 0):
+                        while ($row = $result->fetch_assoc()):
+                    ?>
+                            <!-- Item blog -->
+                            <div class="p-b-63 text-center">
+                                <!-- Blog Image -->
+                                <a href="blog-detail.php?id=<?php echo $row['blog_id']; ?>" class="hov-img0 d-block mx-auto" style="position: relative; width: 100%;">
+                                    <?php
+                                    // Construct the correct image path using the blog table 'picture' field
+                                    $imagePath = 'http://localhost/FYP-PROJECT/Admin/blog/'  . $row['picture']; // Corrected the path
 
-                            <div class="flex-col-c-m size-123 bg9 how-pos5">
-                                <span class="ltext-107 cl2 txt-center">
-                                    22
-                                </span>
+                                    if (getimagesize($imagePath)): // Check if the image exists and is a valid image
+                                    ?>
+                                        <img src="<?php echo $imagePath; ?>" alt="IMG-BLOG" class="img-fluid">
+                                    <?php else: ?>
+                                        <p class="text-danger">Image not found: <?php echo $imagePath; ?></p>
+                                    <?php endif; ?>
 
-                                <span class="stext-109 cl3 txt-center">
-                                    Jan 2018
-                                </span>
-                            </div>
-                        </a>
+									<!-- Date overlay -->
+									<div class="date-overlay" style="position: absolute; top: 10px; left: 10px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; text-align: center; border-radius: 5px;">
+										<span class="ltext-107 cl2" style="display: block; font-size: 24px; color: white;">
+											<?php echo date('d', strtotime($row['date'])); ?>
+										</span>
+										<span class="stext-109 cl3" style="display: block; font-size: 14px; color: white;">
+											<?php echo date('M Y', strtotime($row['date'])); ?>
+										</span>
+									</div>
 
-                        <div class="p-t-32 text-left">
-                            <h4 class="p-b-15">
-                                <a href="blog-detail.html" class="ltext-108 cl2 hov-cl1 trans-04">
-                                    8 Inspiring Ways to Wear Dresses in the Winter
                                 </a>
-                            </h4>
 
-                            <p class="stext-117 cl6">
-                                Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce eget dictum tortor. Donec dictum vitae sapien eu varius
-                            </p>
-                        </div>
-                    </div>
+                                <!-- Blog Content -->
+                                <div class="p-t-32 text-left">
+                                    <h4 class="p-b-15">
+                                        <a href="blog-detail.php?id=<?php echo $row['blog_id']; ?>" class="ltext-108 cl2 hov-cl1 trans-04">
+                                            <?php echo htmlspecialchars($row['title']); ?>
+                                        </a>
+                                    </h4>
+
+                                    <p class="stext-117 cl6">
+                                        <?php echo htmlspecialchars($row['subtitle']); ?>
+                                    </p>
 
 
+                                </div>
+                            </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <p class="stext-117 cl6 text-center">No blogs available at the moment.</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<?php
+// Close the database connection
+$connect->close();
+?>
+
+
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
