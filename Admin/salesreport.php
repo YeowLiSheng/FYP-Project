@@ -1,6 +1,67 @@
 <?php
 include 'dataconnection.php';
 include 'admin_sidebar.php';
+
+// 数据库查询功能
+function getTotalOrders($connect) {
+    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_orders'];
+}
+
+function getTotalCustomers($connect) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_customers'];
+}
+
+function getTotalSales($connect) {
+    $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_sales'];
+}
+
+function getCategorySales($connect) {
+    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
+              FROM order_details od 
+              JOIN product p ON od.product_id = p.product_id 
+              JOIN category c ON p.category_id = c.category_id 
+              GROUP BY c.category_name";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+function getTopProducts($connect) {
+    $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
+              FROM order_details 
+              GROUP BY product_name 
+              ORDER BY total_sold DESC LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// 获取销售趋势数据，根据日期范围过滤
+function getSalesTrend($connect, $startDate, $endDate) {
+    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
+              FROM orders 
+              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate'
+              GROUP BY DATE(order_date) 
+              ORDER BY DATE(order_date)";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// 获取表单数据（如果有的话）
+$startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
+$endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
+
+// 数据获取
+$totalOrders = getTotalOrders($connect);
+$totalCustomers = getTotalCustomers($connect);
+$totalSales = getTotalSales($connect);
+$categorySales = getCategorySales($connect);
+$topProducts = getTopProducts($connect);
+$salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
 
 <!DOCTYPE html>
@@ -8,439 +69,199 @@ include 'admin_sidebar.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Review</title>
-    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+    <title>Admin Sales Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(120deg, #f5f7fa, #e4e9f0);
-            margin: 0;
-            padding: 0;
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
         }
-
-        .main {
-            margin-left: 78px;
-            padding: 15px;
+        .content-wrapper {
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
         }
-
-        h1 {
-            color: #2c3e50;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        h1 ion-icon {
-            font-size: 32px;
-            color: #3498db;
-        }
-
-        .search-container {
-            margin-bottom: 20px;
-            background: #fff;
-            border-radius: 8px;
+        .dashboard-card {
+            color: #fff;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            min-height: 150px;
         }
-
-        .search-container input {
-            flex: 1;
-            padding: 10px 12px;
-            border: 1px solid #dcdde1;
-            border-radius: 5px;
-            outline: none;
-            font-size: 14px;
-            background: white;
-        }
-
-        .search-container button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background: #3498db;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .search-container button:hover {
-            background: #1d6fa5;
-        }
-
-        .search-container ion-icon {
-            font-size: 20px;
-            color: #7f8c8d;
-        }
-        .btn-group {
-    display: inline-block;
-    position: relative;
-}
-
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background: #fff;
-    border: 1px solid #dcdde1;
-    border-radius: 5px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    margin-top: 5px;
-
-}
-
-
-
-.dropdown-item {
-    padding: 10px 15px;
-    text-decoration: none;
-    color: #2c3e50;
-    cursor: pointer;
-    display: block;
-    transition: background-color 0.2s;
-}
-
-.dropdown-item:hover {
-    background-color: #ecf0f1;
-}
-        .control-bar {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
+        .chart-container, .table-container {
             background: #fff;
-            border-radius: 8px;
-            padding: 15px 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            gap: 15px;
-        }
-
-        .control-bar .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .control-bar select, .control-bar input {
-            padding: 10px 12px;
-            border: 1px solid #dcdde1;
-            border-radius: 5px;
-            outline: none;
-            font-size: 14px;
-            background: white;
-            transition: all 0.3s;
-        }
-
-        .control-bar select:hover, .control-bar input:hover {
-            border-color: #3498db;
-        }
-
-        .date-range {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .date-range label {
-            font-size: 14px;
-            color: #2c3e50;
-        }
-
-        .card {
-            background: white;
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 10px;
         }
-
-        .table {
+        .chart-container {
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-wrapper {
+            position: relative;
             width: 100%;
-            border-collapse: collapse;
-            background: white;
-            overflow: hidden;
-            border-radius: 10px;
-            margin-top: 10px;
-            table-layout: fixed;
+            height: 100%;
         }
-
-        .table th, .table td {
-            padding: 15px;
-            text-align: center;
-            border: 1px solid #dcdde1;
-            word-wrap: break-word;
+        .table-container {
+            overflow-x: auto;
         }
-
-        .table th {
-            background: #3498db;
-            color: white;
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .table thead th {
+            color: #333;
             font-weight: bold;
         }
-
-        .table tr:hover {
-            background: #ecf0f1;
-        }
-
-        .table th ion-icon {
-            margin-right: 5px;
-        }
-
-        tr[onclick] {
-            cursor: pointer;
-        }
-
-        @media (max-width: 768px) {
-            .control-bar {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .search-container {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .table th, .table td {
-                padding: 10px;
-                font-size: 12px;
+        @media screen and (max-width: 768px) {
+            .content-wrapper {
+                margin-left: 0;
+                padding-top: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="main">
-        <h1><ion-icon name="list-outline"></ion-icon> View Review</h1>
-        
-        <div class="search-container">
-    <ion-icon name="search-outline"></ion-icon>
-    <input type="text" id="search-input" placeholder="Search by product name" oninput="searchTable()">
+    <div class="content-wrapper">
+        <div class="mb-4">
+            <h1 class="display-4">Sales Dashboard</h1>
+            <p class="lead">View a comprehensive overview of your sales performance with detailed insights on orders, customers, and product categories.</p>
+        </div>
 
-    <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        Export:
-    </button>
-    <ul class="dropdown-menu">
-        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-    </ul>
-</div>
-</div>
-
-        <div class="control-bar">
-            <div class="filter-group">
-                <label>Filter by:</label>
-                <select id="filter-status">
-                    <option value="" selected>- General -</option>
-                    <optgroup label="Delivery Status">
-                        <option value="Processing">Processing</option>
-                        <option value="Shipping">Shipping</option>
-                        <option value="Completed">Completed</option>
-                    </optgroup>
-                </select>
-                <label>Sort by:</label>
-                <select id="sort-order">
-                    <option value="" selected>- General -</option>
-                    <option value="newest">Newest</option>
-                    <option value="oldest">Oldest</option>
-                    <option value="highest">Highest Total</option>
-                    <option value="lowest">Lowest Total</option>
-                </select>
+        <!-- Overview Section -->
+        <div class="row mb-4">
+            <!-- Cards -->
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Orders</h5>
+                    <h2><?php echo $totalOrders; ?></h2>
+                </div>
             </div>
-            <div class="date-range">
-                <label for="start-date">From:</label>
-                <input type="text" id="start-date" placeholder="Start Date">
-                <label for="end-date">To:</label>
-                <input type="text" id="end-date" placeholder="End Date">
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Customers</h5>
+                    <h2><?php echo $totalCustomers; ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Total Sales</h5>
+                    <h2>RM <?php echo number_format($totalSales, 2); ?></h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card">
+                    <h5>Top Category</h5>
+                    <h2><?php echo $categorySales[0]['category_name'] ?? 'N/A'; ?></h2>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th><ion-icon name="cart-outline"></ion-icon> Order#</th>
-                        <th><ion-icon name="person-outline"></ion-icon> Customers Name</th>
-                        <th><ion-icon name="time-outline"></ion-icon> Order Time</th>
-                        <th><ion-icon name="location-outline"></ion-icon> Shipped to</th>
-                        <th><ion-icon name="cash-outline"></ion-icon> Total</th>
-                        <th><ion-icon name="checkmark-circle-outline"></ion-icon> Order Status</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <?php
-                    $order = "SELECT *, user.user_name, orders.order_date AS order_datetime FROM orders JOIN user ON orders.user_id = user.user_id;";
-                    $result = mysqli_query($connect, $order);
+        <!-- Date Picker -->
+        <form method="POST" class="mb-4" id="dateForm">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="this.form.submit()">
+                </div>
+                <div class="col-md-4">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
 
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) { ?>
-                            <tr onclick="viewOrderDetails('<?php echo $row['order_id']; ?>')">
-                                <td><?php echo $row["order_id"]; ?></td>
-                                <td><?php echo $row["user_name"]; ?></td>
-                                <td><?php echo $row["order_datetime"]; ?></td>
-                                <td><?php echo $row["shipping_address"]; ?></td>
-                                <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
-                                <td><?php echo $row["order_status"]; ?></td>
+        <!-- Charts Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Category Sales Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h3 class="card-header">Sales Trend (Last 30 Days)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-container">
+                    <div class="card-header">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
                             </tr>
-                        <?php }
-                    } else { ?>
-                        <tr>
-                            <td colspan="6">No orders found.</td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($topProducts as $product): ?>
+                                <tr>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                    <td>RM <?php echo number_format($product['total_revenue'], 2); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
+
     <script>
-
-document.getElementById("filter-status").addEventListener("change", filterTable);
-document.getElementById("sort-order").addEventListener("change", sortTable);
-
-        $(function () {
-            $("#start-date, #end-date").datepicker({
-                dateFormat: "yy-mm-dd",
-                onSelect: filterByDate
-            });
+        // Category Pie Chart
+        const categoryData = <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>;
+        const categoryLabels = <?php echo json_encode(array_column($categorySales, 'category_name')); ?>;
+        new Chart(document.getElementById('categoryPieChart'), {
+            type: 'pie',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryData,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+                }]
+            },
+            options: {
+                maintainAspectRatio: false
+            }
         });
 
-        document.getElementById("export-pdf").addEventListener("click", exportPDF);
-        document.getElementById("export-excel").addEventListener("click", exportExcel);
-
-        function exportPDF() {
-            window.location.href = "generate_order.php";
-
-        }
-
- 
-        function exportExcel() {
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Order List",
-        Author: "YLS Atelier",
-    };
-
-    // Prepare data for the table with formatted dates
-    const table = document.querySelector(".table");
-    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
-    });
-
-    // Add headers
-    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
-    rows.unshift(headers);
-
-    // Create worksheet from updated data
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Set column widths
-    ws['!cols'] = [
-        { wch: 15 }, // Order# column
-        { wch: 20 }, // Customer Name column
-        { wch: 25 }, // Order Time column
-        { wch: 50 }, // Shipped To column
-        { wch: 15 }, // Total column
-        { wch: 20 }, // Order Status column
-    ];
-
-    // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
-
-    // Save the workbook
-    XLSX.writeFile(wb, "Order_List.xlsx");
-}
-
-        
-
-        function filterByDate() {
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const orderDateTime = row.cells[2].textContent; 
-                const orderDate = orderDateTime.split(" ")[0];
-
-                const start = startDate || null;
-                const end = endDate || null;
-
-                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        function filterTable() {
-    const status = document.getElementById("filter-status").value;
-    const rows = document.querySelectorAll("#table-body tr");
-
-    rows.forEach(row => {
-        const orderStatus = row.cells[5].textContent.trim(); // 确保去除空白字符
-        row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
-    });
-}
-
-function sortTable() {
-    const rows = Array.from(document.querySelectorAll("#table-body tr"));
-    const sortOrder = document.getElementById("sort-order").value;
-
-    rows.sort((a, b) => {
-        if (sortOrder === "newest" || sortOrder === "oldest") {
-            const dateA = new Date(a.cells[2].textContent.trim());
-            const dateB = new Date(b.cells[2].textContent.trim());
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-        } else if (sortOrder === "highest" || sortOrder === "lowest") {
-            const totalA = parseFloat(a.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            const totalB = parseFloat(b.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
-        }
-        return 0;
-    });
-
-    const tbody = document.getElementById("table-body");
-    rows.forEach(row => tbody.appendChild(row));
-}
-
-function searchTable() { 
-    const query = document.getElementById("search-input").value.toLowerCase().trim();
-    const rows = document.querySelectorAll("#table-body tr");
-
-    rows.forEach(row => {
-        const name = row.cells[1].textContent.toLowerCase().trim();
-        row.style.display = name.includes(query) ? "" : "none";
-    });
-}
-
-        function viewOrderDetails(orderId) {
-            window.location.href = `order_details.php?order_id=${orderId}`;
-        }
+        // Sales Trend Line Chart
+        const salesTrendData = <?php echo json_encode(array_column($salesTrend, 'daily_sales')); ?>;
+        const salesTrendLabels = <?php echo json_encode(array_column($salesTrend, 'date')); ?>;
+        new Chart(document.getElementById('salesTrendChart'), {
+            type: 'line',
+            data: {
+                labels: salesTrendLabels,
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: salesTrendData,
+                    borderColor: '#4BC0C0',
+                    fill: false
+                }]
+            },
+            options: {
+                maintainAspectRatio: false
+            }
+        });
     </script>
 </body>
 </html>
