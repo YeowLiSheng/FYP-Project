@@ -3,62 +3,70 @@
 include 'dataconnection.php'; // Ensure this file contains the $connect variable
 include 'admin_sidebar.php';
 
-if (isset($_GET['id'])) {
-    $blog_id = $_GET['id'];
+// Get the blog_id from the URL parameter (e.g., edit_blog.php?blog_id=13)
+if (isset($_GET['blog_id'])) {
+    $blog_id = $_GET['blog_id'];
 
-    // Retrieve blog data from the database
+    // Retrieve the blog data from the database
     $sql = "SELECT * FROM blog WHERE blog_id = $blog_id";
     $result = mysqli_query($connect, $sql);
-    $row = mysqli_fetch_assoc($result);
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Retrieve form data
-    $title = $_POST['title'];
-    $subtitle = $_POST['subtitle'];
-    $description = $_POST['description'];
-    $date = $_POST['date'];
-
-    // Handle file upload
-    $target_dir = "blog/"; // Define directory to store the uploaded images
-    if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0777, true);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $title = $row['title'];
+        $subtitle = $row['subtitle'];
+        $description = $row['description'];
+        $date = $row['date'];
+        $picture = $row['picture']; // Current image filename
+    } else {
+        echo "<script>alert('Blog not found.');window.location.href='view_blog.php';</script>";
     }
 
-    if (isset($_FILES["picture"]) && $_FILES["picture"]["error"] == 0) {
-        // Handle image upload
-        $filename = basename($_FILES["picture"]["name"]);
-        $target_file = $target_dir . $filename;
-        $uploadOk = move_uploaded_file($_FILES["picture"]["tmp_name"], $target_file);
+    // Update the blog details when the form is submitted
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Sanitize input to prevent SQL injection
+        $title = mysqli_real_escape_string($connect, $_POST['title']);
+        $subtitle = mysqli_real_escape_string($connect, $_POST['subtitle']);
+        $description = mysqli_real_escape_string($connect, $_POST['description']);
+        $date = mysqli_real_escape_string($connect, $_POST['date']);
 
-        if ($uploadOk) {
-            $image_path = $filename;
+        // Handle file upload (optional: update image if a new one is uploaded)
+        if ($_FILES["picture"]["name"]) {
+            $target_dir = "blog/";
+
+            // Ensure the directory exists, create it if it doesn't
+            if (!is_dir($target_dir)) {
+                mkdir($target_dir, 0777, true);
+            }
+
+            $filename = basename($_FILES["picture"]["name"]);
+            $target_file = $target_dir . $filename;
+
+            $uploadOk = move_uploaded_file($_FILES["picture"]["tmp_name"], $target_file);
+
+            if ($uploadOk) {
+                $image_path = $filename;
+            } else {
+                echo "<script>alert('Error uploading new image.');</script>";
+                $image_path = $picture; // Retain the old image if new one fails
+            }
         } else {
-            echo "<script>alert('Sorry, there was an error uploading your file.');window.location.href='edit_blog.php?id=$blog_id';</script>";
-            exit;
+            $image_path = $picture; // Keep the current image if no new image is uploaded
         }
-    } else {
-        // If no new image is uploaded, keep the old one
-        $image_path = $row['picture'];
+
+        // Update the blog in the database
+        $sql_update = "UPDATE blog SET picture = '$image_path', title = '$title', subtitle = '$subtitle', description = '$description', date = '$date' WHERE blog_id = $blog_id";
+
+        if (mysqli_query($connect, $sql_update)) {
+            echo "<script>alert('Blog updated successfully.');window.location.href='view_blog.php';</script>";
+        } else {
+            echo "Error: " . mysqli_error($connect);
+        }
     }
 
-    // Update the blog data in the database
-    $sql = "UPDATE blog SET 
-            picture = '$image_path', 
-            title = '$title', 
-            subtitle = '$subtitle', 
-            description = '$description', 
-            date = '$date' 
-            WHERE blog_id = $blog_id";
-
-    if (mysqli_query($connect, $sql)) {
-        echo "<script>alert('Blog updated successfully.');window.location.href='edit_blog.php?id=$blog_id';</script>";
-    } else {
-        echo "Error: " . mysqli_error($connect);
-    }
+    mysqli_close($connect);
+} else {
+    echo "<script>alert('Blog ID missing.');window.location.href='view_blog.php';</script>";
 }
-
-mysqli_close($connect);
 ?>
 
 <!DOCTYPE html>
@@ -150,7 +158,7 @@ mysqli_close($connect);
         }
 
         input[type="file"] {
-            display: none; /* Hide the file input */
+            display: none;
         }
 
         /* Responsive Design */
@@ -163,35 +171,65 @@ mysqli_close($connect);
                 font-size: 16px;
             }
         }
+
+        .close-btn {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #ff4d4d;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            position: absolute;
+            margin-top: -65px;
+            right: 360px;
+        }
+
+        .close-btn:hover {
+            background-color: #ff1a1a;
+            transform: scale(1.1);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Edit Blog</h2>
+        <a href="view_blog.php" class="close-btn" aria-label="Close">&times;</a>
         <form action="" method="POST" enctype="multipart/form-data">
             <label for="picture">Picture:</label>
             <input type="file" id="picture" name="picture" accept="image/*" onchange="previewImage()">
             <div class="image-preview" id="imagePreview" onclick="document.getElementById('picture').click();">
-                <?php if ($row['picture']): ?>
-                    <img src="blog/<?php echo $row['picture']; ?>" alt="Current Blog Image">
-                <?php endif; ?>
+                <!-- The current image will be displayed here -->
+                <?php if ($picture) { ?>
+                    <img src="blog/<?php echo $picture; ?>" alt="Image Preview">
+                <?php } ?>
             </div>
 
             <label for="title">Title:</label>
-            <input type="text" id="title" name="title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
+            <input type="text" id="title" name="title" value="<?php echo $title; ?>" required>
 
             <label for="subtitle">Subtitle:</label>
-            <input type="text" id="subtitle" name="subtitle" value="<?php echo htmlspecialchars($row['subtitle']); ?>" required>
+            <input type="text" id="subtitle" name="subtitle" value="<?php echo $subtitle; ?>" required>
 
             <label for="description">Description:</label>
-            <textarea id="description" name="description" rows="5" required><?php echo htmlspecialchars($row['description']); ?></textarea>
+            <textarea id="description" name="description" rows="5" required><?php echo $description; ?></textarea>
 
             <label for="date">Date (e.g., 12Jan2024):</label>
-            <input type="text" id="date" name="date" value="<?php echo htmlspecialchars($row['date']); ?>" required>
+            <input type="text" id="date" name="date" value="<?php echo $date; ?>" required>
 
             <button type="submit">Update Blog</button>
         </form>
     </div>
+
 </body>
 </html>
 
