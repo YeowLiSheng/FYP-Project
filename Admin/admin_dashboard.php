@@ -95,303 +95,205 @@ $genderDistribution = getGenderDistribution($connect);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <title>Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f4f6f9;
+            background-color: #f9fafb;
             color: #333;
         }
-
         .container {
+            margin: 20px auto;
             padding: 20px;
-            margin: 0 auto;
             max-width: 1200px;
         }
-
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-
-        .ccard {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .card {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-
-        .ccard:hover {
+        .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
-
-        .icon {
-            font-size: 60px;
-            color: #17a2b8;
-            margin-bottom: 15px;
-        }
-
-        .number {
+        .card .icon {
             font-size: 2.5rem;
-            font-weight: 700;
-            color: #333;
+            color: #17a2b8;
+            margin-bottom: 10px;
         }
-
-        .name {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #666;
-        }
-
-        .section-header {
+        .card .number {
             font-size: 1.8rem;
             font-weight: 700;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 5px;
-            color: #444;
         }
-
-        .chart-container {
+        .card .name {
+            font-size: 1rem;
+            color: #777;
+        }
+        .chart-container, .table-container {
             background: white;
-            padding: 20px;
             border-radius: 15px;
+            padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
-
         .table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-
         .table th, .table td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid #f1f1f1;
         }
-
         .table th {
-            background-color: #f1f3f5;
-            font-weight: 700;
-            color: #495057;
-        }
-
-        .table-striped tbody tr:nth-child(odd) {
             background-color: #f8f9fa;
+            font-weight: bold;
         }
-
         .table img {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
+            border-radius: 50%;
         }
-
-        @media (max-width: 768px) {
-            .cards {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #f1f1f1;
+            display: inline-block;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 卡片区域 -->
         <div class="cards">
-            <div class="ccard">
+            <div class="card">
                 <i class="fas fa-tags icon"></i>
-                <p class="number"><?php echo $product_count; ?></p>
-                <p class="name">Products</p>
+                <div class="number"><?php echo $product_count; ?></div>
+                <div class="name">Products</div>
             </div>
-            <div class="ccard">
+            <div class="card">
                 <i class="fas fa-users icon"></i>
-                <p class="number"><?php echo $staff_count; ?></p>
-                <p class="name">Staff</p>
+                <div class="number"><?php echo $staff_count; ?></div>
+                <div class="name">Staff</div>
             </div>
-            <div class="ccard">
+            <div class="card">
                 <i class="fas fa-shopping-cart icon"></i>
-                <p class="number"><?php echo $order_count; ?></p>
-                <p class="name">Orders</p>
+                <div class="number"><?php echo $order_count; ?></div>
+                <div class="name">Orders</div>
             </div>
-            <div class="ccard">
-                <i class="fas fa-users icon"></i>
-                <p class="number"><?php echo $user_count; ?></p>
-                <p class="name">Customers</p>
-            </div>
-            <div class="ccard">
+            <div class="card">
                 <i class="fas fa-dollar-sign icon"></i>
-                <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
-                <p class="name">Total Profit</p>
+                <div class="number">RM<?php echo number_format($totalSales, 2); ?></div>
+                <div class="name">Total Profit</div>
             </div>
         </div>
 
-        <div class="chart-container">
-            <h2 style="text-align: center;">Weekly Sales Comparison</h2>
-            <canvas id="weeklySalesChart"></canvas>
-        </div>
-
-        <div>
-            <div class="section-header">Top 5 Products by Sales</div>
-            <table class="table table-striped">
+        <!-- Top 5 Products -->
+        <div class="table-container">
+            <h2>Top Selling Product</h2>
+            <table class="table">
                 <thead>
                     <tr>
-                        <th>Product Image</th>
-                        <th>Product Name</th>
-                        <th>Units Sold</th>
+                        <th>Product</th>
+                        <th>Orders</th>
+                        <th>Price</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($topProducts as $product): ?>
+                    <?php foreach (array_slice($topProducts, 0, 5) as $product): ?>
                         <tr>
-                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>"></td>
-                            <td><?php echo $product['product_name']; ?></td>
+                            <td>
+                                <img src="../User/images/<?php echo $product['product_image']; ?>" alt="Image">
+                                <?php echo $product['product_name']; ?>
+                            </td>
                             <td><?php echo $product['total_sold']; ?></td>
+                            <td>$<?php echo number_format($product['price'], 2); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
 
-        <h3>Recent Users</h3>
-        <table border="1" cellspacing="0" cellpadding="10">
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Join Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($recentUsers as $user): ?>
-                    <tr>
-                        <td>
-                            <?php if (!empty($user['user_image'])): ?>
-                                <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image" style="width:50px;height:50px;">
-                            <?php else: ?>
-                                <span>No Image</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?php echo htmlspecialchars($user['user_name']); ?></td>
-                        <td><?php echo htmlspecialchars($user['user_email']); ?></td>
-                        <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <h3>Gender Distribution</h3>
+        <!-- Weekly Sales Chart -->
         <div class="chart-container">
-            <canvas id="genderPieChart" width="400" height="400"></canvas>
+            <h2>Weekly Sales Comparison</h2>
+            <canvas id="weeklySalesChart"></canvas>
+        </div>
+
+        <!-- Gender Distribution Chart -->
+        <div class="chart-container">
+            <h2>Gender Distribution</h2>
+            <canvas id="genderChart"></canvas>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Script -->
     <script>
+        // Weekly Sales Chart
         const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
-        const labels = weeklySalesData.map(data => data.week_range);
-        const sales = weeklySalesData.map(data => data.total_sales);
+        const weeklyLabels = weeklySalesData.map(data => data.week_range);
+        const weeklySales = weeklySalesData.map(data => data.total_sales);
+        const ctxWeekly = document.getElementById('weeklySalesChart').getContext('2d');
 
-        const ctx = document.getElementById('weeklySalesChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
-        gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
-
-        new Chart(ctx, {
+        new Chart(ctxWeekly, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: weeklyLabels,
                 datasets: [{
-                    label: 'Total Sales (Weekly)',
-                    data: sales,
+                    label: 'Sales (RM)',
+                    data: weeklySales,
                     fill: true,
-                    backgroundColor: gradient,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
+                    borderColor: '#17a2b8',
+                    backgroundColor: 'rgba(23, 162, 184, 0.2)',
                     tension: 0.4,
-                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                    pointBorderColor: '#fff',
                 }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Sales: RM${context.raw.toLocaleString()}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Week Range',
-                            color: '#333',
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Total Sales (RM)',
-                            color: '#333',
-                        }
-                    }
-                }
             }
         });
 
-        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
-        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
-        const ctxPie = document.getElementById('genderPieChart').getContext('2d');
-        new Chart(ctxPie, {
+        // Gender Chart
+        const genderData = <?php echo json_encode($genderDistribution); ?>;
+        const genderLabels = genderData.map(g => g.user_gender);
+        const genderCounts = genderData.map(g => g.count);
+
+        const ctxGender = document.getElementById('genderChart').getContext('2d');
+        new Chart(ctxGender, {
             type: 'pie',
             data: {
                 labels: genderLabels,
                 datasets: [{
-                    label: 'Customer Gender Distribution',
                     data: genderCounts,
-                    backgroundColor: [
-                        '#FF6384',
-                        '#36A2EB',
-                        '#FFCE56'
-                    ],
-                    hoverOffset: 4
+                    backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56']
                 }]
             },
             options: {
-                responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'top',
-                    },
                     tooltip: {
                         callbacks: {
-                            label: function(tooltipItem) {
-                                const percentage = (
-                                    (genderCounts[tooltipItem.dataIndex] / 
-                                     genderCounts.reduce((a, b) => a + b, 0)) * 100
-                                ).toFixed(2);
-                                return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
+                            label: function(context) {
+                                let total = genderCounts.reduce((a, b) => a + b, 0);
+                                let value = genderCounts[context.dataIndex];
+                                let percentage = ((value / total) * 100).toFixed(2);
+                                return `${genderLabels[context.dataIndex]}: ${value} (${percentage}%)`;
                             }
                         }
                     }
