@@ -63,7 +63,7 @@ $totalSales = getTotalSales($connect);
         <div class="box">
             <i class="fas fa-tags"></i>
             <h2>Product Categories</h2>
-            <p><?php echo $category_count; ?></p>
+            <p><?php echo $product_count; ?></p>
         </div>
         <div class="box">
             <i class="fas fa-users"></i>
