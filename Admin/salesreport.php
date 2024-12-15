@@ -94,7 +94,6 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="ccard">
                 <i class="fas fa-tags icon"></i>
-                <p class="text"><?php echo $topProducts</p>
             </div>
         </div>
 
