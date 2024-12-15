@@ -103,38 +103,21 @@ $genderDistribution = getGenderDistribution($connect);
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
+            background-color: #f5f6fa;
             color: #333;
         }
 
         .container {
             padding: 20px;
-            margin: 0 auto;
+            margin: auto;
             max-width: 1200px;
-        }
-
-        .section {
-            margin-bottom: 40px;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 5px;
-            color: #495057;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-            margin-top: 20px;
+            margin-bottom: 30px;
         }
 
         .ccard {
@@ -143,33 +126,50 @@ $genderDistribution = getGenderDistribution($connect);
             align-items: center;
             justify-content: center;
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .ccard:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .icon {
             font-size: 50px;
-            color: #17a2b8;
-            margin-bottom: 10px;
+            color: #4caf50;
+            margin-bottom: 15px;
         }
 
         .number {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #333;
+            color: #222;
+            margin-bottom: 5px;
         }
 
         .name {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 500;
-            color: #555;
+            color: #777;
+        }
+
+        .chart-container {
+            margin-bottom: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
         }
 
         .table {
@@ -188,7 +188,7 @@ $genderDistribution = getGenderDistribution($connect);
         }
 
         .table th {
-            background-color: #f1f3f5;
+            background-color: #f8f9fa;
             font-weight: 700;
             color: #495057;
         }
@@ -198,39 +198,26 @@ $genderDistribution = getGenderDistribution($connect);
         }
 
         .table img {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 8px;
             object-fit: cover;
         }
 
         @media (max-width: 768px) {
-            .cards {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            .container {
+                padding: 15px;
             }
 
-            .table img {
-                width: 40px;
-                height: 40px;
+            .cards {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Weekly Sales Chart Section -->
-        <div class="section">
-            <h2 class="section-header">Weekly Sales Comparison</h2>
-            <canvas id="weeklySalesChart"></canvas>
-        </div>
-
-        <!-- Gender Distribution Chart Section -->
-        <div class="section">
-            <h2 class="section-header">Gender Distribution</h2>
-            <canvas id="genderPieChart"></canvas>
-        </div>
-
-        <!-- Statistic Cards Section -->
+        <!-- Cards Section -->
         <div class="cards">
             <div class="ccard">
                 <i class="fas fa-tags icon"></i>
@@ -259,9 +246,15 @@ $genderDistribution = getGenderDistribution($connect);
             </div>
         </div>
 
-        <!-- Top Products Section -->
-        <div class="section">
-            <h2 class="section-header">Top 5 Products by Sales</h2>
+        <!-- Weekly Sales Comparison Chart -->
+        <div class="chart-container">
+            <div class="section-header">Weekly Sales Comparison</div>
+            <canvas id="weeklySalesChart"></canvas>
+        </div>
+
+        <!-- Top 5 Products Section -->
+        <div>
+            <div class="section-header">Top 5 Products by Sales</div>
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -281,8 +274,46 @@ $genderDistribution = getGenderDistribution($connect);
                 </tbody>
             </table>
         </div>
+
+        <!-- Recent Users Section -->
+        <div>
+            <div class="section-header">Recent Users</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Join Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($recentUsers as $user): ?>
+                        <tr>
+                            <td>
+                                <?php if (!empty($user['user_image'])): ?>
+                                    <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image">
+                                <?php else: ?>
+                                    <span>No Image</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($user['user_name']); ?></td>
+                            <td><?php echo htmlspecialchars($user['user_email']); ?></td>
+                            <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Gender Distribution Chart -->
+        <div class="chart-container">
+            <div class="section-header">Gender Distribution</div>
+            <canvas id="genderPieChart"></canvas>
+        </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Weekly Sales Chart
@@ -290,8 +321,8 @@ $genderDistribution = getGenderDistribution($connect);
         const labels = weeklySalesData.map(data => data.week_range);
         const sales = weeklySalesData.map(data => data.total_sales);
 
-        const ctx1 = document.getElementById('weeklySalesChart').getContext('2d');
-        new Chart(ctx1, {
+        const ctxWeekly = document.getElementById('weeklySalesChart').getContext('2d');
+        new Chart(ctxWeekly, {
             type: 'line',
             data: {
                 labels: labels,
@@ -307,9 +338,12 @@ $genderDistribution = getGenderDistribution($connect);
             },
             options: {
                 responsive: true,
+                plugins: {
+                    legend: { display: false },
+                },
                 scales: {
                     x: { title: { display: true, text: 'Week Range' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Sales (RM)' } }
+                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales (RM)' } }
                 }
             }
         });
@@ -317,8 +351,9 @@ $genderDistribution = getGenderDistribution($connect);
         // Gender Pie Chart
         const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
         const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
-        const ctx2 = document.getElementById('genderPieChart').getContext('2d');
-        new Chart(ctx2, {
+
+        const ctxGender = document.getElementById('genderPieChart').getContext('2d');
+        new Chart(ctxGender, {
             type: 'pie',
             data: {
                 labels: genderLabels,
@@ -329,17 +364,9 @@ $genderDistribution = getGenderDistribution($connect);
                 }]
             },
             options: {
+                responsive: true,
                 plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const percentage = (
-                                    (context.raw / genderCounts.reduce((a, b) => a + b, 0)) * 100
-                                ).toFixed(2);
-                                return `${context.label}: ${percentage}%`;
-                            }
-                        }
-                    }
+                    legend: { position: 'top' },
                 }
             }
         });
