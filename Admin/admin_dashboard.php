@@ -76,94 +76,122 @@ $weeklySales = getWeeklySalesWithDates($connect);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="styles.css"> <!-- External CSS for cleaner code -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <title>Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            background-color: #f8f9fa;
+            color: #333;
         }
 
         .container {
             padding: 20px;
-            margin-left: 260px; /* Adjust to align next to sidebar */
-            margin-top: 80px; /* Add margin to push content below sidebar header */
+            margin-left: 260px;
+            margin-top: 80px;
         }
 
         .cards {
-            width: 100%;
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* Ensure 5 cards in one row */
-            grid-gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .ccard {
-            padding: 20px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            background: #DFF5DB;
-            border-radius: 20px;
-            box-shadow: 0 7px 25px 0 rgba(0, 0, 0, 0.08);
-            transition: background-color 0.3s;
+            justify-content: center;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .ccard:hover {
-            background-color: #97EA88;
-            cursor: pointer;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .icon {
-            font-size: 55px;
-            color: #32871F;
+            font-size: 50px;
+            color: #17a2b8;
+            margin-bottom: 10px;
         }
 
         .number {
-            font-size: 45px;
-            color: #32871F;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
         }
 
         .name {
-            font-size: 25px;
+            font-size: 1rem;
+            font-weight: 500;
             color: #555;
         }
 
-        .product-sales {
-            margin-top: 30px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 5px;
         }
 
         .table {
             width: 100%;
-            margin-top: 20px;
             border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .table th, .table td {
-            border: 1px solid #ddd;
-            padding: 12px;
+            padding: 15px;
             text-align: left;
+            border-bottom: 1px solid #dee2e6;
         }
 
         .table th {
-            background-color: #f4f4f4;
-            color: #333;
+            background-color: #f1f3f5;
+            font-weight: 700;
+            color: #495057;
         }
 
         .table-striped tbody tr:nth-child(odd) {
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
         }
 
-        .table-striped tbody tr:nth-child(even) {
-            background-color: #fff;
+        .table img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
         }
 
-        .recent {
+        .chart-container {
             margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .cards {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
         }
     </style>
 </head>
@@ -171,137 +199,116 @@ $weeklySales = getWeeklySalesWithDates($connect);
     <div class="container">
         <div class="cards">
             <div class="ccard">
-                <div>
-                    <p class="number"><?php echo $product_count; ?></p>
-                    <p class="name">Products</p>
-                </div>
                 <i class="fas fa-tags icon"></i>
+                <p class="number"><?php echo $product_count; ?></p>
+                <p class="name">Products</p>
             </div>
-
             <div class="ccard">
-                <div>
-                    <p class="number"><?php echo $staff_count; ?></p>
-                    <p class="name">Staff</p>
-                </div>
                 <i class="fas fa-users icon"></i>
+                <p class="number"><?php echo $staff_count; ?></p>
+                <p class="name">Staff</p>
             </div>
-
             <div class="ccard">
-                <div>
-                    <p class="number"><?php echo $order_count; ?></p>
-                    <p class="name">Orders</p>
-                </div>
                 <i class="fas fa-shopping-cart icon"></i>
+                <p class="number"><?php echo $order_count; ?></p>
+                <p class="name">Orders</p>
             </div>
-
             <div class="ccard">
-                <div>
-                    <p class="number"><?php echo $user_count; ?></p>
-                    <p class="name">Customers</p>
-                </div>
                 <i class="fas fa-users icon"></i>
+                <p class="number"><?php echo $user_count; ?></p>
+                <p class="name">Customers</p>
             </div>
-
             <div class="ccard">
-                <div>
-                    <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
-                    <p class="name">Total Profit</p>
-                </div>
                 <i class="fas fa-dollar-sign icon"></i>
+                <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+                <p class="name">Total Profit</p>
             </div>
         </div>
 
-        <div class="product-sales">Top 5 Products by Sales</div>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Product Image</th>
-            <th>Product Name</th>
-            <th>Units Sold</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($topProducts as $product): ?>
-            <tr>
-                <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 80px; height: 80px; object-fit: cover;"></td>
-                <td><?php echo $product['product_name']; ?></td>
-                <td><?php echo $product['total_sold']; ?></td>
-            </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+        <div>
+            <div class="section-header">Top 5 Products by Sales</div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Product Image</th>
+                        <th>Product Name</th>
+                        <th>Units Sold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($topProducts as $product): ?>
+                        <tr>
+                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>"></td>
+                            <td><?php echo $product['product_name']; ?></td>
+                            <td><?php echo $product['total_sold']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="chart-container">
+            <h2 style="text-align: center;">Weekly Sales Comparison</h2>
+            <canvas id="weeklySalesChart"></canvas>
+        </div>
     </div>
-    <div style="width: 80%; margin: auto; padding: 20px;">
-    <h2 style="text-align: center;">Weekly Sales Comparison</h2>
-    <canvas id="weeklySalesChart"></canvas>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // 将PHP数据传递给JavaScript
-    const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
-    
-    // 提取标签和数据
-    const labels = weeklySalesData.map(data => data.week_range);
-    const sales = weeklySalesData.map(data => data.total_sales);
 
-    // 创建渐变填充样式
-    const ctx = document.getElementById('weeklySalesChart').getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
-    gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
+        const labels = weeklySalesData.map(data => data.week_range);
+        const sales = weeklySalesData.map(data => data.total_sales);
 
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Total Sales (Weekly)',
-                data: sales,
-                fill: true,
-                backgroundColor: gradient,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 2,
-                tension: 0.3, // Smooth curves
-                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(75, 192, 192, 1)',
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Sales: $${context.raw.toLocaleString()}`;
+        const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
+        gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Sales (Weekly)',
+                    data: sales,
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointBorderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Sales: RM${context.raw.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Week Range',
+                            color: '#333',
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Sales (RM)',
+                            color: '#333',
                         }
                     }
                 }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Week Range',
-                        color: '#333',
-                        font: { size: 14 }
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Total Sales ($)',
-                        color: '#333',
-                        font: { size: 14 }
-                    }
-                }
-            },
-            maintainAspectRatio: false
-        }
-    });
-</script>
+            }
+        });
+    </script>
 </body>
-</html>
-
