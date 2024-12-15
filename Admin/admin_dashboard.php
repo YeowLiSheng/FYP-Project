@@ -103,14 +103,14 @@ $lowStockProducts = getLowStockProducts($connect);
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<styl>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <title>Admin Dashboard</title>
     <style>
-        body {
+    body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
@@ -124,14 +124,15 @@ $lowStockProducts = getLowStockProducts($connect);
     margin-top: 80px;
 }
 
-/* Card styles */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+/* Flex container for aligning cards and tables in a row */
+.flex-container {
+    display: flex;
+    gap: 20px; /* Space between elements */
+    margin-top: 20px;
+    flex-wrap: wrap; /* Allow wrapping to the next row on smaller screens */
 }
 
+/* Card styles */
 .ccard {
     display: flex;
     flex-direction: column;
@@ -142,6 +143,8 @@ $lowStockProducts = getLowStockProducts($connect);
     padding: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
+    flex: 1 1 48%; /* Make cards take up 48% of the row */
+    max-width: 600px; /* Limit the maximum width of the cards */
 }
 
 .ccard:hover {
@@ -167,30 +170,12 @@ $lowStockProducts = getLowStockProducts($connect);
     color: #555;
 }
 
-/* Section header */
-.section-header {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 5px;
-}
-
-/* Table container for aligning tables in a row */
-.table-container {
-    display: flex;
-    gap: 20px; /* Space between tables */
-    margin-top: 20px;
-}
-
-/* Individual table styles */
-.table-small {
-    width: 50%; /* Each table takes half of the width */
-    max-width: 600px; /* Cap maximum width */
-    flex: 1; /* Adjust width dynamically */
-}
-
 /* Table styling */
+.table-container {
+    flex: 1 1 48%; /* Make tables take up 48% of the row */
+    max-width: 600px; /* Limit the maximum width of the tables */
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -243,15 +228,16 @@ $lowStockProducts = getLowStockProducts($connect);
         padding: 15px;
     }
 
-    .cards {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    .flex-container {
+        flex-direction: column; /* Stack cards and tables vertically on smaller screens */
     }
 
-    .table-container {
-        flex-direction: column; /* Stack tables vertically */
+    .ccard, .table-container {
+        flex: 1 1 100%; /* Make each take up the full width in mobile */
+        max-width: 100%;
     }
 }
-    </style>
+</style>
 </head>
 <body>
     <div class="container">
@@ -339,106 +325,77 @@ $lowStockProducts = getLowStockProducts($connect);
         </table>
     </div>
 </div>
-        <div class="low-stock-products">
+<div class="low-stock-products"> 
     <h2>Products with Low Stock</h2>
-    <table border="1" cellpadding="10">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Image</th>
-                <th>Stock Quantity</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($lowStockProducts as $product): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                    <td>
-                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                             style="width: 100px; height: auto;">
-                    </td>
-                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+    <div class="flex-container">
+        <!-- Table for Low Stock Products -->
+        <div class="table-container">
+            <table border="1" cellpadding="10" class="table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Image</th>
+                        <th>Stock Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lowStockProducts as $product): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                            <td>
+                                <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                                     alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                                     style="width: 100px; height: auto;">
+                            </td>
+                            <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
 
-        <!-- Gender Chart -->
-        <div class="chart-container">
+        <!-- Gender Chart Card -->
+        <div class="ccard">
             <h2 style="text-align: center;">Gender Distribution</h2>
             <canvas id="genderPieChart"></canvas>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
-        const labels = weeklySalesData.map(data => data.week_range);
-        const sales = weeklySalesData.map(data => data.total_sales);
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gender Distribution Chart
+    const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
+    const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
 
-        const ctx = document.getElementById('weeklySalesChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
-        gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Total Sales (Weekly)',
-                    data: sales,
-                    fill: true,
-                    backgroundColor: gradient,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                    pointBorderColor: '#fff',
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: { title: { display: true, text: 'Week Range' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales (RM)' } }
-                }
-            }
-        });
-
-        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
-        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
-
-        const genderCtx = document.getElementById('genderPieChart').getContext('2d');
-        new Chart(genderCtx, {
-            type: 'pie',
-            data: {
-                labels: genderLabels,
-                datasets: [{
-                    label: 'Customer Gender Distribution',
-                    data: genderCounts,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                const percentage = (genderCounts[tooltipItem.dataIndex] /
-                                                    genderCounts.reduce((a, b) => a + b, 0) * 100).toFixed(2);
-                                return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
-                            }
+    const genderCtx = document.getElementById('genderPieChart').getContext('2d');
+    new Chart(genderCtx, {
+        type: 'pie',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                label: 'Customer Gender Distribution',
+                data: genderCounts,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const percentage = (genderCounts[tooltipItem.dataIndex] /
+                                                genderCounts.reduce((a, b) => a + b, 0) * 100).toFixed(2);
+                            return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
                         }
                     }
                 }
             }
-        });
-    </script>
+        }
+    });
+</script>
 </body>
 </html>
 
