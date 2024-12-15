@@ -231,7 +231,7 @@ $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
     </div>
-</div>
+
 
 <div class="card">
     <div class="card-header">
@@ -262,7 +262,7 @@ $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
         </table>
     </div>
 </div>
-
+</div>
 <script>
     // Retrieve PHP data
     const viewMode = '<?php echo $viewMode; ?>';
