@@ -264,7 +264,9 @@ $categorySalesJson = json_encode($categorySalesData);
         <canvas id="salesChart"></canvas>
     </div>
 
-
+    <div class="row">
+    <!-- Recent Orders Card -->
+    <div class="col-md-6">
 <div class="card">
     <div class="card-header">
         <h4>Recent Orders</h4>
@@ -294,6 +296,7 @@ $categorySalesJson = json_encode($categorySalesData);
         </table>
     </div>
 </div>
+<div class="col-md-6">
 <div class="card">
     <div class="card-header">
         <h4>Category-wise Sales</h4>
@@ -301,6 +304,7 @@ $categorySalesJson = json_encode($categorySalesData);
     <div class="card-body">
     <div id="categoryPieChart" style="width: 100%; height: 400px;"></div>
     </div>
+</div>
 </div>
 </div>
 <script>
