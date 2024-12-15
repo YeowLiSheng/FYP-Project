@@ -62,124 +62,157 @@ $topProducts = getTopProducts($connect);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css"> <!-- External CSS for cleaner code -->
     <title>Admin Dashboard</title>
     <style>
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
         }
+
         .container {
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: space-between;
-            margin: 20px 260px;
-            gap: 20px;
-        }
-        .box {
-            background: #1e1e1e;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
             padding: 20px;
-            width: 18%;
-            text-align: center;
+            margin-left: 250px; /* Adjust to avoid sidebar overlay */
         }
-        .box i {
-            font-size: 40px;
-            color: #4CAF50;
-            margin-bottom: 10px;
+
+        .cards {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 20px;
         }
-        .box h2 {
-            font-size: 20px;
-            margin: 10px 0;
-            color: #ffffff;
+
+        .ccard {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #DFF5DB;
+            border-radius: 20px;
+            box-shadow: 0 7px 25px 0 rgba(0, 0, 0, 0.08);
+            transition: background-color 0.3s;
         }
-        .box p {
-            font-size: 18px;
-            color: #bbbbbb;
+
+        .ccard:hover {
+            background-color: #97EA88;
+            cursor: pointer;
         }
-        .product-sales, .new-customers {
-            margin: 20px 260px;
+
+        .icon {
+            font-size: 55px;
+            color: #32871F;
+        }
+
+        .number {
+            font-size: 45px;
+            color: #32871F;
+        }
+
+        .name {
+            font-size: 25px;
+            color: #555;
+        }
+
+        .product-sales {
+            margin-top: 30px;
             font-size: 24px;
-            color: #ffffff;
             font-weight: bold;
+            color: #333;
         }
-        table {
-            width: calc(100% - 320px);
-            margin: 0 auto 20px auto;
+
+        .table {
+            width: 100%;
+            margin-top: 20px;
             border-collapse: collapse;
-            background: #1e1e1e;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
         }
-        th, td {
-            padding: 15px;
+
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #333;
-            color: #ffffff;
         }
-        th {
-            background: #4CAF50;
-            color: white;
+
+        .table th {
+            background-color: #f4f4f4;
+            color: #333;
         }
-        tr:hover {
-            background: #333;
+
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .table-striped tbody tr:nth-child(even) {
+            background-color: #fff;
+        }
+
+        .recent {
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="cards">
+            <div class="ccard">
+                <div>
+                    <p class="number"><?php echo $product_count; ?></p>
+                    <p class="name">Products</p>
+                </div>
+                <i class="fas fa-tags icon"></i>
+            </div>
 
-<div class="container">
-    <div class="box">
-        <i class="fas fa-tags"></i>
-        <h2>Product Categories</h2>
-        <p><?php echo $product_count; ?></p>
-    </div>
-    <div class="box">
-        <i class="fas fa-users"></i>
-        <h2>Staff Members</h2>
-        <p><?php echo $staff_count; ?></p>        
-    </div>
-    <div class="box">
-        <i class="fas fa-shopping-cart"></i>
-        <h2>Orders</h2>
-        <p><?php echo $order_count; ?></p>
-    </div>
-    <div class="box">
-        <i class="fas fa-users"></i>
-        <h2>Customers</h2>
-        <p><?php echo $user_count; ?></p>       
-    </div>
-    <div class="box">
-        <i class="fas fa-dollar-sign"></i>
-        <h2>Total Profit</h2>
-        <p>RM<?php echo number_format($totalSales, 2); ?></p>
-    </div>
-</div>
+            <div class="ccard">
+                <div>
+                    <p class="number"><?php echo $staff_count; ?></p>
+                    <p class="name">Staff</p>
+                </div>
+                <i class="fas fa-users icon"></i>
+            </div>
 
-<div class="product-sales">Top 5 Products by Sales</div>
-<table>
-    <thead>
-        <tr>
-            <th>Product Name</th>
-            <th>Units Sold</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($topProducts as $product): ?>
-            <tr>
-                <td><?php echo $product['product_name']; ?></td>
-                <td><?php echo $product['total_sold']; ?></td>
-            </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>
+            <div class="ccard">
+                <div>
+                    <p class="number"><?php echo $order_count; ?></p>
+                    <p class="name">Orders</p>
+                </div>
+                <i class="fas fa-shopping-cart icon"></i>
+            </div>
 
-<div class="new-customers">Recent Users</div>
-<!-- Add recent user data here -->
+            <div class="ccard">
+                <div>
+                    <p class="number"><?php echo $user_count; ?></p>
+                    <p class="name">Customers</p>
+                </div>
+                <i class="fas fa-users icon"></i>
+            </div>
 
+            <div class="ccard">
+                <div>
+                    <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+                    <p class="name">Total Profit</p>
+                </div>
+                <i class="fas fa-dollar-sign icon"></i>
+            </div>
+        </div>
+
+        <div class="product-sales">Top 5 Products by Sales</div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($topProducts as $product): ?>
+                    <tr>
+                        <td><?php echo $product['product_name']; ?></td>
+                        <td><?php echo $product['total_sold']; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
