@@ -75,6 +75,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             margin: 20px 0;
         }
         .ccard {
+            margin-top: 80px;
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
