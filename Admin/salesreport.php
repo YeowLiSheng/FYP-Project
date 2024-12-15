@@ -233,12 +233,13 @@ $categorySalesJson = json_encode($categorySalesData);
 </head>
 <body>
 <div class="container">
+<div class="sales-icon-container">
+<i class="fas fa-chart-line"></i>
+<p>Sales Report</p>
+        </div>
     <!-- Summary Cards -->
     <div class="cards">
-    <div class="sales-icon-container">
-            <i class="fas fa-line-chart"></i>
-            <p>Sales Report</p>
-        </div>
+   
         <div class="ccard">
             <i class="fas fa-shopping-cart icon"></i>
             <p class="number"><?php echo $order_count; ?></p>
