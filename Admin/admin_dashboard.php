@@ -125,7 +125,7 @@ $lowStockProducts = getLowStockProducts($connect);
 
 }
 .home-icon-container {
-    margin-top: 70px;
+            
             display: flex;
             align-items: center;
             margin-bottom: 20px; /* Space between home icon and cards */
