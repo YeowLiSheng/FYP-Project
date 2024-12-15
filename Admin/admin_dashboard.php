@@ -103,19 +103,19 @@ $genderDistribution = getGenderDistribution($connect);
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f5f6fa;
+            background-color: #f4f6f9;
             color: #333;
         }
 
         .container {
             padding: 20px;
-            margin: auto;
+            margin: 0 auto;
             max-width: 1200px;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -126,50 +126,50 @@ $genderDistribution = getGenderDistribution($connect);
             align-items: center;
             justify-content: center;
             background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s, box-shadow 0.3s;
         }
 
         .ccard:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .icon {
-            font-size: 50px;
-            color: #4caf50;
+            font-size: 60px;
+            color: #17a2b8;
             margin-bottom: 15px;
         }
 
         .number {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            color: #222;
-            margin-bottom: 5px;
+            color: #333;
         }
 
         .name {
             font-size: 1.1rem;
             font-weight: 500;
-            color: #777;
-        }
-
-        .chart-container {
-            margin-bottom: 30px;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            color: #666;
         }
 
         .section-header {
             font-size: 1.8rem;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #333;
-            text-align: center;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 5px;
+            color: #444;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
         .table {
@@ -188,7 +188,7 @@ $genderDistribution = getGenderDistribution($connect);
         }
 
         .table th {
-            background-color: #f8f9fa;
+            background-color: #f1f3f5;
             font-weight: 700;
             color: #495057;
         }
@@ -198,26 +198,21 @@ $genderDistribution = getGenderDistribution($connect);
         }
 
         .table img {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 8px;
             object-fit: cover;
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
             .cards {
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Cards Section -->
         <div class="cards">
             <div class="ccard">
                 <i class="fas fa-tags icon"></i>
@@ -246,13 +241,11 @@ $genderDistribution = getGenderDistribution($connect);
             </div>
         </div>
 
-        <!-- Weekly Sales Comparison Chart -->
         <div class="chart-container">
-            <div class="section-header">Weekly Sales Comparison</div>
+            <h2 style="text-align: center;">Weekly Sales Comparison</h2>
             <canvas id="weeklySalesChart"></canvas>
         </div>
 
-        <!-- Top 5 Products Section -->
         <div>
             <div class="section-header">Top 5 Products by Sales</div>
             <table class="table table-striped">
@@ -275,54 +268,52 @@ $genderDistribution = getGenderDistribution($connect);
             </table>
         </div>
 
-        <!-- Recent Users Section -->
-        <div>
-            <div class="section-header">Recent Users</div>
-            <table class="table">
-                <thead>
+        <h3>Recent Users</h3>
+        <table border="1" cellspacing="0" cellpadding="10">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Join Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($recentUsers as $user): ?>
                     <tr>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Join Time</th>
+                        <td>
+                            <?php if (!empty($user['user_image'])): ?>
+                                <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image" style="width:50px;height:50px;">
+                            <?php else: ?>
+                                <span>No Image</span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo htmlspecialchars($user['user_name']); ?></td>
+                        <td><?php echo htmlspecialchars($user['user_email']); ?></td>
+                        <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($recentUsers as $user): ?>
-                        <tr>
-                            <td>
-                                <?php if (!empty($user['user_image'])): ?>
-                                    <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image">
-                                <?php else: ?>
-                                    <span>No Image</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo htmlspecialchars($user['user_name']); ?></td>
-                            <td><?php echo htmlspecialchars($user['user_email']); ?></td>
-                            <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
 
-        <!-- Gender Distribution Chart -->
+        <h3>Gender Distribution</h3>
         <div class="chart-container">
-            <div class="section-header">Gender Distribution</div>
-            <canvas id="genderPieChart"></canvas>
+            <canvas id="genderPieChart" width="400" height="400"></canvas>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Weekly Sales Chart
         const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
         const labels = weeklySalesData.map(data => data.week_range);
         const sales = weeklySalesData.map(data => data.total_sales);
 
-        const ctxWeekly = document.getElementById('weeklySalesChart').getContext('2d');
-        new Chart(ctxWeekly, {
+        const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
+        gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
+
+        new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -330,43 +321,80 @@ $genderDistribution = getGenderDistribution($connect);
                     label: 'Total Sales (Weekly)',
                     data: sales,
                     fill: true,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    backgroundColor: gradient,
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 2,
-                    tension: 0.4
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointBorderColor: '#fff',
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Sales: RM${context.raw.toLocaleString()}`;
+                            }
+                        }
+                    }
                 },
                 scales: {
-                    x: { title: { display: true, text: 'Week Range' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales (RM)' } }
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Week Range',
+                            color: '#333',
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Sales (RM)',
+                            color: '#333',
+                        }
+                    }
                 }
             }
         });
 
-        // Gender Pie Chart
         const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
         const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
-
-        const ctxGender = document.getElementById('genderPieChart').getContext('2d');
-        new Chart(ctxGender, {
+        const ctxPie = document.getElementById('genderPieChart').getContext('2d');
+        new Chart(ctxPie, {
             type: 'pie',
             data: {
                 labels: genderLabels,
                 datasets: [{
+                    label: 'Customer Gender Distribution',
                     data: genderCounts,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56'
+                    ],
                     hoverOffset: 4
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'top' },
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                const percentage = (
+                                    (genderCounts[tooltipItem.dataIndex] / 
+                                     genderCounts.reduce((a, b) => a + b, 0)) * 100
+                                ).toFixed(2);
+                                return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
+                            }
+                        }
+                    }
                 }
             }
         });
