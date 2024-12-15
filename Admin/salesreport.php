@@ -80,6 +80,17 @@ if (count($yearlySales) < 6) {
         }
     }
     usort($yearlySales, fn($a, $b) => $a['year'] - $b['year']);
+
+    // Fetch recent 5 orders
+$recentOrders_query = "
+SELECT o.order_id, u.user_name, o.order_date, o.final_amount, o.order_status 
+FROM orders o
+JOIN user u ON o.user_id = u.user_id
+ORDER BY o.order_date DESC
+LIMIT 5";
+$recentOrders_result = $connect->query($recentOrders_query);
+$recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
+
 }
 ?>
 
@@ -141,6 +152,23 @@ if (count($yearlySales) < 6) {
         #chartContainer {
             margin-top: 40px;
         }
+        .card {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.card-header {
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+}
+.card-body {
+    padding: 15px 20px;
+}
+.table th, .table td {
+    vertical-align: middle;
+}
     </style>
 </head>
 <body>
@@ -202,6 +230,36 @@ if (count($yearlySales) < 6) {
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Recent Orders</h4>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Order Time</th>
+                    <th>Total</th>
+                    <th>Shipping Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($recentOrders as $order): ?>
+                    <tr>
+                        <td><?= $order['order_id']; ?></td>
+                        <td><?= htmlspecialchars($order['user_name']); ?></td>
+                        <td><?= $order['order_date']; ?></td>
+                        <td>RM <?= number_format($order['final_amount'], 2); ?></td>
+                        <td><?= $order['order_status']; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 </div>
 
