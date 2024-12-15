@@ -56,15 +56,18 @@ function getTopProducts($connect) {
 }
 $topProducts = getTopProducts($connect);
 
-function getWeeklySales($connect) {
-    $query = "SELECT WEEK(order_date) AS week, SUM(final_amount) AS total_sales 
-              FROM orders 
-              WHERE YEAR(order_date) = YEAR(CURDATE()) 
-              GROUP BY WEEK(order_date)";
+function getWeeklySalesWithDates($connect) {
+    $query = "
+        SELECT 
+            CONCAT(DATE_FORMAT(order_date, '%Y-%m-%d'), ' ~ ', DATE_FORMAT(order_date + INTERVAL (6 - WEEKDAY(order_date)) DAY, '%Y-%m-%d')) AS week_range, 
+            SUM(final_amount) AS total_sales
+        FROM orders
+        WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 最近一个月
+        GROUP BY YEAR(order_date), WEEK(order_date)";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
-$weeklySales = getWeeklySales($connect);
+$weeklySales = getWeeklySalesWithDates($connect);
 ?>
 
 <!DOCTYPE html>
@@ -228,33 +231,74 @@ $weeklySales = getWeeklySales($connect);
     </tbody>
 </table>
     </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<canvas id="weeklySalesChart"></canvas>
+    <div style="width: 80%; margin: auto; padding: 20px;">
+    <h2 style="text-align: center;">Weekly Sales Comparison</h2>
+    <canvas id="weeklySalesChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+    // 将PHP数据传递给JavaScript
     const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
-    const labels = weeklySalesData.map(data => `Week ${data.week}`);
+    
+    // 提取标签和数据
+    const labels = weeklySalesData.map(data => data.week_range);
     const sales = weeklySalesData.map(data => data.total_sales);
 
+    // 创建渐变填充样式
+    const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
+    gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
+
     new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Weekly Sales',
+                label: 'Total Sales (Weekly)',
                 data: sales,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
+                fill: true,
+                backgroundColor: gradient,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                tension: 0.3, // Smooth curves
+                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(75, 192, 192, 1)',
             }]
         },
         options: {
             responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Sales: $${context.raw.toLocaleString()}`;
+                        }
+                    }
+                }
+            },
             scales: {
-                y: { beginAtZero: true }
-            }
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Week Range',
+                        color: '#333',
+                        font: { size: 14 }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Total Sales ($)',
+                        color: '#333',
+                        font: { size: 14 }
+                    }
+                }
+            },
+            maintainAspectRatio: false
         }
     });
 </script>
