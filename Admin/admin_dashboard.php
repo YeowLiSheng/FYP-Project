@@ -68,21 +68,22 @@ $topProducts = getTopProducts($connect);
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
+            background-color: #121212;
+            color: #ffffff;
         }
         .container {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            margin: 20px 20px 50px 260px; /* Ensure it doesn’t overlap sidebar */
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            margin: 20px 260px;
+            gap: 20px;
         }
         .box {
-            background: white;
+            background: #1e1e1e;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
             padding: 20px;
-            margin: 10px;
-            width: 250px;
+            width: 18%;
             text-align: center;
         }
         .box i {
@@ -93,38 +94,39 @@ $topProducts = getTopProducts($connect);
         .box h2 {
             font-size: 20px;
             margin: 10px 0;
-            color: #333;
+            color: #ffffff;
         }
         .box p {
             font-size: 18px;
-            color: #666;
+            color: #bbbbbb;
         }
         .product-sales, .new-customers {
             margin: 20px 260px;
             font-size: 24px;
-            color: #333;
+            color: #ffffff;
             font-weight: bold;
         }
         table {
             width: calc(100% - 320px);
             margin: 0 auto 20px auto;
             border-collapse: collapse;
-            background: white;
+            background: #1e1e1e;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
         }
         th, td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #333;
+            color: #ffffff;
         }
         th {
             background: #4CAF50;
             color: white;
         }
         tr:hover {
-            background: #f1f1f1;
+            background: #333;
         }
     </style>
 </head>
