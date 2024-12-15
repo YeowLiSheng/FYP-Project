@@ -119,83 +119,73 @@ $lowStockProducts = getLowStockProducts($connect);
         }
 
         .container {
-            padding: 20px;
-            margin-left: 260px;
-            margin-top: 80px;
-        }
+        padding: 20px;
+        margin-left: 260px;
+        margin-top: 80px;
+    }
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
 
-        .ccard {
-            display: flex;
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .column {
+        flex: 1;
+        min-width: 300px;
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-container {
+        overflow: hidden;
+        border-radius: 10px;
+    }
+
+    .section-header {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 5px;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .table th, .table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table th {
+        background-color: #f1f3f5;
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+        .row {
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
         }
 
-        .ccard:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .icon {
-            font-size: 50px;
-            color: #17a2b8;
-            margin-bottom: 10px;
-        }
-
-        .number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .name {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .section-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 5px;
-        }
-
-        .table {
+        .column {
             width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
         }
-
-        .table th, .table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-            font-size: 0.9rem;
-        }
-
-        .table th {
-            background-color: #f1f3f5;
-            font-weight: 700;
-            color: #495057;
-        }
+    }
 
         .table-striped tbody tr:nth-child(odd) {
             background-color: #f8f9fa;
@@ -222,110 +212,122 @@ $lowStockProducts = getLowStockProducts($connect);
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Cards -->
-        <div class="cards">
-            <div class="ccard">
-                <i class="fas fa-tags icon"></i>
-                <p class="number"><?php echo $product_count; ?></p>
-                <p class="name">Products</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-users icon"></i>
-                <p class="number"><?php echo $staff_count; ?></p>
-                <p class="name">Staff</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-shopping-cart icon"></i>
-                <p class="number"><?php echo $order_count; ?></p>
-                <p class="name">Orders</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-users icon"></i>
-                <p class="number"><?php echo $user_count; ?></p>
-                <p class="name">Customers</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-dollar-sign icon"></i>
-                <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
-                <p class="name">Total Profit</p>
-            </div>
+<div class="container">
+    <!-- Cards -->
+    <div class="cards">
+        <div class="ccard">
+            <i class="fas fa-tags icon"></i>
+            <p class="number"><?php echo $product_count; ?></p>
+            <p class="name">Products</p>
         </div>
-
-        <!-- Weekly Sales Chart -->
-        <div class="chart-container">
-            <h2 style="text-align: center;">Weekly Sales Comparison</h2>
-            <canvas id="weeklySalesChart"></canvas>
+        <div class="ccard">
+            <i class="fas fa-users icon"></i>
+            <p class="number"><?php echo $staff_count; ?></p>
+            <p class="name">Staff</p>
         </div>
+        <div class="ccard">
+            <i class="fas fa-shopping-cart icon"></i>
+            <p class="number"><?php echo $order_count; ?></p>
+            <p class="name">Orders</p>
+        </div>
+        <div class="ccard">
+            <i class="fas fa-users icon"></i>
+            <p class="number"><?php echo $user_count; ?></p>
+            <p class="name">Customers</p>
+        </div>
+        <div class="ccard">
+            <i class="fas fa-dollar-sign icon"></i>
+            <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+            <p class="name">Total Profit</p>
+        </div>
+    </div>
 
-        <!-- Top 5 Products -->
-        <div>
+    <!-- Top 5 Products & Recent Users -->
+    <div class="row">
+        <div class="column">
             <div class="section-header">Top 5 Products by Sales</div>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Product Image</th>
-                        <th>Product Name</th>
-                        <th>Units Sold</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topProducts as $product): ?>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
-                            <td><?php echo $product['product_name']; ?></td>
-                            <td><?php echo $product['total_sold']; ?></td>
+                            <th>Product Image</th>
+                            <th>Product Name</th>
+                            <th>Units Sold</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($topProducts as $product): ?>
+                            <tr>
+                                <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px;"></td>
+                                <td><?php echo $product['product_name']; ?></td>
+                                <td><?php echo $product['total_sold']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
+        <div class="column">
+            <div class="section-header">Recent Users</div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Join Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recentUsers as $user): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($user['user_name']); ?></td>
+                                <td><?php echo htmlspecialchars($user['user_email']); ?></td>
+                                <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-        <!-- Recent Users -->
-        <div class="section-header">Recent Users</div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Join Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($recentUsers as $user): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($user['user_name']); ?></td>
-                        <td><?php echo htmlspecialchars($user['user_email']); ?></td>
-                        <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <div class="low-stock-products">
-    <h2>Products with Low Stock</h2>
-    <table border="1" cellpadding="10">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Image</th>
-                <th>Stock Quantity</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($lowStockProducts as $product): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                    <td>
-                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                             style="width: 100px; height: auto;">
-                    </td>
-                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <!-- Gender Chart & Low Stock Products -->
+    <div class="row">
+        <div class="column">
+            <h2 style="text-align: center;">Gender Distribution</h2>
+            <canvas id="genderPieChart"></canvas>
+        </div>
+        <div class="column">
+            <h2 style="text-align: center;">Low Stock Products</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Image</th>
+                            <th>Stock Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($lowStockProducts as $product): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                                <td>
+                                    <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                                         alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                                         style="width: 60px; height: 60px;">
+                                </td>
+                                <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
 
         <!-- Gender Chart -->
         <div class="chart-container">
