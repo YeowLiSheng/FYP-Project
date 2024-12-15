@@ -75,6 +75,7 @@ $topProducts = getTopProducts($connect);
         .container {
             padding: 20px;
             margin-left: 260px; /* Adjust to align next to sidebar */
+            margin-top: 80px; /* Add margin to push content below sidebar header */
         }
 
         .cards {
