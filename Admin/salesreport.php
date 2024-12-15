@@ -134,6 +134,7 @@ $categorySalesJson = json_encode($categorySalesData);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
+    
     <script>
         function updateEndDateLimit() {
             const startDate = document.getElementById('start_date').value;
@@ -397,9 +398,9 @@ $categorySalesJson = json_encode($categorySalesData);
 
 
  // Parse PHP data into JavaScript
- <script src="https://www.gstatic.com/charts/loader.js"></script>
 
     google.charts.load('current', { packages: ['corechart'] });
+
     google.charts.setOnLoadCallback(drawCategoryChart);
 
     function drawCategoryChart() {
@@ -407,8 +408,10 @@ $categorySalesJson = json_encode($categorySalesData);
         var categorySalesData = google.visualization.arrayToDataTable([
             ['Category', 'Percentage'],
             <?php
+            // Ensure data is correctly formatted for JavaScript
             foreach ($categorySalesData as $category) {
-                echo "['" . $category['category'] . "', " . number_format($category['percentage'], 2) . "],";
+                // Make sure your $category['category'] is safely handled for JS
+                echo "['" . addslashes($category['category']) . "', " . number_format($category['percentage'], 2) . "],";
             }
             ?>
         ]);
@@ -432,8 +435,6 @@ $categorySalesJson = json_encode($categorySalesData);
         var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
         categoryPieChart.draw(categorySalesData, categoryChartOptions);
     }
-
-
 </script>
 </body>
 </html>
