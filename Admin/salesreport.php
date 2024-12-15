@@ -267,44 +267,48 @@ $categorySalesJson = json_encode($categorySalesData);
     <div class="row">
     <!-- Recent Orders Card -->
     <div class="col-md-6">
-<div class="card">
-    <div class="card-header">
-        <h4>Recent Orders</h4>
+        <div class="card">
+            <div class="card-header">
+                <h4>Recent Orders</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Order Time</th>
+                            <th>Total</th>
+                            <th>Shipping Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recentOrders as $order): ?>
+                            <tr>
+                                <td><?= $order['order_id']; ?></td>
+                                <td><?= htmlspecialchars($order['user_name']); ?></td>
+                                <td><?= $order['order_date']; ?></td>
+                                <td>RM <?= number_format($order['final_amount'], 2); ?></td>
+                                <td><?= $order['order_status']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Customer Name</th>
-                    <th>Order Time</th>
-                    <th>Total</th>
-                    <th>Shipping Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($recentOrders as $order): ?>
-                    <tr>
-                        <td><?= $order['order_id']; ?></td>
-                        <td><?= htmlspecialchars($order['user_name']); ?></td>
-                        <td><?= $order['order_date']; ?></td>
-                        <td>RM <?= number_format($order['final_amount'], 2); ?></td>
-                        <td><?= $order['order_status']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+
+    <!-- Category-wise Sales Card -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Category-wise Sales</h4>
+            </div>
+            <div class="card-body">
+                <div id="categoryPieChart" style="width: 100%; height: 400px;"></div>
+            </div>
+        </div>
     </div>
-</div>
-<div class="col-md-6">
-<div class="card">
-    <div class="card-header">
-        <h4>Category-wise Sales</h4>
-    </div>
-    <div class="card-body">
-    <div id="categoryPieChart" style="width: 100%; height: 400px;"></div>
-    </div>
-</div>
 </div>
 </div>
 <script>
