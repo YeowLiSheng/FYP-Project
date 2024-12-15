@@ -2,11 +2,12 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// Default date range
+// Default date range for sales trend
 $startDate = date('Y-m-d', strtotime('-30 days'));
 $endDate = date('Y-m-d');
 
-// Check if dates are submitted via POST
+// Check if dates or view mode are submitted via POST
+$viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
 if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
     $startDate = $_POST['start_date'];
     $endDate = $_POST['end_date'];
@@ -40,6 +41,24 @@ $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily
                       ORDER BY DATE(order_date)";
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
+
+// Fetch monthly sales data
+$monthlySales_query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
+                        FROM orders 
+                        GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
+                        ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC 
+                        LIMIT 6";
+$monthlySales_result = $connect->query($monthlySales_query);
+$monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
+
+// Fetch yearly sales data
+$yearlySales_query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
+                       FROM orders 
+                       GROUP BY YEAR(order_date) 
+                       ORDER BY YEAR(order_date) DESC 
+                       LIMIT 6";
+$yearlySales_result = $connect->query($yearlySales_query);
+$yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -60,6 +79,10 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
         function submitDateForm() {
             document.getElementById('dateForm').submit();
+        }
+
+        function updateViewMode() {
+            document.getElementById('viewForm').submit();
         }
     </script>
     <style>
@@ -93,7 +116,7 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
             font-size: 16px;
             color: #6c757d;
         }
-        #salesTrendChart {
+        #chartContainer {
             margin-top: 40px;
         }
     </style>
@@ -124,72 +147,113 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 
-    <!-- Date Range Filter -->
-    <form method="POST" id="dateForm">
+    <!-- View Mode Selector -->
+    <form method="POST" id="viewForm">
         <div class="row g-3 align-items-center">
             <div class="col-auto">
-                <label for="start_date" class="form-label">Start Date</label>
-                <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>" onchange="updateEndDateLimit(); submitDateForm();">
-            </div>
-            <div class="col-auto">
-                <label for="end_date" class="form-label">End Date</label>
-                <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" min="<?php echo $startDate; ?>" onchange="submitDateForm();">
+                <label for="view_mode" class="form-label">View Mode</label>
+                <select id="view_mode" name="view_mode" class="form-select" onchange="updateViewMode();">
+                    <option value="sales_trend" <?php if ($viewMode === 'sales_trend') echo 'selected'; ?>>Sales Trend</option>
+                    <option value="monthly_sales" <?php if ($viewMode === 'monthly_sales') echo 'selected'; ?>>Monthly Sales</option>
+                    <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
+                </select>
             </div>
         </div>
     </form>
 
     <!-- Sales Trend Chart -->
-    <canvas id="salesTrendChart"></canvas>
+    <div id="chartContainer">
+        <canvas id="salesChart"></canvas>
+    </div>
 </div>
 
 <script>
     // Retrieve PHP data
-    const salesTrendData = <?php echo json_encode($salesTrend); ?>;
+    const viewMode = '<?php echo $viewMode; ?>';
+    let chartData;
 
-    // Extract dates and sales values
-    const dates = salesTrendData.map(item => item.date);
-    const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
+    if (viewMode === 'sales_trend') {
+        chartData = <?php echo json_encode($salesTrend); ?>;
+        const dates = chartData.map(item => item.date);
+        const sales = chartData.map(item => parseFloat(item.daily_sales));
 
-    // Configure Chart.js
-    const ctx = document.getElementById('salesTrendChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Daily Sales (RM)',
-                data: sales,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
+        createLineChart('Daily Sales (RM)', dates, sales);
+
+    } else if (viewMode === 'monthly_sales') {
+        chartData = <?php echo json_encode($monthlySales); ?>;
+        const months = chartData.map(item => item.month);
+        const sales = chartData.map(item => parseFloat(item.monthly_sales));
+
+        createBarChart('Monthly Sales (RM)', months, sales);
+
+    } else if (viewMode === 'yearly_sales') {
+        chartData = <?php echo json_encode($yearlySales); ?>;
+        const years = chartData.map(item => item.year);
+        const sales = chartData.map(item => parseFloat(item.yearly_sales));
+
+        createBarChart('Yearly Sales (RM)', years, sales);
+    }
+
+    function createLineChart(label, labels, data) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
             },
-            scales: {
-                x: {
-                    title: {
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
                         display: true,
-                        text: 'Date'
+                        position: 'top'
                     }
                 },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Sales (RM)'
-                    },
-                    beginAtZero: true
+                scales: {
+                    x: { title: { display: true, text: 'Date' } },
+                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
                 }
             }
-        }
-    });
+        });
+    }
+
+    function createBarChart(label, labels, data) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: '#007bff',
+                    borderColor: '#0056b3',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Date' } },
+                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+                }
+            }
+        });
+    }
 </script>
 </body>
 </html>
