@@ -120,7 +120,7 @@ $lowStockProducts = getLowStockProducts($connect);
 
 .container {
     padding: 20px;
-    margin-left: 200px;
+    margin-left: 78px;
     margin-top: 80px;
 }
 
