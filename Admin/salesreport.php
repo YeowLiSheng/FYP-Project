@@ -73,11 +73,10 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <title>Admin Sales Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .container{
+        .container {
             margin-top: 80px;
-
         }
         .cards {
             display: flex;
@@ -106,11 +105,14 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             font-size: 16px;
             color: #6c757d;
         }
+        #salesTrendChart {
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- 卡片 -->
+    <!-- Summary Cards -->
     <div class="cards">
         <div class="ccard">
             <i class="fas fa-shopping-cart icon"></i>
@@ -133,6 +135,74 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <p class="name">Total Products Sold</p>
         </div>
     </div>
+
+    <!-- Date Range Filter -->
+    <form method="POST" class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="start_date" class="form-label">Start Date</label>
+            <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>">
+        </div>
+        <div class="col-auto">
+            <label for="end_date" class="form-label">End Date</label>
+            <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary mt-3">Filter</button>
+        </div>
+    </form>
+
+    <!-- Sales Trend Chart -->
+    <canvas id="salesTrendChart"></canvas>
 </div>
+
+<script>
+    // Retrieve PHP data
+    const salesTrendData = <?php echo json_encode($salesTrend); ?>;
+
+    // Extract dates and sales values
+    const dates = salesTrendData.map(item => item.date);
+    const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
+
+    // Configure Chart.js
+    const ctx = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Daily Sales (RM)',
+                data: sales,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Sales (RM)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 </body>
 </html>
