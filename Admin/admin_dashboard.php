@@ -122,7 +122,7 @@ $lowStockProducts = getLowStockProducts($connect);
     padding: 20px;
     margin-left: 100px;
     margin-top: 80px;
-    width: 90%; /* 容器宽度占屏幕的 90% */
+    width: 110%; /* 容器宽度占屏幕的 90% */
 
 }
 
