@@ -80,7 +80,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             </div>
             <div class="ccard">
                 <i class="fas fa-users icon"></i>
-                <p class="number"><?php echo $user_count; ?></p>
+                <p class="number"><?php echo $total_customers; ?></p>
                 <p class="name">Customers</p>
             </div>
             <div class="ccard">
