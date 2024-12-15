@@ -52,6 +52,32 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
+// Get product_id from the request (use for dynamic testing; hardcoded here for example)
+$product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : 1;
+
+// Query to fetch packages containing the product ID
+$sql = "SELECT 
+            p.package_id, 
+            p.package_name, 
+            p.package_price, 
+            p.package_description,
+            p.package_image
+        FROM product_package p
+        LEFT JOIN product prod1 ON p.product1_id = prod1.product_id
+        LEFT JOIN product prod2 ON p.product2_id = prod2.product_id
+        LEFT JOIN product prod3 ON p.product3_id = prod3.product_id
+        WHERE p.product1_id = $product_id 
+           OR p.product2_id = $product_id 
+           OR p.product3_id = $product_id";
+
+$result = $connect->query($sql);
+
+$packages = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $packages[] = $row;
+    }
+}
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -251,6 +277,132 @@ body {
 .isotope-grid {
     min-height: 50vh; /* Ensures content area fills the screen */
 }
+
+/* General Container Styling */
+#packageBox {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Section Title */
+    .package-title {
+        text-align: center;
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    /* Package Card Styling */
+    .package-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .package-card:hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Image Styling */
+    .p-image {
+        max-width: 80px;
+        height: auto;
+        border-radius: 5px;
+        margin-right: 15px;
+    }
+
+    /* Package Info */
+    .package-info {
+        flex-grow: 1;
+        padding-left: 15px;
+    }
+
+    .package-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    .package-price {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    /* Quantity Controls */
+    .qty-controls {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .qty-btn {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .qty-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .qty-input {
+        width: 50px;
+        text-align: center;
+        margin: 0 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
+    }
+
+    /* Select Button */
+    .btn-primary {
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #218838;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+        .package-card {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .p-image {
+            margin-right: 0;
+            margin-bottom: 10px;
+        }
+
+        .package-info {
+            padding-left: 0;
+            text-align: center;
+        }
+    }
+
 </style>
 
 </head>
@@ -937,6 +1089,26 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 								</div>
 							</div>
 
+							<div id="packageBox" style="margin-top: 20px;">
+								<h1 class="package-title">Valuable Set</h1>
+								<?php foreach ($packages as $pkg): ?>
+									<div class="package-card" data-package-id="<?= $pkg['package_id']; ?>">
+										<img src="images/<?php echo $pkg['package_image'] ?>" alt="Package Image" class="p-image">
+										<div class="package-info">
+											<h3 class="package-name"><?= $pkg['package_name']; ?></h3>
+											<p class="package-price">Price: $<?= number_format($pkg['package_price'], 2); ?></p>
+											<div class="qty-controls">
+												<button class="qty-btn minus">-</button>
+												<input type="number" value="1" min="1" class="qty-input">
+												<button class="qty-btn plus">+</button>
+											</div>
+											<button class="selectPackage btn-primary">Select Package</button>
+										</div>
+									</div>
+								<?php endforeach; ?>
+							</div>
+
+
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-204 flex-w flex-m respon6-next">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
@@ -1331,7 +1503,43 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     updateProducts();
 });
 </script>
+<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Handle quantity adjustments
+            document.querySelectorAll(".qty-controls").forEach(control => {
+                const minusButton = control.querySelector(".minus");
+                const plusButton = control.querySelector(".plus");
+                const qtyInput = control.querySelector("input");
 
+                minusButton.addEventListener("click", () => {
+                    const qty = Math.max(1, parseInt(qtyInput.value) - 1);
+                    qtyInput.value = qty;
+                });
+
+                plusButton.addEventListener("click", () => {
+                    qtyInput.value = parseInt(qtyInput.value) + 1;
+                });
+            });
+
+            // Handle package selection
+            document.querySelectorAll(".selectPackage").forEach(button => {
+                button.addEventListener("click", function () {
+                    const packageDiv = this.closest(".package");
+                    const isSelected = packageDiv.classList.contains("selected");
+
+                    if (isSelected) {
+                        // Deselect the package
+                        packageDiv.classList.remove("selected");
+                        console.log(`Package ${packageDiv.dataset.packageId} deselected.`);
+                    } else {
+                        // Select the package
+                        packageDiv.classList.add("selected");
+                        console.log(`Package ${packageDiv.dataset.packageId} selected.`);
+                    }
+                });
+            });
+        });
+    </script>
 <script src="js/main.js"></script>
 
 </body>
