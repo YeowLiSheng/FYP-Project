@@ -111,114 +111,139 @@ $lowStockProducts = getLowStockProducts($connect);
     <title>Admin Dashboard</title>
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-            color: #333;
-        }
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+}
 
-        .container {
-            padding: 20px;
-            margin-left: 260px;
-            margin-top: 80px;
-        }
+.container {
+    padding: 20px;
+    margin-left: 260px;
+    margin-top: 80px;
+}
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
 
-        .ccard {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
+.ccard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
 
-        .ccard:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
+.ccard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
 
-        .icon {
-            font-size: 50px;
-            color: #17a2b8;
-            margin-bottom: 10px;
-        }
+.icon {
+    font-size: 50px;
+    color: #17a2b8;
+    margin-bottom: 10px;
+}
 
-        .number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #333;
-        }
+.number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+}
 
-        .name {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #555;
-        }
+.name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #555;
+}
 
-        .section-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 5px;
-        }
+.section-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 5px;
+}
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
 
-        .table th, .table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-            font-size: 0.9rem;
-        }
+.table th, .table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 0.9rem;
+}
 
-        .table th {
-            background-color: #f1f3f5;
-            font-weight: 700;
-            color: #495057;
-        }
+.table th {
+    background-color: #f1f3f5;
+    font-weight: 700;
+    color: #495057;
+}
 
-        .table-striped tbody tr:nth-child(odd) {
-            background-color: #f8f9fa;
-        }
+.table-striped tbody tr:nth-child(odd) {
+    background-color: #f8f9fa;
+}
 
-        .chart-container {
-            margin-top: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+.chart-container {
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
 
-        @media (max-width: 768px) {
-            .container {
-                margin-left: 0;
-                padding: 15px;
-            }
+.flex-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 30px;
+}
 
-            .cards {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-        }
+.half-card {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 1200px) {
+    .flex-row {
+        flex-direction: column;
+    }
+
+    .half-card {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .cards {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
     </style>
 </head>
 <body>
