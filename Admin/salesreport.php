@@ -13,6 +13,9 @@ if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
     $endDate = $_POST['end_date'];
 }
 
+// Check for selected year in monthly sales view
+$selectedYear = isset($_POST['selected_year']) ? $_POST['selected_year'] : date('Y');
+
 // Fetch total orders
 $order_query = "SELECT COUNT(*) AS order_count FROM `orders`";
 $order_result = $connect->query($order_query);
@@ -26,7 +29,7 @@ $totalSales = $totalSales_result->num_rows > 0 ? $totalSales_result->fetch_assoc
 // Fetch total customers
 $totalCustomers_query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
 $totalCustomers_result = $connect->query($totalCustomers_query);
-$total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
+total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
 
 // Fetch total products sold
 $totalProducts_query = "SELECT SUM(quantity) AS total_products_sold FROM order_details";
@@ -43,19 +46,19 @@ $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
 // Fetch monthly sales data
-$monthlySales_query = "
-    SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
-    FROM orders 
-    GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
-    ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC";
-$monthlySales_result = $connect->query($monthlySales_query);
-$monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
+if ($viewMode === 'monthly_sales') {
+    $monthlySales_query = "
+        SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
+        FROM orders 
+        WHERE YEAR(order_date) = '$selectedYear'
+        GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
+        ORDER BY DATE_FORMAT(order_date, '%Y-%m') ASC";
+    $monthlySales_result = $connect->query($monthlySales_query);
+    $monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// Fill monthly sales data if less than 6 months
-if (count($monthlySales) < 6) {
-    $currentMonth = date('Y-m');
-    for ($i = 5; $i >= 0; $i--) {
-        $month = date('Y-m', strtotime("$currentMonth -$i months"));
+    // Fill empty months
+    for ($i = 1; $i <= 12; $i++) {
+        $month = sprintf('%s-%02d', $selectedYear, $i);
         $exists = array_filter($monthlySales, fn($data) => $data['month'] === $month);
         if (empty($exists)) {
             $monthlySales[] = ['month' => $month, 'monthly_sales' => 0];
@@ -185,6 +188,22 @@ if (count($yearlySales) < 6) {
                 </select>
             </div>
         </div>
+
+
+    <!-- Year Selector (Visible Only for Monthly Sales) -->
+    <div class="row g-3 align-items-center" id="yearSelector" style="display: <?php echo ($viewMode === 'monthly_sales') ? 'block' : 'none'; ?>;">
+        <div class="col-auto">
+            <label for="selected_year" class="form-label">Select Year</label>
+            <select id="selected_year" name="selected_year" class="form-select" onchange="updateViewMode();">
+                <?php
+                $currentYear = date('Y');
+                for ($i = $currentYear; $i >= $currentYear - 5; $i--) {
+                    echo "<option value='$i'" . (isset($_POST['selected_year']) && $_POST['selected_year'] == $i ? ' selected' : '') . ">$i</option>";
+                }
+                ?>
+            </select>
+        </div>
+    </div>
     </form>
 
     <!-- Sales Trend Chart -->
@@ -280,6 +299,10 @@ if (count($yearlySales) < 6) {
             }
         });
     }
+    function updateViewMode() {
+    document.getElementById('yearSelector').style.display = document.getElementById('view_mode').value === 'monthly_sales' ? 'block' : 'none';
+    document.getElementById('viewForm').submit();
+}
 </script>
 </body>
 </html>
