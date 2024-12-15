@@ -68,6 +68,17 @@ function getWeeklySalesWithDates($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 $weeklySales = getWeeklySalesWithDates($connect);
+
+
+function getRecentUsers($connect) {
+    $query = "SELECT user_name, user_image, user_email, user_join_time 
+              FROM `user`
+              ORDER BY user_join_time DESC
+              LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+$recentUsers = getRecentUsers($connect);
 ?>
 
 <!DOCTYPE html>
@@ -252,7 +263,33 @@ $weeklySales = getWeeklySalesWithDates($connect);
             <canvas id="weeklySalesChart"></canvas>
         </div>
     </div>
-
+    <h3>Recent Users</h3>
+<table border="1" cellspacing="0" cellpadding="10">
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Join Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($recentUsers as $user): ?>
+            <tr>
+                <td>
+                    <?php if (!empty($user['user_image'])): ?>
+                        <img src="<?php echo $user['user_image']; ?>" alt="User Image" style="width:50px;height:50px;">
+                    <?php else: ?>
+                        <span>No Image</span>
+                    <?php endif; ?>
+                </td>
+                <td><?php echo htmlspecialchars($user['user_name']); ?></td>
+                <td><?php echo htmlspecialchars($user['user_email']); ?></td>
+                <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>                   
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
