@@ -373,7 +373,7 @@ $lowStockProducts = getLowStockProducts($connect);
     <div class="container">
     <div class="home-icon-container">
             <i class="fas fa-home"></i>
-            <h2>Homepage</h2>
+            <p>Homepage</p>
         </div>
         <!-- Cards -->
         <div class="cards">
