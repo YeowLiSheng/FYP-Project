@@ -42,26 +42,28 @@ $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
-// Fetch monthly sales data
-$monthlySales_query = "
-    SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
-    FROM orders 
-    GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
-    ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC";
-$monthlySales_result = $connect->query($monthlySales_query);
-$monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
+$selectedYear = $_POST['selected_year'] ?? date('Y');
+if ($viewMode === 'monthly_sales') {
+    $monthlySales_query = "
+        SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
+        FROM orders 
+        WHERE YEAR(order_date) = $selectedYear 
+        GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
+        ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC";
+    $monthlySales_result = $connect->query($monthlySales_query);
+    $monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// Fill monthly sales data if less than 6 months
-if (count($monthlySales) < 6) {
-    $currentMonth = date('Y-m');
-    for ($i = 5; $i >= 0; $i--) {
-        $month = date('Y-m', strtotime("$currentMonth -$i months"));
-        $exists = array_filter($monthlySales, fn($data) => $data['month'] === $month);
-        if (empty($exists)) {
-            $monthlySales[] = ['month' => $month, 'monthly_sales' => 0];
+    // Fill missing months if less than 12
+    if (count($monthlySales) < 12) {
+        for ($i = 0; $i < 12; $i++) {
+            $month = date('Y-m', strtotime("$selectedYear-01 +$i months"));
+            $exists = array_filter($monthlySales, fn($data) => $data['month'] === $month);
+            if (empty($exists)) {
+                $monthlySales[] = ['month' => $month, 'monthly_sales' => 0];
+            }
         }
+        usort($monthlySales, fn($a, $b) => strcmp($a['month'], $b['month']));
     }
-    usort($monthlySales, fn($a, $b) => strcmp($a['month'], $b['month']));
 }
 
 // Fetch yearly sales data
@@ -186,7 +188,18 @@ if (count($yearlySales) < 6) {
             </div>
         </div>
     </form>
-
+    <div id="yearSelector" class="col-auto" style="display: none;">
+    <label for="selected_year" class="form-label">Select Year</label>
+    <select id="selected_year" name="selected_year" class="form-select" onchange="updateSelectedYear();">
+        <?php 
+        $currentYear = date('Y');
+        for ($i = 0; $i < 5; $i++) {
+            $year = $currentYear - $i;
+            echo "<option value='$year'" . (($selectedYear == $year) ? ' selected' : '') . ">$year</option>";
+        }
+        ?>
+    </select>
+</div>
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
@@ -207,10 +220,11 @@ if (count($yearlySales) < 6) {
 
     } else if (viewMode === 'monthly_sales') {
         chartData = <?php echo json_encode($monthlySales); ?>;
-        const months = chartData.map(item => item.month);
-        const sales = chartData.map(item => parseFloat(item.monthly_sales));
+    const months = chartData.map(item => item.month);
+    const sales = chartData.map(item => parseFloat(item.monthly_sales));
 
-        createBarChart('Monthly Sales (RM)', months, sales);
+    createBarChart(`Monthly Sales (RM) - ${<?php echo json_encode($selectedYear); ?>}`, months, sales);
+}
 
     } else if (viewMode === 'yearly_sales') {
         chartData = <?php echo json_encode($yearlySales); ?>;
@@ -280,6 +294,23 @@ if (count($yearlySales) < 6) {
             }
         });
     }
+
+    function updateViewMode() {
+    const viewMode = document.getElementById('view_mode').value;
+    const yearSelector = document.getElementById('yearSelector');
+
+    if (viewMode === 'monthly_sales') {
+        yearSelector.style.display = 'block';
+    } else {
+        yearSelector.style.display = 'none';
+    }
+}
+
+function updateSelectedYear() {
+    const selectedYear = document.getElementById('selected_year').value;
+    // Reload or fetch data based on the selected year if needed
+    document.getElementById('viewForm').submit();
+}
 </script>
 </body>
 </html>
