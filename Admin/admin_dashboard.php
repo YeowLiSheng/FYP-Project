@@ -382,98 +382,88 @@ $lowStockProducts = getLowStockProducts($connect);
             <canvas id="weeklySalesChart"></canvas>
         </div>
 
-        <div class="card-container">
+        <div class="table-container">
     <!-- Top 5 Products -->
-    <div class="card">
-        <div class="card-header">Top 5 Products by Sales</div>
-        <div class="card-content">
-            <table>
-                <thead>
+    <div class="table-small">
+        <div class="section-header">Top 5 Products by Sales</div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Image</th>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($topProducts as $product): ?>
                     <tr>
-                        <th>Product Image</th>
-                        <th>Product Name</th>
-                        <th>Units Sold</th>
+                        <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
+                        <td><?php echo $product['product_name']; ?></td>
+                        <td><?php echo $product['total_sold']; ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topProducts as $product): ?>
-                        <tr>
-                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" 
-                                     alt="<?php echo $product['product_name']; ?>" 
-                                     style="width: 60px; height: 60px; border-radius: 8px;"></td>
-                            <td><?php echo $product['product_name']; ?></td>
-                            <td><?php echo $product['total_sold']; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 
     <!-- Recent Users -->
-    <div class="card">
-        <div class="card-header">Recent Users</div>
-        <div class="card-content">
-            <table>
-                <thead>
+    <div class="table-small">
+        <div class="section-header">Recent Users</div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Join Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($recentUsers as $user): ?>
                     <tr>
-                        <th>Image</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Join Date</th>
+                        <td><img class="user-image" src="../User/<?php echo htmlspecialchars($user['user_image']); ?>" alt="<?php echo htmlspecialchars($user['user_name']); ?>"></td>
+                        <td><?php echo htmlspecialchars($user['user_name']); ?></td>
+                        <td><?php echo htmlspecialchars($user['user_email']); ?></td>
+                        <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($recentUsers as $user): ?>
-                        <tr>
-                            <td><img class="user-image" src="../User/<?php echo htmlspecialchars($user['user_image']); ?>" 
-                                     alt="<?php echo htmlspecialchars($user['user_name']); ?>" 
-                                     style="width: 40px; height: 40px; border-radius: 50%;"></td>
-                            <td><?php echo htmlspecialchars($user['user_name']); ?></td>
-                            <td><?php echo htmlspecialchars($user['user_email']); ?></td>
-                            <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
-
+</div>
+      <!-- Low Stock Products and Gender Chart Row -->
+<div class="low-stock-gender-container">
     <!-- Low Stock Products -->
-    <div class="card">
-        <div class="card-header">Products with Low Stock</div>
-        <div class="card-content">
-            <table>
-                <thead>
+    <div class="low-stock-products">
+        <div class="section-header">Products with Low Stock</div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Image</th>
+                    <th>Stock Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($lowStockProducts as $product): ?>
                     <tr>
-                        <th>Product Name</th>
-                        <th>Image</th>
-                        <th>Stock Quantity</th>
+                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                        <td>
+                            <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                                 alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                                 style="width: 60px; height: 60px; border-radius: 8px;">
+                        </td>
+                        <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($lowStockProducts as $product): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                            <td>
-                                <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                                     alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                                     style="width: 60px; height: 60px; border-radius: 8px;">
-                            </td>
-                            <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Gender Distribution -->
-    <div class="card">
-        <div class="card-header">Gender Distribution</div>
-        <div class="card-content">
-            <div id="genderPieChart" style="width: 100%; height: 400px;"></div>
-        </div>
+    <!-- Gender Distribution Chart -->
+    <div class="table-small gender-chart-container">
+    <h2 style="text-align: center;">Gender Distribution</h2>
+    <div id="genderPieChart" style="width: 100%; height: 400px;"></div>
     </div>
 </div>
 
