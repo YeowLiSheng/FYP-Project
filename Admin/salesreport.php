@@ -42,27 +42,23 @@ $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
-// Fetch monthly sales data
+$selectedYear = isset($_POST['selected_year']) ? $_POST['selected_year'] : date('Y');
 $monthlySales_query = "
     SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
     FROM orders 
+    WHERE YEAR(order_date) = '$selectedYear'
     GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
-    ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC";
+    ORDER BY DATE_FORMAT(order_date, '%Y-%m')";
 $monthlySales_result = $connect->query($monthlySales_query);
 $monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// Fill monthly sales data if less than 6 months
-if (count($monthlySales) < 6) {
-    $currentMonth = date('Y-m');
-    for ($i = 5; $i >= 0; $i--) {
-        $month = date('Y-m', strtotime("$currentMonth -$i months"));
-        $exists = array_filter($monthlySales, fn($data) => $data['month'] === $month);
-        if (empty($exists)) {
-            $monthlySales[] = ['month' => $month, 'monthly_sales' => 0];
-        }
-    }
-    usort($monthlySales, fn($a, $b) => strcmp($a['month'], $b['month']));
-}
+// Fill missing months of the selected year
+$allMonths = array_map(fn($m) => sprintf('%s-%02d', $selectedYear, $m), range(1, 12));
+$monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthlySales) {
+    $exists = array_filter($monthlySales, fn($data) => $data['month'] === $month);
+    $result[] = ['month' => $month, 'monthly_sales' => $exists ? current($exists)['monthly_sales'] : 0];
+    return $result;
+}, []);
 
 // Fetch yearly sales data
 $yearlySales_query = "
@@ -174,18 +170,34 @@ if (count($yearlySales) < 6) {
     </div>
 
     <!-- View Mode Selector -->
-    <form method="POST" id="viewForm">
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <label for="view_mode" class="form-label">View Mode</label>
-                <select id="view_mode" name="view_mode" class="form-select" onchange="updateViewMode();">
-                    <option value="sales_trend" <?php if ($viewMode === 'sales_trend') echo 'selected'; ?>>Sales Trend</option>
-                    <option value="monthly_sales" <?php if ($viewMode === 'monthly_sales') echo 'selected'; ?>>Monthly Sales</option>
-                    <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
-                </select>
-            </div>
+<form method="POST" id="viewForm">
+    <div class="row g-3 align-items-center">
+        <!-- View Mode Dropdown -->
+        <div class="col-auto">
+            <label for="view_mode" class="form-label">View Mode</label>
+            <select id="view_mode" name="view_mode" class="form-select" onchange="updateViewMode();">
+                <option value="sales_trend" <?php if ($viewMode === 'sales_trend') echo 'selected'; ?>>Sales Trend</option>
+                <option value="monthly_sales" <?php if ($viewMode === 'monthly_sales') echo 'selected'; ?>>Monthly Sales</option>
+                <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
+            </select>
         </div>
-    </form>
+
+        <!-- Year Selector -->
+        <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
+            <label for="selected_year" class="form-label">Select Year</label>
+            <select id="selected_year" name="selected_year" class="form-select" onchange="updateViewMode();">
+                <?php
+                $currentYear = date('Y');
+                for ($i = 0; $i < 6; $i++) {
+                    $year = $currentYear - $i;
+                    $selected = isset($_POST['selected_year']) && $_POST['selected_year'] == $year ? 'selected' : '';
+                    echo "<option value='$year' $selected>$year</option>";
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</form>
 
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
@@ -280,6 +292,11 @@ if (count($yearlySales) < 6) {
             }
         });
     }
+
+    document.getElementById('view_mode').addEventListener('change', function () {
+    const yearSelector = document.getElementById('yearSelector');
+    yearSelector.style.display = this.value === 'monthly_sales' ? 'block' : 'none';
+});
 </script>
 </body>
 </html>
