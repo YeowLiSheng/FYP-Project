@@ -70,35 +70,15 @@ $yearlySales = getYearlySales($connect);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        function updateEndDateLimit() {
-            const startDate = document.getElementById('start_date').value;
-            const endDateInput = document.getElementById('end_date');
-            endDateInput.setAttribute('min', startDate);
-        }
-
-        function submitDateForm() {
-            document.getElementById('dateForm').submit();
-        }
-
-        // Function to update the chart based on selected option
-        function updateChart(type) {
-            const charts = document.querySelectorAll('.chart-container');
-            charts.forEach(chart => chart.style.display = 'none'); // Hide all charts
-            document.getElementById(type + 'Chart').style.display = 'block'; // Show selected chart
-        }
-    </script>
     <style>
         .container {
             margin-top: 80px;
         }
-
         .cards {
             display: flex;
             justify-content: space-between;
             margin: 20px 0;
         }
-
         .ccard {
             background: #f8f9fa;
             padding: 20px;
@@ -108,38 +88,25 @@ $yearlySales = getYearlySales($connect);
             margin: 0 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
-
         .ccard .icon {
             font-size: 36px;
             color: #6c757d;
         }
-
         .ccard .number {
             font-size: 24px;
             font-weight: 700;
             margin: 10px 0;
         }
-
         .ccard .name {
             font-size: 16px;
             color: #6c757d;
         }
-
         .chart-container {
-            display: none;
             margin-top: 40px;
         }
-
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            .ccard {
-                flex: 0 0 48%;
-                margin: 10px 0;
-            }
-
-            .cards {
-                flex-direction: column;
-            }
+        .chart-container canvas {
+            max-width: 100%;
+            height: 300px;
         }
     </style>
 </head>
@@ -183,114 +150,131 @@ $yearlySales = getYearlySales($connect);
         </div>
     </form>
 
-    <!-- Select Chart Type -->
-    <div class="mb-4">
+    <!-- Chart Type Selector -->
+    <div class="mb-3">
         <label for="chartType" class="form-label">Select Chart Type</label>
-        <select id="chartType" class="form-select" onchange="updateChart(this.value)">
+        <select id="chartType" class="form-select" onchange="changeChartType(this)">
             <option value="salesTrend">Sales Trend</option>
             <option value="monthlySales">Monthly Sales</option>
             <option value="yearlySales">Yearly Sales</option>
-            <option value="categorySales">Category Sales</option>
         </select>
     </div>
 
     <!-- Sales Trend Chart -->
-    <div class="chart-container" id="salesTrendChart">
-        <canvas id="salesTrendCanvas"></canvas>
+    <div class="chart-container" id="salesTrendChartContainer">
+        <canvas id="salesTrendChart"></canvas>
     </div>
 
     <!-- Monthly Sales Chart -->
-    <div class="chart-container" id="monthlySalesChart">
-        <canvas id="monthlySalesCanvas"></canvas>
+    <div class="chart-container" id="monthlySalesChartContainer" style="display:none;">
+        <canvas id="monthlySalesChart"></canvas>
     </div>
 
     <!-- Yearly Sales Chart -->
-    <div class="chart-container" id="yearlySalesChart">
-        <canvas id="yearlySalesCanvas"></canvas>
-    </div>
-
-    <!-- Category Sales Pie Chart -->
-    <div class="chart-container" id="categorySalesChart">
-        <canvas id="categorySalesCanvas"></canvas>
+    <div class="chart-container" id="yearlySalesChartContainer" style="display:none;">
+        <canvas id="yearlySalesChart"></canvas>
     </div>
 </div>
 
 <script>
-    // Sales Trend Chart
+    // Function to change the chart type based on the selection
+    function changeChartType(select) {
+        const chartType = select.value;
+        
+        // Hide all chart containers
+        document.getElementById('salesTrendChartContainer').style.display = 'none';
+        document.getElementById('monthlySalesChartContainer').style.display = 'none';
+        document.getElementById('yearlySalesChartContainer').style.display = 'none';
+        
+        // Show selected chart container
+        if (chartType === 'salesTrend') {
+            document.getElementById('salesTrendChartContainer').style.display = 'block';
+        } else if (chartType === 'monthlySales') {
+            document.getElementById('monthlySalesChartContainer').style.display = 'block';
+        } else if (chartType === 'yearlySales') {
+            document.getElementById('yearlySalesChartContainer').style.display = 'block';
+        }
+    }
+
+    // Initialize the Sales Trend Chart (default)
     const salesTrendData = <?php echo json_encode($salesTrend); ?>;
     const salesTrendDates = salesTrendData.map(item => item.date);
     const salesTrendSales = salesTrendData.map(item => parseFloat(item.daily_sales));
-    
-    new Chart(document.getElementById('salesTrendCanvas').getContext('2d'), {
+
+    const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(salesTrendCtx, {
         type: 'line',
         data: {
             labels: salesTrendDates,
             datasets: [{
-                label: 'Sales Trend',
+                label: 'Daily Sales (RM)',
                 data: salesTrendSales,
                 borderColor: '#007bff',
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                fill: true
+                fill: true,
+                tension: 0.4
             }]
         },
         options: {
             responsive: true,
             scales: {
-                x: { title: { display: true, text: 'Date' }},
-                y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+                x: {
+                    title: { display: true, text: 'Date' }
+                },
+                y: {
+                    title: { display: true, text: 'Sales (RM)' },
+                    beginAtZero: true
+                }
             }
         }
     });
 
-    // Monthly Sales Chart
-    new Chart(document.getElementById('monthlySalesCanvas').getContext('2d'), {
+    // Initialize Monthly Sales Chart
+    const monthlySalesData = {
+        labels: <?php echo json_encode(array_column($monthlySales, 'month')); ?>,
+        datasets: [{
+            label: 'Monthly Sales (RM)',
+            data: <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    };
+    const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
+    new Chart(monthlySalesCtx, {
         type: 'bar',
-        data: {
-            labels: <?php echo json_encode(array_column($monthlySales, 'month')); ?>,
-            datasets: [{
-                label: 'Monthly Sales (RM)',
-                data: <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true }} }
+        data: monthlySalesData,
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
     });
 
-    // Yearly Sales Chart
-    new Chart(document.getElementById('yearlySalesCanvas').getContext('2d'), {
+    // Initialize Yearly Sales Chart
+    const yearlySalesData = {
+        labels: <?php echo json_encode(array_column($yearlySales, 'year')); ?>,
+        datasets: [{
+            label: 'Yearly Sales (RM)',
+            data: <?php echo json_encode(array_column($yearlySales, 'yearly_sales')); ?>,
+            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+        }]
+    };
+    const yearlySalesCtx = document.getElementById('yearlySalesChart').getContext('2d');
+    new Chart(yearlySalesCtx, {
         type: 'bar',
-        data: {
-            labels: <?php echo json_encode(array_column($yearlySales, 'year')); ?>,
-            datasets: [{
-                label: 'Yearly Sales (RM)',
-                data: <?php echo json_encode(array_column($yearlySales, 'yearly_sales')); ?>,
-                backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: { responsive: true, scales: { y: { beginAtZero: true }} }
-    });
-
-    // Category Sales Pie Chart
-    new Chart(document.getElementById('categorySalesCanvas').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: <?php echo json_encode(array_column($categorySales, 'category_name')); ?>,
-            datasets: [{
-                label: 'Category Sales',
-                data: <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 
-                    'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)',
-                    'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
-                ]
-            }]
-        },
-        options: { responsive: true }
+        data: yearlySalesData,
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
     });
 </script>
 </body>
 </html>
+
