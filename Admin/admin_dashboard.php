@@ -56,6 +56,7 @@ function getTopProducts($connect) {
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
+$topProducts = getTopProducts($connect);
 
 ?>
 
