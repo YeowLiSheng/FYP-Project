@@ -133,6 +133,7 @@ $categorySalesJson = json_encode($categorySalesData);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
         function updateEndDateLimit() {
             const startDate = document.getElementById('start_date').value;
@@ -395,12 +396,14 @@ $categorySalesJson = json_encode($categorySalesData);
 });
 
 
-<script src="https://www.gstatic.com/charts/loader.js"></script>
- 
- google.charts.load('current', { packages: ['corechart'] });
+ // Parse PHP data into JavaScript
+ <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+    google.charts.load('current', { packages: ['corechart'] });
     google.charts.setOnLoadCallback(drawCategoryChart);
 
     function drawCategoryChart() {
+        // Parse PHP data into JavaScript
         var categorySalesData = google.visualization.arrayToDataTable([
             ['Category', 'Percentage'],
             <?php
@@ -410,6 +413,7 @@ $categorySalesJson = json_encode($categorySalesData);
             ?>
         ]);
 
+        // Set chart options
         var categoryChartOptions = {
             title: 'Sales by Category',
             titleTextStyle: {
@@ -424,9 +428,12 @@ $categorySalesJson = json_encode($categorySalesData);
             pieSliceTextStyle: { fontSize: 12 } // Size of text inside slices
         };
 
+        // Create and draw the chart
         var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
         categoryPieChart.draw(categorySalesData, categoryChartOptions);
     }
+
+
 </script>
 </body>
 </html>
