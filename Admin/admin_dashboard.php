@@ -291,52 +291,63 @@ $lowStockProducts = getLowStockProducts($connect);
 }
 .card-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* 每行显示两个卡片 */
+    grid-template-columns: repeat(2, 1fr); /* 每行 2 个卡片 */
     gap: 20px; /* 卡片之间的间距 */
-    margin-top: 20px; /* 整体的顶部间距 */
+    margin-top: 20px;
 }
 
+/* 卡片样式 */
 .card {
-    background: white; /* 卡片背景 */
-    border-radius: 15px; /* 圆角 */
-    padding: 20px; /* 内边距 */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 阴影 */
-    transition: transform 0.3s, box-shadow 0.3s; /* 悬停效果 */
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .card:hover {
-    transform: translateY(-5px); /* 悬停时上移 */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* 增强阴影 */
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* 卡片标题 */
 .card-header {
-    font-size: 1.5rem; /* 标题字体大小 */
-    font-weight: bold; /* 加粗 */
-    margin-bottom: 15px; /* 与内容的间距 */
-    text-align: center; /* 居中对齐 */
-    border-bottom: 2px solid #dee2e6; /* 底部下划线效果 */
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #dee2e6;
     padding-bottom: 10px;
 }
 
+/* 卡片内容 */
 .card-content {
     overflow: auto; /* 确保内容适应卡片 */
 }
 
+/* 表格样式 */
 .card table {
-    width: 100%; /* 表格宽度 */
+    width: 100%;
     border-collapse: collapse;
 }
 
 .card table th,
 .card table td {
-    padding: 10px; /* 表格单元格内边距 */
-    text-align: left; /* 左对齐 */
-    border-bottom: 1px solid #dee2e6; /* 表格行分隔线 */
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
 }
 
 .card table th {
     background-color: #f1f3f5;
     font-weight: bold;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .card-container {
+        grid-template-columns: 1fr; /* 小屏幕时每行一个卡片 */
+    }
 }
     </style>
 </head>
