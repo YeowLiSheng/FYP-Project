@@ -249,31 +249,31 @@ $lowStockProducts = getLowStockProducts($connect);
 
 /* Gender Chart Section */
 .gender-chart-container {
-    flex: 1;
-    max-width: 600px; /* 与表格的最大宽度保持一致 */
-    background-color: white; /* 与表格的背景色一致 */
-    border-radius: 10px; /* 保持一致的圆角效果 */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 保持一致的阴影效果 */
-    padding: 20px; /* 内部留白一致 */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0; /* 上下间距，与表格的对齐一致 */
-}
+        flex: 1;
+        max-width: 600px;
+        background-color: #f9f9f9; /* Light gray background */
+        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        padding: 20px; /* Inner spacing */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 20px auto; /* Centered with top-bottom margin */
+    }
 
-.gender-chart-container h2 {
-    font-size: 1.5rem; /* 标题大小保持一致 */
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
-    text-align: center;
-}
+    .gender-chart-container h2 {
+        font-size: 1.5rem; /* Larger font size for title */
+        font-weight: bold;
+        margin-bottom: 20px; /* Space below title */
+        color: #333; /* Darker text color */
+        text-align: center;
+    }
 
-#genderPieChart {
-    width: 100%;
-    height: 400px; /* 设置固定高度 */
-}
+    #genderPieChart {
+        width: 100%;
+        height: 400px; /* Set fixed height */
+    }
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {
