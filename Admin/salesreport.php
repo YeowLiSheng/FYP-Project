@@ -202,22 +202,13 @@ $yearlySales = getYearlySales($connect);
     const salesTrendSales = salesTrendData.map(item => parseFloat(item.daily_sales));
 
     const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
-   // Retrieve PHP data
-    const salesTrendData = <?php echo json_encode($salesTrend); ?>;
-
-    // Extract dates and sales values
-    const dates = salesTrendData.map(item => item.date);
-    const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
-
-    // Configure Chart.js
-    const ctx = document.getElementById('salesTrendChart').getContext('2d');
-    new Chart(ctx, {
+    new Chart(salesTrendCtx, {
         type: 'line',
         data: {
-            labels: dates,
+            labels: salesTrendDates,
             datasets: [{
                 label: 'Daily Sales (RM)',
-                data: sales,
+                data: salesTrendSales,
                 borderColor: '#007bff',
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
                 fill: true,
@@ -226,24 +217,12 @@ $yearlySales = getYearlySales($connect);
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
             scales: {
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    }
+                    title: { display: true, text: 'Date' }
                 },
                 y: {
-                    title: {
-                        display: true,
-                        text: 'Sales (RM)'
-                    },
+                    title: { display: true, text: 'Sales (RM)' },
                     beginAtZero: true
                 }
             }
