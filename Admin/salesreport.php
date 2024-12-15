@@ -210,12 +210,35 @@ $categorySalesJson = json_encode($categorySalesData);
     text-decoration: none; /* Ensure no underline appears on hover */
     color: #007bff; /* Change the hover color (you can adjust this) */
 }
+
+.sales-icon-container {
+            
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Space between home icon and cards */
+        }
+
+        .sales-icon-container i {
+            font-size: 30px;
+            margin-right: 10px;
+        }
+
+        .sales-icon-container p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <!-- Summary Cards -->
     <div class="cards">
+    <div class="sales-icon-container">
+            <i class="fas fa-line-chart"></i>
+            <p>Sales Report</p>
+        </div>
         <div class="ccard">
             <i class="fas fa-shopping-cart icon"></i>
             <p class="number"><?php echo $order_count; ?></p>
