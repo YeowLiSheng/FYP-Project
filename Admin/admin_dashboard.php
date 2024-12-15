@@ -120,7 +120,7 @@ $lowStockProducts = getLowStockProducts($connect);
 
 .container {
     padding: 20px;
-    margin-left: 260px;
+    margin-left: 200px;
     margin-top: 80px;
 }
 
@@ -291,12 +291,12 @@ $lowStockProducts = getLowStockProducts($connect);
 }
 .card-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 每行 2 个卡片 */
-    gap: 20px; /* 卡片之间的间距 */
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px; 
     margin-top: 20px;
 }
 
-/* 卡片样式 */
+
 .card {
     background: white;
     border-radius: 15px;
@@ -310,7 +310,7 @@ $lowStockProducts = getLowStockProducts($connect);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* 卡片标题 */
+
 .card-header {
     font-size: 1.5rem;
     font-weight: bold;
@@ -320,12 +320,12 @@ $lowStockProducts = getLowStockProducts($connect);
     padding-bottom: 10px;
 }
 
-/* 卡片内容 */
+
 .card-content {
-    overflow: auto; /* 确保内容适应卡片 */
+    overflow: auto; 
 }
 
-/* 表格样式 */
+
 .card table {
     width: 100%;
     border-collapse: collapse;
@@ -343,10 +343,10 @@ $lowStockProducts = getLowStockProducts($connect);
     font-weight: bold;
 }
 
-/* 响应式调整 */
+
 @media (max-width: 768px) {
     .card-container {
-        grid-template-columns: 1fr; /* 小屏幕时每行一个卡片 */
+        grid-template-columns: 1fr; 
     }
 }
     </style>
