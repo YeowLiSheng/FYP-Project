@@ -203,52 +203,52 @@ $yearlySales = getYearlySales($connect);
 
     const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
    // Retrieve PHP data
-   const salesTrendData = <?php echo json_encode($salesTrend); ?>;
+    const salesTrendData = <?php echo json_encode($salesTrend); ?>;
 
-// Extract dates and sales values
-const dates = salesTrendData.map(item => item.date);
-const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
+    // Extract dates and sales values
+    const dates = salesTrendData.map(item => item.date);
+    const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
 
-// Configure Chart.js
-const ctx = document.getElementById('salesTrendChart').getContext('2d');
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: dates,
-        datasets: [{
-            label: 'Daily Sales (RM)',
-            data: sales,
-            borderColor: '#007bff',
-            backgroundColor: 'rgba(0, 123, 255, 0.2)',
-            fill: true,
-            tension: 0.4
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top'
-            }
+    // Configure Chart.js
+    const ctx = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Daily Sales (RM)',
+                data: sales,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
         },
-        scales: {
-            x: {
-                title: {
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
                     display: true,
-                    text: 'Date'
+                    position: 'top'
                 }
             },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Sales (RM)'
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
                 },
-                beginAtZero: true
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Sales (RM)'
+                    },
+                    beginAtZero: true
+                }
             }
         }
-    }
-});
+    });
 
     function processMonthlyData(monthlyData) {
     const maxMonths = 5;
