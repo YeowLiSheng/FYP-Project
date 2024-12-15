@@ -29,7 +29,7 @@ $totalSales = $totalSales_result->num_rows > 0 ? $totalSales_result->fetch_assoc
 // Fetch total customers
 $totalCustomers_query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
 $totalCustomers_result = $connect->query($totalCustomers_query);
-total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
+$total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
 
 // Fetch total products sold
 $totalProducts_query = "SELECT SUM(quantity) AS total_products_sold FROM order_details";
