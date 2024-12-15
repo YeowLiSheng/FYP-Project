@@ -48,6 +48,15 @@ function getTotalSales($connect) {
 $totalSales = getTotalSales($connect);
 
 
+function getTopProducts($connect) {
+    $query = "SELECT product_name, SUM(quantity) AS total_sold 
+              FROM order_details 
+              GROUP BY product_name 
+              ORDER BY total_sold DESC LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -56,7 +65,6 @@ $totalSales = getTotalSales($connect);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
     <title>Admin Homepage</title>
 </head>
 <body>
@@ -90,8 +98,38 @@ $totalSales = getTotalSales($connect);
     </div>
 
 
+    <div class="product-sales">Top 5 Products by Sales</div>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Units Sold</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($topProducts as $product): ?>
+                                <tr>
+                                    <td><?php echo $product['product_image'];?></td>
+                                    <td><?php echo $product['product_name']; ?></td>
+                                    <td><?php echo $product['total_sold']; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+    </div>
+
+    <div class="New Customers">Recent User</div>
+                    
 
 
+
+
+
+
+
+    </div>
+                    
 
 
 </body>
