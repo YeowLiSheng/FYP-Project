@@ -88,6 +88,17 @@ function getGenderDistribution($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 $genderDistribution = getGenderDistribution($connect);
+
+function getLowStockProducts($connect) {
+    $query = "SELECT product_name, product_image, product_stock 
+              FROM product 
+              ORDER BY product_stock ASC 
+              LIMIT 5";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+$lowStockProducts = getLowStockProducts($connect);
 ?>
 
 <!DOCTYPE html>
@@ -290,6 +301,31 @@ $genderDistribution = getGenderDistribution($connect);
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <div class="low-stock-products">
+    <h2>Products with Low Stock</h2>
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Image</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($lowStockProducts as $product): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                    <td>
+                        <img src="images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                             style="width: 100px; height: auto;">
+                    </td>
+                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
 
         <!-- Gender Chart -->
         <div class="chart-container">
