@@ -79,6 +79,15 @@ function getRecentUsers($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 $recentUsers = getRecentUsers($connect);
+
+function getGenderDistribution($connect) {
+    $query = "SELECT user_gender, COUNT(*) AS count 
+              FROM `user`
+              GROUP BY user_gender";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+$genderDistribution = getGenderDistribution($connect);
 ?>
 
 <!DOCTYPE html>
@@ -194,28 +203,7 @@ $recentUsers = getRecentUsers($connect);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        <style>
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table th, table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-}
-
-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-img {
-    border-radius: 50%;
-}
-
+        
 
         @media (max-width: 768px) {
             .container {
@@ -312,8 +300,13 @@ img {
             </tr>
         <?php endforeach; ?>
     </tbody>
-</table>                   
+</table>     
+
+<h3>Gender Distribution</h3>
+<canvas id="genderPieChart" width="400" height="400"></canvas>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <script>
         const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
         const labels = weeklySalesData.map(data => data.week_range);
@@ -370,5 +363,45 @@ img {
                 }
             }
         });
+
+        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
+        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
     </script>
+    <script>
+    const ctx = document.getElementById('genderPieChart').getContext('2d');
+    const genderPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                label: 'Customer Gender Distribution',
+                data: genderCounts,
+                backgroundColor: [
+                    '#FF6384', // Color for first gender
+                    '#36A2EB', // Color for second gender
+                    '#FFCE56'  // Color for other genders
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const percentage = (genderCounts[tooltipItem.dataIndex] / 
+                                                genderCounts.reduce((a, b) => a + b, 0) * 100).toFixed(2);
+                            return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
 </body>
+</html>
