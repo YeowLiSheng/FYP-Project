@@ -215,7 +215,7 @@ table th {
 img {
     border-radius: 50%;
 }
-</style>
+
 
         @media (max-width: 768px) {
             .container {
