@@ -389,9 +389,9 @@ $lowStockProducts = getLowStockProducts($connect);
     </div>
 
     <!-- Gender Distribution Chart -->
-    <div class="chart-container gender-chart-container">
-        <h2 style="text-align: center;">Gender Distribution</h2>
-        <canvas id="genderPieChart"></canvas>
+    <div class="chart-container" id="genderChartContainer">
+    <h2 style="text-align: center;">Gender Distribution</h2>
+    <div id="genderPieChart" style="width: 100%; height: 400px;"></div>
     </div>
 </div>
 
@@ -431,37 +431,38 @@ $lowStockProducts = getLowStockProducts($connect);
             }
         });
 
-        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
-        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
-
-        const genderCtx = document.getElementById('genderPieChart').getContext('2d');
-        new Chart(genderCtx, {
-            type: 'pie',
-            data: {
-                labels: genderLabels,
-                datasets: [{
-                    label: 'Customer Gender Distribution',
-                    data: genderCounts,
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                const percentage = (genderCounts[tooltipItem.dataIndex] /
-                                                    genderCounts.reduce((a, b) => a + b, 0) * 100).toFixed(2);
-                                return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        
     </script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawGenderChart);
+
+    function drawGenderChart() {
+        // Data preparation
+        var genderData = google.visualization.arrayToDataTable([
+            ['Gender', 'Count'],
+            <?php
+            foreach ($genderDistribution as $gender) {
+                echo "['" . $gender['user_gender'] . "', " . $gender['count'] . "],";
+            }
+            ?>
+        ]);
+
+        // Chart options
+        var genderChartOptions = {
+            title: 'Customer Gender Distribution',
+            pieHole: 0.4, // To create a donut chart
+            chartArea: { width: '90%', height: '80%' }, // Adjust chart area
+            colors: ['#FF6384', '#36A2EB', '#FFCE56'], // Custom colors
+            fontName: 'Roboto',
+        };
+
+        // Drawing the chart
+        var genderPieChart = new google.visualization.PieChart(document.getElementById('genderPieChart'));
+        genderPieChart.draw(genderData, genderChartOptions);
+    }
+</script>
 </body>
 </html>
 
