@@ -95,212 +95,233 @@ $genderDistribution = getGenderDistribution($connect);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Admin Dashboard</title>
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
-            background-color: #f9fafb;
+            background-color: #f9f9fb;
             color: #333;
         }
-        .container {
-            margin: 20px auto;
+
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .main-content {
+            width: 70%;
             padding: 20px;
-            max-width: 1200px;
         }
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .card {
-            background: white;
+
+        .sidebar {
+            width: 30%;
+            background-color: #fdfdfd;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border-radius: 15px;
-            text-align: center;
+        }
+
+        .top-section, .card-section, .table-section {
+            margin-bottom: 20px;
+            background-color: #fff;
+            border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        .card .icon {
-            font-size: 2.5rem;
-            color: #17a2b8;
-            margin-bottom: 10px;
-        }
-        .card .number {
-            font-size: 1.8rem;
+
+        .top-section h2 {
+            margin: 0 0 10px;
             font-weight: 700;
         }
-        .card .name {
-            font-size: 1rem;
-            color: #777;
+
+        .card-container {
+            display: flex;
+            justify-content: space-around;
         }
-        .chart-container, .table-container {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+
+        .card {
+            text-align: center;
+            background-color: #fdfdfd;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .table {
+
+        .card i {
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+
+        .table-section table {
             width: 100%;
             border-collapse: collapse;
         }
-        .table th, .table td {
-            padding: 15px;
+
+        .table-section th, .table-section td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table-section th {
             text-align: left;
-            border-bottom: 1px solid #f1f1f1;
+            color: #555;
         }
-        .table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
+
+        .sidebar .user-list, .sidebar .pie-chart {
+            margin-bottom: 30px;
         }
-        .table img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #f1f1f1;
-            display: inline-block;
-        }
-        .legend {
+
+        .user-item {
             display: flex;
-            justify-content: center;
-            margin-top: 10px;
-            font-size: 0.9rem;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .user-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .chart-container {
+            height: 300px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 卡片区域 -->
-        <div class="cards">
-            <div class="card">
-                <i class="fas fa-tags icon"></i>
-                <div class="number"><?php echo $product_count; ?></div>
-                <div class="name">Products</div>
-            </div>
-            <div class="card">
-                <i class="fas fa-users icon"></i>
-                <div class="number"><?php echo $staff_count; ?></div>
-                <div class="name">Staff</div>
-            </div>
-            <div class="card">
-                <i class="fas fa-shopping-cart icon"></i>
-                <div class="number"><?php echo $order_count; ?></div>
-                <div class="name">Orders</div>
-            </div>
-            <div class="card">
-                <i class="fas fa-dollar-sign icon"></i>
-                <div class="number">RM<?php echo number_format($totalSales, 2); ?></div>
-                <div class="name">Total Profit</div>
+<div class="dashboard">
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Section -->
+        <div class="top-section">
+            <h2>Top Selling Product</h2>
+            <div class="card-container">
+                <div class="card">
+                    <i class="fas fa-shoe-prints"></i>
+                    <p>Nike v22</p>
+                    <span>8000 Orders</span>
+                </div>
+                <div class="card">
+                    <i class="fas fa-camera"></i>
+                    <p>Instax Camera</p>
+                    <span>3000 Orders</span>
+                </div>
+                <div class="card">
+                    <i class="fas fa-chair"></i>
+                    <p>Chair</p>
+                    <span>6000 Orders</span>
+                </div>
+                <div class="card">
+                    <i class="fas fa-laptop"></i>
+                    <p>Laptop</p>
+                    <span>4000 Orders</span>
+                </div>
+                <div class="card">
+                    <i class="fas fa-clock"></i>
+                    <p>Watch</p>
+                    <span>2000 Orders</span>
+                </div>
             </div>
         </div>
 
-        <!-- Top 5 Products -->
-        <div class="table-container">
-            <h2>Top Selling Product</h2>
-            <table class="table">
+        <!-- Product Table -->
+        <div class="table-section">
+            <h2>Top 5 Products by Sales</h2>
+            <table>
                 <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Orders</th>
-                        <th>Price</th>
-                    </tr>
+                <tr>
+                    <th>Product Image</th>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <?php foreach (array_slice($topProducts, 0, 5) as $product): ?>
-                        <tr>
-                            <td>
-                                <img src="../User/images/<?php echo $product['product_image']; ?>" alt="Image">
-                                <?php echo $product['product_name']; ?>
-                            </td>
-                            <td><?php echo $product['total_sold']; ?></td>
-                            <td>$<?php echo number_format($product['price'], 2); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
+                <?php foreach ($topProducts as $product): ?>
+                    <tr>
+                        <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="" style="width: 60px; border-radius: 5px;"></td>
+                        <td><?php echo $product['product_name']; ?></td>
+                        <td><?php echo $product['total_sold']; ?></td>
+                    </tr>
+                <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
 
-        <!-- Weekly Sales Chart -->
+        <!-- Sales Chart -->
         <div class="chart-container">
-            <h2>Weekly Sales Comparison</h2>
             <canvas id="weeklySalesChart"></canvas>
-        </div>
-
-        <!-- Gender Distribution Chart -->
-        <div class="chart-container">
-            <h2>Gender Distribution</h2>
-            <canvas id="genderChart"></canvas>
         </div>
     </div>
 
-    <!-- Chart.js Script -->
-    <script>
-        // Weekly Sales Chart
-        const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
-        const weeklyLabels = weeklySalesData.map(data => data.week_range);
-        const weeklySales = weeklySalesData.map(data => data.total_sales);
-        const ctxWeekly = document.getElementById('weeklySalesChart').getContext('2d');
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-list">
+            <h3>New Customers</h3>
+            <?php foreach ($recentUsers as $user): ?>
+                <div class="user-item">
+                    <img src="../User/<?php echo $user['user_image'] ?? 'default.png'; ?>" alt="User">
+                    <div>
+                        <p><strong><?php echo htmlspecialchars($user['user_name']); ?></strong></p>
+                        <p><?php echo htmlspecialchars($user['user_email']); ?></p>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
 
-        new Chart(ctxWeekly, {
-            type: 'line',
-            data: {
-                labels: weeklyLabels,
-                datasets: [{
-                    label: 'Sales (RM)',
-                    data: weeklySales,
-                    fill: true,
-                    borderColor: '#17a2b8',
-                    backgroundColor: 'rgba(23, 162, 184, 0.2)',
-                    tension: 0.4,
-                }]
-            }
-        });
+        <!-- Gender Pie Chart -->
+        <div class="pie-chart">
+            <h3>Buyers Profile</h3>
+            <canvas id="genderPieChart"></canvas>
+        </div>
+    </div>
+</div>
 
-        // Gender Chart
-        const genderData = <?php echo json_encode($genderDistribution); ?>;
-        const genderLabels = genderData.map(g => g.user_gender);
-        const genderCounts = genderData.map(g => g.count);
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Weekly Sales Chart
+    const salesData = <?php echo json_encode($weeklySales); ?>;
+    const labels = salesData.map(data => data.week_range);
+    const sales = salesData.map(data => data.total_sales);
 
-        const ctxGender = document.getElementById('genderChart').getContext('2d');
-        new Chart(ctxGender, {
-            type: 'pie',
-            data: {
-                labels: genderLabels,
-                datasets: [{
-                    data: genderCounts,
-                    backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56']
-                }]
-            },
-            options: {
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let total = genderCounts.reduce((a, b) => a + b, 0);
-                                let value = genderCounts[context.dataIndex];
-                                let percentage = ((value / total) * 100).toFixed(2);
-                                return `${genderLabels[context.dataIndex]}: ${value} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    </script>
+    new Chart(document.getElementById('weeklySalesChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Weekly Sales',
+                data: sales,
+                borderColor: '#4a90e2',
+                backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+            }]
+        },
+        options: {
+            responsive: true,
+        }
+    });
+
+    // Gender Pie Chart
+    const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
+    const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
+
+    new Chart(document.getElementById('genderPieChart'), {
+        type: 'pie',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                data: genderCounts,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                hoverOffset: 4
+            }]
+        }
+    });
+</script>
 </body>
 </html>
 
