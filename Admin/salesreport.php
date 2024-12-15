@@ -69,13 +69,16 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        .container{
+            margin-top: 80px;
+
+        }
         .cards {
             display: flex;
             justify-content: space-between;
             margin: 20px 0;
         }
         .ccard {
-            margin-top: 80px;
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
