@@ -128,7 +128,7 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <p class="name">Total Sales</p>
         </div>
         <div class="ccard">
-            <i class="fas fa-boxes icon"></i>
+            <i class="fas fa-tags icon"></i>
             <p class="number"><?php echo $total_products_sold; ?></p>
             <p class="name">Total Products Sold</p>
         </div>
