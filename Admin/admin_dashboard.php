@@ -210,7 +210,7 @@ $topProducts = getTopProducts($connect)
     <tbody>
         <?php foreach ($topProducts as $product): ?>
             <tr>
-                <td><img src="<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 80px; height: 80px; object-fit: cover;"></td>
+                <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 80px; height: 80px; object-fit: cover;"></td>
                 <td><?php echo $product['product_name']; ?></td>
                 <td><?php echo $product['total_sold']; ?></td>
             </tr>
