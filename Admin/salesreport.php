@@ -299,7 +299,7 @@ $categorySalesJson = json_encode($categorySalesData);
         <h4>Category-wise Sales</h4>
     </div>
     <div class="card-body">
-        <canvas id="categoryPieChart"></canvas>
+    <div id="categoryPieChart" style="width: 100%; height: 400px;"></div>
     </div>
 </div>
 </div>
