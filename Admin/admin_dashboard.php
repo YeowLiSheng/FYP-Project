@@ -54,7 +54,17 @@ function getTopProducts($connect) {
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
-$topProducts = getTopProducts($connect)
+$topProducts = getTopProducts($connect);
+
+function getWeeklySales($connect) {
+    $query = "SELECT WEEK(order_date) AS week, SUM(final_amount) AS total_sales 
+              FROM orders 
+              WHERE YEAR(order_date) = YEAR(CURDATE()) 
+              GROUP BY WEEK(order_date)";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+$weeklySales = getWeeklySales($connect);
 ?>
 
 <!DOCTYPE html>
@@ -218,5 +228,36 @@ $topProducts = getTopProducts($connect)
     </tbody>
 </table>
     </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<canvas id="weeklySalesChart"></canvas>
+<script>
+    const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+    const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
+    const labels = weeklySalesData.map(data => `Week ${data.week}`);
+    const sales = weeklySalesData.map(data => data.total_sales);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Weekly Sales',
+                data: sales,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
 </body>
 </html>
+
