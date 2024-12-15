@@ -278,7 +278,7 @@ $recentUsers = getRecentUsers($connect);
             <tr>
                 <td>
                     <?php if (!empty($user['user_image'])): ?>
-                        <img src="<?php echo $user['user_image']; ?>" alt="User Image" style="width:50px;height:50px;">
+                        <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image" style="width:50px;height:50px;">
                     <?php else: ?>
                         <span>No Image</span>
                     <?php endif; ?>
