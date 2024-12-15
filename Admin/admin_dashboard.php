@@ -354,7 +354,7 @@ $lowStockProducts = getLowStockProducts($connect);
 </head>
 <body>
     <div class="container">
-        <h1><ion-icon name="fas fa-home icon></ion-icon> Manage Orders</h1>
+        <h1><ion-icon name="fas fa-home icon></ion-icon> Homepage </h1>
         <!-- Cards -->
         <div class="cards">
             <div class="ccard">
