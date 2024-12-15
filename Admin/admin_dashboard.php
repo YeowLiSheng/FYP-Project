@@ -253,7 +253,7 @@ $lowStockProducts = getLowStockProducts($connect);
         max-width: 600px;
         background-color: #f9f9f9; /* Light gray background */
         border-radius: 10px; /* Rounded corners */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         padding: 20px; /* Inner spacing */
         display: flex;
         flex-direction: column;
