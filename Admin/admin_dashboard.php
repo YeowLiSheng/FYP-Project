@@ -344,18 +344,7 @@ $lowStockProducts = getLowStockProducts($connect);
     font-weight: bold;
 }
 
-h1 {
-            color: #2c3e50;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
 
-        h1 ion-icon {
-            font-size: 32px;
-            color: #3498db;
-        }
 @media (max-width: 768px) {
     .card-container {
         grid-template-columns: 1fr; 
@@ -365,7 +354,7 @@ h1 {
 </head>
 <body>
     <div class="container">
-        <h1><ion-icon name="fas fa-home icon></ion-icon> Homepage </h1>
+        
         <!-- Cards -->
         <div class="cards">
             <div class="ccard">
