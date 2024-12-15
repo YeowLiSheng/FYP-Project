@@ -2,17 +2,15 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 数据库查询功能
-function getTotalOrders($connect) {
-    $query = "SELECT COUNT(order_id) AS total_orders FROM orders";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_assoc($result)['total_orders'];
-}
 
-function getTotalCustomers($connect) {
-    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_assoc($result)['total_customers'];
+
+$order = "SELECT COUNT(*) AS order_count FROM `orders`";
+$order_result = $connect->query($order);
+
+$order_count = 0;
+if ($order_result->num_rows > 0) {
+    $row = $order_result->fetch_assoc();
+    $order_count = $row['order_count'];
 }
 
 function getTotalSales($connect) {
@@ -20,6 +18,15 @@ function getTotalSales($connect) {
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_sales'];
 }
+$totalSales = getTotalSales($connect);
+
+
+function getTotalCustomers($connect) {
+    $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_customers'];
+}
+
 
 function getCategorySales($connect) {
     $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
@@ -31,14 +38,6 @@ function getCategorySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getTopProducts($connect) {
-    $query = "SELECT product_name, SUM(quantity) AS total_sold, SUM(total_price) AS total_revenue 
-              FROM order_details 
-              GROUP BY product_name 
-              ORDER BY total_sold DESC LIMIT 5";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
 
 // 获取销售趋势数据，根据日期范围过滤
 function getSalesTrend($connect, $startDate, $endDate) {
@@ -56,11 +55,8 @@ $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
 // 数据获取
-$totalOrders = getTotalOrders($connect);
-$totalCustomers = getTotalCustomers($connect);
-$totalSales = getTotalSales($connect);
+
 $categorySales = getCategorySales($connect);
-$topProducts = getTopProducts($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
 
