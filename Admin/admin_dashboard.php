@@ -111,139 +111,114 @@ $lowStockProducts = getLowStockProducts($connect);
     <title>Admin Dashboard</title>
     <style>
         body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f9fa;
-    color: #333;
-}
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
 
-.container {
-    padding: 20px;
-    margin-left: 260px;
-    margin-top: 80px;
-}
+        .container {
+            padding: 20px;
+            margin-left: 260px;
+            margin-top: 80px;
+        }
 
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-.ccard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
+        .ccard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
 
-.ccard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
+        .ccard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
 
-.icon {
-    font-size: 50px;
-    color: #17a2b8;
-    margin-bottom: 10px;
-}
+        .icon {
+            font-size: 50px;
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
 
-.number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #333;
-}
+        .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
 
-.name {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #555;
-}
+        .name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #555;
+        }
 
-.section-header {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 5px;
-}
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 5px;
+        }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
-}
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
 
-.table th, .table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.9rem;
-}
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
 
-.table th {
-    background-color: #f1f3f5;
-    font-weight: 700;
-    color: #495057;
-}
+        .table th {
+            background-color: #f1f3f5;
+            font-weight: 700;
+            color: #495057;
+        }
 
-.table-striped tbody tr:nth-child(odd) {
-    background-color: #f8f9fa;
-}
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
+        }
 
-.chart-container {
-    margin-top: 30px;
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
+        .chart-container {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-.flex-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    margin-top: 30px;
-}
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+                padding: 15px;
+            }
 
-.half-card {
-    flex: 1;
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 1200px) {
-    .flex-row {
-        flex-direction: column;
-    }
-
-    .half-card {
-        margin-bottom: 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        margin-left: 0;
-        padding: 15px;
-    }
-
-    .cards {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-}
+            .cards {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
@@ -283,36 +258,30 @@ $lowStockProducts = getLowStockProducts($connect);
             <canvas id="weeklySalesChart"></canvas>
         </div>
 
-        <div class="row">
-    <!-- Top 5 Products -->
-    <div class="half-width">
-        <div class="section-header">Top 5 Products by Sales</div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Product Image</th>
-                    <th>Product Name</th>
-                    <th>Units Sold</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($topProducts as $product): ?>
+        <!-- Top 5 Products -->
+        <div>
+            <div class="section-header">Top 5 Products by Sales</div>
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>
-                            <img src="../User/images/<?php echo $product['product_image']; ?>" 
-                                 alt="<?php echo $product['product_name']; ?>" 
-                                 style="width: 60px; height: 60px; border-radius: 8px;">
-                        </td>
-                        <td><?php echo $product['product_name']; ?></td>
-                        <td><?php echo $product['total_sold']; ?></td>
+                        <th>Product Image</th>
+                        <th>Product Name</th>
+                        <th>Units Sold</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    <?php foreach ($topProducts as $product): ?>
+                        <tr>
+                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
+                            <td><?php echo $product['product_name']; ?></td>
+                            <td><?php echo $product['total_sold']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Recent Users -->
-    <div class="half-width">
+        <!-- Recent Users -->
         <div class="section-header">Recent Users</div>
         <table class="table table-striped">
             <thead>
@@ -332,41 +301,30 @@ $lowStockProducts = getLowStockProducts($connect);
                 <?php endforeach; ?>
             </tbody>
         </table>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Gender Chart -->
-    <div class="half-width">
-        <h2 style="text-align: center;">Gender Distribution</h2>
-        <canvas id="genderPieChart"></canvas>
-    </div>
-
-    <!-- Low Stock Products -->
-    <div class="half-width">
-        <h2>Products with Low Stock</h2>
-        <table class="table table-striped">
-            <thead>
+        <div class="low-stock-products">
+    <h2>Products with Low Stock</h2>
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Image</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($lowStockProducts as $product): ?>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Image</th>
-                    <th>Stock Quantity</th>
+                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                    <td>
+                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                             style="width: 100px; height: auto;">
+                    </td>
+                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lowStockProducts as $product): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                        <td>
-                            <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($product['product_name']); ?>">
-                        </td>
-                        <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
 
         <!-- Gender Chart -->
