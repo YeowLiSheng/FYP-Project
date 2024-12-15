@@ -435,7 +435,7 @@ $lowStockProducts = getLowStockProducts($connect);
                             <img class="user-image" 
                                 src="<?php 
                                     $imagePath = "../User/" . htmlspecialchars($user['user_image']); 
-                                    echo (empty($user['user_image']) || !file_exists($imagePath)) ? "../User/images/user-image" : $imagePath; ?>" alt="<?php echo htmlspecialchars($user['user_name']); ?>"></td>       
+                                    echo (empty($user['user_image']) || !file_exists($imagePath)) ? "../User/images/User-image.png" : $imagePath; ?>" alt="<?php echo htmlspecialchars($user['user_name']); ?>"></td>       
                             <td><?php echo htmlspecialchars($user['user_name']); ?></td>
                             <td><?php echo htmlspecialchars($user['user_email']); ?></td>
                             <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
