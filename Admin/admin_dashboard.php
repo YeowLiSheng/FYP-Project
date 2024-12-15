@@ -283,30 +283,36 @@ $lowStockProducts = getLowStockProducts($connect);
             <canvas id="weeklySalesChart"></canvas>
         </div>
 
-        <!-- Top 5 Products -->
-        <div>
-            <div class="section-header">Top 5 Products by Sales</div>
-            <table class="table table-striped">
-                <thead>
+        <div class="row">
+    <!-- Top 5 Products -->
+    <div class="half-width">
+        <div class="section-header">Top 5 Products by Sales</div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Image</th>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($topProducts as $product): ?>
                     <tr>
-                        <th>Product Image</th>
-                        <th>Product Name</th>
-                        <th>Units Sold</th>
+                        <td>
+                            <img src="../User/images/<?php echo $product['product_image']; ?>" 
+                                 alt="<?php echo $product['product_name']; ?>" 
+                                 style="width: 60px; height: 60px; border-radius: 8px;">
+                        </td>
+                        <td><?php echo $product['product_name']; ?></td>
+                        <td><?php echo $product['total_sold']; ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topProducts as $product): ?>
-                        <tr>
-                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
-                            <td><?php echo $product['product_name']; ?></td>
-                            <td><?php echo $product['total_sold']; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 
-        <!-- Recent Users -->
+    <!-- Recent Users -->
+    <div class="half-width">
         <div class="section-header">Recent Users</div>
         <table class="table table-striped">
             <thead>
@@ -326,30 +332,41 @@ $lowStockProducts = getLowStockProducts($connect);
                 <?php endforeach; ?>
             </tbody>
         </table>
-        <div class="low-stock-products">
-    <h2>Products with Low Stock</h2>
-    <table border="1" cellpadding="10">
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Image</th>
-                <th>Stock Quantity</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($lowStockProducts as $product): ?>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Gender Chart -->
+    <div class="half-width">
+        <h2 style="text-align: center;">Gender Distribution</h2>
+        <canvas id="genderPieChart"></canvas>
+    </div>
+
+    <!-- Low Stock Products -->
+    <div class="half-width">
+        <h2>Products with Low Stock</h2>
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                    <td>
-                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                             style="width: 100px; height: auto;">
-                    </td>
-                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
+                    <th>Product Name</th>
+                    <th>Image</th>
+                    <th>Stock Quantity</th>
                 </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($lowStockProducts as $product): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                        <td>
+                            <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                                 alt="<?php echo htmlspecialchars($product['product_name']); ?>">
+                        </td>
+                        <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
         <!-- Gender Chart -->
