@@ -228,38 +228,13 @@ $lowStockProducts = getLowStockProducts($connect);
 }
 
 /* Chart container */
-.charts-wrapper {
-        display: flex;
-        justify-content: space-between;
-        gap: 20px; /* 间距 */
-    }
-
-    .chart-container {
-        flex: 1; /* 平分父容器 */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        max-width: 48%; /* 确保两边留空 */
-        height: 400px; /* 统一高度 */
-    }
-
-    .chart-container h2 {
-        font-size: 1.2rem;
-        font-weight: bold;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-
-    @media (max-width: 768px) {
-        .charts-wrapper {
-            flex-direction: column; /* 在较小屏幕上堆叠 */
-        }
-
-        .chart-container {
-            max-width: 100%; /* 移动端宽度调整 */
-        }
-    }
+.chart-container {
+    margin-top: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -364,40 +339,38 @@ $lowStockProducts = getLowStockProducts($connect);
         </table>
     </div>
 </div>
-<div class="charts-wrapper">
-    <!-- Low Stock Products -->
-    <div class="chart-container">
-        <h2>Products with Low Stock</h2>
-        <table border="1" cellpadding="10">
-            <thead>
+        <div class="low-stock-products">
+    <h2>Products with Low Stock</h2>
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Image</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($lowStockProducts as $product): ?>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Image</th>
-                    <th>Stock Quantity</th>
+                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                    <td>
+                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                             style="width: 100px; height: auto;">
+                    </td>
+                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lowStockProducts as $product): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                        <td>
-                            <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                                 style="width: 100px; height: auto;">
-                        </td>
-                        <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Gender Chart -->
-    <div class="chart-container">
-        <h2>Gender Distribution</h2>
-        <canvas id="genderPieChart"></canvas>
-    </div>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
+
+        <!-- Gender Chart -->
+        <div class="chart-container">
+            <h2 style="text-align: center;">Gender Distribution</h2>
+            <canvas id="genderPieChart"></canvas>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
