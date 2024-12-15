@@ -43,22 +43,48 @@ $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
 // Fetch monthly sales data
-$monthlySales_query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
-                        FROM orders 
-                        GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
-                        ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC 
-                        LIMIT 6";
+$monthlySales_query = "
+    SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
+    FROM orders 
+    GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
+    ORDER BY DATE_FORMAT(order_date, '%Y-%m') DESC";
 $monthlySales_result = $connect->query($monthlySales_query);
 $monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
 
+// Fill monthly sales data if less than 6 months
+if (count($monthlySales) < 6) {
+    $currentMonth = date('Y-m');
+    for ($i = 5; $i >= 0; $i--) {
+        $month = date('Y-m', strtotime("$currentMonth -$i months"));
+        $exists = array_filter($monthlySales, fn($data) => $data['month'] === $month);
+        if (empty($exists)) {
+            $monthlySales[] = ['month' => $month, 'monthly_sales' => 0];
+        }
+    }
+    usort($monthlySales, fn($a, $b) => strcmp($a['month'], $b['month']));
+}
+
 // Fetch yearly sales data
-$yearlySales_query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
-                       FROM orders 
-                       GROUP BY YEAR(order_date) 
-                       ORDER BY YEAR(order_date) DESC 
-                       LIMIT 6";
+$yearlySales_query = "
+    SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
+    FROM orders 
+    GROUP BY YEAR(order_date) 
+    ORDER BY YEAR(order_date) DESC";
 $yearlySales_result = $connect->query($yearlySales_query);
 $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
+
+// Fill yearly sales data if less than 6 years
+if (count($yearlySales) < 6) {
+    $currentYear = date('Y');
+    for ($i = 5; $i >= 0; $i--) {
+        $year = $currentYear - $i;
+        $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
+        if (empty($exists)) {
+            $yearlySales[] = ['year' => $year, 'yearly_sales' => 0];
+        }
+    }
+    usort($yearlySales, fn($a, $b) => $a['year'] - $b['year']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -180,19 +206,19 @@ $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
         createLineChart('Daily Sales (RM)', dates, sales);
 
     } else if (viewMode === 'monthly_sales') {
-        chartData = <?php echo json_encode($monthlySales); ?>;
-        const months = chartData.map(item => item.month);
-        const sales = chartData.map(item => parseFloat(item.monthly_sales));
+    chartData = <?php echo json_encode($monthlySales); ?>;
+    const months = chartData.map(item => item.month);
+    const sales = chartData.map(item => parseFloat(item.monthly_sales));
 
-        createBarChart('Monthly Sales (RM)', months, sales);
+    createBarChart('Monthly Sales (RM)', months, sales);
 
-    } else if (viewMode === 'yearly_sales') {
-        chartData = <?php echo json_encode($yearlySales); ?>;
-        const years = chartData.map(item => item.year);
-        const sales = chartData.map(item => parseFloat(item.yearly_sales));
+} else if (viewMode === 'yearly_sales') {
+    chartData = <?php echo json_encode($yearlySales); ?>;
+    const years = chartData.map(item => item.year);
+    const sales = chartData.map(item => parseFloat(item.yearly_sales));
 
-        createBarChart('Yearly Sales (RM)', years, sales);
-    }
+    createBarChart('Yearly Sales (RM)', years, sales);
+}
 
     function createLineChart(label, labels, data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
