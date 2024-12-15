@@ -202,32 +202,53 @@ $yearlySales = getYearlySales($connect);
     const salesTrendSales = salesTrendData.map(item => parseFloat(item.daily_sales));
 
     const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
-    new Chart(salesTrendCtx, {
-        type: 'line',
-        data: {
-            labels: salesTrendDates,
-            datasets: [{
-                label: 'Daily Sales (RM)',
-                data: salesTrendSales,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                fill: true,
-                tension: 0.4
-            }]
+   // Retrieve PHP data
+   const salesTrendData = <?php echo json_encode($salesTrend); ?>;
+
+// Extract dates and sales values
+const dates = salesTrendData.map(item => item.date);
+const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
+
+// Configure Chart.js
+const ctx = document.getElementById('salesTrendChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            label: 'Daily Sales (RM)',
+            data: sales,
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            }
         },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    title: { display: true, text: 'Date' }
-                },
-                y: {
-                    title: { display: true, text: 'Sales (RM)' },
-                    beginAtZero: true
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
                 }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Sales (RM)'
+                },
+                beginAtZero: true
             }
         }
-    });
+    }
+});
 
     function processMonthlyData(monthlyData) {
     const maxMonths = 5;
