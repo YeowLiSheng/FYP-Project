@@ -374,7 +374,7 @@ $lowStockProducts = getLowStockProducts($connect);
             <div class="ccard">
                 <i class="fas fa-users icon"></i>
                 <p class="number"><?php echo $user_count; ?></p>
-                <p class="name">Customers</p>
+                <p class="name">User</p>
             </div>
             <div class="ccard">
                 <i class="fas fa-dollar-sign icon"></i>

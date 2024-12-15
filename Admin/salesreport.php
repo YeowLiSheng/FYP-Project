@@ -92,7 +92,12 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
                 <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
                 <p class="name">Total Sales</p>
             </div>
+            <div class="ccard">
+                <i class="fas fa-tags icon"></i>
+                <p class="text"><?php echo $topProducts</p>
+            </div>
         </div>
+
 
 
 </body>
