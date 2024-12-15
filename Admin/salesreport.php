@@ -12,7 +12,7 @@ if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
     $endDate = $_POST['end_date'];
 }
 
-// Fetch total orders, sales, customers, products sold
+// Fetch total orders, sales, customers, and products sold
 $order_query = "SELECT COUNT(*) AS order_count FROM `orders`";
 $order_result = $connect->query($order_query);
 $order_count = $order_result->num_rows > 0 ? $order_result->fetch_assoc()['order_count'] : 0;
@@ -29,6 +29,7 @@ $totalProducts_query = "SELECT SUM(quantity) AS total_products_sold FROM order_d
 $totalProducts_result = $connect->query($totalProducts_query);
 $total_products_sold = $totalProducts_result->num_rows > 0 ? $totalProducts_result->fetch_assoc()['total_products_sold'] : 0;
 
+// Fetch sales trend data for dynamic chart
 $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
                       FROM orders 
                       WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate' 
@@ -37,7 +38,7 @@ $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
-// Function to get sales data for monthly chart
+// Fetch monthly and yearly sales data
 function getMonthlySales($connect) {
     $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales
               FROM orders
@@ -47,7 +48,6 @@ function getMonthlySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// Function to get sales data for yearly chart
 function getYearlySales($connect) {
     $query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales
               FROM orders
@@ -57,20 +57,8 @@ function getYearlySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-// Function to get category sales data for pie chart
-function getCategorySales($connect) {
-    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales
-              FROM order_details od
-              JOIN product p ON od.product_id = p.product_id
-              JOIN category c ON p.category_id = c.category_id
-              GROUP BY c.category_name";
-    $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
-}
-
 $monthlySales = getMonthlySales($connect);
 $yearlySales = getYearlySales($connect);
-$categorySales = getCategorySales($connect);
 ?>
 
 <!DOCTYPE html>
@@ -93,21 +81,24 @@ $categorySales = getCategorySales($connect);
             document.getElementById('dateForm').submit();
         }
 
-        function showChart(chartType) {
-            document.getElementById('salesTrendChart').style.display = (chartType === 'salesTrend') ? 'block' : 'none';
-            document.getElementById('monthlySalesChart').style.display = (chartType === 'monthlySales') ? 'block' : 'none';
-            document.getElementById('yearlySalesChart').style.display = (chartType === 'yearlySales') ? 'block' : 'none';
+        // Function to update the chart based on selected option
+        function updateChart(type) {
+            const charts = document.querySelectorAll('.chart-container');
+            charts.forEach(chart => chart.style.display = 'none'); // Hide all charts
+            document.getElementById(type + 'Chart').style.display = 'block'; // Show selected chart
         }
     </script>
     <style>
         .container {
             margin-top: 80px;
         }
+
         .cards {
             display: flex;
             justify-content: space-between;
             margin: 20px 0;
         }
+
         .ccard {
             background: #f8f9fa;
             padding: 20px;
@@ -117,33 +108,38 @@ $categorySales = getCategorySales($connect);
             margin: 0 10px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
+
         .ccard .icon {
             font-size: 36px;
             color: #6c757d;
         }
+
         .ccard .number {
             font-size: 24px;
             font-weight: 700;
             margin: 10px 0;
         }
+
         .ccard .name {
             font-size: 16px;
             color: #6c757d;
         }
-        .select-container {
-            margin-top: 20px;
-            text-align: center;
-        }
+
         .chart-container {
-            margin-top: 40px;
             display: none;
+            margin-top: 40px;
         }
-        .chart-container h3 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .chart-container canvas {
-            width: 100% !important;
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .ccard {
+                flex: 0 0 48%;
+                margin: 10px 0;
+            }
+
+            .cards {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -187,65 +183,67 @@ $categorySales = getCategorySales($connect);
         </div>
     </form>
 
-    <!-- Chart Type Selector -->
-    <div class="select-container">
-        <label for="chartType" class="form-label">Select Chart</label>
-        <select id="chartType" class="form-select" onchange="showChart(this.value)">
+    <!-- Select Chart Type -->
+    <div class="mb-4">
+        <label for="chartType" class="form-label">Select Chart Type</label>
+        <select id="chartType" class="form-select" onchange="updateChart(this.value)">
             <option value="salesTrend">Sales Trend</option>
             <option value="monthlySales">Monthly Sales</option>
             <option value="yearlySales">Yearly Sales</option>
+            <option value="categorySales">Category Sales</option>
         </select>
     </div>
 
     <!-- Sales Trend Chart -->
     <div class="chart-container" id="salesTrendChart">
-        <h3>Sales Trend</h3>
-        <canvas id="salesTrendChartCanvas"></canvas>
+        <canvas id="salesTrendCanvas"></canvas>
     </div>
 
     <!-- Monthly Sales Chart -->
     <div class="chart-container" id="monthlySalesChart">
-        <h3>Monthly Sales</h3>
-        <canvas id="monthlySalesChartCanvas"></canvas>
+        <canvas id="monthlySalesCanvas"></canvas>
     </div>
 
     <!-- Yearly Sales Chart -->
     <div class="chart-container" id="yearlySalesChart">
-        <h3>Yearly Sales</h3>
-        <canvas id="yearlySalesChartCanvas"></canvas>
+        <canvas id="yearlySalesCanvas"></canvas>
+    </div>
+
+    <!-- Category Sales Pie Chart -->
+    <div class="chart-container" id="categorySalesChart">
+        <canvas id="categorySalesCanvas"></canvas>
     </div>
 </div>
 
 <script>
     // Sales Trend Chart
     const salesTrendData = <?php echo json_encode($salesTrend); ?>;
-    const dates = salesTrendData.map(item => item.date);
-    const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
-
-    new Chart(document.getElementById('salesTrendChartCanvas').getContext('2d'), {
+    const salesTrendDates = salesTrendData.map(item => item.date);
+    const salesTrendSales = salesTrendData.map(item => parseFloat(item.daily_sales));
+    
+    new Chart(document.getElementById('salesTrendCanvas').getContext('2d'), {
         type: 'line',
         data: {
-            labels: dates,
+            labels: salesTrendDates,
             datasets: [{
-                label: 'Daily Sales (RM)',
-                data: sales,
+                label: 'Sales Trend',
+                data: salesTrendSales,
                 borderColor: '#007bff',
                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                fill: true,
-                tension: 0.4
+                fill: true
             }]
         },
         options: {
             responsive: true,
             scales: {
-                x: { title: { display: true, text: 'Date' } },
+                x: { title: { display: true, text: 'Date' }},
                 y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
             }
         }
     });
 
     // Monthly Sales Chart
-    new Chart(document.getElementById('monthlySalesChartCanvas').getContext('2d'), {
+    new Chart(document.getElementById('monthlySalesCanvas').getContext('2d'), {
         type: 'bar',
         data: {
             labels: <?php echo json_encode(array_column($monthlySales, 'month')); ?>,
@@ -257,14 +255,11 @@ $categorySales = getCategorySales($connect);
                 borderWidth: 1
             }]
         },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-        }
+        options: { responsive: true, scales: { y: { beginAtZero: true }} }
     });
 
     // Yearly Sales Chart
-    new Chart(document.getElementById('yearlySalesChartCanvas').getContext('2d'), {
+    new Chart(document.getElementById('yearlySalesCanvas').getContext('2d'), {
         type: 'bar',
         data: {
             labels: <?php echo json_encode(array_column($yearlySales, 'year')); ?>,
@@ -276,10 +271,25 @@ $categorySales = getCategorySales($connect);
                 borderWidth: 1
             }]
         },
-        options: {
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-        }
+        options: { responsive: true, scales: { y: { beginAtZero: true }} }
+    });
+
+    // Category Sales Pie Chart
+    new Chart(document.getElementById('categorySalesCanvas').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: <?php echo json_encode(array_column($categorySales, 'category_name')); ?>,
+            datasets: [{
+                label: 'Category Sales',
+                data: <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 
+                    'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
+                ]
+            }]
+        },
+        options: { responsive: true }
     });
 </script>
 </body>
