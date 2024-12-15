@@ -93,38 +93,34 @@ $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
 }
 
-// 获取每个类别的订单数量
-$categorySalesQuery = "
-    SELECT 
-        p.category AS category, 
-        COUNT(od.detail_id) AS order_count
-    FROM 
-        order_details od
-    JOIN 
-        product p ON od.product_id = p.product_id
-    GROUP BY 
-        p.category
-    ORDER BY 
-        order_count DESC";
+// Fetch category-wise sales data
+$categorySales_query = "
+    SELECT c.category_name, SUM(od.quantity) AS total_quantity
+    FROM order_details od
+    JOIN product p ON od.product_id = p.product_id
+    JOIN category c ON p.category_id = c.category_id
+    GROUP BY c.category_id";
+$categorySales_result = $connect->query($categorySales_query);
 
-$categorySalesResult = $connect->query($categorySalesQuery);
+// Process data for the pie chart
 $categorySalesData = [];
+$totalQuantity = 0;
 
-if ($categorySalesResult->num_rows > 0) {
-    // 计算总订单量，用于百分比计算
-    $totalOrders = 0;
-    while ($row = $categorySalesResult->fetch_assoc()) {
-        $totalOrders += $row['order_count'];
-        $categorySalesData[] = $row;
-    }
-
-    // 添加百分比数据
-    foreach ($categorySalesData as &$data) {
-        $data['percentage'] = ($data['order_count'] / $totalOrders) * 100;
-    }
+while ($row = $categorySales_result->fetch_assoc()) {
+    $totalQuantity += $row['total_quantity'];
+    $categorySalesData[] = [
+        'category' => $row['category_name'],
+        'quantity' => $row['total_quantity']
+    ];
 }
 
-// 将数据转换为 JSON 供前端使用
+// Calculate percentage
+foreach ($categorySalesData as &$data) {
+    $data['percentage'] = ($data['quantity'] / $totalQuantity) * 100;
+}
+unset($data);
+
+// Pass the data to JavaScript
 $categorySalesJson = json_encode($categorySalesData);
 ?>
 
@@ -398,7 +394,9 @@ $categorySalesJson = json_encode($categorySalesData);
     yearSelector.style.display = this.value === 'monthly_sales' ? 'block' : 'none';
 });
 
-const categorySalesData = <?php echo $categorySalesJson; ?>;
+
+ // Parse PHP data into JavaScript
+ const categorySalesData = <?php echo $categorySalesJson; ?>;
 
 // Prepare data for the pie chart
 const labels = categorySalesData.map(item => item.category);
@@ -417,7 +415,7 @@ new Chart(ctx, {
     data: {
         labels: labels,
         datasets: [{
-            data: percentages, // Use percentages directly as data
+            data: percentages,
             backgroundColor: colors.slice(0, labels.length),
             borderColor: '#fff',
             borderWidth: 2
