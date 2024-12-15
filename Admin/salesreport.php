@@ -2,8 +2,7 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-
-
+// 获取订单总数
 $order = "SELECT COUNT(*) AS order_count FROM `orders`";
 $order_result = $connect->query($order);
 
@@ -13,21 +12,23 @@ if ($order_result->num_rows > 0) {
     $order_count = $row['order_count'];
 }
 
+// 获取总销售额
 function getTotalSales($connect) {
     $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
     $result = mysqli_query($connect, $query);
-    return mysqli_fetch_assoc($result)['total_sales'];
+    return mysqli_fetch_assoc($result)['total_sales'] ?? 0;
 }
 $totalSales = getTotalSales($connect);
 
-
+// 获取总顾客数
 function getTotalCustomers($connect) {
     $query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
     $result = mysqli_query($connect, $query);
-    return mysqli_fetch_assoc($result)['total_customers'];
+    return mysqli_fetch_assoc($result)['total_customers'] ?? 0;
 }
+$total_customers = getTotalCustomers($connect);
 
-
+// 获取分类销售额
 function getCategorySales($connect) {
     $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales 
               FROM order_details od 
@@ -38,8 +39,7 @@ function getCategorySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-
-// 获取销售趋势数据，根据日期范围过滤
+// 获取销售趋势数据
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
               FROM orders 
@@ -54,8 +54,7 @@ function getSalesTrend($connect, $startDate, $endDate) {
 $startDate = isset($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d', strtotime('-30 days'));
 $endDate = isset($_POST['end_date']) ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 
-// 数据获取
-
+// 获取分类和趋势数据
 $categorySales = getCategorySales($connect);
 $salesTrend = getSalesTrend($connect, $startDate, $endDate);
 ?>
@@ -69,33 +68,61 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <body>
-    <div class="container">
-        <!-- Cards -->
-        <div class="cards">
-            <div class="ccard">
-                <i class="fas fa-shopping-cart icon"></i>
-                <p class="number"><?php echo $order_count; ?></p>
-                <p class="name">Orders</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-users icon"></i>
-                <p class="number"><?php echo $total_customers; ?></p>
-                <p class="name">Customers</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-dollar-sign icon"></i>
-                <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
-                <p class="name">Total Sales</p>
-            </div>
-            <div class="ccard">
-                <i class="fas fa-tags icon"></i>
-            </div>
+    <style>
+        .cards {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .ccard {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .ccard .icon {
+            font-size: 36px;
+            color: #6c757d;
+        }
+        .ccard .number {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .ccard .name {
+            font-size: 16px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 卡片 -->
+    <div class="cards">
+        <div class="ccard">
+            <i class="fas fa-shopping-cart icon"></i>
+            <p class="number"><?php echo $order_count; ?></p>
+            <p class="name">Orders</p>
         </div>
-
-
-
+        <div class="ccard">
+            <i class="fas fa-users icon"></i>
+            <p class="number"><?php echo $total_customers; ?></p>
+            <p class="name">Customers</p>
+        </div>
+        <div class="ccard">
+            <i class="fas fa-dollar-sign icon"></i>
+            <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+            <p class="name">Total Sales</p>
+        </div>
+        <div class="ccard">
+            <i class="fas fa-tags icon"></i>
+            <p class="number"><?php echo count($categorySales); ?></p>
+            <p class="name">Categories</p>
+        </div>
+    </div>
+</div>
 </body>
 </html>
