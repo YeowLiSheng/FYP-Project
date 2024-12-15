@@ -39,6 +39,12 @@ function getCategorySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+function getTotalProductsSold($connect) {
+    $query = "SELECT SUM(quantity) AS total_products_sold FROM order_details";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_assoc($result)['total_products_sold'] ?? 0;
+}
+$total_products_sold = getTotalProductsSold($connect);
 // 获取销售趋势数据
 function getSalesTrend($connect, $startDate, $endDate) {
     $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
@@ -122,9 +128,9 @@ $salesTrend = getSalesTrend($connect, $startDate, $endDate);
             <p class="name">Total Sales</p>
         </div>
         <div class="ccard">
-            <i class="fas fa-tags icon"></i>
-            <p class="number"><?php echo count($categorySales); ?></p>
-            <p class="name">Categories</p>
+            <i class="fas fa-boxes icon"></i>
+            <p class="number"><?php echo $total_products_sold; ?></p>
+            <p class="name">Total Products Sold</p>
         </div>
     </div>
 </div>
