@@ -40,6 +40,42 @@ $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily
                       ORDER BY DATE(order_date)";
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
+
+
+// Function to get sales data for monthly chart
+function getMonthlySales($connect) {
+    $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales
+              FROM orders
+              GROUP BY month
+              ORDER BY month";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// Function to get sales data for yearly chart
+function getYearlySales($connect) {
+    $query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales
+              FROM orders
+              GROUP BY year
+              ORDER BY year";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+// Function to get category sales data for pie chart
+function getCategorySales($connect) {
+    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales
+              FROM order_details od
+              JOIN product p ON od.product_id = p.product_id
+              JOIN category c ON p.category_id = c.category_id
+              GROUP BY c.category_name";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+$monthlySales = getMonthlySales($connect);
+$yearlySales = getYearlySales($connect);
+$categorySales = getCategorySales($connect);
 ?>
 
 <!DOCTYPE html>
@@ -140,6 +176,24 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
     <!-- Sales Trend Chart -->
     <canvas id="salesTrendChart"></canvas>
+
+    <!-- Monthly Sales Chart -->
+    <div class="chart-container">
+        <h3>Monthly Sales</h3>
+        <canvas id="monthlySalesChart"></canvas>
+    </div>
+
+    <!-- Yearly Sales Chart -->
+    <div class="chart-container">
+        <h3>Yearly Sales</h3>
+        <canvas id="yearlySalesChart"></canvas>
+    </div>
+
+    <!-- Category Sales Pie Chart -->
+    <div class="chart-container">
+        <h3>Category Sales</h3>
+        <canvas id="categorySalesChart"></canvas>
+    </div>
 </div>
 
 <script>
@@ -190,6 +244,97 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
             }
         }
     });
+</script>
+<script>
+    // Monthly Sales Chart Data
+    const monthlySalesData = {
+        labels: <?php echo json_encode(array_column($monthlySales, 'month')); ?>,
+        datasets: [{
+            label: 'Monthly Sales (RM)',
+            data: <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>,
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    };
+
+    const monthlySalesConfig = {
+        type: 'bar',
+        data: monthlySalesData,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    };
+
+    new Chart(
+        document.getElementById('monthlySalesChart'),
+        monthlySalesConfig
+    );
+
+    // Yearly Sales Chart Data
+    const yearlySalesData = {
+        labels: <?php echo json_encode(array_column($yearlySales, 'year')); ?>,
+        datasets: [{
+            label: 'Yearly Sales (RM)',
+            data: <?php echo json_encode(array_column($yearlySales, 'yearly_sales')); ?>,
+            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+        }]
+    };
+
+    const yearlySalesConfig = {
+        type: 'bar',
+        data: yearlySalesData,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    };
+
+    new Chart(
+        document.getElementById('yearlySalesChart'),
+        yearlySalesConfig
+    );
+
+    // Category Sales Pie Chart Data
+    const categorySalesData = {
+        labels: <?php echo json_encode(array_column($categorySales, 'category_name')); ?>,
+        datasets: [{
+            label: 'Category Sales',
+            data: <?php echo json_encode(array_column($categorySales, 'category_sales')); ?>,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)'
+            ]
+        }]
+    };
+
+    const categorySalesConfig = {
+        type: 'pie',
+        data: categorySalesData,
+        options: {
+            responsive: true
+        }
+    };
+
+    new Chart(
+        document.getElementById('categorySalesChart'),
+        categorySalesConfig
+    );
 </script>
 </body>
 </html>
