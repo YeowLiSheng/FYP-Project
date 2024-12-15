@@ -54,7 +54,11 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
     <script>
         function updateEndDateLimit() {
             const startDate = document.getElementById('start_date').value;
-            document.getElementById('end_date').setAttribute('min', startDate);
+            const endDateInput = document.getElementById('end_date');
+            endDateInput.setAttribute('min', startDate);
+            if (endDateInput.value < startDate) {
+                endDateInput.value = startDate;
+            }
         }
 
         function submitDateForm() {
