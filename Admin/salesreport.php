@@ -201,6 +201,15 @@ $categorySalesJson = json_encode($categorySalesData);
 .table th, .table td {
     vertical-align: middle;
 }
+.sidebar a {
+    text-decoration: none; /* Remove the underline */
+}
+
+/* Optionally, if you want to change link color on hover */
+.sidebar a:hover {
+    text-decoration: none; /* Ensure no underline appears on hover */
+    color: #007bff; /* Change the hover color (you can adjust this) */
+}
     </style>
 </head>
 <body>
