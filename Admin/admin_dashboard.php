@@ -249,18 +249,18 @@ $lowStockProducts = getLowStockProducts($connect);
 
 /* Gender Chart Section */
 .gender-chart-container {
-        flex: 1;
-        max-width: 600px;
-        background-color: #f9f9f9; /* Light gray background */
-        border-radius: 10px; /* Rounded corners */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        padding: 20px; /* Inner spacing */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        margin: 20px auto; /* Centered with top-bottom margin */
-    }
+    flex: 1; /* Equal width */
+    max-width: 600px; /* Match the Recent Users table width */
+    background: white; /* Match the same background color */
+    border-radius: 10px; /* Same rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Same shadow effect */
+    padding: 20px; /* Inner spacing */
+    margin-top: 20px; /* Consistent spacing */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
     .gender-chart-container h2 {
         font-size: 1.5rem; /* Larger font size for title */
@@ -407,7 +407,7 @@ $lowStockProducts = getLowStockProducts($connect);
     </div>
 
     <!-- Gender Distribution Chart -->
-    <div class="chart-container" id="genderChartContainer">
+    <div class="table-small gender-chart-container">
     <h2 style="text-align: center;">Gender Distribution</h2>
     <div id="genderPieChart" style="width: 100%; height: 400px;"></div>
     </div>
