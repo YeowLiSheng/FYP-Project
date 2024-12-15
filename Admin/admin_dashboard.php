@@ -46,14 +46,15 @@ function getTotalSales($connect) {
 $totalSales = getTotalSales($connect);
 
 function getTopProducts($connect) {
-    $query = "SELECT product_name, SUM(quantity) AS total_sold 
-              FROM order_details 
-              GROUP BY product_name 
+    $query = "SELECT p.product_name, p.product_image, SUM(od.quantity) AS total_sold 
+              FROM order_details od
+              INNER JOIN product p ON od.product_id = p.product_id
+              GROUP BY p.product_name, p.product_image
               ORDER BY total_sold DESC LIMIT 5";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
-$topProducts = getTopProducts($connect);
+$topProducts = getTopProducts($connect)
 ?>
 
 <!DOCTYPE html>
@@ -198,22 +199,24 @@ $topProducts = getTopProducts($connect);
         </div>
 
         <div class="product-sales">Top 5 Products by Sales</div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Units Sold</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($topProducts as $product): ?>
-                    <tr>
-                        <td><?php echo $product['product_name']; ?></td>
-                        <td><?php echo $product['total_sold']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Product Image</th>
+            <th>Product Name</th>
+            <th>Units Sold</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($topProducts as $product): ?>
+            <tr>
+                <td><img src="<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 80px; height: 80px; object-fit: cover;"></td>
+                <td><?php echo $product['product_name']; ?></td>
+                <td><?php echo $product['total_sold']; ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
     </div>
 </body>
 </html>
