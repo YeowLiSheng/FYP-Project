@@ -247,69 +247,6 @@ $genderDistribution = getGenderDistribution($connect);
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script>
-        const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
-        const labels = weeklySalesData.map(data => data.week_range);
-        const sales = weeklySalesData.map(data => data.total_sales);
-
-        const ctx = document.getElementById('weeklySalesChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
-        gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Total Sales (Weekly)',
-                    data: sales,
-                    fill: true,
-                    backgroundColor: gradient,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                    pointBorderColor: '#fff',
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Sales: RM${context.raw.toLocaleString()}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Week Range',
-                            color: '#333',
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Total Sales (RM)',
-                            color: '#333',
-                        }
-                    }
-                }
-            }
-        });
-
-        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
-        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
-    </script>
-    
         <div>
             <div class="section-header">Top 5 Products by Sales</div>
             <table class="table table-striped">
@@ -368,7 +305,68 @@ $genderDistribution = getGenderDistribution($connect);
 <h3>Gender Distribution</h3>
 <canvas id="genderPieChart" width="400" height="400"></canvas>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <script>
+        const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
+        const labels = weeklySalesData.map(data => data.week_range);
+        const sales = weeklySalesData.map(data => data.total_sales);
+
+        const ctx = document.getElementById('weeklySalesChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(75, 192, 192, 0.6)');
+        gradient.addColorStop(1, 'rgba(75, 192, 192, 0.1)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Total Sales (Weekly)',
+                    data: sales,
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                    pointBorderColor: '#fff',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return Sales: RM${context.raw.toLocaleString()};
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Week Range',
+                            color: '#333',
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Sales (RM)',
+                            color: '#333',
+                        }
+                    }
+                }
+            }
+        });
+
+        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
+        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
+    </script>
     <script>
     const ctx = document.getElementById('genderPieChart').getContext('2d');
     const genderPieChart = new Chart(ctx, {
@@ -397,7 +395,7 @@ $genderDistribution = getGenderDistribution($connect);
                         label: function(tooltipItem) {
                             const percentage = (genderCounts[tooltipItem.dataIndex] / 
                                                 genderCounts.reduce((a, b) => a + b, 0) * 100).toFixed(2);
-                            return `${genderLabels[tooltipItem.dataIndex]}: ${percentage}%`;
+                            return ${genderLabels[tooltipItem.dataIndex]}: ${percentage}%;
                         }
                     }
                 }
