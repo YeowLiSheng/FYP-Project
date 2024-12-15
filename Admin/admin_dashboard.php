@@ -2,7 +2,6 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-
 $product= "SELECT COUNT(*) AS product_count FROM product";
 $product_result = $connect->query($product);
 
@@ -39,14 +38,12 @@ if ($order_result->num_rows > 0) {
     $order_count = $row['order_count'];
 }
 
-
 function getTotalSales($connect) {
     $query = "SELECT SUM(final_amount) AS total_sales FROM orders";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_assoc($result)['total_sales'];
 }
 $totalSales = getTotalSales($connect);
-
 
 function getTopProducts($connect) {
     $query = "SELECT product_name, SUM(quantity) AS total_sold 
@@ -57,7 +54,6 @@ function getTopProducts($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 $topProducts = getTopProducts($connect);
-
 ?>
 
 <!DOCTYPE html>
@@ -65,76 +61,70 @@ $topProducts = getTopProducts($connect);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <title>Admin Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
             background-color: #f4f4f9;
-            color: #333;
         }
         .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 20px 50px 260px; /* Ensure it doesn’t overlap sidebar */
         }
         .box {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
+            background: white;
+            border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 10px;
+            width: 250px;
             text-align: center;
         }
         .box i {
             font-size: 40px;
-            color: #5a67d8;
+            color: #4CAF50;
             margin-bottom: 10px;
         }
         .box h2 {
-            font-size: 18px;
+            font-size: 20px;
             margin: 10px 0;
-            color: #444;
-        }
-        .box p {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2d3748;
-        }
-        .product-sales {
-            margin: 40px 20px 10px;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            color: #2b6cb0;
-        }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        .table th, .table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        .table th {
-            background-color: #f4f4f9;
             color: #333;
         }
-        .table-striped tbody tr:nth-child(odd) {
-            background-color: #f9fafb;
+        .box p {
+            font-size: 18px;
+            color: #666;
         }
-        .New.Customers {
-            margin: 40px 20px;
+        .product-sales, .new-customers {
+            margin: 20px 260px;
             font-size: 24px;
+            color: #333;
             font-weight: bold;
-            text-align: center;
-            color: #2b6cb0;
+        }
+        table {
+            width: calc(100% - 320px);
+            margin: 0 auto 20px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+        }
+        tr:hover {
+            background: #f1f1f1;
         }
     </style>
 </head>
@@ -169,7 +159,7 @@ $topProducts = getTopProducts($connect);
 </div>
 
 <div class="product-sales">Top 5 Products by Sales</div>
-<table class="table table-striped">
+<table>
     <thead>
         <tr>
             <th>Product Name</th>
@@ -186,7 +176,8 @@ $topProducts = getTopProducts($connect);
     </tbody>
 </table>
 
-<div class="New Customers">Recent User</div>
+<div class="new-customers">Recent Users</div>
+<!-- Add recent user data here -->
 
 </body>
 </html>
