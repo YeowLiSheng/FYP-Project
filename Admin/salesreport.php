@@ -92,6 +92,36 @@ $recentOrders_result = $connect->query($recentOrders_query);
 $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
 }
+
+// Fetch category-wise sales data
+$categorySales_query = "
+    SELECT c.category_name, SUM(od.total_price) AS category_sales
+    FROM order_details od
+    JOIN product p ON od.product_id = p.product_id
+    JOIN category c ON p.category_id = c.category_id
+    GROUP BY c.category_id";
+$categorySales_result = $connect->query($categorySales_query);
+
+// Process data for the pie chart
+$categorySalesData = [];
+$totalCategorySales = 0;
+
+while ($row = $categorySales_result->fetch_assoc()) {
+    $totalCategorySales += $row['category_sales'];
+    $categorySalesData[] = [
+        'category' => $row['category_name'],
+        'sales' => $row['category_sales']
+    ];
+}
+
+// Calculate percentage and prepare data for the chart
+foreach ($categorySalesData as &$data) {
+    $data['percentage'] = ($data['sales'] / $totalCategorySales) * 100;
+}
+unset($data);
+
+// Pass the data to JavaScript
+$categorySalesJson = json_encode($categorySalesData);
 ?>
 
 <!DOCTYPE html>
@@ -262,6 +292,14 @@ $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
         </table>
     </div>
 </div>
+<div class="card">
+    <div class="card-header">
+        <h4>Category-wise Sales</h4>
+    </div>
+    <div class="card-body">
+        <canvas id="categoryPieChart"></canvas>
+    </div>
+</div>
 </div>
 <script>
     // Retrieve PHP data
@@ -354,6 +392,53 @@ $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
     document.getElementById('view_mode').addEventListener('change', function () {
     const yearSelector = document.getElementById('yearSelector');
     yearSelector.style.display = this.value === 'monthly_sales' ? 'block' : 'none';
+});
+
+
+// Parse PHP data into JavaScript
+const categorySalesData = <?php echo $categorySalesJson; ?>;
+
+// Prepare data for the pie chart
+const labels = categorySalesData.map(item => item.category);
+const salesData = categorySalesData.map(item => item.sales);
+const percentages = categorySalesData.map(item => item.percentage.toFixed(2));
+
+// Colors for the pie chart
+const colors = [
+    '#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d',
+    '#17a2b8', '#343a40', '#ff7f0e', '#2ca02c', '#1f77b4'
+];
+
+// Create the pie chart
+const ctx = document.getElementById('categoryPieChart').getContext('2d');
+new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: labels,
+        datasets: [{
+            data: salesData,
+            backgroundColor: colors.slice(0, labels.length),
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'right'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const index = context.dataIndex;
+                        return `${labels[index]}: RM ${salesData[index]} (${percentages[index]}%)`;
+                    }
+                }
+            }
+        }
+    }
 });
 </script>
 </body>
