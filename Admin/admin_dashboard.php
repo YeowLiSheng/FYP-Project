@@ -194,6 +194,29 @@ $recentUsers = getRecentUsers($connect);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
+        <style>
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+img {
+    border-radius: 50%;
+}
+</style>
+
         @media (max-width: 768px) {
             .container {
                 margin-left: 0;
