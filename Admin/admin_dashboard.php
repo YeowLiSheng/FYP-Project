@@ -344,7 +344,18 @@ $lowStockProducts = getLowStockProducts($connect);
     font-weight: bold;
 }
 
+h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
+        h1 ion-icon {
+            font-size: 32px;
+            color: #3498db;
+        }
 @media (max-width: 768px) {
     .card-container {
         grid-template-columns: 1fr; 
