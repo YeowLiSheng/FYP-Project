@@ -290,14 +290,20 @@ $lowStockProducts = getLowStockProducts($connect);
         flex-direction: column; /* Stack tables vertically */
     }
 }
-.cards-container {
-    display: flex;
-    gap: 20px; /* 调整卡片间距 */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px; 
+    margin-top: 20px;
 }
 
+
 .card {
-    flex: 1; /* 卡片宽度可自适应 */
-    max-width: 50%; /* 或根据需要设置具体宽度 */
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .card:hover {
@@ -408,7 +414,7 @@ $lowStockProducts = getLowStockProducts($connect);
             </table>
         </div>
     </div>
-
+                        
     <!-- Recent Users -->
     <div class="card">
         <div class="card-header">Recent Users</div>

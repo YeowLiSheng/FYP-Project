@@ -133,6 +133,7 @@ $categorySalesJson = json_encode($categorySalesData);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
         function updateEndDateLimit() {
             const startDate = document.getElementById('start_date').value;
@@ -395,50 +396,36 @@ $categorySalesJson = json_encode($categorySalesData);
 });
 
 
- // Parse PHP data into JavaScript
- const categorySalesData = <?php echo $categorySalesJson; ?>;
+google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(drawCategoryChart);
 
-// Prepare data for the pie chart
-const labels = categorySalesData.map(item => item.category);
-const percentages = categorySalesData.map(item => item.percentage.toFixed(2));
-
-// Colors for the pie chart
-const colors = [
-    '#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d',
-    '#17a2b8', '#343a40', '#ff7f0e', '#2ca02c', '#1f77b4'
-];
-
-// Create the pie chart
-const ctx = document.getElementById('categoryPieChart').getContext('2d');
-new Chart(ctx, {
-    type: 'pie',
-    data: {
-        labels: labels,
-        datasets: [{
-            data: percentages,
-            backgroundColor: colors.slice(0, labels.length),
-            borderColor: '#fff',
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'right'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const index = context.dataIndex;
-                        return `${labels[index]}: ${percentages[index]}%`;
-                    }
-                }
+    function drawCategoryChart() {
+        var categorySalesData = google.visualization.arrayToDataTable([
+            ['Category', 'Percentage'],
+            <?php
+            foreach ($categorySales as $category) {
+                echo "['" . $category['category'] . "', " . $category['percentage'] . "],";
             }
-        }
+            ?>
+        ]);
+
+        var categoryChartOptions = {
+            title: 'Sales by Category',
+            titleTextStyle: {
+                fontSize: 18,
+                bold: true,
+                color: '#333'
+            },
+            pieHole: 0.4, // Makes it a donut chart
+            chartArea: { width: '85%', height: '75%' },
+            colors: ['#FF6384', '#36A2EB', '#FFCE56', '#8BC34A', '#FF7F0E'],
+            legend: { position: 'bottom', textStyle: { fontSize: 14 } },
+            pieSliceTextStyle: { fontSize: 12 }
+        };
+
+        var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
+        categoryPieChart.draw(categorySalesData, categoryChartOptions);
     }
-});
 </script>
 </body>
 </html>
