@@ -453,11 +453,10 @@ $lowStockProducts = getLowStockProducts($connect);
     </script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
-    google.charts.load('current', {'packages':['corechart']});
+    google.charts.load('current', { packages: ['corechart'] });
     google.charts.setOnLoadCallback(drawGenderChart);
 
     function drawGenderChart() {
-        // Data preparation
         var genderData = google.visualization.arrayToDataTable([
             ['Gender', 'Count'],
             <?php
@@ -467,16 +466,20 @@ $lowStockProducts = getLowStockProducts($connect);
             ?>
         ]);
 
-        // Chart options
         var genderChartOptions = {
             title: 'Customer Gender Distribution',
-            pieHole: 0.4, // To create a donut chart
-            chartArea: { width: '90%', height: '80%' }, // Adjust chart area
-            colors: ['#FF6384', '#36A2EB', '#FFCE56'], // Custom colors
-            fontName: 'Roboto',
+            titleTextStyle: {
+                fontSize: 18, // Increase font size
+                bold: true, // Make it bold
+                color: '#333' // Darker title color
+            },
+            pieHole: 0.4, // Donut chart
+            chartArea: { width: '85%', height: '75%' }, // Adjust chart area
+            colors: ['#FF6384', '#36A2EB', '#FFCE56', '#8BC34A'], // Updated color scheme
+            legend: { position: 'bottom', textStyle: { fontSize: 14 } }, // Position legend at the bottom
+            pieSliceTextStyle: { fontSize: 12 } // Size of text inside slices
         };
 
-        // Drawing the chart
         var genderPieChart = new google.visualization.PieChart(document.getElementById('genderPieChart'));
         genderPieChart.draw(genderData, genderChartOptions);
     }
