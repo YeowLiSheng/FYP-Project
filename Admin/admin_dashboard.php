@@ -249,18 +249,14 @@ $lowStockProducts = getLowStockProducts($connect);
 
 /* Gender Chart Section */
 .gender-chart-container {
-        flex: 1;
-        max-width: 600px;
-        background-color: #f9f9f9; /* Light gray background */
-        border-radius: 10px; /* Rounded corners */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        padding: 20px; /* Inner spacing */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        margin: 20px auto; /* Centered with top-bottom margin */
-    }
+    flex: 1; /* Equal width as other sections */
+    max-width: 600px; /* Match max-width of tables */
+    background: white; /* Match background with tables */
+    border-radius: 10px; /* Same border radius as tables */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Same shadow as tables */
+    padding: 20px; /* Same padding as tables */
+    margin-top: 20px; /* Consistent spacing */
+}
 
     .gender-chart-container h2 {
         font-size: 1.5rem; /* Larger font size for title */
