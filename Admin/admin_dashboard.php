@@ -121,7 +121,7 @@ $lowStockProducts = getLowStockProducts($connect);
 .container {
     padding: 20px;
     margin-left: 105px;
-    margin-top: 80px;
+    margin-top: 70px;
 
 }
 .home-icon-container {
