@@ -229,51 +229,94 @@ $yearlySales = getYearlySales($connect);
         }
     });
 
-    // Initialize Monthly Sales Chart
-    const monthlySalesData = {
-        labels: <?php echo json_encode(array_column($monthlySales, 'month')); ?>,
+    function processMonthlyData(monthlyData) {
+    const maxMonths = 5;
+    // If there are less than 5 months of data, fill with 5 months
+    if (monthlyData.length < maxMonths) {
+        const missingMonths = maxMonths - monthlyData.length;
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth(); // 0-based, so January is 0
+        
+        // Fill in missing months with empty data
+        for (let i = 0; i < missingMonths; i++) {
+            const month = (currentMonth - i + 12) % 12; // Calculate the previous month
+            const monthName = new Date(currentDate.setMonth(month)).toLocaleString('default', { month: 'short' });
+            monthlyData.unshift({ month: monthName, monthly_sales: 0 });
+        }
+    }
+
+    return monthlyData.slice(-maxMonths); // Show the last 5 months if there are more than 5
+}
+
+// Function to process the yearly sales data
+function processYearlyData(yearlyData) {
+    const maxYears = 5;
+    // If there are less than 5 years of data, fill with 5 years
+    if (yearlyData.length < maxYears) {
+        const missingYears = maxYears - yearlyData.length;
+        const currentYear = new Date().getFullYear();
+        
+        // Fill in missing years with empty data
+        for (let i = 0; i < missingYears; i++) {
+            const year = currentYear - i - 1; // Calculate the previous year
+            yearlyData.unshift({ year: year, yearly_sales: 0 });
+        }
+    }
+
+    return yearlyData.slice(-maxYears); // Show the last 5 years if there are more than 5
+}
+
+// Initialize the Monthly Sales Chart with processed data
+const monthlySalesData = processMonthlyData(<?php echo json_encode($monthlySales); ?>);
+const monthlySalesLabels = monthlySalesData.map(item => item.month);
+const monthlySalesValues = monthlySalesData.map(item => parseFloat(item.monthly_sales));
+
+const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
+new Chart(monthlySalesCtx, {
+    type: 'bar',
+    data: {
+        labels: monthlySalesLabels,
         datasets: [{
             label: 'Monthly Sales (RM)',
-            data: <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>,
+            data: monthlySalesValues,
             backgroundColor: 'rgba(75, 192, 192, 0.6)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1
         }]
-    };
-    const monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
-    new Chart(monthlySalesCtx, {
-        type: 'bar',
-        data: monthlySalesData,
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true }
-            }
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
         }
-    });
+    }
+});
 
-    // Initialize Yearly Sales Chart
-    const yearlySalesData = {
-        labels: <?php echo json_encode(array_column($yearlySales, 'year')); ?>,
+// Initialize the Yearly Sales Chart with processed data
+const yearlySalesData = processYearlyData(<?php echo json_encode($yearlySales); ?>);
+const yearlySalesLabels = yearlySalesData.map(item => item.year);
+const yearlySalesValues = yearlySalesData.map(item => parseFloat(item.yearly_sales));
+
+const yearlySalesCtx = document.getElementById('yearlySalesChart').getContext('2d');
+new Chart(yearlySalesCtx, {
+    type: 'bar',
+    data: {
+        labels: yearlySalesLabels,
         datasets: [{
             label: 'Yearly Sales (RM)',
-            data: <?php echo json_encode(array_column($yearlySales, 'yearly_sales')); ?>,
+            data: yearlySalesValues,
             backgroundColor: 'rgba(153, 102, 255, 0.6)',
             borderColor: 'rgba(153, 102, 255, 1)',
             borderWidth: 1
         }]
-    };
-    const yearlySalesCtx = document.getElementById('yearlySalesChart').getContext('2d');
-    new Chart(yearlySalesCtx, {
-        type: 'bar',
-        data: yearlySalesData,
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true }
-            }
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
         }
-    });
+    }
+});
 </script>
 </body>
 </html>
