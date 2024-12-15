@@ -111,154 +111,114 @@ $lowStockProducts = getLowStockProducts($connect);
     <title>Admin Dashboard</title>
     <style>
         body {
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f9fa;
-    color: #333;
-}
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
 
-.container {
-    padding: 20px;
-    margin-left: 260px;
-    margin-top: 80px;
-}
+        .container {
+            padding: 20px;
+            margin-left: 260px;
+            margin-top: 80px;
+        }
 
-/* Card styles */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-.ccard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
+        .ccard {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
 
-.ccard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
+        .ccard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
 
-.icon {
-    font-size: 50px;
-    color: #17a2b8;
-    margin-bottom: 10px;
-}
+        .icon {
+            font-size: 50px;
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
 
-.number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #333;
-}
+        .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
 
-.name {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #555;
-}
+        .name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #555;
+        }
 
-/* Section header */
-.section-header {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    border-bottom: 2px solid #dee2e6;
-    padding-bottom: 5px;
-}
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 5px;
+        }
 
-/* Table container for aligning tables in a row */
-.table-container {
-    display: flex;
-    gap: 20px; /* Space between tables */
-    margin-top: 20px;
-}
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
 
-/* Individual table styles */
-.table-small {
-    width: 50%; /* Each table takes half of the width */
-    max-width: 600px; /* Cap maximum width */
-    flex: 1; /* Adjust width dynamically */
-}
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
 
-/* Table styling */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
-}
+        .table th {
+            background-color: #f1f3f5;
+            font-weight: 700;
+            color: #495057;
+        }
 
-.table th,
-.table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-    font-size: 0.9rem;
-}
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
+        }
 
-.table th {
-    background-color: #f1f3f5;
-    font-weight: 700;
-    color: #495057;
-}
+        .chart-container {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-.table-striped tbody tr:nth-child(odd) {
-    background-color: #f8f9fa;
-}
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+                padding: 15px;
+            }
 
-/* User image styling for Recent Users */
-.user-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.low-stock-and-chart {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping for small screens */
-    gap: 20px; /* Space between cards */
-    justify-content: center; /* Center items */
-}
-
-.low-stock-products,
-.chart-container {
-    flex: 1; /* Distribute space equally */
-    min-width: 300px; /* Ensure minimum size for responsiveness */
-    max-width: 600px; /* Cap the maximum width */
-    background: white; /* Match the card background */
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .container {
-        margin-left: 0;
-        padding: 15px;
-    }
-
-    .cards {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-
-    .table-container {
-        flex-direction: column; /* Stack tables vertically */
-    }
-}
+            .cards {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
@@ -347,40 +307,38 @@ $lowStockProducts = getLowStockProducts($connect);
         </table>
     </div>
 </div>
-<div class="low-stock-and-chart">
-    <!-- Low Stock Products -->
-    <div class="low-stock-products">
-        <h2>Products with Low Stock</h2>
-        <table border="1" cellpadding="10">
-            <thead>
+        <div class="low-stock-products">
+    <h2>Products with Low Stock</h2>
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Image</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($lowStockProducts as $product): ?>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Image</th>
-                    <th>Stock Quantity</th>
+                    <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                    <td>
+                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                             alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                             style="width: 100px; height: auto;">
+                    </td>
+                    <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lowStockProducts as $product): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                        <td>
-                            <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                                 style="width: 100px; height: auto;">
-                        </td>
-                        <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Gender Chart -->
-    <div class="chart-container">
-        <h2 style="text-align: center;">Gender Distribution</h2>
-        <canvas id="genderPieChart"></canvas>
-    </div>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
+
+        <!-- Gender Chart -->
+        <div class="chart-container">
+            <h2 style="text-align: center;">Gender Distribution</h2>
+            <canvas id="genderPieChart"></canvas>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
