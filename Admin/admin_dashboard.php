@@ -111,7 +111,6 @@ $topProducts = getTopProducts($connect);
                         <tbody>
                             <?php foreach ($topProducts as $product): ?>
                                 <tr>
-                                    <td><?php echo $product['product_image'];?></td>
                                     <td><?php echo $product['product_name']; ?></td>
                                     <td><?php echo $product['total_sold']; ?></td>
                                 </tr>
