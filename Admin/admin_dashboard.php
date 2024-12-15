@@ -316,7 +316,7 @@ $lowStockProducts = getLowStockProducts($connect);
                 <tr>
                     <td><?php echo htmlspecialchars($product['product_name']); ?></td>
                     <td>
-                        <img src="images/<?php echo htmlspecialchars($product['product_image']); ?>" 
+                        <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
                              alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
                              style="width: 100px; height: auto;">
                     </td>
