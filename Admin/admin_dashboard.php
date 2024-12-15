@@ -110,7 +110,7 @@ $lowStockProducts = getLowStockProducts($connect);
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <title>Admin Dashboard</title>
     <style>
-    body {
+        body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
@@ -235,7 +235,6 @@ $lowStockProducts = getLowStockProducts($connect);
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
 .low-stock-gender-container {
     display: flex;
     gap: 20px; /* Space between sections */
@@ -263,19 +262,18 @@ $lowStockProducts = getLowStockProducts($connect);
     align-items: center;
 }
 
-.gender-chart-container h2 {
-    font-size: 1.5rem; /* Larger font size for title */
-    font-weight: bold;
-    margin-bottom: 20px; /* Space below title */
-    color: #333; /* Darker text color */
-    text-align: center;
-}
+    .gender-chart-container h2 {
+        font-size: 1.5rem; /* Larger font size for title */
+        font-weight: bold;
+        margin-bottom: 20px; /* Space below title */
+        color: #333; /* Darker text color */
+        text-align: center;
+    }
 
-#genderPieChart {
-    width: 100%;
-    height: 400px; /* Set fixed height */
-}
-
+    #genderPieChart {
+        width: 100%;
+        height: 400px; /* Set fixed height */
+    }
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .container {
@@ -291,58 +289,55 @@ $lowStockProducts = getLowStockProducts($connect);
         flex-direction: column; /* Stack tables vertically */
     }
 }
-
-/* New Styles for Card Layout */
 .card-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Creates a grid layout */
-    gap: 20px; /* Space between cards */
-    margin-top: 20px; /* Top spacing */
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* 每行显示两个卡片 */
+    gap: 20px; /* 卡片之间的间距 */
+    margin-top: 20px; /* 整体的顶部间距 */
 }
 
 .card {
-    background: white; /* Same card background */
-    border-radius: 15px; /* Rounded corners */
-    padding: 20px; /* Inner padding */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    transition: transform 0.3s, box-shadow 0.3s; /* Hover effect */
+    background: white; /* 卡片背景 */
+    border-radius: 15px; /* 圆角 */
+    padding: 20px; /* 内边距 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 阴影 */
+    transition: transform 0.3s, box-shadow 0.3s; /* 悬停效果 */
 }
 
 .card:hover {
-    transform: translateY(-5px); /* Lift card on hover */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+    transform: translateY(-5px); /* 悬停时上移 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* 增强阴影 */
 }
 
 .card-header {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 15px; /* Space below the header */
-    text-align: center; /* Center the header text */
-    border-bottom: 2px solid #dee2e6; /* Optional: underline effect */
+    font-size: 1.5rem; /* 标题字体大小 */
+    font-weight: bold; /* 加粗 */
+    margin-bottom: 15px; /* 与内容的间距 */
+    text-align: center; /* 居中对齐 */
+    border-bottom: 2px solid #dee2e6; /* 底部下划线效果 */
     padding-bottom: 10px;
 }
 
 .card-content {
-    overflow: auto; /* Ensure content fits inside */
+    overflow: auto; /* 确保内容适应卡片 */
 }
 
 .card table {
-    width: 100%; /* Full width table */
+    width: 100%; /* 表格宽度 */
     border-collapse: collapse;
 }
 
 .card table th,
 .card table td {
-    padding: 10px; /* Cell padding */
-    text-align: left; /* Align text to left */
-    border-bottom: 1px solid #dee2e6; /* Divider lines */
+    padding: 10px; /* 表格单元格内边距 */
+    text-align: left; /* 左对齐 */
+    border-bottom: 1px solid #dee2e6; /* 表格行分隔线 */
 }
 
 .card table th {
     background-color: #f1f3f5;
     font-weight: bold;
 }
-
     </style>
 </head>
 <body>
@@ -382,88 +377,90 @@ $lowStockProducts = getLowStockProducts($connect);
             <canvas id="weeklySalesChart"></canvas>
         </div>
 
-        <div class="table-container">
+        <div class="card-container">
     <!-- Top 5 Products -->
-    <div class="table-small">
-        <div class="section-header">Top 5 Products by Sales</div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Product Image</th>
-                    <th>Product Name</th>
-                    <th>Units Sold</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($topProducts as $product): ?>
+    <div class="card">
+        <div class="card-header">Top 5 Products by Sales</div>
+        <div class="card-content">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
-                        <td><?php echo $product['product_name']; ?></td>
-                        <td><?php echo $product['total_sold']; ?></td>
+                        <th>Product Image</th>
+                        <th>Product Name</th>
+                        <th>Units Sold</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($topProducts as $product): ?>
+                        <tr>
+                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
+                            <td><?php echo $product['product_name']; ?></td>
+                            <td><?php echo $product['total_sold']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Recent Users -->
-    <div class="table-small">
-        <div class="section-header">Recent Users</div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Join Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($recentUsers as $user): ?>
+    <div class="card">
+        <div class="card-header">Recent Users</div>
+        <div class="card-content">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td><img class="user-image" src="../User/<?php echo htmlspecialchars($user['user_image']); ?>" alt="<?php echo htmlspecialchars($user['user_name']); ?>"></td>
-                        <td><?php echo htmlspecialchars($user['user_name']); ?></td>
-                        <td><?php echo htmlspecialchars($user['user_email']); ?></td>
-                        <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
+                        <th>Image</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Join Date</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-      <!-- Low Stock Products and Gender Chart Row -->
-<div class="low-stock-gender-container">
-    <!-- Low Stock Products -->
-    <div class="low-stock-products">
-        <div class="section-header">Products with Low Stock</div>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Product Name</th>
-                    <th>Image</th>
-                    <th>Stock Quantity</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($lowStockProducts as $product): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                        <td>
-                            <img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" 
-                                 alt="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                                 style="width: 60px; height: 60px; border-radius: 8px;">
-                        </td>
-                        <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($recentUsers as $user): ?>
+                        <tr>
+                            <td><img class="user-image" src="../User/<?php echo htmlspecialchars($user['user_image']); ?>" alt="<?php echo htmlspecialchars($user['user_name']); ?>"></td>
+                            <td><?php echo htmlspecialchars($user['user_name']); ?></td>
+                            <td><?php echo htmlspecialchars($user['user_email']); ?></td>
+                            <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Gender Distribution Chart -->
-    <div class="table-small gender-chart-container">
-    <h2 style="text-align: center;">Gender Distribution</h2>
-    <div id="genderPieChart" style="width: 100%; height: 400px;"></div>
+    <!-- Low Stock Products -->
+    <div class="card">
+        <div class="card-header">Products with Low Stock</div>
+        <div class="card-content">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Image</th>
+                        <th>Stock Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lowStockProducts as $product): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                            <td><img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
+                            <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Gender Distribution -->
+    <div class="card">
+        <div class="card-header">Gender Distribution</div>
+        <div class="card-content">
+            <div id="genderPieChart" style="width: 100%; height: 400px;"></div>
+        </div>
     </div>
 </div>
 
