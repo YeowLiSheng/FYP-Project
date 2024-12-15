@@ -56,9 +56,6 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
             const startDate = document.getElementById('start_date').value;
             const endDateInput = document.getElementById('end_date');
             endDateInput.setAttribute('min', startDate);
-            if (endDateInput.value < startDate) {
-                endDateInput.value = startDate;
-            }
         }
 
         function submitDateForm() {
@@ -136,7 +133,7 @@ $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
             </div>
             <div class="col-auto">
                 <label for="end_date" class="form-label">End Date</label>
-                <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" onchange="submitDateForm();">
+                <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" min="<?php echo $startDate; ?>" onchange="submitDateForm();">
             </div>
         </div>
     </form>
