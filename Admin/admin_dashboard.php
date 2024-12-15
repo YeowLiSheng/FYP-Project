@@ -203,7 +203,32 @@ $genderDistribution = getGenderDistribution($connect);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        
+        .recent-users {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+        }
+
+        .recent-user-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .recent-user-card img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .recent-user-card p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -214,11 +239,16 @@ $genderDistribution = getGenderDistribution($connect);
             .cards {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
+
+            .recent-users {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Cards -->
         <div class="cards">
             <div class="ccard">
                 <i class="fas fa-tags icon"></i>
@@ -247,6 +277,13 @@ $genderDistribution = getGenderDistribution($connect);
             </div>
         </div>
 
+        <!-- Weekly Sales Chart -->
+        <div class="chart-container">
+            <h2 style="text-align: center;">Weekly Sales Comparison</h2>
+            <canvas id="weeklySalesChart"></canvas>
+        </div>
+
+        <!-- Top 5 Products -->
         <div>
             <div class="section-header">Top 5 Products by Sales</div>
             <table class="table table-striped">
@@ -269,44 +306,25 @@ $genderDistribution = getGenderDistribution($connect);
             </table>
         </div>
 
-        <div class="chart-container">
-            <h2 style="text-align: center;">Weekly Sales Comparison</h2>
-            <canvas id="weeklySalesChart"></canvas>
-        </div>
-    </div>
-    <h3>Recent Users</h3>
-<table border="1" cellspacing="0" cellpadding="10">
-    <thead>
-        <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Join Time</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($recentUsers as $user): ?>
-            <tr>
-                <td>
+        <!-- Recent Users -->
+        <div class="section-header">Recent Users</div>
+        <div class="recent-users">
+            <?php foreach ($recentUsers as $user): ?>
+                <div class="recent-user-card">
                     <?php if (!empty($user['user_image'])): ?>
-                        <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image" style="width:50px;height:50px;">
+                        <img src="../User/<?php echo $user['user_image']; ?>" alt="User Image">
                     <?php else: ?>
                         <span>No Image</span>
                     <?php endif; ?>
-                </td>
-                <td><?php echo htmlspecialchars($user['user_name']); ?></td>
-                <td><?php echo htmlspecialchars($user['user_email']); ?></td>
-                <td><?php echo htmlspecialchars($user['user_join_time']); ?></td>
-            </tr>
-        <?php endforeach; ?>
-    </tbody>
-</table>     
-
-<h3>Gender Distribution</h3>
-<canvas id="genderPieChart" width="400" height="400"></canvas>
+                    <p><strong><?php echo htmlspecialchars($user['user_name']); ?></strong></p>
+                    <p><?php echo htmlspecialchars($user['user_email']); ?></p>
+                    <p><?php echo htmlspecialchars($user['user_join_time']); ?></p>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script>
         const weeklySalesData = <?php echo json_encode($weeklySales); ?>;
         const labels = weeklySalesData.map(data => data.week_range);
@@ -335,73 +353,13 @@ $genderDistribution = getGenderDistribution($connect);
             },
             options: {
                 responsive: true,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return Sales: RM${context.raw.toLocaleString()};
-                            }
-                        }
-                    }
-                },
                 scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Week Range',
-                            color: '#333',
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Total Sales (RM)',
-                            color: '#333',
-                        }
-                    }
+                    x: { title: { display: true, text: 'Week Range' } },
+                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales (RM)' } }
                 }
             }
         });
-
-        const genderLabels = <?php echo json_encode(array_column($genderDistribution, 'user_gender')); ?>;
-        const genderCounts = <?php echo json_encode(array_column($genderDistribution, 'count')); ?>;
     </script>
-    <script>
-    const ctx = document.getElementById('genderPieChart').getContext('2d');
-    const genderPieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: genderLabels,
-            datasets: [{
-                label: 'Customer Gender Distribution',
-                data: genderCounts,
-                backgroundColor: [
-                    '#FF6384', // Color for first gender
-                    '#36A2EB', // Color for second gender
-                    '#FFCE56'  // Color for other genders
-                ],
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            const percentage = (genderCounts[tooltipItem.dataIndex] / 
-                                                genderCounts.reduce((a, b) => a + b, 0) * 100).toFixed(2);
-                            return ${genderLabels[tooltipItem.dataIndex]}: ${percentage}%;
-                        }
-                    }
-                }
-            }
-        }
-    });
-</script>
 </body>
 </html>
+
