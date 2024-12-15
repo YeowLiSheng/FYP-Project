@@ -12,24 +12,27 @@ if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
     $endDate = $_POST['end_date'];
 }
 
-// Fetch total orders, sales, customers, and products sold
+// Fetch total orders
 $order_query = "SELECT COUNT(*) AS order_count FROM `orders`";
 $order_result = $connect->query($order_query);
 $order_count = $order_result->num_rows > 0 ? $order_result->fetch_assoc()['order_count'] : 0;
 
+// Fetch total sales
 $totalSales_query = "SELECT SUM(final_amount) AS total_sales FROM orders";
 $totalSales_result = $connect->query($totalSales_query);
 $totalSales = $totalSales_result->num_rows > 0 ? $totalSales_result->fetch_assoc()['total_sales'] : 0;
 
+// Fetch total customers
 $totalCustomers_query = "SELECT COUNT(DISTINCT user_id) AS total_customers FROM orders";
 $totalCustomers_result = $connect->query($totalCustomers_query);
 $total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
 
+// Fetch total products sold
 $totalProducts_query = "SELECT SUM(quantity) AS total_products_sold FROM order_details";
 $totalProducts_result = $connect->query($totalProducts_query);
 $total_products_sold = $totalProducts_result->num_rows > 0 ? $totalProducts_result->fetch_assoc()['total_products_sold'] : 0;
 
-// Fetch sales trend data for dynamic chart
+// Fetch sales trend data
 $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
                       FROM orders 
                       WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate' 
@@ -38,7 +41,8 @@ $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
-// Fetch monthly and yearly sales data
+
+// Function to get sales data for monthly chart
 function getMonthlySales($connect) {
     $query = "SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales
               FROM orders
@@ -48,6 +52,7 @@ function getMonthlySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// Function to get sales data for yearly chart
 function getYearlySales($connect) {
     $query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales
               FROM orders
@@ -57,8 +62,20 @@ function getYearlySales($connect) {
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
+// Function to get category sales data for pie chart
+function getCategorySales($connect) {
+    $query = "SELECT c.category_name, SUM(od.total_price) AS category_sales
+              FROM order_details od
+              JOIN product p ON od.product_id = p.product_id
+              JOIN category c ON p.category_id = c.category_id
+              GROUP BY c.category_name";
+    $result = mysqli_query($connect, $query);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
 $monthlySales = getMonthlySales($connect);
 $yearlySales = getYearlySales($connect);
+$categorySales = getCategorySales($connect);
 ?>
 
 <!DOCTYPE html>
@@ -69,7 +86,62 @@ $yearlySales = getYearlySales($connect);
     <title>Admin Sales Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        // Load the Google Charts library
+        google.charts.load('current', {'packages':['corechart', 'bar']});
+
+        function drawChart(chartType) {
+            let data, options, chart;
+
+            // Get data for different chart types
+            if (chartType === 'salesTrend') {
+                data = google.visualization.arrayToDataTable(<?php echo json_encode($salesTrend); ?>);
+                options = {
+                    title: 'Sales Trend',
+                    curveType: 'function',
+                    legend: { position: 'bottom' }
+                };
+                chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            } else if (chartType === 'monthlySales') {
+                data = google.visualization.arrayToDataTable(<?php echo json_encode($monthlySales); ?>);
+                options = {
+                    title: 'Monthly Sales',
+                    chartArea: { width: '50%' },
+                    hAxis: { title: 'Month', minValue: 0 },
+                    vAxis: { title: 'Sales (RM)' }
+                };
+                chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+            } else if (chartType === 'yearlySales') {
+                data = google.visualization.arrayToDataTable(<?php echo json_encode($yearlySales); ?>);
+                options = {
+                    title: 'Yearly Sales',
+                    chartArea: { width: '50%' },
+                    hAxis: { title: 'Year', minValue: 0 },
+                    vAxis: { title: 'Sales (RM)' }
+                };
+                chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+            } else if (chartType === 'categorySales') {
+                data = google.visualization.arrayToDataTable(<?php echo json_encode($categorySales); ?>);
+                options = {
+                    title: 'Category Sales',
+                    is3D: true
+                };
+                chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+            }
+            chart.draw(data, options);
+        }
+
+        // Update chart when selection changes
+        function updateChart() {
+            const chartType = document.getElementById('chartType').value;
+            drawChart(chartType);
+        }
+
+        google.charts.setOnLoadCallback(function() {
+            drawChart('salesTrend');
+        });
+    </script>
     <style>
         .container {
             margin-top: 80px;
@@ -101,15 +173,8 @@ $yearlySales = getYearlySales($connect);
             font-size: 16px;
             color: #6c757d;
         }
-        .form-container {
-            margin-top: 20px;
-        }
-        .chart-container {
+        #chart_div {
             margin-top: 40px;
-        }
-        .dropdown-container {
-            margin: 20px 0;
-            text-align: right;
         }
     </style>
 </head>
@@ -140,7 +205,7 @@ $yearlySales = getYearlySales($connect);
     </div>
 
     <!-- Date Range Filter -->
-    <form method="POST" id="dateForm" class="form-container">
+    <form method="POST" id="dateForm">
         <div class="row g-3 align-items-center">
             <div class="col-auto">
                 <label for="start_date" class="form-label">Start Date</label>
@@ -153,128 +218,18 @@ $yearlySales = getYearlySales($connect);
         </div>
     </form>
 
-    <!-- Dropdown for Chart Selection -->
-    <div class="dropdown-container">
-        <select id="chartSelector" class="form-select" onchange="changeChart()">
-            <option value="salesTrend" selected>Sales Trend</option>
+    <!-- Chart Type Selector -->
+    <div class="mb-4">
+        <select id="chartType" class="form-select" onchange="updateChart();">
+            <option value="salesTrend">Sales Trend</option>
             <option value="monthlySales">Monthly Sales</option>
             <option value="yearlySales">Yearly Sales</option>
+            <option value="categorySales">Category Sales</option>
         </select>
     </div>
 
-    <!-- Sales Trend Chart -->
-    <div id="salesTrendChart" class="chart-container">
-        <canvas id="salesTrendCanvas"></canvas>
-    </div>
-
-    <!-- Monthly Sales Chart -->
-    <div id="monthlySalesChart" class="chart-container" style="display: none;">
-        <canvas id="monthlySalesCanvas"></canvas>
-    </div>
-
-    <!-- Yearly Sales Chart -->
-    <div id="yearlySalesChart" class="chart-container" style="display: none;">
-        <canvas id="yearlySalesCanvas"></canvas>
-    </div>
+    <!-- Chart Display Area -->
+    <div id="chart_div"></div>
 </div>
-
-<script>
-    function changeChart() {
-        const selectedChart = document.getElementById('chartSelector').value;
-        document.getElementById('salesTrendChart').style.display = selectedChart === 'salesTrend' ? 'block' : 'none';
-        document.getElementById('monthlySalesChart').style.display = selectedChart === 'monthlySales' ? 'block' : 'none';
-        document.getElementById('yearlySalesChart').style.display = selectedChart === 'yearlySales' ? 'block' : 'none';
-
-        if (selectedChart === 'salesTrend') {
-            renderSalesTrendChart();
-        } else if (selectedChart === 'monthlySales') {
-            renderMonthlySalesChart();
-        } else if (selectedChart === 'yearlySales') {
-            renderYearlySalesChart();
-        }
-    }
-
-    function renderSalesTrendChart() {
-        const salesTrendData = <?php echo json_encode($salesTrend); ?>;
-        const dates = salesTrendData.map(item => item.date);
-        const sales = salesTrendData.map(item => parseFloat(item.daily_sales));
-
-        const ctx = document.getElementById('salesTrendCanvas').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'Daily Sales (RM)',
-                    data: sales,
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: true, position: 'top' }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Date' }},
-                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
-                }
-            }
-        });
-    }
-
-    function renderMonthlySalesChart() {
-        const monthlySalesData = {
-            labels: <?php echo json_encode(array_column($monthlySales, 'month')); ?>,
-            datasets: [{
-                label: 'Monthly Sales (RM)',
-                data: <?php echo json_encode(array_column($monthlySales, 'monthly_sales')); ?>,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        };
-
-        const ctx = document.getElementById('monthlySalesCanvas').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: monthlySalesData,
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    }
-
-    function renderYearlySalesChart() {
-        const yearlySalesData = {
-            labels: <?php echo json_encode(array_column($yearlySales, 'year')); ?>,
-            datasets: [{
-                label: 'Yearly Sales (RM)',
-                data: <?php echo json_encode(array_column($yearlySales, 'yearly_sales')); ?>,
-                backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1
-            }]
-        };
-
-        const ctx = document.getElementById('yearlySalesCanvas').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: yearlySalesData,
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    }
-
-    // Initialize with Sales Trend Chart
-    changeChart();
-</script>
-
 </body>
 </html>
