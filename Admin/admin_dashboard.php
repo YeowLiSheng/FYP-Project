@@ -124,7 +124,23 @@ $lowStockProducts = getLowStockProducts($connect);
     margin-top: 80px;
 
 }
+.home-icon-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Space between home icon and cards */
+        }
 
+        .home-icon-container i {
+            font-size: 30px;
+            margin-right: 10px;
+        }
+
+        .home-icon-container p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
 /* Card styles */
 .cards {
     display: grid;
@@ -354,7 +370,10 @@ $lowStockProducts = getLowStockProducts($connect);
 </head>
 <body>
     <div class="container">
-        
+    <div class="home-icon-container">
+            <i class="fas fa-home"></i>
+            <p>Homepage</p>
+        </div>
         <!-- Cards -->
         <div class="cards">
             <div class="ccard">
