@@ -65,72 +65,128 @@ $topProducts = getTopProducts($connect);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <title>Admin Homepage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .box i {
+            font-size: 40px;
+            color: #5a67d8;
+            margin-bottom: 10px;
+        }
+        .box h2 {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #444;
+        }
+        .box p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        .product-sales {
+            margin: 40px 20px 10px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #2b6cb0;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: #f9fafb;
+        }
+        .New.Customers {
+            margin: 40px 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #2b6cb0;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-        <div class="box">
-            <i class="fas fa-tags"></i>
-            <h2>Product Categories</h2>
-            <p><?php echo $product_count; ?></p>
-        </div>
-        <div class="box">
-            <i class="fas fa-users"></i>
-            <h2>Staff Members</h2>
-            <p><?php echo $staff_count; ?></p>        
-        </div>
-        <div class="box">
-            <i class="fas fa-shopping-cart"></i>
-            <h2>Orders</h2>
-            <p><?php echo $order_count; ?></p>
-        </div>
-        <div class="box">
-            <i class="fas fa-users"></i>
-            <h2>Customers</h2>
-            <p><?php echo $user_count; ?></p>       
-         </div>
-        <div class="box">
-            <i class="fas fa-dollar-sign"></i>
-            <h2>Total Profit</h2>
-            <p>RM<?php echo number_format($totalSales, 2); ?></p> <!-- Replace with actual profit -->
-        </div>
+    <div class="box">
+        <i class="fas fa-tags"></i>
+        <h2>Product Categories</h2>
+        <p><?php echo $product_count; ?></p>
     </div>
-
-
-    <div class="product-sales">Top 5 Products by Sales</div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Units Sold</th>
-
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($topProducts as $product): ?>
-                                <tr>
-                                    <td><?php echo $product['product_name']; ?></td>
-                                    <td><?php echo $product['total_sold']; ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+    <div class="box">
+        <i class="fas fa-users"></i>
+        <h2>Staff Members</h2>
+        <p><?php echo $staff_count; ?></p>        
     </div>
-
-    <div class="New Customers">Recent User</div>
-                    
-
-
-
-
-
-
-
+    <div class="box">
+        <i class="fas fa-shopping-cart"></i>
+        <h2>Orders</h2>
+        <p><?php echo $order_count; ?></p>
     </div>
-                    
+    <div class="box">
+        <i class="fas fa-users"></i>
+        <h2>Customers</h2>
+        <p><?php echo $user_count; ?></p>       
+    </div>
+    <div class="box">
+        <i class="fas fa-dollar-sign"></i>
+        <h2>Total Profit</h2>
+        <p>RM<?php echo number_format($totalSales, 2); ?></p>
+    </div>
+</div>
 
+<div class="product-sales">Top 5 Products by Sales</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Units Sold</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($topProducts as $product): ?>
+            <tr>
+                <td><?php echo $product['product_name']; ?></td>
+                <td><?php echo $product['total_sold']; ?></td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<div class="New Customers">Recent User</div>
 
 </body>
-    
+</html>
