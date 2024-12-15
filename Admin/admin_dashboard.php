@@ -74,13 +74,13 @@ $topProducts = getTopProducts($connect);
 
         .container {
             padding: 20px;
-            margin-left: 250px; /* Adjust to avoid sidebar overlay */
+            margin-left: 260px; /* Adjust to align next to sidebar */
         }
 
         .cards {
             width: 100%;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr); /* Ensure 5 cards in one row */
             grid-gap: 20px;
         }
 
