@@ -215,7 +215,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 echo "<button onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\">View Details</button>";
                                 
                                 if ($admin_id === 'superadmin' && $row['staff_id'] !== $admin_id) {
-                                    echo "<button onclick=\"if(confirm('Are you sure you want to delete this staff?')) location.href='deleted_staff.php?staff_id=" . $row['staff_id'] . "'\">Delete</button>";
+                                    echo "<button style=\"background-color: #ff4d4d;\" onclick=\"if(confirm('Are you sure you want to delete this staff?')) location.href='deleted_staff.php?staff_id=" . $row['staff_id'] . "'\">Delete</button>";
                                 } else {
                                     echo "<button onclick=\"noPermission()\">Delete</button>";
                                 }

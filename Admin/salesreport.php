@@ -190,6 +190,9 @@ $categorySalesJson = json_encode($categorySalesData);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+
+
 .card-header {
     padding: 10px 20px;
     background-color: #f8f9fa;

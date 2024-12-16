@@ -291,16 +291,17 @@ if (isset($_SESSION['title'])) {
                         echo "<td>" . $row['faq_answer'] . "</td>";
                         echo "<td>" . $row['faq_type'] . "</td>";
                         echo "<td>
+                            
+                            <!-- Edit Button -->
+                            <button type='button' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#editModal" . $row['faq_id'] . "'>
+                                <i class='fas fa-edit'></i> Edit
+                            </button>
                             <!-- Delete Button -->
                             <form action='a_faq.php' method='POST' style='display:inline;'>
                                 <button type='submit' name='delete_faq' value='" . $row['faq_id'] . "' class='btn btn-danger'>
                                     <i class='fas fa-trash-alt'></i> Delete
                                 </button>
                             </form>
-                            <!-- Edit Button -->
-                            <button type='button' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#editModal" . $row['faq_id'] . "'>
-                                <i class='fas fa-edit'></i> Edit
-                            </button>
                         </td>";
                         echo "</tr>";
 
