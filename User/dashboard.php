@@ -1074,8 +1074,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script type="text/javascript">
-    // 初始化 Google Translate 插件
+	<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script>
+	// 初始化 Google Translate 插件
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'en',
