@@ -174,6 +174,76 @@ include 'dataconnection.php';
                 gap: 15px;
             }
         }
+
+  .btn-btn-warning
+  {
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: 1px solid #28a745; /* Border color matching the background */
+    padding: 10px 20px; /* Padding for better button size */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
+  }
+
+  .btn-btn-warning:hover {
+   
+}
+
+.btn-btn-danger
+{
+    background-color: #ff4d4d; /* Red background */
+    color: white; /* White text */
+    border: 1px solid #28a745; /* Border color matching the background */
+    padding: 10px 20px; /* Padding for better button size */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
+  }
+
+
+
+
+.btn-btn-success
+{
+    
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: 1px solid #28a745; /* Border color matching the background */
+    padding: 10px 20px; /* Padding for better button size */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
+} 
+
+
+.btn-btn-primary
+{
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: 1px solid #28a745; /* Border color matching the background */
+    padding: 10px 20px; /* Padding for better button size */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
+}
+
+
+.btn-btn-secondary
+{
+    background-color: #ff4d4d; /* Red background */
+    color: white; /* White text */
+    border: 1px solid #28a745; /* Border color matching the background */
+    padding: 10px 20px; /* Padding for better button size */
+    font-size: 16px; /* Font size */
+    font-weight: bold; /* Bold text */
+    border-radius: 5px; /* Rounded corners */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
+}
 </style>
 
 <body>
@@ -304,8 +374,8 @@ include 'dataconnection.php';
                             <input type="hidden" name="voucher">
                             <!-- Modal footer -->
                             <div class="modal-footer">
-                                <button onclick="add_check(event);" class="btn btn-primary" name="voucher">Generate</button>
-                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                                <button onclick="add_check(event);" class="btn-btn-primary" name="voucher">Generate</button>
+                                <button type="button" class="btn-btn-danger" data-bs-dismiss="modal">Cancel</button>
                             </div>
                         </form>
                     </div><!--content end-->
@@ -343,14 +413,14 @@ include 'dataconnection.php';
                             <td><?php echo $row["voucher_status"]; ?></td>
                             <td>
                                 <!-- Edit Button to Open Modal -->
-                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['voucher_code']; ?>">Edit</button>
+                                <button type="button" class="btn-btn-warning" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['voucher_code']; ?>">Edit</button>
 
                                 <!-- Activate/Deactivate Button -->
                                 <form action="a_voucher.php" method="POST" style="display:inline;">
                                     <?php if ($row["voucher_status"] === "Active") { ?>
-                                        <button type="submit" name="deactivate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn btn-danger">Deactivate</button>
+                                        <button type="submit" name="deactivate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn-btn-danger">Deactivate</button>
                                     <?php } else { ?>
-                                        <button type="submit" name="activate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn btn-success">Activate</button>
+                                        <button type="submit" name="activate_voucher" value="<?php echo $row['voucher_code']; ?>" class="btn-btn-success">Activate</button>
                                     <?php } ?>
                                 </form>
                             </td>
@@ -387,8 +457,8 @@ include 'dataconnection.php';
                                         </div>
                                         <!-- Modal Footer -->
                                         <div class="modal-footer">
-                                            <button type="submit" name="update_voucher" class="btn btn-primary">Save Changes</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" name="update_voucher" class="btn-btn-primary">Save Changes</button>
+                                            <button type="button" class="btn-btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                         </div>
                                     </form>
                                 </div>

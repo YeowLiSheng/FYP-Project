@@ -140,7 +140,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             gap: 10px;
         }
         .btn-success {
-            background-color: #28a745;
+            
             color: white;
             border-radius: 8px;
             padding: 8px 16px;

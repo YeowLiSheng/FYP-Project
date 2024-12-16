@@ -241,6 +241,10 @@ $review = "
                 font-size: 12px;
             }
         }
+
+        .dropdown-menu li {
+            padding: 8px 10px;
+        }
     </style>
 </head>
 <body>
@@ -252,7 +256,7 @@ $review = "
     <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
 
     <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Export:
     </button>
     <ul class="dropdown-menu">
