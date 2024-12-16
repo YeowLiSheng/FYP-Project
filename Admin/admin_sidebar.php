@@ -338,17 +338,12 @@ a.sidebar-link:hover {
 
 
                 <li class="sidebar-item">
-                    <a href="admin_b.php" class="sidebar-link">
-                        <i class="lni lni-bootstrap"></i>
-                        <span>Brand</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
                     <a href="admin_faq.php" class="sidebar-link">
-                        <i class="fas fa-question-circle"></i>
+                        <i class="lni lni-bootstrap"></i>
                         <span>FAQ</span>
                     </a>
                 </li>
+
 
                 <li class="sidebar-item">
                     <a href="admin_product.php" class="sidebar-link">

@@ -60,10 +60,10 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             font-size: 1.1em;
         }
         .view-admin th {
-    background-color: #4CAF50; /* Green background */
-    color: white; /* White text */
-    text-align: left;
-    font-size: 1.1em;
+            background-color: #4CAF50; /* Green background */
+            color: white; /* White text */
+            text-align: left;
+            font-size: 1.1em;
 }
 
         .view-admin tr:nth-child(even) {

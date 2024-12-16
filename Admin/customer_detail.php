@@ -43,7 +43,7 @@ include 'dataconnection.php';
     }
 
     .card-header {
-        background-color: #4e73df;
+        background-color: #4CAF50; /* Green background */
         color: #fff;
         font-size: 22px;
         font-weight: 600;
@@ -52,7 +52,7 @@ include 'dataconnection.php';
     }
 
     .list-group-item {
-        font-size: 14px;
+        font-size: 16px;
         padding: 12px;
         margin-bottom: 8px;
         background-color: #fafafa;
@@ -63,23 +63,23 @@ include 'dataconnection.php';
     }
 
     .list-group-item b {
-        color: #4e73df;
+        color: black;
     }
 
     /* Back Button Styling */
     .btn-warning {
-        background-color: #ffc107;
+        background-color: #28a745;
         color: white;
-        font-size: 14px;
+        font-size: 18px;
         padding: 10px 30px;
-        border-radius: 6px;
+        border-radius: 8px;
         margin-top:-50px;
         border: none;
-        transition: background-color 0.3s ease;
+      
     }
 
     .btn-warning:hover {
-        background-color: #e0a800;
+        background-color: #218838;
         cursor: pointer;
     }
 
@@ -108,7 +108,7 @@ include 'dataconnection.php';
     }
 
     table th {
-        background-color: #4e73df;
+        background-color: #4CAF50; /* Green background */
         color: #fff;
         font-weight: 600;
     }

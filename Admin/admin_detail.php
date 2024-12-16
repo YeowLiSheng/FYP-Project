@@ -117,20 +117,25 @@ $stmt->close();
 
 
 
-        .button-back {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    text-align: center;
-    font-weight: bold;
-    margin-top: 15px;
-}
+    .button-back 
+    {
+
+        
+
+        width: 100%;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        text-align: center;
+        font-weight: bold;
+        margin-top: 15px;
+    }
 
 .button-back:hover {
-    background-color: #0056b3;
+    background-color: #218838;
 }
 
     </style>

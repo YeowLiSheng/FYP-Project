@@ -77,19 +77,11 @@ include 'dataconnection.php';
     }
 
     .btn-group {
-        position: relative;
-    }
+            display: flex;
+            gap: 10px;
+        }
 
-    .export-btn {
-        padding: 12px 20px;
-        font-size: 16px;
-        border: none;
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
+        
     .dropdown-content {
         display: none;
         position: absolute;
@@ -132,17 +124,16 @@ include 'dataconnection.php';
 
             <!-- Export Button and Dropdown -->
             <form method="POST" action="generate_user.php">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown"
-                        aria-expanded="false">
-                        Export:
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><button type="submit" class="dropdown-item" name="cust_pdf">PDF</button></li>
-                        <li><button type="submit" class="dropdown-item" name="cust_excel">CSV</button></li>
-                    </ul>
-                </div>
-            </form>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Export:
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button type="submit" class="dropdown-item" name="cust_pdf">PDF</button></li>
+                                <li><button type="submit" class="dropdown-item" name="cust_excel">CSV</button></li>
+                            </ul>
+                        </div>
+                    </form>
         </div>
 
         <hr>
