@@ -155,7 +155,8 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<div id="google_translate_element"></div>
+						<!-- Google Translate 插件容器 -->
+<div id="google_translate_element"></div>
 
 <!-- 自定义语言选择器 -->
 <select class="custom-language" id="custom-language-selector" onchange="changeLanguage(this.value)">
@@ -163,9 +164,6 @@ $product_result = $connect->query($sql);
     <option value="en">English</option>
     <option value="zh-CN">中文 (Simplified)</option>
     <option value="ms">Bahasa Melayu</option>
-    <option value="ja">日本語</option>
-    <option value="ko">한국어</option>
-    <option value="fr">Français</option>
 </select>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
@@ -1074,23 +1072,24 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script>
-	// 初始化 Google Translate 插件
+	<script>
+    // 初始化 Google Translate 插件
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
-            pageLanguage: 'en',
-            includedLanguages: 'en,zh-CN,ms,ja,ko,fr', // 允许的语言
+            pageLanguage: 'en', // 默认页面语言
+            includedLanguages: 'en,zh-CN,ms', // 允许的语言
             layout: google.translate.TranslateElement.InlineLayout.SIMPLE
         }, 'google_translate_element');
     }
 
-    // 加载 Google Translate 脚本
+    // 动态加载 Google Translate 插件脚本
     (function loadGoogleTranslateScript() {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-        document.body.appendChild(script);
+        if (!document.querySelector('script[src="//translate.google.com/translate_a/element.js"]')) {
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+            document.body.appendChild(script);
+        }
     })();
 
     // 切换语言的函数
@@ -1101,9 +1100,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             googleSelect.dispatchEvent(new Event('change')); // 触发 Google Translate 下拉菜单的 change 事件
         } else {
             console.error('Google Translate 插件尚未加载，请稍后再试！');
+            setTimeout(() => changeLanguage(language), 500); // 延迟重试
         }
     }
 </script>
-
 </body>
 </html>
