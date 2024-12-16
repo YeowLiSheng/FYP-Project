@@ -2,6 +2,7 @@
 include 'dataconnection.php';
 session_start(); // Start session for flash messages
 
+
 // Add FAQ
 if (isset($_POST['add_faq'])) {
     $question = mysqli_real_escape_string($connect, $_POST['faq_question']);
