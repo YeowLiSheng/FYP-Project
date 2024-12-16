@@ -101,10 +101,7 @@ $product_result = $connect->query($sql);
 <style>
 
    /* 隐藏 Google Translate 原生界面 */
-   #google_translate_element {
-            display: none;
-        }
-
+ 
         /* 自定义语言选择器样式 */
         .custom-language {
             margin: 20px;
