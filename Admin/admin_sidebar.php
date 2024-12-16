@@ -304,7 +304,7 @@ a.sidebar-link:hover {
                         <i class="lni lni-grid-alt"></i>
                     </button>
                     <div class="sidebar-logo">
-                        <a href="admin_landing.php">Admin</a>
+                        <a href="admin_dashboard.php">Admin</a>
                     </div>
                 </div>
 
@@ -317,7 +317,7 @@ a.sidebar-link:hover {
                 </li>
                 <hr> -->
                 <li class="sidebar-item">
-                    <a href="admin_dashboard.php" class="sidebar-link" id="admin">
+                    <a href="admin_landing.php" class="sidebar-link" id="admin">
                         <i class="lni lni-home"></i>
                         <span>Home</span>
                     </a>
@@ -345,7 +345,7 @@ a.sidebar-link:hover {
                 </li>
                 <li class="sidebar-item">
                     <a href="admin_faq.php" class="sidebar-link">
-                        <i class="fas fa-question-circle"></i>
+                        <i class="lni lni-stackoverflow"></i>
                         <span>FAQ</span>
                     </a>
                 </li>
@@ -376,9 +376,9 @@ a.sidebar-link:hover {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="admin_feedback.php" class="sidebar-link">
+                    <a href="admin_review.php" class="sidebar-link">
                         <i class="lni lni-comments"></i>
-                        <span>Feedback</span>
+                        <span>Review</span>
 
                     </a>
                 </li>
@@ -387,13 +387,6 @@ a.sidebar-link:hover {
                     <a href="view_contact_us.php" class="sidebar-link">
                         <i class="lni lni-keyboard"></i>
                         <span>Contact Us</span>
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="view_blog.php" class="sidebar-link">
-                        <i class="lni lni-stackoverflow"></i>
-                        <span>Blog</span>
                     </a>
                 </li>
 
