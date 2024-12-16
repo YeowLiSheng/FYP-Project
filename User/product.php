@@ -52,15 +52,15 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-// Get product_id from the request (use for dynamic testing; hardcoded here for example)
-$product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : 1;
 
-// Query to fetch packages containing the product ID
-$sql = "SELECT 
+if (isset($_GET['fetch_packages']) && isset($_GET['product_id'])) {
+    $product_id = intval($_GET['product_id']);
+    $query = "
+        SELECT 
             p.package_id, 
             p.package_name, 
             p.package_price, 
-            p.package_description,
+            p.package_description, 
             p.package_image
         FROM product_package p
         LEFT JOIN product prod1 ON p.product1_id = prod1.product_id
@@ -70,7 +70,18 @@ $sql = "SELECT
            OR p.product2_id = $product_id 
            OR p.product3_id = $product_id";
 
-$result = $connect->query($sql);
+    $result = $connect->query($query);
+
+    $packages = [];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $packages[] = $row;
+        }
+    }
+
+    echo json_encode($packages);
+    exit;
+}
 
 $packages = [];
 if ($result->num_rows > 0) {
@@ -1265,6 +1276,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 					colorSelect.append('<option value="">Choose an option</option>'); // Default option
 					if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
 					if (response.color2) colorSelect.append('<option value="' + response.color2 + '">' + response.color2 + '</option>');
+					
+					// Fetch packages containing the product ID
+					fetchPackages(productId);
 
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
@@ -1277,6 +1291,44 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         });
     });
+	function fetchPackages(productId) {
+		$.ajax({
+			url: '', // The same PHP file
+			type: 'GET',
+			data: { fetch_packages: true, product_id: productId },
+			dataType: 'json',
+			success: function(packages) {
+				const packageBox = $('#packageBox');
+				packageBox.empty(); // Clear existing packages
+
+				if (packages.length > 0) {
+					packages.forEach(pkg => {
+						const packageHtml = `
+							<h1 class="package-title">Valueble Packages</h1>
+							<div class="package-card" data-package-id="${pkg.package_id}">
+								<img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
+								<div class="package-info">
+									<h3 class="package-name">${pkg.package_name}</h3>
+									<p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
+									<div class="qty-controls">
+										<button class="qty-btn minus">-</button>
+										<input type="number" value="1" min="1" class="qty-input">
+										<button class="qty-btn plus">+</button>
+									</div>
+									<button class="selectPackage btn-primary">Select Package</button>
+								</div>
+							</div>`;
+						packageBox.append(packageHtml);
+					});
+				} else {
+					packageBox.append('<p>No packages found.</p>');
+				}
+			},
+			error: function() {
+				alert('An error occurred while fetching packages.');
+			}
+		});
+	}
 
     $(document).ready(function () {
         // Update product quantity and enforce stock rules
