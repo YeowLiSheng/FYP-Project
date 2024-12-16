@@ -291,8 +291,8 @@ a.sidebar-link:hover {
                         <?php echo $_SESSION['admin_id']; ?>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <li><a class="dropdown-item" href="admin_edit_profile.php?staff_id=<?php echo $_SESSION['id']; ?>">Edit
-                                Profile</a></li>
+                    <li><a class="dropdown-item" href="admin_edit_profile.php?staff_id=<?php echo $_SESSION['id']; ?>">Edit
+                    Profile</a></li>
                         <li><a class="dropdown-item" href="admin_log_out.php">Logout</a></li>
                     </ul>
                 </div>
