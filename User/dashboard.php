@@ -159,11 +159,15 @@ $product_result = $connect->query($sql);
 						<div id="google_translate_element"></div>
 
 						<div>
-						<select id="language-selector" onchange="translatePage(this.value)">
-        				<option value="en">English</option>
-        				<option value="ms">Malay</option>
-        				<option value="zh-CN">Chinese</option>
-    					</select>
+						<select class="custom-language" onchange="changeLanguage(this.value)">
+    <option value="">Select Language</option>
+    <option value="en">English</option>
+    <option value="zh-CN">中文 (Simplified)</option>
+    <option value="ms">Bahasa Melayu</option>
+    <option value="ja">日本語</option>
+    <option value="ko">한국어</option>
+    <option value="fr">Français</option>
+</select>
 						</div>
 						<div id="google_translate_element" style="display:none;"></div>
 
@@ -293,7 +297,7 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<select class="custom-language" onchange="translateLanguage(this.value)">
+						<select class="custom-language" onchange="changeLanguage(this.value)">
     <option value="">Select Language</option>
     <option value="en">English</option>
     <option value="zh-CN">中文 (Simplified)</option>
@@ -1074,23 +1078,16 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                {pageLanguage: 'en'},
-                'google_translate_element'
-            );
-        }
-    </script>
-    <script type="text/javascript">
+    // 初始化 Google Translate
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'en',
-            includedLanguages: 'en,zh-CN,ms,ja,ko,fr',
+            includedLanguages: 'en,zh-CN,ms,ja,ko,fr', // 包含的语言列表
             layout: google.translate.TranslateElement.InlineLayout.SIMPLE
         }, 'google_translate_element');
     }
 
-    // 加载 Google Translate API
+    // 动态加载 Google Translate 脚本
     (function loadGoogleTranslateScript() {
         var script = document.createElement('script');
         script.type = 'text/javascript';
@@ -1098,12 +1095,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         document.body.appendChild(script);
     })();
 
-    // 自定义切换语言函数
-    function translateLanguage(language) {
-        var selectField = document.querySelector('.goog-te-combo');
-        if (selectField) {
-            selectField.value = language; // 设置目标语言
-            selectField.dispatchEvent(new Event('change')); // 触发语言切换
+    // 切换语言函数
+    function changeLanguage(language) {
+        var googleTranslateSelect = document.querySelector(".goog-te-combo");
+        if (googleTranslateSelect) {
+            googleTranslateSelect.value = language; // 设置语言
+            googleTranslateSelect.dispatchEvent(new Event("change")); // 触发 change 事件
+        } else {
+            console.error("Google Translate 下拉菜单未加载，请稍后重试。");
         }
     }
 </script>
