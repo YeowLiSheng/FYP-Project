@@ -323,12 +323,18 @@ $lowStockProducts = getLowStockProducts($connect);
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
+
+
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-
+.ccard .icon {
+            font-size: 36px;
+            color: #6c757d;
+        }
+        
 .card-header {
     font-size: 1.5rem;
     font-weight: bold;

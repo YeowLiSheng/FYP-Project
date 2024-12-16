@@ -377,6 +377,13 @@ a.sidebar-link:hover {
 
                     </a>
                 </li>
+
+                <li class="sidebar-item">
+                    <a href="view_blog.php" class="sidebar-link">
+                        <i class="lni lni-stackoverflow"></i>
+                        <span>Blog</span>
+                    </a>
+                </li>
                 
                 <li class="sidebar-item">
                     <a href="view_contact_us.php" class="sidebar-link">

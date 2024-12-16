@@ -12,6 +12,7 @@
         }
     } 
 ?>
+
 <?php include 'admin_sidebar.php' ?>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css" />
@@ -26,7 +27,7 @@
 <style>
     /* Styling for the table headers */
     #myTable th {
-        background-color: #333; /* Dark background color */
+        background-color: #28a745;
         color: #fff; /* White text color */
         padding: 10px; /* Add padding for better spacing */
         text-align: left; /* Align text to the left */
@@ -35,7 +36,7 @@
     }
 
     #myTable th:hover {
-        background-color: #444; /* Slightly lighter dark color on hover */
+        background-color: #218838;
         cursor: pointer; /* Show pointer cursor for interactivity */
     }
 
@@ -67,13 +68,7 @@
         border-radius: 10px;
     }
 
-    .input[type=text] {
-        background-color: white;
-        background-image: url('searchicon.png');
-        background-position: 10px 10px;
-        background-repeat: no-repeat;
-        padding-left: 40px;
-    }
+   
 
     .ss .btn {
         float: right;
@@ -487,7 +482,7 @@ function add_check() {
 
                     <button type="submit" name="search_product" class="btn btn-dark" style="margin-left:30px; width:110px;">Search</button>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"
-                        style="margin-left:240px; height:50px;">Add Product</button>
+                        style="background-color: #218838; margin-left:240px; height:50px;">Add Product</button>
                 </div>
             </form>
         </div>
