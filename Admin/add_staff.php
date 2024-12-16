@@ -29,8 +29,8 @@ a {
 
         /* Background styling */
         body {
-            background-color: #427CA9;
-            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
 
@@ -46,9 +46,10 @@ a {
 
         /* Form heading */
         h2 {
-            color: #00796b;
-            font-weight: 700;
-            margin-bottom: 20px;
+            color: black;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            
             text-align: center;
         }
 
@@ -59,8 +60,9 @@ a {
         }
 
         .form-control {
+            border: 1px solid #ddd;
             border-radius: 6px;
-            border: 1px solid #d1d5db;
+           
             transition: border-color 0.3s ease;
         }
 
@@ -110,8 +112,12 @@ a {
 
         /* Button styling */
         .btn-primary {
+            
+            color: white;
+         
+
             width: 100%;
-            background-color: #00796b;
+            background-color: #28a745;
             border: none;
             padding: 10px;
             font-weight: bold;
@@ -119,7 +125,7 @@ a {
         }
 
         .btn-primary:hover {
-            background-color: #004d40;
+            background-color: #218838;
         }
     </style>
 </head>
