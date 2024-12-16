@@ -53,13 +53,18 @@ if (isset($_SESSION['title'])) {
 
         .btn-success,
         .btn-primary {
+            background-color: #28a745;
             border-radius: 20px;
             padding: 10px 20px;
         }
 
+        .btn-success,
+        .btn-primary:hover {
+            background-color: #218838;
+        }
+
         .btn-success:hover {
-            background-color: #28a745;
-            color: #fff;
+            background-color: #218838;
         }
 
         .table {
@@ -69,7 +74,7 @@ if (isset($_SESSION['title'])) {
         }
 
         .table th {
-            background: #6c757d;
+            background-color: #4CAF50; /* Green background */
             color: #fff;
             text-align: center;
         }
@@ -97,26 +102,32 @@ if (isset($_SESSION['title'])) {
         }
 
         .modal-header {
-            background: linear-gradient(45deg, #007bff, #0056b3);
+            background-color: #28a745;
             color: #fff;
             border-top-left-radius: 15px;
             border-top-right-radius: 15px;
         }
 
         .modal-footer .btn-primary {
-            background: #007bff;
+            background-color: #4CAF50; /* Green background */
+            border: none;
+        }
+
+        .modal-footer .btn-secondary {
+            background-color: #4CAF50; /* Green background */
             border: none;
         }
 
         .modal-footer .btn-primary:hover {
-            background: #0056b3;
+            background-color: #218838;
         }
 
         .modal-footer .btn-secondary:hover {
-            background: #6c757d;
+            background-color: #218838;
         }
 
         .btn-danger {
+            
             border-radius: 20px;
             padding: 5px 15px;
         }

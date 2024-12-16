@@ -208,7 +208,7 @@ $review = "
         }
 
         .table th {
-            background: #3498db;
+            background-color: #4CAF50; /* Green background */
             color: white;
             font-weight: bold;
         }
@@ -245,7 +245,7 @@ $review = "
 </head>
 <body>
     <div class="main">
-        <h1><ion-icon name="star-outline"></ion-icon> View Review</h1>
+        <h1>View Review</h1>
         
         <div class="search-container">
     <ion-icon name="search-outline"></ion-icon>
