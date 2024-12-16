@@ -97,22 +97,23 @@ $product_result = $connect->query($sql);
 <!--===============================================================================================-->
 <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<div id="google_translate_element"></div>
 
 <style>
 
-    .goog-te-gadget img {
-      display: none;
-    }
+     /* 隐藏 Google Translate 默认的界面 */
+	 #google_translate_element {
+            display: none;
+        }
 
-
-    .language-select {
-      cursor: pointer;
-      border: 1px solid #ccc;
-      padding: 5px 10px;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
+        /* 自定义语言选择器样式 */
+        .custom-language {
+            margin: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
   </style>
 
 
@@ -155,7 +156,8 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						
+						<div id="google_translate_element"></div>
+
 						<div>
 						<select id="language-selector" onchange="translatePage(this.value)">
         				<option value="en">English</option>
@@ -291,11 +293,15 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<div class="language-select">
-  <a href="#" onclick="changeLanguage('en')">English</a> |
-  <a href="#" onclick="changeLanguage('zh-CN')">中文</a> |
-  <a href="#" onclick="changeLanguage('ms')">Bahasa Melayu</a>
-</div>
+						<select class="custom-language" onchange="translateLanguage(this.value)">
+    <option value="">Select Language</option>
+    <option value="en">English</option>
+    <option value="zh-CN">中文 (Simplified)</option>
+    <option value="ms">Bahasa Melayu</option>
+    <option value="ja">日本語</option>
+    <option value="ko">한국어</option>
+    <option value="fr">Français</option>
+</select>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
@@ -1075,43 +1081,31 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             );
         }
     </script>
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-    <script>
-        function translatePage(language) {
-            // 检查 Google Translate 是否加载完成
-            var googleFrame = document.querySelector("iframe.goog-te-banner-frame");
-            if (!googleFrame) {
-                alert("Translation widget not fully loaded yet. Please try again in a moment.");
-                return;
-            }
-
-            // 获取 Google Translate 下拉框
-            var select = googleFrame.contentDocument.querySelector("select.goog-te-combo");
-            if (select) {
-                select.value = language; // 设置语言
-                select.dispatchEvent(new Event("change")); // 触发语言切换
-            }
-        }
-    </script>
-	<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement(
-      {
-        pageLanguage: 'en',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-      }, 
-      'google_translate_element'
-    );
-  }
-
-  function changeLanguage(languageCode) {
-    var selectField = document.querySelector('.goog-te-combo');
-    if (selectField) {
-      selectField.value = languageCode; // 设置语言代码
-      selectField.dispatchEvent(new Event('change')); // 触发语言切换
+    <script type="text/javascript">
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'en,zh-CN,ms,ja,ko,fr',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element');
     }
-  }
+
+    // 加载 Google Translate API
+    (function loadGoogleTranslateScript() {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+        document.body.appendChild(script);
+    })();
+
+    // 自定义切换语言函数
+    function translateLanguage(language) {
+        var selectField = document.querySelector('.goog-te-combo');
+        if (selectField) {
+            selectField.value = language; // 设置目标语言
+            selectField.dispatchEvent(new Event('change')); // 触发语言切换
+        }
+    }
 </script>
 </body>
 </html>
