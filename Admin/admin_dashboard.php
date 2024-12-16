@@ -121,10 +121,27 @@ $lowStockProducts = getLowStockProducts($connect);
 .container {
     padding: 20px;
     margin-left: 105px;
-    margin-top: 80px;
+    margin-top: 70px;
 
 }
+.home-icon-container {
+            
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Space between home icon and cards */
+        }
 
+        .home-icon-container i {
+            font-size: 30px;
+            margin-right: 10px;
+        }
+
+        .home-icon-container p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
 /* Card styles */
 .cards {
     display: grid;
@@ -306,12 +323,18 @@ $lowStockProducts = getLowStockProducts($connect);
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
+
+
 .card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-
+.ccard .icon {
+            font-size: 36px;
+            color: #6c757d;
+        }
+        
 .card-header {
     font-size: 1.5rem;
     font-weight: bold;
@@ -354,6 +377,10 @@ $lowStockProducts = getLowStockProducts($connect);
 </head>
 <body>
     <div class="container">
+    <div class="home-icon-container">
+            <i class="fas fa-home"></i>
+            <p>Homepage</p>
+        </div>
         <!-- Cards -->
         <div class="cards">
             <div class="ccard">
@@ -414,7 +441,7 @@ $lowStockProducts = getLowStockProducts($connect);
             </table>
         </div>
     </div>
-
+                        
     <!-- Recent Users -->
     <div class="card">
         <div class="card-header">Recent Users</div>

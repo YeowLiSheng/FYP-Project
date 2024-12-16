@@ -133,6 +133,8 @@ $categorySalesJson = json_encode($categorySalesData);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    
     <script>
         function updateEndDateLimit() {
             const startDate = document.getElementById('start_date').value;
@@ -188,6 +190,9 @@ $categorySalesJson = json_encode($categorySalesData);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+
+
 .card-header {
     padding: 10px 20px;
     background-color: #f8f9fa;
@@ -199,12 +204,45 @@ $categorySalesJson = json_encode($categorySalesData);
 .table th, .table td {
     vertical-align: middle;
 }
+.sidebar a {
+    text-decoration: none; /* Remove the underline */
+}
+
+/* Optionally, if you want to change link color on hover */
+.sidebar a:hover {
+    text-decoration: none; /* Ensure no underline appears on hover */
+    color: #007bff; /* Change the hover color (you can adjust this) */
+}
+
+.sales-icon-container {
+            
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* Space between home icon and cards */
+        }
+
+        .sales-icon-container i {
+            font-size: 30px;
+            margin-right: 10px;
+        }
+
+        .sales-icon-container p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
 <div class="container">
+<div class="sales-icon-container">
+<i class="fas fa-chart-line"></i>
+<p>Sales Report</p>
+        </div>
     <!-- Summary Cards -->
     <div class="cards">
+   
         <div class="ccard">
             <i class="fas fa-shopping-cart icon"></i>
             <p class="number"><?php echo $order_count; ?></p>
@@ -262,42 +300,50 @@ $categorySalesJson = json_encode($categorySalesData);
         <canvas id="salesChart"></canvas>
     </div>
 
+    <div class="row">
+    <!-- Recent Orders Card -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Recent Orders</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Order Time</th>
+                            <th>Total</th>
+                            <th>Shipping Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recentOrders as $order): ?>
+                            <tr>
+                                <td><?= $order['order_id']; ?></td>
+                                <td><?= htmlspecialchars($order['user_name']); ?></td>
+                                <td><?= $order['order_date']; ?></td>
+                                <td>RM <?= number_format($order['final_amount'], 2); ?></td>
+                                <td><?= $order['order_status']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-<div class="card">
-    <div class="card-header">
-        <h4>Recent Orders</h4>
-    </div>
-    <div class="card-body">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Customer Name</th>
-                    <th>Order Time</th>
-                    <th>Total</th>
-                    <th>Shipping Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($recentOrders as $order): ?>
-                    <tr>
-                        <td><?= $order['order_id']; ?></td>
-                        <td><?= htmlspecialchars($order['user_name']); ?></td>
-                        <td><?= $order['order_date']; ?></td>
-                        <td>RM <?= number_format($order['final_amount'], 2); ?></td>
-                        <td><?= $order['order_status']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-<div class="card">
-    <div class="card-header">
-        <h4>Category-wise Sales</h4>
-    </div>
-    <div class="card-body">
-        <canvas id="categoryPieChart"></canvas>
+    <!-- Category-wise Sales Card -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Category-wise Sales</h4>
+            </div>
+            <div class="card-body">
+                <div id="categoryPieChart" style="width: 100%; height: 400px;"></div>
+            </div>
+        </div>
     </div>
 </div>
 </div>
@@ -396,49 +442,43 @@ $categorySalesJson = json_encode($categorySalesData);
 
 
  // Parse PHP data into JavaScript
- const categorySalesData = <?php echo $categorySalesJson; ?>;
 
-// Prepare data for the pie chart
-const labels = categorySalesData.map(item => item.category);
-const percentages = categorySalesData.map(item => item.percentage.toFixed(2));
+ google.charts.load('current', { packages: ['corechart'] });
 
-// Colors for the pie chart
-const colors = [
-    '#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d',
-    '#17a2b8', '#343a40', '#ff7f0e', '#2ca02c', '#1f77b4'
-];
+google.charts.setOnLoadCallback(drawCategoryChart);
 
-// Create the pie chart
-const ctx = document.getElementById('categoryPieChart').getContext('2d');
-new Chart(ctx, {
-    type: 'pie',
-    data: {
-        labels: labels,
-        datasets: [{
-            data: percentages,
-            backgroundColor: colors.slice(0, labels.length),
-            borderColor: '#fff',
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'right'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const index = context.dataIndex;
-                        return `${labels[index]}: ${percentages[index]}%`;
-                    }
-                }
-            }
+function drawCategoryChart() {
+    // Parse PHP data into JavaScript
+    var categorySalesData = google.visualization.arrayToDataTable([
+        ['Category', 'Quantity', { role: 'annotation' }],
+        <?php
+        // Ensure data is correctly formatted for JavaScript
+        foreach ($categorySalesData as $category) {
+            echo "['" . addslashes($category['category']) . "', " . $category['quantity'] . ", '" . $category['quantity'] . "'],";
         }
-    }
-});
+        ?>
+    ]);
+
+    // Set chart options
+    var categoryChartOptions = {
+        title: 'Sales by Category',
+        titleTextStyle: {
+            fontSize: 18, // Increase font size
+            bold: true, // Make it bold
+            color: '#333' // Darker title color
+        },
+        pieHole: 0.4, // Donut chart
+        chartArea: { width: '85%', height: '75%' }, // Adjust chart area
+        colors: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d', '#17a2b8', '#343a40', '#ff7f0e', '#2ca02c', '#1f77b4'], // Custom color scheme
+        legend: { position: 'right', textStyle: { fontSize: 14 } }, // Position legend on the right
+        pieSliceTextStyle: { fontSize: 12 }, // Size of text inside slices
+        annotations: { style: 'percentage' } // Display percentages on the chart
+    };
+
+    // Create and draw the chart
+    var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
+    categoryPieChart.draw(categorySalesData, categoryChartOptions);
+}
 </script>
 </body>
 </html>

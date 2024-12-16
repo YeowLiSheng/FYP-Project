@@ -27,6 +27,7 @@ include 'admin_sidebar.php';
         .main {
             margin-left: 78px;
             padding: 15px;
+            
         }
 
         h1 {
@@ -183,7 +184,7 @@ include 'admin_sidebar.php';
         }
 
         .table th {
-            background: #3498db;
+            background-color: #4CAF50; /* Green background */
             color: white;
             font-weight: bold;
         }
@@ -220,22 +221,22 @@ include 'admin_sidebar.php';
 </head>
 <body>
     <div class="main">
-        <h1><ion-icon name="list-outline"></ion-icon> Manage Orders</h1>
+        <h1> Manage Orders</h1>
         
         <div class="search-container">
-    <ion-icon name="search-outline"></ion-icon>
-    <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
+        <ion-icon name="search-outline"></ion-icon>
+        <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
 
-    <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        Export:
-    </button>
-    <ul class="dropdown-menu">
-        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-    </ul>
-</div>
-</div>
+        <div class="btn-group" style="background-color: #28a745;">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Export:
+            </button>
+            <ul class="dropdown-menu">
+                <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+                <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+            </ul>
+        </div>
+    </div>
 
         <div class="control-bar">
             <div class="filter-group">

@@ -29,8 +29,8 @@ a {
 
         /* Background styling */
         body {
-            background-color: #427CA9;
-            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
 
@@ -46,9 +46,10 @@ a {
 
         /* Form heading */
         h2 {
-            color: #00796b;
-            font-weight: 700;
-            margin-bottom: 20px;
+            color: black;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            
             text-align: center;
         }
 
@@ -59,8 +60,9 @@ a {
         }
 
         .form-control {
+            border: 1px solid #ddd;
             border-radius: 6px;
-            border: 1px solid #d1d5db;
+           
             transition: border-color 0.3s ease;
         }
 
@@ -110,8 +112,12 @@ a {
 
         /* Button styling */
         .btn-primary {
+            
+            color: white;
+         
+
             width: 100%;
-            background-color: #00796b;
+            background-color: #28a745;
             border: none;
             padding: 10px;
             font-weight: bold;
@@ -119,8 +125,47 @@ a {
         }
 
         .btn-primary:hover {
-            background-color: #004d40;
+            background-color: #218838;
         }
+
+
+        /* Back Button Styling */
+
+        /* General styles for the button */
+        .close-btn {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #ff4d4d; /* Red background */
+            color: #fff; /* White text */
+            font-size: 20px; /* Visible font size */
+            font-weight: bold;
+            border: none;
+            border-radius: 5px; /* Slightly rounded edges for modern look */
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px; /* Center align the text */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+            transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effects */
+            cursor: pointer;
+            position: absolute; /* Allows precise positioning */
+            margin-top: -50px; /* Adjust top distance */
+            right: 490px; /* Align to the right */
+        }
+
+        /* Hover effect */
+        .close-btn:hover {
+            background-color: #ff1a1a; /* Darker red on hover */
+            transform: scale(1.1); /* Slight zoom on hover */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+
+        /* Focus outline for accessibility */
+        .close-btn:focus {
+            outline: 2px solid #fff; /* White outline for focus */
+            outline-offset: 2px;
+        }
+
     </style>
 </head>
 <body>
@@ -129,6 +174,9 @@ a {
 
     <div class="container">
         <h2>Add Staff</h2>
+        <!-- Back Button -->
+        <a href="view_admin.php" class="close-btn" aria-label="Close">&times;</a>
+
         <form action="add_staff.php" method="POST" id="addStaffForm">
             <!-- Admin ID and Full Name in grid -->
             <div class="row mb-3">

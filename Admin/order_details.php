@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding-top: 30px;
         }
         .header {
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            background-color: #4CAF50; /* Green background */
             color: #fff;
             padding: 20px;
             text-align: center;
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .status-section button {
-            background: #2575fc;
+            background-color: #28a745;
             color: #fff;
             padding: 10px 15px;
             border: none;
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 16px;
         }
         .status-section button:hover {
-            background: #1a5bb5;
+            background-color: #218838;
         }
         .buttons {
             display: flex;
@@ -162,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin-top: 20px;
         }
         .print-button, .back-button {
-            background: #ff6b6b;
+            background-color: #28a745;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -173,13 +173,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             text-align: center;
         }
         .print-button:hover, .back-button:hover {
-            background: #e55b5b;
+            background-color: #218838;
         }
         .back-button {
-            background: #6c757d;
+            background-color: #28a745
         }
         .back-button:hover {
-            background: #5a6268;
+            background-color: #218838;
         }
     </style>
 </head>

@@ -88,9 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         th, td { padding: 15px; text-align: left; border: 1px solid #ddd; }
         th { background-color: #f4f4f4; }
         .btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; }
-        .btn-primary { background-color: #007bff; color: white; }
+
+        .btn-primary {  background-color: #28a745; color: white; }
+        .btn-primary:hover { background-color: #218838; color: white; }
         .btn-success { background-color: #28a745; color: white; }
-        .btn-warning { background-color: #ffc107; color: black; }
+
+        .btn-warning { background-color: #ff4d4d;; color: white; }
+        .btn-warning:hover {   background-color: #ff1a1a; color: white; }
         .status-active { color: green; font-weight: bold; }
         .status-inactive { color: red; font-weight: bold; }
 

@@ -291,8 +291,8 @@ a.sidebar-link:hover {
                         <?php echo $_SESSION['admin_id']; ?>
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                        <li><a class="dropdown-item" href="admin_edit_profile.php?staff_id=<?php echo $_SESSION['id']; ?>">Edit
-                                Profile</a></li>
+                    <li><a class="dropdown-item" href="admin_edit_profile.php?staff_id=<?php echo $_SESSION['admin_id']; ?>">Edit
+                    Profile</a></li>
                         <li><a class="dropdown-item" href="admin_log_out.php">Logout</a></li>
                     </ul>
                 </div>
@@ -304,7 +304,7 @@ a.sidebar-link:hover {
                         <i class="lni lni-grid-alt"></i>
                     </button>
                     <div class="sidebar-logo">
-                        <a href="admin_landing.php">Admin</a>
+                        <a href="admin_dashboard.php">Admin</a>
                     </div>
                 </div>
 
@@ -338,17 +338,12 @@ a.sidebar-link:hover {
 
 
                 <li class="sidebar-item">
-                    <a href="admin_b.php" class="sidebar-link">
-                        <i class="lni lni-bootstrap"></i>
-                        <span>Brand</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
                     <a href="admin_faq.php" class="sidebar-link">
-                        <i class="fas fa-question-circle"></i>
+                        <i class="lni lni-bootstrap"></i>
                         <span>FAQ</span>
                     </a>
                 </li>
+
 
                 <li class="sidebar-item">
                     <a href="admin_product.php" class="sidebar-link">
@@ -376,17 +371,10 @@ a.sidebar-link:hover {
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="admin_feedback.php" class="sidebar-link">
+                    <a href="adminreview.php" class="sidebar-link">
                         <i class="lni lni-comments"></i>
-                        <span>Feedback</span>
+                        <span>Review</span>
 
-                    </a>
-                </li>
-                
-                <li class="sidebar-item">
-                    <a href="view_contact_us.php" class="sidebar-link">
-                        <i class="lni lni-keyboard"></i>
-                        <span>Contact Us</span>
                     </a>
                 </li>
 
@@ -394,6 +382,13 @@ a.sidebar-link:hover {
                     <a href="view_blog.php" class="sidebar-link">
                         <i class="lni lni-stackoverflow"></i>
                         <span>Blog</span>
+                    </a>
+                </li>
+                
+                <li class="sidebar-item">
+                    <a href="view_contact_us.php" class="sidebar-link">
+                        <i class="lni lni-keyboard"></i>
+                        <span>Contact Us</span>
                     </a>
                 </li>
 

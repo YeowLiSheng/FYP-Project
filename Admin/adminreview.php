@@ -208,7 +208,7 @@ $review = "
         }
 
         .table th {
-            background: #3498db;
+            background-color: #4CAF50; /* Green background */
             color: white;
             font-weight: bold;
         }
@@ -241,18 +241,22 @@ $review = "
                 font-size: 12px;
             }
         }
+
+        .dropdown-menu li {
+            padding: 8px 10px;
+        }
     </style>
 </head>
 <body>
     <div class="main">
-        <h1><ion-icon name="star-outline"></ion-icon> View Review</h1>
+        <h1>View Review</h1>
         
         <div class="search-container">
     <ion-icon name="search-outline"></ion-icon>
     <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
 
     <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Export:
     </button>
     <ul class="dropdown-menu">

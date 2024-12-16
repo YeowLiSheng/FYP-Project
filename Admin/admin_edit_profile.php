@@ -94,7 +94,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #427CA9;
+    background-color: #f8f9fa;
 }
 
 /* Center the form in the page */
@@ -185,7 +185,7 @@ body {
 .submit-btn {
     width: 100%;
     padding: 12px;
-    background-color: #3b7ddd;
+    background-color: #28a745;
     color: white;
     border: none;
     border-radius: 8px;
@@ -196,7 +196,7 @@ body {
 }
 
 .submit-btn:hover {
-    background-color: #2874a6;
+    background-color: #218838;
 }
 
 /* Responsive Design */
@@ -245,11 +245,48 @@ body {
     color: #3b7ddd; /* Change color on hover */
 }
 
+        /* General styles for the button */
+        .close-btn {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #ff4d4d; /* Red background */
+            color: #fff; /* White text */
+            font-size: 20px; /* Visible font size */
+            font-weight: bold;
+            border: none;
+            border-radius: 5px; /* Slightly rounded edges for modern look */
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px; /* Center align the text */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+            transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effects */
+            cursor: pointer;
+            position: absolute; /* Allows precise positioning */
+            margin-top: -55px; /* Adjust top distance */
+            right: 480px; /* Align to the right */
+        }
+
+        /* Hover effect */
+        .close-btn:hover {
+            background-color: #ff1a1a; /* Darker red on hover */
+            transform: scale(1.1); /* Slight zoom on hover */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+
+        /* Focus outline for accessibility */
+        .close-btn:focus {
+            outline: 2px solid #fff; /* White outline for focus */
+            outline-offset: 2px;
+        }
+
+
     </style>
 </head>
 <body>
 <form class="edit-admin-form" action="" method="POST" enctype="multipart/form-data" onsubmit="return validateAdminForm()">
     <h2>Edit Admin Profile</h2>
+    <a href="admin_dashboard.php" class="close-btn" aria-label="Close">&times;</a>
 <!-- Profile Image -->
 <div class="profile-image-container">
     <label for="admin_image">

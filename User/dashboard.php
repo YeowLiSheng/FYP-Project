@@ -95,9 +95,25 @@ $product_result = $connect->query($sql);
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<div id="google_translate_element"></div>
+
+<style>
+
+    .goog-te-gadget img {
+      display: none;
+    }
 
 
-
+    .language-select {
+      cursor: pointer;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+  </style>
 
 
 
@@ -275,9 +291,11 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
+						<div class="language-select">
+  <a href="#" onclick="changeLanguage('en')">English</a> |
+  <a href="#" onclick="changeLanguage('zh-CN')">中文</a> |
+  <a href="#" onclick="changeLanguage('ms')">Bahasa Melayu</a>
+</div>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
@@ -1076,5 +1094,24 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         }
     </script>
+	<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement(
+      {
+        pageLanguage: 'en',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 
+      'google_translate_element'
+    );
+  }
+
+  function changeLanguage(languageCode) {
+    var selectField = document.querySelector('.goog-te-combo');
+    if (selectField) {
+      selectField.value = languageCode; // 设置语言代码
+      selectField.dispatchEvent(new Event('change')); // 触发语言切换
+    }
+  }
+</script>
 </body>
 </html>

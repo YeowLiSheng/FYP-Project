@@ -43,7 +43,7 @@ include 'dataconnection.php';
     }
 
     .card-header {
-        background-color: #4e73df;
+        background-color: #4CAF50; /* Green background */
         color: #fff;
         font-size: 22px;
         font-weight: 600;
@@ -52,7 +52,7 @@ include 'dataconnection.php';
     }
 
     .list-group-item {
-        font-size: 14px;
+        font-size: 16px;
         padding: 12px;
         margin-bottom: 8px;
         background-color: #fafafa;
@@ -63,23 +63,12 @@ include 'dataconnection.php';
     }
 
     .list-group-item b {
-        color: #4e73df;
+        color: black;
     }
 
-    /* Back Button Styling */
-    .btn-warning {
-        background-color: #ffc107;
-        color: white;
-        font-size: 14px;
-        padding: 10px 30px;
-        border-radius: 6px;
-        margin-top:-50px;
-        border: none;
-        transition: background-color 0.3s ease;
-    }
-
+ 
     .btn-warning:hover {
-        background-color: #e0a800;
+        background-color: #218838;
         cursor: pointer;
     }
 
@@ -108,7 +97,7 @@ include 'dataconnection.php';
     }
 
     table th {
-        background-color: #4e73df;
+        background-color: #4CAF50; /* Green background */
         color: #fff;
         font-weight: 600;
     }
@@ -158,6 +147,40 @@ include 'dataconnection.php';
         align-items: center;
     }
 
+    .close-btn {
+            display: inline-block;
+            text-decoration: none;
+            background-color: #ff4d4d; /* Red background */
+            color: #fff; /* White text */
+            font-size: 20px; /* Visible font size */
+            font-weight: bold;
+            border: none;
+            border-radius: 5px; /* Slightly rounded edges for modern look */
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px; /* Center align the text */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+            transition: transform 0.2s, box-shadow 0.2s; /* Smooth hover effects */
+            cursor: pointer;
+            position: absolute; /* Allows precise positioning */
+            margin-top: -85px; /* Adjust top distance */
+            right: 40px; /* Align to the right */
+        }
+
+        /* Hover effect */
+        .close-btn:hover {
+            background-color: #ff1a1a; /* Darker red on hover */
+            transform: scale(1.1); /* Slight zoom on hover */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+        }
+
+        /* Focus outline for accessibility */
+        .close-btn:focus {
+            outline: 2px solid #fff; /* White outline for focus */
+            outline-offset: 2px;
+        }
+
 </style>
 
 <body>
@@ -173,7 +196,7 @@ include 'dataconnection.php';
 
         <div class="d-flex justify-content-between align-items-center">
             <span style="font-size: 20px; font-weight: bold;"><?php echo "User:  " . $id ; ?>     <?php echo $row["user_name"];?></span>
-            <button class="btn-warning" onclick="history.back()">Back</button>
+            <a href="view_customer.php" class="close-btn" aria-label="Close">&times;</a>
         </div>
 
         <div class="card">
