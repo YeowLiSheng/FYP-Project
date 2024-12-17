@@ -101,7 +101,10 @@ $product_result = $connect->query($sql);
 <style>
 
    /* 隐藏 Google Translate 原生界面 */
- 
+ /* 隐藏所有 Google Translate 插件相关的内容 */
+ #google_translate_element { display: none; } /* 隐藏插件容器 */
+    .goog-te-banner-frame { display: none !important; } /* 隐藏顶部翻译工具栏 */
+    body { top: 0 !important; } /* 防止工具栏隐藏后页面出现偏移 */
         /* 自定义语言选择器样式 */
         .custom-language {
             margin: 20px;
