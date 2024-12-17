@@ -1091,24 +1091,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     // 切换语言函数：直接修改 URL 参数并触发翻译
     function changeLanguage(lang) {
-        if (!lang) return; // 如果没有选择语言，则不执行任何操作
+            if (!lang) return; // 如果没有选择语言，则退出函数
 
-        // 修改 Google Translate 的 URL 参数
-        const googleTranslateFrame = document.querySelector('iframe.goog-te-menu-frame');
-        if (googleTranslateFrame) {
-            const innerDoc = googleTranslateFrame.contentDocument || googleTranslateFrame.contentWindow.document;
-            const menuItems = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
-            menuItems.forEach((item) => {
-                if (item.innerText.includes(lang)) {
-                    item.click(); // 模拟点击对应的语言选项
-                }
-            });
-        } else {
-            // 如果 iframe 尚未加载，则强制刷新到指定语言
-            const translateBase = "https://translate.google.com/translate?sl=auto&tl=" + lang + "&u=" + encodeURIComponent(location.href);
-            window.location.href = translateBase;
+            const currentURL = encodeURIComponent(window.location.href); // 获取当前页面的 URL 并进行编码
+            const googleTranslateURL = `https://translate.google.com/translate?sl=auto&tl=${lang}&u=${currentURL}`; // 构造 Google Translate 的 URL
+            window.location.href = googleTranslateURL; // 跳转到 Google Translate 的翻译页面
         }
-    }
 </script>
 </body>
 </html>
