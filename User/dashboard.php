@@ -54,10 +54,6 @@ $cart_items_query = "
     GROUP BY sc.product_id";
 $cart_items_result = $connect->query($cart_items_query);
 $product_result = $connect->query($sql);
-
-
-$ip = $_SERVER['REMOTE_ADDR'];
-echo "<script>const ipAddress = '$ip';</script>";
 ?>
 
 
@@ -104,11 +100,12 @@ echo "<script>const ipAddress = '$ip';</script>";
 
 <style>
 
-#google_translate_element { display: none; } /* 隐藏 Google Translate 插件容器 */
+#google_translate_element { display: none; } /* 隐藏插件容器 */
     .goog-te-banner-frame { display: none !important; } /* 隐藏顶部工具栏 */
     .goog-te-menu-frame { display: none !important; } /* 隐藏语言菜单 */
-    body { top: 0 !important; } /* 防止隐藏工具栏后页面布局偏移 */
+    .goog-te-gadget { display: none !important; } /* 隐藏默认的翻译工具 */
     
+    body { top: 0 !important; } /* 防止隐藏工具栏后页面布局偏移 */
         /* 自定义语言选择器样式 */
         .custom-language {
             margin: 20px;
@@ -1079,52 +1076,46 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'en', // 默认语言
-            includedLanguages: 'en,zh-CN,ms', // 支持的语言列表
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false, // 不显示默认工具
+            includedLanguages: 'en,zh-CN,ms', // 可选语言
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE, // 简单布局
+            autoDisplay: false, // 不显示默认翻译工具
         }, 'google_translate_element');
     }
 
-    // 动态加载 Google Translate 的脚本
+    // 动态加载 Google Translate 脚本
     (function loadGoogleTranslateScript() {
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-        document.body.appendChild(script);
+        if (!document.querySelector('script[src="//translate.google.com/translate_a/element.js"]')) {
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+            document.body.appendChild(script);
+        }
     })();
 
-    // 初始化变量，存储 IP 地址
-	let ipAddress = "";
+    // 自定义语言切换功能
+    function changeLanguage(language) {
+        const googleFrame = document.querySelector('iframe.goog-te-menu-frame'); // Google Translate 的 iframe
+        if (!googleFrame) {
+            console.error("Google Translate iframe not found. Retrying...");
+            setTimeout(() => changeLanguage(language), 500); // 如果 iframe 尚未加载，稍后重试
+            return;
+        }
 
-// 使用 ipify API 获取本机 IP 地址
-async function getIpAddress() {
-	try {
-		const response = await fetch("https://api.ipify.org?format=json");
-		const data = await response.json();
-		ipAddress = data.ip; // 获取到的 IP 地址
-	} catch (error) {
-		console.error("无法获取 IP 地址: ", error);
-	}
-}
+        const innerDoc = googleFrame.contentDocument || googleFrame.contentWindow.document; // 获取 iframe 的内容
+        const languageSelector = innerDoc.querySelector('.goog-te-menu2-item span.text'); // 获取语言菜单项
 
-// 在页面加载时获取 IP 地址
-getIpAddress();
-
-// 切换语言函数
-function changeLanguage(lang) {
-	if (!lang) return; // 如果未选择语言，则退出函数
-
-	// 如果 IP 地址未加载，显示错误
-	if (!ipAddress) {
-		alert("IP 地址尚未加载，请稍后重试！");
-		return;
-	}
-
-	// 动态生成 Google Translate 的翻译 URL
-	const currentURL = `http://${ipAddress}/FYP-project/User/dashboard.php`; // 使用捕获的 IP 地址
-	const googleTranslateURL = `https://translate.google.com/translate?sl=auto&tl=${lang}&u=${encodeURIComponent(currentURL)}`;
-	window.location.href = googleTranslateURL; // 跳转到翻译页面
-}
+        if (languageSelector) {
+            const items = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
+            for (let item of items) {
+                if (item.textContent.includes(language)) {
+                    item.click(); // 模拟点击对应语言选项
+                    break;
+                }
+            }
+        } else {
+            console.error("Language options not found inside the iframe.");
+        }
+    }
 </script>
 </body>
 </html>
