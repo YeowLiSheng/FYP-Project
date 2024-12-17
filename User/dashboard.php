@@ -95,22 +95,9 @@ $product_result = $connect->query($sql);
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 
-<style>
 
-   /* 隐藏 Google Translate 原生界面 */
- 
-        /* 自定义语言选择器样式 */
-        .custom-language {
-            margin: 20px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-  </style>
 
 
 
@@ -152,14 +139,15 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<select class="custom-language" id="custom-language-selector" onchange="changeLanguage(this.value)">
-    <option value="">Select Language</option>
-    <option value="en">English</option>
-    <option value="zh-CN">中文 (Simplified)</option>
-    <option value="ms">Bahasa Melayu</option>
-</select>
-
-<div id="google_translate_element" style="display:none;"></div>
+						
+						<div>
+						<select id="language-selector" onchange="translatePage(this.value)">
+        				<option value="en">English</option>
+        				<option value="ms">Malay</option>
+        				<option value="zh-CN">Chinese</option>
+    					</select>
+						</div>
+						<div id="google_translate_element" style="display:none;"></div>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
@@ -287,15 +275,9 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<select class="custom-language" onchange="changeLanguage(this.value)">
-    <option value="">Select Language</option>
-    <option value="en">English</option>
-    <option value="zh-CN">中文 (Simplified)</option>
-    <option value="ms">Bahasa Melayu</option>
-    <option value="ja">日本語</option>
-    <option value="ko">한국어</option>
-    <option value="fr">Français</option>
-</select>
+						<a href="#" class="flex-c-m p-lr-10 trans-04">
+							EN
+						</a>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
@@ -1067,36 +1049,32 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script>
- // 初始化 Google Translate 插件
- function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-            pageLanguage: 'en', // 默认语言
-            includedLanguages: 'en,zh-CN,ms', // 可选语言
-            autoDisplay: false, // 不自动显示原生下拉菜单
-        }, 'google_translate_element');
-    }
-
-    // 动态加载 Google Translate 脚本
-    (function loadGoogleTranslateScript() {
-        if (!document.querySelector('script[src="//translate.google.com/translate_a/element.js"]')) {
-            const script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-            document.body.appendChild(script);
+	<script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement(
+                {pageLanguage: 'en'},
+                'google_translate_element'
+            );
         }
-    })();
+    </script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    // 切换语言的函数
-    function changeLanguage(language) {
-        const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
-        if (googleSelect) {
-            googleSelect.value = language; // 设置选定的语言
-            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换
-        } else {
-            console.error('Google Translate 插件未加载，请稍后再试！');
+    <script>
+        function translatePage(language) {
+            // 检查 Google Translate 是否加载完成
+            var googleFrame = document.querySelector("iframe.goog-te-banner-frame");
+            if (!googleFrame) {
+                alert("Translation widget not fully loaded yet. Please try again in a moment.");
+                return;
+            }
+
+            // 获取 Google Translate 下拉框
+            var select = googleFrame.contentDocument.querySelector("select.goog-te-combo");
+            if (select) {
+                select.value = language; // 设置语言
+                select.dispatchEvent(new Event("change")); // 触发语言切换
+            }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
