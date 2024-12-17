@@ -1072,6 +1072,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
+   // 初始化 Google Translate 插件
    function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'en', // 默认语言
@@ -1093,13 +1094,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     // 切换语言的函数
     function changeLanguage(language) {
-        const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
-        if (googleSelect) {
-            googleSelect.value = language; // 设置选定的语言
-            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换事件
-        } else {
-            console.error('Google Translate 插件未加载，请稍后再试！');
-        }
+        const interval = setInterval(() => {
+            const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
+            if (googleSelect) {
+                googleSelect.value = language; // 设置选定的语言
+                googleSelect.dispatchEvent(new Event('change')); // 触发语言切换事件
+                clearInterval(interval); // 停止检查
+            }
+        }, 100); // 每 100ms 检查一次 Google Translate 是否加载
     }
 </script>
 </body>
