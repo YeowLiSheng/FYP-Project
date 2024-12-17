@@ -101,10 +101,7 @@ $product_result = $connect->query($sql);
 <style>
 
    /* 隐藏 Google Translate 原生界面 */
- /* 隐藏所有 Google Translate 插件相关的内容 */
- #google_translate_element { display: none; } /* 隐藏插件容器 */
-    .goog-te-banner-frame { display: none !important; } /* 隐藏顶部翻译工具栏 */
-    body { top: 0 !important; } /* 防止工具栏隐藏后页面出现偏移 */
+ 
         /* 自定义语言选择器样式 */
         .custom-language {
             margin: 20px;
@@ -1076,8 +1073,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         new google.translate.TranslateElement({
             pageLanguage: 'en', // 默认语言
             includedLanguages: 'en,zh-CN,ms', // 可选语言
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE, // 简单布局
-            autoDisplay: false, // 不显示默认翻译工具
+            autoDisplay: false, // 不自动显示原生下拉菜单
         }, 'google_translate_element');
     }
 
@@ -1096,7 +1092,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
         if (googleSelect) {
             googleSelect.value = language; // 设置选定的语言
-            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换事件
+            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换
         } else {
             console.error('Google Translate 插件未加载，请稍后再试！');
         }
