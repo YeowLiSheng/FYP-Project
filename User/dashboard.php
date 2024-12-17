@@ -1072,8 +1072,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-   // 初始化 Google Translate 插件
-   function googleTranslateElementInit() {
+    // 初始化 Google Translate 插件
+    function googleTranslateElementInit() {
         new google.translate.TranslateElement({
             pageLanguage: 'en', // 默认语言
             includedLanguages: 'en,zh-CN,ms', // 可选语言
@@ -1092,16 +1092,29 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
     })();
 
-    // 切换语言的函数
+    // 自定义语言切换功能
     function changeLanguage(language) {
-        const interval = setInterval(() => {
-            const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
-            if (googleSelect) {
-                googleSelect.value = language; // 设置选定的语言
-                googleSelect.dispatchEvent(new Event('change')); // 触发语言切换事件
-                clearInterval(interval); // 停止检查
+        const googleFrame = document.querySelector('iframe.goog-te-menu-frame'); // Google Translate 的 iframe
+        if (!googleFrame) {
+            console.error("Google Translate iframe not found. Retrying...");
+            setTimeout(() => changeLanguage(language), 500); // 如果 iframe 尚未加载，稍后重试
+            return;
+        }
+
+        const innerDoc = googleFrame.contentDocument || googleFrame.contentWindow.document; // 获取 iframe 的内容
+        const languageSelector = innerDoc.querySelector('.goog-te-menu2-item span.text'); // 获取语言菜单项
+
+        if (languageSelector) {
+            const items = innerDoc.querySelectorAll('.goog-te-menu2-item span.text');
+            for (let item of items) {
+                if (item.textContent.includes(language)) {
+                    item.click(); // 模拟点击对应语言选项
+                    break;
+                }
             }
-        }, 100); // 每 100ms 检查一次 Google Translate 是否加载
+        } else {
+            console.error("Language options not found inside the iframe.");
+        }
     }
 </script>
 </body>
