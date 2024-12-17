@@ -1076,7 +1076,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         new google.translate.TranslateElement({
             pageLanguage: 'en', // 默认语言
             includedLanguages: 'en,zh-CN,ms', // 可选语言
-            autoDisplay: false, // 不自动显示原生下拉菜单
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE, // 简单布局
+            autoDisplay: false, // 不显示默认翻译工具
         }, 'google_translate_element');
     }
 
@@ -1095,7 +1096,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
         if (googleSelect) {
             googleSelect.value = language; // 设置选定的语言
-            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换
+            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换事件
         } else {
             console.error('Google Translate 插件未加载，请稍后再试！');
         }
