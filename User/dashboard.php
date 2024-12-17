@@ -152,16 +152,14 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<!-- Google Translate 插件容器 -->
-<div id="google_translate_element"></div>
-
-<!-- 自定义语言选择器 -->
-<select class="custom-language" id="custom-language-selector" onchange="changeLanguage(this.value)">
+						<select class="custom-language" id="custom-language-selector" onchange="changeLanguage(this.value)">
     <option value="">Select Language</option>
     <option value="en">English</option>
     <option value="zh-CN">中文 (Simplified)</option>
     <option value="ms">Bahasa Melayu</option>
 </select>
+
+<div id="google_translate_element" style="display:none;"></div>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
@@ -1070,16 +1068,16 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-    // 初始化 Google Translate 插件
-    function googleTranslateElementInit() {
+ // 初始化 Google Translate 插件
+ function googleTranslateElementInit() {
         new google.translate.TranslateElement({
-            pageLanguage: 'en', // 默认页面语言
-            includedLanguages: 'en,zh-CN,ms', // 允许的语言
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            pageLanguage: 'en', // 默认语言
+            includedLanguages: 'en,zh-CN,ms', // 可选语言
+            autoDisplay: false, // 不自动显示原生下拉菜单
         }, 'google_translate_element');
     }
 
-    // 动态加载 Google Translate 插件脚本
+    // 动态加载 Google Translate 脚本
     (function loadGoogleTranslateScript() {
         if (!document.querySelector('script[src="//translate.google.com/translate_a/element.js"]')) {
             const script = document.createElement('script');
@@ -1094,10 +1092,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const googleSelect = document.querySelector('.goog-te-combo'); // Google Translate 原生下拉菜单
         if (googleSelect) {
             googleSelect.value = language; // 设置选定的语言
-            googleSelect.dispatchEvent(new Event('change')); // 触发 Google Translate 下拉菜单的 change 事件
+            googleSelect.dispatchEvent(new Event('change')); // 触发语言切换
         } else {
-            console.error('Google Translate 插件尚未加载，请稍后再试！');
-            setTimeout(() => changeLanguage(language), 500); // 延迟重试
+            console.error('Google Translate 插件未加载，请稍后再试！');
         }
     }
 </script>
