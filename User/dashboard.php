@@ -1089,14 +1089,38 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         document.body.appendChild(script);
     })();
 
-    // 切换语言函数：直接修改 URL 参数并触发翻译
-    function changeLanguage(lang) {
-            if (!lang) return; // 如果没有选择语言，则退出函数
+    // 初始化变量，存储 IP 地址
+	let ipAddress = "";
 
-            const currentURL = encodeURIComponent(window.location.href); // 获取当前页面的 URL 并进行编码
-            const googleTranslateURL = `https://translate.google.com/translate?sl=auto&tl=${lang}&u=${currentURL}`; // 构造 Google Translate 的 URL
-            window.location.href = googleTranslateURL; // 跳转到 Google Translate 的翻译页面
-        }
+// 使用 ipify API 获取本机 IP 地址
+async function getIpAddress() {
+	try {
+		const response = await fetch("https://api.ipify.org?format=json");
+		const data = await response.json();
+		ipAddress = data.ip; // 获取到的 IP 地址
+	} catch (error) {
+		console.error("无法获取 IP 地址: ", error);
+	}
+}
+
+// 在页面加载时获取 IP 地址
+getIpAddress();
+
+// 切换语言函数
+function changeLanguage(lang) {
+	if (!lang) return; // 如果未选择语言，则退出函数
+
+	// 如果 IP 地址未加载，显示错误
+	if (!ipAddress) {
+		alert("IP 地址尚未加载，请稍后重试！");
+		return;
+	}
+
+	// 动态生成 Google Translate 的翻译 URL
+	const currentURL = `http://${ipAddress}/FYP-project/User/dashboard.php`; // 使用捕获的 IP 地址
+	const googleTranslateURL = `https://translate.google.com/translate?sl=auto&tl=${lang}&u=${encodeURIComponent(currentURL)}`;
+	window.location.href = googleTranslateURL; // 跳转到翻译页面
+}
 </script>
 </body>
 </html>
