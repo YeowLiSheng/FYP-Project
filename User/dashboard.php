@@ -54,6 +54,10 @@ $cart_items_query = "
     GROUP BY sc.product_id";
 $cart_items_result = $connect->query($cart_items_query);
 $product_result = $connect->query($sql);
+
+
+$ip = $_SERVER['REMOTE_ADDR'];
+echo "<script>const ipAddress = '$ip';</script>";
 ?>
 
 
