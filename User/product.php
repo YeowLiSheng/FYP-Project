@@ -114,29 +114,71 @@ if (isset($_GET['fetch_package_products'])) {
     exit;
 }
 if (isset($_POST['add_package_to_cart'])) {
-    $packageId = intval($_POST['package_id']);
-    $productOptions = $_POST['product_options']; // Array of color and size selections
+    $user_id = $_SESSION['id'];
+    $package_id = intval($_POST['package_id']);
+    $package_qty = intval($_POST['qty']);
 
-    $cartItems = [];
-    foreach ($productOptions as $option) {
-        // Process the selections and add them to the cart
-        $cartItems[] = [
-            'product_id' => $option['product_id'],
-            'color' => $option['color'],
-            'size' => $option['size']
-        ];
+    $product1_color = htmlspecialchars($_POST['color_1'] ?? '');
+    $product1_size = htmlspecialchars($_POST['size_1'] ?? '');
+    $product2_color = htmlspecialchars($_POST['color_2'] ?? '');
+    $product2_size = htmlspecialchars($_POST['size_2'] ?? '');
+    $product3_color = htmlspecialchars($_POST['color_3'] ?? '');
+    $product3_size = htmlspecialchars($_POST['size_3'] ?? '');
+
+    $stmt = $connect->prepare("SELECT package_price FROM product_package WHERE package_id = ?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $connect->error]);
+        exit;
+    }
+    $stmt->bind_param('i', $package_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid package selected.']);
+        exit;
     }
 
-    // Add package details and products to the shopping cart
-    $query = "INSERT INTO shopping_cart (package_id, package_products, user_id) 
-              VALUES ($packageId, '" . json_encode($cartItems) . "', $userId)";
-    if ($connect->query($query)) {
-        echo json_encode(['success' => true]);
+    $row = $result->fetch_assoc();
+    $package_price = doubleval($row['package_price']);
+    $stmt->close();
+
+    $total_price = $package_price * $package_qty;
+
+    $stmt = $connect->prepare("
+        INSERT INTO package_cart (
+            user_id, total_price, package_id, 
+            product1_color, product1_size, 
+            product2_color, product2_size, 
+            product3_color, product3_size, 
+            package_qty
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $connect->error]);
+        exit;
+    }
+    $stmt->bind_param(
+        'idissssssi',
+        $user_id,
+        $total_price,
+        $package_id,
+        $product1_color,
+        $product1_size,
+        $product2_color,
+        $product2_size,
+        $product3_color,
+        $product3_size,
+        $package_qty
+    );
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Package added to cart successfully.']);
     } else {
-        echo json_encode(['error' => 'Failed to add package to cart.']);
+        echo json_encode(['success' => false, 'message' => 'Failed to add package to cart.']);
     }
-    exit;
 }
+
 
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
@@ -1410,6 +1452,29 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			}
 		});
 	}
+	$(document).on('click', '.qty-btn.plus', function () {
+		const $input = $(this).siblings('.qty-input');
+		const currentQty = parseInt($input.val()) || 1; // Default to 1 if empty or invalid
+		$input.val(currentQty + 1); // Increment the value
+	});
+
+	$(document).on('click', '.qty-btn.minus', function () {
+		const $input = $(this).siblings('.qty-input');
+		const currentQty = parseInt($input.val()) || 1; // Default to 1 if empty or invalid
+		const newQty = Math.max(1, currentQty - 1); // Ensure minimum value is 1
+		$input.val(newQty); // Decrement the value
+	});
+	$(document).on('click change', '.qty-btn, .qty-input', function () {
+		const $input = $(this).closest('.qty-container').find('.qty-input'); // Find the related input
+		const enteredQty = parseInt($input.val()) || 1; // Get the entered quantity (default to 1)
+		
+		// Pass the quantity to the package form
+		const $packageForm = $('#package-form'); // Replace with the actual form ID
+		$packageForm.find('.qty-display').text(enteredQty); // Update the display field
+		
+		// Optional: Add the qty as a hidden input in the form for submission
+		$packageForm.find('input[name="qty"]').val(enteredQty);
+	});
 
     $(document).ready(function () {
         // Update product quantity and enforce stock rules
@@ -1675,86 +1740,121 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     </script>
 	<script>
 		$(document).on('click', '.selectPackage', function () {
-			const packageId = $(this).closest('.package-card').data('package-id');
+    const packageId = $(this).closest('.package-card').data('package-id');
+    console.log("Package ID:", packageId);
 
-			// Fetch the products in the package
-			$.ajax({
-				url: '', // PHP endpoint to handle this request
-				type: 'GET',
-				data: { fetch_package_products: true, package_id: packageId },
-				dataType: 'json',
-				success: function (response) {
-					if (response.products) {
-						let formHtml = `<h2>Select Options for Your Package</h2><form id="packageForm">`;
+    if (!packageId) {
+        alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
+        return;
+    }
 
-						// Generate the form for each product
-						response.products.forEach((product, index) => {
-							formHtml += `
-								<div class="product-options">
-									<h3>${product.product_name}</h3>
-									<img src="images/${product.product_image}"class="p-image">
-									<label for="color_${index}">Color:</label>
-									<select name="color_${index}" id="color_${index}">
-										<option value="">Choose an option</option>
-										<option value="${product.color1}">${product.color1}</option>
-										<option value="${product.color2}">${product.color2}</option>
-									</select>
-									<label for="size_${index}">Size:</label>
-									<select name="size_${index}" id="size_${index}">
-										<option value="">Choose an option</option>
-										<option value="${product.size1}">${product.size1}</option>
-										<option value="${product.size2}">${product.size2}</option>
-									</select>
-								</div>`;
-						});
+    // Fetch the products in the package
+    $.ajax({
+        url: '', // PHP endpoint to handle this request
+        type: 'GET',
+        data: { fetch_package_products: true, package_id: packageId },
+        dataType: 'json',
+        success: function (response) {
+            console.log("Response:", response);
 
-						formHtml += `
-							<button type="submit" class="btn-primary">Add Package to Cart</button>
-							</form>`;
+            if (!response.products || response.products.length === 0) {
+                console.error("Error: response.products is undefined or empty.");
+                alert("No products found for this package.");
+                return;
+            }
 
-						// Inject the form into the popup container
-						$('#packageFormContainer').html(formHtml);
+            let formHtml = `<h2>Select Options for Your Package</h2><form id="packageForm">`;
+            const selectedQty = $('.qty-input').val() || 1;
+            console.log("Selected Quantity:", selectedQty);
 
-						// Show the popup
-						$('#packageFormPopup').fadeIn();
-					} else {
-						alert('No products found for this package.');
-					}
-				},
-				error: function () {
-					alert('An error occurred while fetching package details.');
-				}
-			});
-		});
+            if (!selectedQty) {
+                alert("Error: Quantity is undefined.");
+                return;
+            }
 
-		// Handle form submission
-		$(document).on('submit', '#packageForm', function (event) {
-			event.preventDefault();
+            formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
+            formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
 
-			const formData = $(this).serializeArray();
-			const packageId = $('.selectPackage').closest('.package-card').data('package-id');
-			
-			$.ajax({
-				url: '', // PHP endpoint to handle this request
-				type: 'POST',
-				data: {
-					add_package_to_cart: true,
-					package_id: packageId,
-					product_options: formData
-				},
-				success: function (response) {
-					if (response.success) {
-						alert('Package added to cart successfully!');
-						location.reload(); // Optional: Refresh the page
-					} else {
-						alert('Failed to add package to cart: ' + (response.error || 'unknown error'));
-					}
-				},
-				error: function () {
-					alert('An error occurred while adding package to cart.');
-				}
-			});
-		});
+            // Loop through products and generate the form
+            response.products.forEach((product, index) => {
+                if (!product) {
+                    console.error(`Error: Product at index ${index} is undefined.`);
+                    return;
+                }
+
+                formHtml += `
+                    <div class="product-options" id="product_${index + 1}">
+                        <h3>${product.product_name || `Product ${index + 1}`}</h3>
+                        <img src="images/${product.product_image || 'default.jpg'}" class="p-image">
+                        <label for="color_${index + 1}">Color:</label>
+                        <select name="color_${index + 1}" id="color_${index + 1}">
+                            <option value="">Choose an option</option>
+                            <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
+                            <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
+                        </select>
+                        <label for="size_${index + 1}">Size:</label>
+                        <select name="size_${index + 1}" id="size_${index + 1}">
+                            <option value="">Choose an option</option>
+                            <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
+                            <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
+                        </select>
+                    </div>
+                `;
+            });
+
+            formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
+
+            // Inject the form into the popup container
+            $('#packageFormContainer').html(formHtml);
+            $('#packageFormPopup').fadeIn();
+
+            // Handle form submission
+            $('#packageForm').on('submit', function (e) {
+                e.preventDefault();
+
+                // Collect the form data
+                const packageData = {
+                    add_package_to_cart: true,
+                    package_id: packageId,
+                    qty: selectedQty
+                };
+
+                // Loop through inputs and append data
+                response.products.forEach((product, index) => {
+                    packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
+                    packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
+                });
+
+                console.log("Package Data:", packageData);
+
+                $.ajax({
+                    url: '', // Replace with actual PHP script
+                    type: 'POST',
+                    data: packageData,
+                    success: function (response) {
+                        console.log("Add to Cart Response:", response);
+                        if (response.success) {
+                            alert('Package added to cart!');
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while adding the package to the cart.');
+                    }
+                });
+            });
+        },
+        error: function () {
+            alert('An error occurred while fetching package details.');
+        }
+    });
+});
+
+
+
+
+
 		// Close popup on clicking the close button or outside the popup
 		$(document).on('click', '.close-popup', function () {
 			$('#packageFormPopup').fadeOut();
