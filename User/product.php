@@ -114,6 +114,7 @@ if (isset($_GET['fetch_package_products'])) {
     exit;
 }
 if (isset($_POST['add_package_to_cart'])) {
+    header('Content-Type: application/json');
     $user_id = $_SESSION['id'];
     $package_id = intval($_POST['package_id']);
     $package_qty = intval($_POST['qty']);
@@ -146,7 +147,7 @@ if (isset($_POST['add_package_to_cart'])) {
     $total_price = $package_price * $package_qty;
 
     $stmt = $connect->prepare("
-        INSERT INTO package_cart (
+        INSERT INTO shopping_cart (
             user_id, total_price, package_id, 
             product1_color, product1_size, 
             product2_color, product2_size, 
@@ -172,12 +173,15 @@ if (isset($_POST['add_package_to_cart'])) {
         $package_qty
     );
 
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Package added to cart successfully.']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to add package to cart.']);
-    }
+    $response = [
+        'success' => true,
+        'message' => 'Package added to cart successfully.'
+    ];
+
+    echo json_encode($response); // Only output JSON
+    exit;
 }
+
 
 
 // Handle AJAX request to add product to shopping cart
@@ -319,7 +323,10 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
 	echo "<p>No products found.</p>";
 }
 }
-
+$output = ob_get_clean(); // Get any unexpected output
+if (!empty($output)) {
+    error_log("Unexpected output: $output"); // Log unexpected output for debugging
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1835,6 +1842,7 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                         console.log("Add to Cart Response:", response);
                         if (response.success) {
                             alert('Package added to cart!');
+                            $('#packageFormPopup').fadeOut();
                         } else {
                             alert('Error: ' + response.message);
                         }
