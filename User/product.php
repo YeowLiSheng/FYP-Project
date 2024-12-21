@@ -61,7 +61,8 @@ if (isset($_GET['fetch_packages']) && isset($_GET['product_id'])) {
             p.package_name, 
             p.package_price, 
             p.package_description, 
-            p.package_image
+            p.package_image,
+            p.package_stock
         FROM product_package p
         LEFT JOIN product prod1 ON p.product1_id = prod1.product_id
         LEFT JOIN product prod2 ON p.product2_id = prod2.product_id
@@ -1422,55 +1423,76 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         });
     });
 	function fetchPackages(productId) {
-		$.ajax({
-			url: '', // The same PHP file
-			type: 'GET',
-			data: { fetch_packages: true, product_id: productId },
-			dataType: 'json',
-			success: function(packages) {
-				const packageBox = $('#packageBox');
-				packageBox.empty(); // Clear existing packages
+        $.ajax({
+            url: '', // The same PHP file
+            type: 'GET',
+            data: { fetch_packages: true, product_id: productId },
+            dataType: 'json',
+            success: function(packages) {
+                const packageBox = $('#packageBox');
+                packageBox.empty(); // Clear existing packages
 
-				if (packages.length > 0) {
-					packages.forEach(pkg => {
-						const packageHtml = `
-							<h1 class="package-title">Valueble Packages</h1>
-							<div class="package-card" data-package-id="${pkg.package_id}">
-								<img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
-								<div class="package-info">
-									<h3 class="package-name">${pkg.package_name}</h3>
-									<p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
-									<div class="qty-controls">
-										<button class="qty-btn minus">-</button>
-										<input type="number" value="1" min="1" class="qty-input">
-										<button class="qty-btn plus">+</button>
-									</div>
-									<button class="selectPackage btn-primary">Select Package</button>
-								</div>
-							</div>`;
-						packageBox.append(packageHtml);
-					});
-				} else {
-					packageBox.append('<p>No packages found.</p>');
-				}
-			},
-			error: function() {
-				alert('An error occurred while fetching packages.');
-			}
-		});
-	}
-	$(document).on('click', '.qty-btn.plus', function () {
-		const $input = $(this).siblings('.qty-input');
-		const currentQty = parseInt($input.val()) || 1; // Default to 1 if empty or invalid
-		$input.val(currentQty + 1); // Increment the value
-	});
+                if (packages.length > 0) {
+                    packages.forEach(pkg => {
+                        if (pkg.package_stock > 0) { // Only display packages with stock > 0
+                            const packageHtml = `
+                                <h1 class="package-title">Valuable Packages</h1>
+                                <div class="package-card" data-package-id="${pkg.package_id}" data-package-stock="${pkg.package_stock}">
+                                    <img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
+                                    <div class="package-info">
+                                        <h3 class="package-name">${pkg.package_name}</h3>
+                                        <p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
+                                        <div class="qty-controls">
+                                            <button class="qty-btn minus">-</button>
+                                            <input type="number" value="1" min="1" class="qty-input">
+                                            <button class="qty-btn plus">+</button>
+                                            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
+                                        </div>
+                                        <button class="selectPackage btn-primary">Select Package</button>
+                                    </div>
+                                </div>`;
+                            packageBox.append(packageHtml);
+                        } else {
+                            packageBox.append('<p>No packages found for this product.</p>');
+                        }
+                    });
+                } else {
+                    packageBox.append('<p>No packages found for this product.</p>');
+                }
+            },
+            error: function() {
+                alert('An error occurred while fetching packages.');
+            }
+        });
+    }
 
-	$(document).on('click', '.qty-btn.minus', function () {
-		const $input = $(this).siblings('.qty-input');
-		const currentQty = parseInt($input.val()) || 1; // Default to 1 if empty or invalid
-		const newQty = Math.max(1, currentQty - 1); // Ensure minimum value is 1
-		$input.val(newQty); // Decrement the value
-	});
+    $(document).on('click', '.qty-btn.plus', function () {
+        const $packageCard = $(this).closest('.package-card');
+        const maxStock = parseInt($packageCard.data('package-stock'));
+        const $input = $(this).siblings('.qty-input');
+        const $message = $(this).siblings('.stock-message');
+        const currentQty = parseInt($input.val()) || 1;
+
+        if (currentQty < maxStock) {
+            $input.val(currentQty + 1); // Increment the value
+            $message.hide(); // Hide the message if visible
+        } else {
+            $message.show(); // Show the warning message
+        }
+    });
+
+    $(document).on('click', '.qty-btn.minus', function () {
+        const $input = $(this).siblings('.qty-input');
+        const $message = $(this).siblings('.stock-message');
+        const currentQty = parseInt($input.val()) || 1;
+
+        const newQty = Math.max(1, currentQty - 1); // Ensure minimum value is 1
+        $input.val(newQty); // Decrement the value
+        if (newQty < parseInt($input.closest('.package-card').data('package-stock'))) {
+            $message.hide(); // Hide the message if the quantity is below the maximum stock
+        }
+    });
+
 	$(document).on('click change', '.qty-btn, .qty-input', function () {
 		const $input = $(this).closest('.qty-container').find('.qty-input'); // Find the related input
 		const enteredQty = parseInt($input.val()) || 1; // Get the entered quantity (default to 1)
