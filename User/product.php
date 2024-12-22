@@ -29,15 +29,33 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price,
-           sc.color, sc.size, 
-           SUM(sc.qty) AS total_qty, 
-           SUM(sc.total_price) AS total_price
-    FROM shopping_cart sc 
-    JOIN product p ON sc.product_id = p.product_id 
-    WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id, sc.color, sc.size";
+    SELECT 
+        sc.product_id, 
+        p.product_name, 
+        p.product_image, 
+        p.product_price,
+        sc.color, 
+        sc.size, 
+        SUM(sc.qty) AS total_qty, 
+        SUM(sc.total_price) AS total_price,
+        sc.package_id,
+        sc.package_qty,
+        sc.product1_color, sc.product1_size,
+        sc.product2_color, sc.product2_size,
+        sc.product3_color, sc.product3_size,
+        pkg.package_name, 
+        pkg.package_image
+    FROM shopping_cart sc
+    LEFT JOIN product p ON sc.product_id = p.product_id
+    LEFT JOIN product_package pkg ON sc.package_id = pkg.package_id
+    WHERE sc.user_id = $user_id
+    GROUP BY 
+        sc.product_id, 
+        sc.color, 
+        sc.size, 
+        sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -716,34 +734,58 @@ body {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                // Display combined cart items
-                $total_price = 0;
-                if ($cart_items_result->num_rows > 0) {
-                    while($cart_item = $cart_items_result->fetch_assoc()) {
-                        $total_price += $cart_item['total_price'];
-                        echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                    // Display combined cart items
+                    $total_price = 0;
 
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-								
-                                <span class="header-cart-item-info">
-                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                </span>
-                            </div>
-                        </li>';
+                    if ($cart_items_result->num_rows > 0) {
+                        while ($cart_item = $cart_items_result->fetch_assoc()) {
+                            $total_price += $cart_item['total_price'];
+                            if (!empty($cart_item['package_id'])) {
+                                // Render package details
+                                echo '
+                                <li class="header-cart-item flex-w flex-t m-b-12">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
+                                    </div>
+                                    <div class="header-cart-item-txt p-t-8">
+                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                            ' . $cart_item['package_name'] . '
+                                        </a>
+                                        <span class="header-cart-item-info">
+                                            ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                        </span>
+                                        <span class="header-cart-item-info">
+                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
+                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
+                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
+                                        </span>
+                                    </div>
+                                </li>';
+                            } else {
+                                // Render individual product details
+                                echo '
+                                <li class="header-cart-item flex-w flex-t m-b-12">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                    </div>
+                                    <div class="header-cart-item-txt p-t-8">
+                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                            ' . $cart_item['product_name'] . '
+                                        </a>
+                                        <span class="header-cart-item-info">
+                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                        </span>
+                                        <span class="header-cart-item-info">
+                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                        </span>
+                                    </div>
+                                </li>';
+                            }
+                        }
+                    } else {
+                        echo '<p>Your cart is empty.</p>';
                     }
-                } else {
-                    echo '<p>Your cart is empty.</p>';
-                }
+
                 ?>
             </ul>
             
