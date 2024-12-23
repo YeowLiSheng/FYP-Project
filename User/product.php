@@ -29,15 +29,33 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price,
-           sc.color, sc.size, 
-           SUM(sc.qty) AS total_qty, 
-           SUM(sc.total_price) AS total_price
-    FROM shopping_cart sc 
-    JOIN product p ON sc.product_id = p.product_id 
-    WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id, sc.color, sc.size";
+    SELECT 
+        sc.product_id, 
+        p.product_name, 
+        p.product_image, 
+        p.product_price,
+        sc.color, 
+        sc.size, 
+        SUM(sc.qty) AS total_qty, 
+        SUM(sc.total_price) AS total_price,
+        sc.package_id,
+        sc.package_qty,
+        sc.product1_color, sc.product1_size,
+        sc.product2_color, sc.product2_size,
+        sc.product3_color, sc.product3_size,
+        pkg.package_name, 
+        pkg.package_image
+    FROM shopping_cart sc
+    LEFT JOIN product p ON sc.product_id = p.product_id
+    LEFT JOIN product_package pkg ON sc.package_id = pkg.package_id
+    WHERE sc.user_id = $user_id
+    GROUP BY 
+        sc.product_id, 
+        sc.color, 
+        sc.size, 
+        sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -52,16 +70,17 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
-// Get product_id from the request (use for dynamic testing; hardcoded here for example)
-$product_id = isset($_GET['product_id']) ? intval($_GET['product_id']) : 1;
 
-// Query to fetch packages containing the product ID
-$sql = "SELECT 
+if (isset($_GET['fetch_packages']) && isset($_GET['product_id'])) {
+    $product_id = intval($_GET['product_id']);
+    $query = "
+        SELECT 
             p.package_id, 
             p.package_name, 
             p.package_price, 
-            p.package_description,
-            p.package_image
+            p.package_description, 
+            p.package_image,
+            p.package_stock
         FROM product_package p
         LEFT JOIN product prod1 ON p.product1_id = prod1.product_id
         LEFT JOIN product prod2 ON p.product2_id = prod2.product_id
@@ -70,7 +89,18 @@ $sql = "SELECT
            OR p.product2_id = $product_id 
            OR p.product3_id = $product_id";
 
-$result = $connect->query($sql);
+    $result = $connect->query($query);
+
+    $packages = [];
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $packages[] = $row;
+        }
+    }
+
+    echo json_encode($packages);
+    exit;
+}
 
 $packages = [];
 if ($result->num_rows > 0) {
@@ -78,6 +108,101 @@ if ($result->num_rows > 0) {
         $packages[] = $row;
     }
 }
+if (isset($_GET['fetch_package_products'])) {
+    $packageId = intval($_GET['package_id']);
+    $query = "SELECT product1_id, product2_id, product3_id FROM product_package WHERE package_id = $packageId";
+    $result = $connect->query($query);
+
+    if ($result && $row = $result->fetch_assoc()) {
+        $productIds = [$row['product1_id'], $row['product2_id'], $row['product3_id']];
+        $productIds = array_filter($productIds); // Remove null values
+
+        $productQuery = "SELECT product_id, product_name, product_image, color1, color2, size1, size2 
+                         FROM product WHERE product_id IN (" . implode(',', $productIds) . ")";
+        $productResult = $connect->query($productQuery);
+
+        $products = [];
+        while ($product = $productResult->fetch_assoc()) {
+            $products[] = $product;
+        }
+
+        echo json_encode(['products' => $products]);
+    } else {
+        echo json_encode(['error' => 'No products found for the package.']);
+    }
+    exit;
+}
+if (isset($_POST['add_package_to_cart'])) {
+    header('Content-Type: application/json');
+    $user_id = $_SESSION['id'];
+    $package_id = intval($_POST['package_id']);
+    $package_qty = intval($_POST['qty']);
+
+    $product1_color = htmlspecialchars($_POST['color_1'] ?? '');
+    $product1_size = htmlspecialchars($_POST['size_1'] ?? '');
+    $product2_color = htmlspecialchars($_POST['color_2'] ?? '');
+    $product2_size = htmlspecialchars($_POST['size_2'] ?? '');
+    $product3_color = htmlspecialchars($_POST['color_3'] ?? '');
+    $product3_size = htmlspecialchars($_POST['size_3'] ?? '');
+
+    $stmt = $connect->prepare("SELECT package_price FROM product_package WHERE package_id = ?");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $connect->error]);
+        exit;
+    }
+    $stmt->bind_param('i', $package_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid package selected.']);
+        exit;
+    }
+
+    $row = $result->fetch_assoc();
+    $package_price = doubleval($row['package_price']);
+    $stmt->close();
+
+    $total_price = $package_price * $package_qty;
+
+    $stmt = $connect->prepare("
+        INSERT INTO shopping_cart (
+            user_id, total_price, package_id, 
+            product1_color, product1_size, 
+            product2_color, product2_size, 
+            product3_color, product3_size, 
+            package_qty
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $connect->error]);
+        exit;
+    }
+    $stmt->bind_param(
+        'idissssssi',
+        $user_id,
+        $total_price,
+        $package_id,
+        $product1_color,
+        $product1_size,
+        $product2_color,
+        $product2_size,
+        $product3_color,
+        $product3_size,
+        $package_qty
+    );
+
+    $response = [
+        'success' => true,
+        'message' => 'Package added to cart successfully.'
+    ];
+
+    echo json_encode($response); // Only output JSON
+    exit;
+}
+
+
+
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $product_id = intval($_POST['product_id']);
@@ -217,7 +342,10 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
 	echo "<p>No products found.</p>";
 }
 }
-
+$output = ob_get_clean(); // Get any unexpected output
+if (!empty($output)) {
+    error_log("Unexpected output: $output"); // Log unexpected output for debugging
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -402,6 +530,46 @@ body {
             text-align: center;
         }
     }
+/* Fullscreen overlay */
+.popup-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    z-index: 9999; /* Ensures it appears above other content */
+}
+
+/* Popup content box */
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
+    width: 500px;
+}
+
+/* Close button */
+.close-popup {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close-popup:hover {
+    color: #000;
+}
 
 </style>
 
@@ -566,34 +734,58 @@ body {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                // Display combined cart items
-                $total_price = 0;
-                if ($cart_items_result->num_rows > 0) {
-                    while($cart_item = $cart_items_result->fetch_assoc()) {
-                        $total_price += $cart_item['total_price'];
-                        echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                    // Display combined cart items
+                    $total_price = 0;
 
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-								
-                                <span class="header-cart-item-info">
-                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                </span>
-                            </div>
-                        </li>';
+                    if ($cart_items_result->num_rows > 0) {
+                        while ($cart_item = $cart_items_result->fetch_assoc()) {
+                            $total_price += $cart_item['total_price'];
+                            if (!empty($cart_item['package_id'])) {
+                                // Render package details
+                                echo '
+                                <li class="header-cart-item flex-w flex-t m-b-12">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
+                                    </div>
+                                    <div class="header-cart-item-txt p-t-8">
+                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                            ' . $cart_item['package_name'] . '
+                                        </a>
+                                        <span class="header-cart-item-info">
+                                            ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                        </span>
+                                        <span class="header-cart-item-info">
+                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
+                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
+                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
+                                        </span>
+                                    </div>
+                                </li>';
+                            } else {
+                                // Render individual product details
+                                echo '
+                                <li class="header-cart-item flex-w flex-t m-b-12">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                    </div>
+                                    <div class="header-cart-item-txt p-t-8">
+                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                            ' . $cart_item['product_name'] . '
+                                        </a>
+                                        <span class="header-cart-item-info">
+                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                        </span>
+                                        <span class="header-cart-item-info">
+                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                        </span>
+                                    </div>
+                                </li>';
+                            }
+                        }
+                    } else {
+                        echo '<p>Your cart is empty.</p>';
                     }
-                } else {
-                    echo '<p>Your cart is empty.</p>';
-                }
+
                 ?>
             </ul>
             
@@ -1090,25 +1282,17 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							</div>
 
 							<div id="packageBox" style="margin-top: 20px;">
-								<h1 class="package-title">Valuable Set</h1>
-								<?php foreach ($packages as $pkg): ?>
-									<div class="package-card" data-package-id="<?= $pkg['package_id']; ?>">
-										<img src="images/<?php echo $pkg['package_image'] ?>" alt="Package Image" class="p-image">
-										<div class="package-info">
-											<h3 class="package-name"><?= $pkg['package_name']; ?></h3>
-											<p class="package-price">Price: $<?= number_format($pkg['package_price'], 2); ?></p>
-											<div class="qty-controls">
-												<button class="qty-btn minus">-</button>
-												<input type="number" value="1" min="1" class="qty-input">
-												<button class="qty-btn plus">+</button>
-											</div>
-											<button class="selectPackage btn-primary">Select Package</button>
-										</div>
-									</div>
-								<?php endforeach; ?>
+								
 							</div>
 
-
+							<div id="packageFormPopup" class="popup-overlay">
+								<div class="popup-content">
+									<span class="close-popup">&times;</span>
+									<div id="packageFormContainer">
+										<!-- Dynamic form content will be injected here -->
+									</div>
+								</div>
+							</div>
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-204 flex-w flex-m respon6-next">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
@@ -1265,6 +1449,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 					colorSelect.append('<option value="">Choose an option</option>'); // Default option
 					if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
 					if (response.color2) colorSelect.append('<option value="' + response.color2 + '">' + response.color2 + '</option>');
+					
+					// Fetch packages containing the product ID
+					fetchPackages(productId);
 
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
@@ -1277,6 +1464,88 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         });
     });
+	function fetchPackages(productId) {
+        $.ajax({
+            url: '', // The same PHP file
+            type: 'GET',
+            data: { fetch_packages: true, product_id: productId },
+            dataType: 'json',
+            success: function(packages) {
+                const packageBox = $('#packageBox');
+                packageBox.empty(); // Clear existing packages
+
+                if (packages.length > 0) {
+                    packages.forEach(pkg => {
+                        if (pkg.package_stock > 0) { // Only display packages with stock > 0
+                            const packageHtml = `
+                                <h1 class="package-title">Valuable Packages</h1>
+                                <div class="package-card" data-package-id="${pkg.package_id}" data-package-stock="${pkg.package_stock}">
+                                    <img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
+                                    <div class="package-info">
+                                        <h3 class="package-name">${pkg.package_name}</h3>
+                                        <p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
+                                        <div class="qty-controls">
+                                            <button class="qty-btn minus">-</button>
+                                            <input type="number" value="1" min="1" class="qty-input">
+                                            <button class="qty-btn plus">+</button>
+                                            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
+                                        </div>
+                                        <button class="selectPackage btn-primary">Select Package</button>
+                                    </div>
+                                </div>`;
+                            packageBox.append(packageHtml);
+                        } else {
+                            packageBox.append('<p>No packages found for this product.</p>');
+                        }
+                    });
+                } else {
+                    packageBox.append('<p>No packages found for this product.</p>');
+                }
+            },
+            error: function() {
+                alert('An error occurred while fetching packages.');
+            }
+        });
+    }
+
+    $(document).on('click', '.qty-btn.plus', function () {
+        const $packageCard = $(this).closest('.package-card');
+        const maxStock = parseInt($packageCard.data('package-stock'));
+        const $input = $(this).siblings('.qty-input');
+        const $message = $(this).siblings('.stock-message');
+        const currentQty = parseInt($input.val()) || 1;
+
+        if (currentQty < maxStock) {
+            $input.val(currentQty + 1); // Increment the value
+            $message.hide(); // Hide the message if visible
+        } else {
+            $message.show(); // Show the warning message
+        }
+    });
+
+    $(document).on('click', '.qty-btn.minus', function () {
+        const $input = $(this).siblings('.qty-input');
+        const $message = $(this).siblings('.stock-message');
+        const currentQty = parseInt($input.val()) || 1;
+
+        const newQty = Math.max(1, currentQty - 1); // Ensure minimum value is 1
+        $input.val(newQty); // Decrement the value
+        if (newQty < parseInt($input.closest('.package-card').data('package-stock'))) {
+            $message.hide(); // Hide the message if the quantity is below the maximum stock
+        }
+    });
+
+	$(document).on('click change', '.qty-btn, .qty-input', function () {
+		const $input = $(this).closest('.qty-container').find('.qty-input'); // Find the related input
+		const enteredQty = parseInt($input.val()) || 1; // Get the entered quantity (default to 1)
+		
+		// Pass the quantity to the package form
+		const $packageForm = $('#package-form'); // Replace with the actual form ID
+		$packageForm.find('.qty-display').text(enteredQty); // Update the display field
+		
+		// Optional: Add the qty as a hidden input in the form for submission
+		$packageForm.find('input[name="qty"]').val(enteredQty);
+	});
 
     $(document).ready(function () {
         // Update product quantity and enforce stock rules
@@ -1540,6 +1809,135 @@ $(document).on('click', '.filter-tope-group button', function(event) {
             });
         });
     </script>
+	<script>
+		$(document).on('click', '.selectPackage', function () {
+    const packageId = $(this).closest('.package-card').data('package-id');
+    console.log("Package ID:", packageId);
+
+    if (!packageId) {
+        alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
+        return;
+    }
+
+    // Fetch the products in the package
+    $.ajax({
+        url: '', // PHP endpoint to handle this request
+        type: 'GET',
+        data: { fetch_package_products: true, package_id: packageId },
+        dataType: 'json',
+        success: function (response) {
+            console.log("Response:", response);
+
+            if (!response.products || response.products.length === 0) {
+                console.error("Error: response.products is undefined or empty.");
+                alert("No products found for this package.");
+                return;
+            }
+
+            let formHtml = `<h2>Select Options for Your Package</h2><form id="packageForm">`;
+            const selectedQty = $('.qty-input').val() || 1;
+            console.log("Selected Quantity:", selectedQty);
+
+            if (!selectedQty) {
+                alert("Error: Quantity is undefined.");
+                return;
+            }
+
+            formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
+            formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
+
+            // Loop through products and generate the form
+            response.products.forEach((product, index) => {
+                if (!product) {
+                    console.error(`Error: Product at index ${index} is undefined.`);
+                    return;
+                }
+
+                formHtml += `
+                    <div class="product-options" id="product_${index + 1}">
+                        <h3>${product.product_name || `Product ${index + 1}`}</h3>
+                        <img src="images/${product.product_image || 'default.jpg'}" class="p-image">
+                        <label for="color_${index + 1}">Color:</label>
+                        <select name="color_${index + 1}" id="color_${index + 1}">
+                            <option value="">Choose an option</option>
+                            <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
+                            <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
+                        </select>
+                        <label for="size_${index + 1}">Size:</label>
+                        <select name="size_${index + 1}" id="size_${index + 1}">
+                            <option value="">Choose an option</option>
+                            <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
+                            <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
+                        </select>
+                    </div>
+                `;
+            });
+
+            formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
+
+            // Inject the form into the popup container
+            $('#packageFormContainer').html(formHtml);
+            $('#packageFormPopup').fadeIn();
+
+            // Handle form submission
+            $('#packageForm').on('submit', function (e) {
+                e.preventDefault();
+
+                // Collect the form data
+                const packageData = {
+                    add_package_to_cart: true,
+                    package_id: packageId,
+                    qty: selectedQty
+                };
+
+                // Loop through inputs and append data
+                response.products.forEach((product, index) => {
+                    packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
+                    packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
+                });
+
+                console.log("Package Data:", packageData);
+
+                $.ajax({
+                    url: '', // Replace with actual PHP script
+                    type: 'POST',
+                    data: packageData,
+                    success: function (response) {
+                        console.log("Add to Cart Response:", response);
+                        if (response.success) {
+                            alert('Package added to cart!');
+                            $('#packageFormPopup').fadeOut();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while adding the package to the cart.');
+                    }
+                });
+            });
+        },
+        error: function () {
+            alert('An error occurred while fetching package details.');
+        }
+    });
+});
+
+
+
+
+
+		// Close popup on clicking the close button or outside the popup
+		$(document).on('click', '.close-popup', function () {
+			$('#packageFormPopup').fadeOut();
+		});
+
+		$(document).on('click', '.popup-overlay', function (e) {
+			if ($(e.target).is('.popup-overlay')) {
+				$('#packageFormPopup').fadeOut();
+			}
+		});
+</script>
 <script src="js/main.js"></script>
 
 </body>
