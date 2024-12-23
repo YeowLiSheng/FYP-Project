@@ -27,11 +27,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
-// Initialize total_price before fetching cart items
-$total_price = 0;
-
 // Fetch and combine cart items for the logged-in user where the product_id is the same
-// Fetch and combine cart items with stock information
 $cart_items_query = "
     SELECT 
         sc.product_id, 
@@ -60,14 +56,22 @@ $cart_items_query = "
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
 
-
-// Calculate total price and final total price
-if ($cart_items_result && $cart_items_result->num_rows > 0) {
-    while ($cart_item = $cart_items_result->fetch_assoc()) {
-        $total_price += $cart_item['total_price'];
-    }
-}
-
+// Query to fetch package data along with product names
+$package_query = "
+    SELECT 
+        pkg.package_id, 
+        pkg.package_name, 
+        pkg.package_image, 
+        pkg.package_price, 
+        pkg.package_description, 
+        p1.product_name AS product1_name, 
+        p2.product_name AS product2_name, 
+        p3.product_name AS product3_name
+    FROM product_package pkg
+    LEFT JOIN product p1 ON pkg.product1_id = p1.product_id
+    LEFT JOIN product p2 ON pkg.product2_id = p2.product_id
+    LEFT JOIN product p3 ON pkg.product3_id = p3.product_id";
+$package_result = $connect->query($package_query);
 
 // Count distinct product IDs in the shopping cart for the logged-in user
 $distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
@@ -78,7 +82,6 @@ if ($distinct_products_result) {
     $row = $distinct_products_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -111,49 +114,35 @@ if ($distinct_products_result) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        .package {
-            margin-bottom: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-        .package h2 {
-            margin-top: 0;
-        }
-        .package .price {
-            font-size: 1.2em;
-            color: #2a9d8f;
-        }
-        .package .description {
-            margin: 10px 0;
-            color: #555;
-        }
-        .package .products {
-            margin: 10px 0;
-            padding: 0;
-            list-style: none;
-        }
-        .package .products li {
-            background: #e9ecef;
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 4px;
-        }
-    </style>
+    .package-container {
+        max-width: 1500px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+    .package-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .package-card img {
+        height: 200px;
+        object-fit: cover;
+    }
+    .package-card-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #343a40;
+    }
+    .package-card-text {
+        color: #6c757d;
+    }
+    .list-group-item {
+        border: none;
+        background-color: #f8f9fa;
+        color: #495057;
+    }
+</style>
 </head>
 <body class="animsition">
 	
@@ -299,109 +288,127 @@ if ($distinct_products_result) {
 
 	<!-- Cart -->
     <div class="wrap-header-cart js-panel-cart">
-    <div class="s-full js-hide-cart"></div>
+        <div class="s-full js-hide-cart"></div>
 
-    <div class="header-cart flex-col-l p-l-65 p-r-25">
-        <div class="header-cart-title flex-w flex-sb-m p-b-8">
-            <span class="mtext-103 cl2">
-                Your Cart
-            </span>
+        <div class="header-cart flex-col-l p-l-65 p-r-25">
+            <div class="header-cart-title flex-w flex-sb-m p-b-8">
+                <span class="mtext-103 cl2">
+                    Your Cart
+                </span>
 
-            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-                <i class="zmdi zmdi-close"></i>
-            </div>
-        </div>
-        
-        <div class="header-cart-content flex-w js-pscroll">
-            <ul class="header-cart-wrapitem w-full" id="cart-items">
-                <?php
-                    // Display combined cart items
-                    $total_price = 0;
-
-                    if ($cart_items_result->num_rows > 0) {
-                        while ($cart_item = $cart_items_result->fetch_assoc()) {
-                            $total_price += $cart_item['total_price'];
-                            if (!empty($cart_item['package_id'])) {
-                                // Render package details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
-                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['package_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
-                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
-                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
-                            } else {
-                                // Render individual product details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
-                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['product_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
-                            }
-                        }
-                    } else {
-                        echo '<p>Your cart is empty.</p>';
-                    }
-
-                ?>
-            </ul>
-            
-            <div class="w-full">
-                <div class="header-cart-total w-full p-tb-40">
-                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                    <i class="zmdi zmdi-close"></i>
                 </div>
+            </div>
+            
+            <div class="header-cart-content flex-w js-pscroll">
+                <ul class="header-cart-wrapitem w-full" id="cart-items">
+                    <?php
+                        // Display combined cart items
+                        $total_price = 0;
 
-                <div class="header-cart-buttons flex-w w-full">
-                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        View Cart
-                    </a>
+                        if ($cart_items_result->num_rows > 0) {
+                            while ($cart_item = $cart_items_result->fetch_assoc()) {
+                                $total_price += $cart_item['total_price'];
+                                if (!empty($cart_item['package_id'])) {
+                                    // Render package details
+                                    echo '
+                                    <li class="header-cart-item flex-w flex-t m-b-12">
+                                        <div class="header-cart-item-img">
+                                            <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
+                                        </div>
+                                        <div class="header-cart-item-txt p-t-8">
+                                            <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                                ' . $cart_item['package_name'] . '
+                                            </a>
+                                            <span class="header-cart-item-info">
+                                                ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                            </span>
+                                            <span class="header-cart-item-info">
+                                                Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
+                                                Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
+                                                Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
+                                            </span>
+                                        </div>
+                                    </li>';
+                                } else {
+                                    // Render individual product details
+                                    echo '
+                                    <li class="header-cart-item flex-w flex-t m-b-12">
+                                        <div class="header-cart-item-img">
+                                            <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                        </div>
+                                        <div class="header-cart-item-txt p-t-8">
+                                            <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                                ' . $cart_item['product_name'] . '
+                                            </a>
+                                            <span class="header-cart-item-info">
+                                                ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                            </span>
+                                            <span class="header-cart-item-info">
+                                                Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                            </span>
+                                        </div>
+                                    </li>';
+                                }
+                            }
+                        } else {
+                            echo '<p>Your cart is empty.</p>';
+                        }
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
+                    ?>
+                </ul>
+                
+                <div class="w-full">
+                    <div class="header-cart-total w-full p-tb-40">
+                        Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                    </div>
+
+                    <div class="header-cart-buttons flex-w w-full">
+                        <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                            View Cart
+                        </a>
+
+                        <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                            Check Out
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-    <div class="container">
-        <h1>Product Packages</h1>
+    <div class="package-container mt-5">
+        <h1 class="mb-4">Winter New Combo!!!</h1>
 
-        <!-- Sample Package -->
-        <div class="package">
-            <h2>Package Name: Basic Package</h2>
-            <p class="price">Price: $49.99</p>
-            <p class="description">Description: A starter package for new users.</p>
-            <ul class="products">
-                <li>Product 1: Product A</li>
-                <li>Product 2: Product B</li>
-                <li>Product 3: Product C</li>
-            </ul>
-        </div>
+        <?php
+        if ($package_result && $package_result->num_rows > 0) {
+            while ($row = $package_result->fetch_assoc()) {
+                echo "<div class='package-card mb-4'>";
+                echo "  <div class='row g-0'>";
+                echo "      <div class='col-md-4'>";
+                echo "          <img src='images/" . htmlspecialchars($row['package_image']) . "' class='img-fluid rounded-start' alt='Package Image'>";
+                echo "      </div>";
+                echo "      <div class='col-md-8'>";
+                echo "          <div class='card-body'>";
+                echo "              <h5 class='package-card-title'>" . htmlspecialchars($row['package_name']) . "</h5>";
+                echo "              <p class='package-card-text'>Price: $" . number_format($row['package_price'], 2) . "</p>";
+                echo "              <p class='package-card-text'>" . htmlspecialchars($row['package_description']) . "</p>";
+                echo "              <ul class='list-group list-group-flush'>";
+                echo "                  <li class='list-group-item'>Product 1: " . htmlspecialchars($row['product1_name']) . "</li>";
+                echo "                  <li class='list-group-item'>Product 2: " . htmlspecialchars($row['product2_name']) . "</li>";
+                if (!empty($row['product3_name'])) {
+                    echo "                  <li class='list-group-item'>Product 3: " . htmlspecialchars($row['product3_name']) . "</li>";
+                }
+                echo "              </ul>";
+                echo "          </div>";
+                echo "      </div>";
+                echo "  </div>";
+                echo "</div>";
+            }
+        } else {
+            echo "<p class='text-warning'>No packages found.</p>";
+        }
+        ?>
     </div>
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
