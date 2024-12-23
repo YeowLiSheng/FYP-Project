@@ -60,6 +60,10 @@
         "Creativity is just connecting things. When you ask creative people how they did something, they feel a little guilty because they didn't really do it, they just saw something. It seemed obvious to them after a while.": "Creativity is just connecting things. When you ask creative people how they did something, they feel a little guilty because they didn't really do it, they just saw something. It seemed obvious to them after a while.",
         "- Steve Job’s": "- Steve Job’s",
         "Add Address": "Add Address",
+        "Please enter a valid postcode (5 digits).": "Please enter a valid postcode (5 digits).",
+        "Submit": "Submit",
+        "Back": "Back",
+        "Edit Address": "Edit Address",
         "Address": "Address",
         "Please enter your address.": "Please enter your address.",
         "State": "State",
@@ -67,10 +71,11 @@
         "City": "City",
         "Please enter your city.": "Please enter your city.",
         "Postcode": "Postcode",
-        "Please enter a valid postcode (5 digits).": "Please enter a valid postcode (5 digits).",
-        "Submit": "Submit",
-        "Back": "Back",
+        "Postcode must be 5 digits.": "Postcode must be 5 digits.",
+        "Update Address": "Update Address",
+        "Delete Address": "Delete Address"
         
+
     },
     "zh": {
         "Free shipping for standard order over $10000": "订单满 10000 免运费",
@@ -143,6 +148,11 @@
         "Please enter a valid postcode (5 digits).": "请输入有效的邮政编码（5位数字）。",
         "Submit": "提交",
         "Back": "返回",
+        "Edit Address": "编辑地址",
+        "Postcode must be 5 digits.": "邮政编码必须是5位数字。",
+        "Update Address": "更新地址",
+        "Delete Address": "删除地址"
+        
 
     }
 }
