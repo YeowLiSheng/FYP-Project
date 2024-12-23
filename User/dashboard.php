@@ -95,25 +95,9 @@ $product_result = $connect->query($sql);
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
-<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-<div id="google_translate_element"></div>
-
-<style>
-
-    .goog-te-gadget img {
-      display: none;
-    }
 
 
-    .language-select {
-      cursor: pointer;
-      border: 1px solid #ccc;
-      padding: 5px 10px;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-  </style>
+
 
 
 
@@ -156,14 +140,10 @@ $product_result = $connect->query($sql);
 						</a>
 
 						
-						<div>
-						<select id="language-selector" onchange="translatePage(this.value)">
-        				<option value="en">English</option>
-        				<option value="ms">Malay</option>
-        				<option value="zh-CN">Chinese</option>
-    					</select>
-						</div>
-						<div id="google_translate_element" style="display:none;"></div>
+
+						<a href="#" class="flex-c-m trans-04 p-lr-25">
+							EN
+						</a>
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
@@ -214,7 +194,7 @@ $product_result = $connect->query($sql);
 							</li>
 
 							<li>
-								<a href="blog.php">Blog</a>
+								<a href="blog.html">Blog</a>
 							</li>
 
 							<li>
@@ -291,11 +271,9 @@ $product_result = $connect->query($sql);
 							Help & FAQs
 						</a>
 
-						<div class="language-select">
-  <a href="#" onclick="changeLanguage('en')">English</a> |
-  <a href="#" onclick="changeLanguage('zh-CN')">中文</a> |
-  <a href="#" onclick="changeLanguage('ms')">Bahasa Melayu</a>
-</div>
+						<a href="#" class="flex-c-m p-lr-10 trans-04">
+							EN
+						</a>
 
 						<a href="#" class="flex-c-m p-lr-10 trans-04">
 							USD
@@ -332,7 +310,7 @@ $product_result = $connect->query($sql);
 				</li>
 
 				<li>
-					<a href="blog.php">Blog</a>
+					<a href="blog.html">Blog</a>
 				</li>
 
 				<li>
@@ -1067,51 +1045,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                {pageLanguage: 'en'},
-                'google_translate_element'
-            );
-        }
-    </script>
-    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    <script>
-        function translatePage(language) {
-            // 检查 Google Translate 是否加载完成
-            var googleFrame = document.querySelector("iframe.goog-te-banner-frame");
-            if (!googleFrame) {
-                alert("Translation widget not fully loaded yet. Please try again in a moment.");
-                return;
-            }
-
-            // 获取 Google Translate 下拉框
-            var select = googleFrame.contentDocument.querySelector("select.goog-te-combo");
-            if (select) {
-                select.value = language; // 设置语言
-                select.dispatchEvent(new Event("change")); // 触发语言切换
-            }
-        }
-    </script>
-	<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement(
-      {
-        pageLanguage: 'en',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-      }, 
-      'google_translate_element'
-    );
-  }
-
-  function changeLanguage(languageCode) {
-    var selectField = document.querySelector('.goog-te-combo');
-    if (selectField) {
-      selectField.value = languageCode; // 设置语言代码
-      selectField.dispatchEvent(new Event('change')); // 触发语言切换
-    }
-  }
-</script>
 </body>
 </html>
