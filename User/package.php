@@ -65,13 +65,81 @@ $package_query = "
         pkg.package_price, 
         pkg.package_description, 
         p1.product_name AS product1_name, 
+        p1.product_image AS product1_image,
         p2.product_name AS product2_name, 
-        p3.product_name AS product3_name
+        p2.product_image AS product2_image,
+        p3.product_name AS product3_name, 
+        p3.product_image AS product3_image
     FROM product_package pkg
     LEFT JOIN product p1 ON pkg.product1_id = p1.product_id
     LEFT JOIN product p2 ON pkg.product2_id = p2.product_id
     LEFT JOIN product p3 ON pkg.product3_id = p3.product_id";
 $package_result = $connect->query($package_query);
+
+// Handle AJAX request to fetch package details
+if (isset($_GET['package_id'])) {
+    $package_id = intval($_GET['package_id']);
+
+    $package_query = "
+        SELECT 
+            pkg.package_id, 
+            pkg.package_name, 
+            p1.product_id AS product1_id, 
+            p1.product_name AS product1_name, 
+            p1.color1 AS product1_color1, 
+            p1.color2 AS product1_color2, 
+            p1.size1 AS product1_size1, 
+            p1.size2 AS product1_size2, 
+            p2.product_id AS product2_id, 
+            p2.product_name AS product2_name, 
+            p2.color1 AS product2_color1, 
+            p2.color2 AS product2_color2, 
+            p2.size1 AS product2_size1, 
+            p2.size2 AS product2_size2, 
+            p3.product_id AS product3_id, 
+            p3.product_name AS product3_name, 
+            p3.color1 AS product3_color1, 
+            p3.color2 AS product3_color2, 
+            p3.size1 AS product3_size1, 
+            p3.size2 AS product3_size2
+        FROM product_package pkg
+        LEFT JOIN product p1 ON pkg.product1_id = p1.product_id
+        LEFT JOIN product p2 ON pkg.product2_id = p2.product_id
+        LEFT JOIN product p3 ON pkg.product3_id = p3.product_id
+        WHERE pkg.package_id = $package_id";
+
+    $package_result = $connect->query($package_query);
+
+    if ($package_result && $package_result->num_rows > 0) {
+        $package_data = $package_result->fetch_assoc();
+        $response = [
+            'success' => true,
+            'products' => []
+        ];
+
+        for ($i = 1; $i <= 3; $i++) {
+            if (!empty($package_data["product{$i}_id"])) {
+                $response['products'][] = [
+                    'id' => $package_data["product{$i}_id"],
+                    'name' => $package_data["product{$i}_name"],
+                    'colors' => [
+                        $package_data["product{$i}_color1"],
+                        $package_data["product{$i}_color2"]
+                    ],
+                    'sizes' => [
+                        $package_data["product{$i}_size1"],
+                        $package_data["product{$i}_size2"]
+                    ]
+                ];
+            }
+        }
+
+        echo json_encode($response);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Package not found.']);
+    }
+    exit;
+}
 
 // Count distinct product IDs in the shopping cart for the logged-in user
 $distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
@@ -82,6 +150,77 @@ if ($distinct_products_result) {
     $row = $distinct_products_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
+
+// Handle adding a package to the cart
+// Handle adding a package to the cart
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart'])) {
+    // Validate and sanitize inputs
+    $package_id = isset($_POST['package_id']) ? intval($_POST['package_id']) : null;
+    $user_id = isset($_SESSION['id']) ? intval($_SESSION['id']) : null;
+    $package_qty = isset($_POST['qty']) ? intval($_POST['qty']) : 1;
+    $product_colors = [
+        $_POST['product1_color'] ?? null,
+        $_POST['product2_color'] ?? null,
+        $_POST['product3_color'] ?? null,
+    ];
+    $product_sizes = [
+        $_POST['product1_size'] ?? null,
+        $_POST['product2_size'] ?? null,
+        $_POST['product3_size'] ?? null,
+    ];
+
+    // Check if essential inputs are present
+    if (!$package_id ) {
+        echo json_encode(['success' => false, 'message' => 'Missing package ID']);
+        exit;
+    }
+	if (!$user_id ) {
+        echo json_encode(['success' => false, 'message' => 'Missing user ID']);
+        exit;
+    }
+
+    // Fetch package price
+    $package_price_query = "SELECT package_price FROM product_package WHERE package_id = ?";
+    $stmt = $connect->prepare($package_price_query);
+    $stmt->bind_param('i', $package_id);
+    $stmt->execute();
+    $package_price_result = $stmt->get_result();
+
+    if ($package_price_result && $package_price_result->num_rows > 0) {
+        $row = $package_price_result->fetch_assoc();
+        $package_price = $row['package_price'];
+        $total_price = $package_qty * $package_price;
+
+        // Insert into shopping cart
+        $insert_query = "
+            INSERT INTO shopping_cart (
+                user_id, package_id, package_qty, total_price,
+                product1_color, product1_size, product2_color, product2_size, product3_color, product3_size
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $connect->prepare($insert_query);
+        $stmt->bind_param(
+            'iiidssssss',
+            $user_id, $package_id, $package_qty, $total_price,
+            $product_colors[0], $product_sizes[0],
+            $product_colors[1], $product_sizes[1],
+            $product_colors[2], $product_sizes[2]
+        );
+
+        if ($stmt->execute()) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to add package to cart.']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid package ID.']);
+    }
+
+    $stmt->close();
+    $connect->close();
+    exit;
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -141,6 +280,35 @@ if ($distinct_products_result) {
         border: none;
         background-color: #f8f9fa;
         color: #495057;
+    }
+	.popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .popup-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 600px;
+        width: 100%;
+        position: relative;
+    }
+
+    .close-popup {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+        font-weight: bold;
     }
 </style>
 </head>
@@ -383,7 +551,7 @@ if ($distinct_products_result) {
         <?php
         if ($package_result && $package_result->num_rows > 0) {
             while ($row = $package_result->fetch_assoc()) {
-                echo "<div class='package-card mb-4'>";
+                echo "<div class='package-card mb-4' data-package-id='" . htmlspecialchars($row['package_id']) . "'>";
                 echo "  <div class='row g-0'>";
                 echo "      <div class='col-md-4'>";
                 echo "          <img src='images/" . htmlspecialchars($row['package_image']) . "' class='img-fluid rounded-start' alt='Package Image'>";
@@ -403,6 +571,7 @@ if ($distinct_products_result) {
                 echo "          </div>";
                 echo "      </div>";
                 echo "  </div>";
+				echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
                 echo "</div>";
             }
         } else {
@@ -410,6 +579,12 @@ if ($distinct_products_result) {
         }
         ?>
     </div>
+	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
+		<div class="popup-content">
+			<span class="close-popup">&times;</span>
+			<div id="packageFormContainer"></div>
+		</div>
+	</div>
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
@@ -562,7 +737,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			<i class="zmdi zmdi-chevron-up"></i>
 		</span>
 	</div>
-
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
 	<script src="vendor/animsition/js/animsition.min.js"></script>
 	<script src="vendor/bootstrap/js/popper.js"></script>
@@ -593,6 +768,129 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			})
 		});
 	</script>
+<script>
+    $(document).on('click', '.selectPackage', function () {
+        console.log("Select package button clicked.");
+        const packageId = $(this).closest('.package-card').data('package-id');
+        console.log("Package ID:", packageId);
+        
+        if (!packageId) {
+            console.error("Package ID is missing.");
+            alert("Package ID is missing.");
+            return;
+        }
+
+        // Fetch package details via AJAX
+        $.ajax({
+            url: '', // Current PHP file as endpoint
+            type: 'GET',
+            data: { package_id: packageId },
+            dataType: 'json',
+            success: function (response) {
+                console.log("AJAX success response received:", response);
+                if (response.success) {
+                    console.log("Response indicates success. Generating form.");
+                    let formHtml = `<h3>Select Options for Package</h3>
+                        <form id="packageForm" data-package-id="${packageId}">
+                            <input type="hidden" name="package_id" value="${packageId}">`; // Include hidden field for package_id
+
+                    // Generate form fields for each product in the package
+                    response.products.forEach((product, index) => {
+                        console.log(`Processing product ${index + 1}:`, product);
+                        formHtml += `
+                            <div class="product">
+                                <h4>${product.name}</h4>
+                                <label>Color:</label>
+                                <select name="product${index + 1}_color">
+                                    ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}
+                                </select>
+                                <label>Size:</label>
+                                <select name="product${index + 1}_size">
+                                    ${product.sizes.filter(Boolean).map(size => `<option value="${size}">${size}</option>`).join('')}
+                                </select>
+                            </div>`;
+                    });
+
+                    formHtml += `
+                        <label>Quantity:</label>
+                        <input type="number" name="qty" value="1" min="1">
+                        <button type="submit" class="btn btn-success">Add to Cart</button>
+                    </form>`;
+
+                    $('#packageFormContainer').html(formHtml);
+                    console.log("Form HTML generated and added to DOM.");
+                    $('#packageFormPopup').fadeIn();
+                } else {
+                    console.error("Response indicates failure:", response.message || "Unknown error.");
+                    alert(response.message || "Failed to fetch package details.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX error occurred:", status, error);
+                alert("An error occurred.");
+            }
+        });
+    });
+
+    // Handle form submission
+    $(document).on('submit', '#packageForm', function (e) {
+        e.preventDefault();
+        console.log("Form submitted.");
+
+        const packageId = $(this).data('package-id');
+        console.log("Form package ID:", packageId);
+
+        if (!packageId) {
+            console.error("Package ID is missing in the form.");
+            alert("Package ID is missing. Please try again.");
+            return;
+        }
+
+        const formData = $(this).serializeArray(); // Get all form data as an array
+        formData.push({ name: 'add_package_to_cart', value: true }); // Add a custom flag
+
+        console.log("Serialized form data:", formData);
+
+        $.ajax({
+            url: '', // Replace with the correct PHP file path
+            type: 'POST',
+            data: $.param(formData), // Convert formData to query string format
+            dataType: 'json',
+            success: function (response) {
+                console.log("AJAX success response:", response);
+                if (response.success) {
+                    console.log("Package successfully added to cart.");
+                    alert("Package added to cart!");
+                    $('#packageFormPopup').fadeOut();
+                } else {
+                    console.error("Error adding package to cart:", response.message);
+                    alert("Error: " + response.message);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX error:", status, error);
+                alert("An error occurred. Please try again.");
+            }
+        });
+    });
+
+    // Close the popup
+    $(document).on('click', '.close-popup', function () {
+        console.log("Close popup button clicked.");
+        $('#packageFormPopup').fadeOut();
+    });
+
+    $(document).on('click', '.popup-overlay', function (e) {
+        if ($(e.target).is('.popup-overlay')) {
+            console.log("Popup overlay clicked.");
+            $('#packageFormPopup').fadeOut();
+        }
+    });
+</script>
+
+
+
+
 	<script src="js/main.js"></script>
 
 </body>
