@@ -39,7 +39,6 @@ $cart_items_query = "
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price,
         sc.package_id,
-        sc.package_qty,
         sc.product1_color, sc.product1_size,
         sc.product2_color, sc.product2_size,
         sc.product3_color, sc.product3_size,
@@ -174,7 +173,7 @@ if (isset($_POST['add_package_to_cart'])) {
             product1_color, product1_size, 
             product2_color, product2_size, 
             product3_color, product3_size, 
-            package_qty
+            qty
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     if (!$stmt) {
@@ -759,7 +758,7 @@ body {
                                             ' . $cart_item['package_name'] . '
                                         </a>
                                         <span class="header-cart-item-info">
-                                            ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
                                         </span>
                                         <span class="header-cart-item-info">
                                             Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>

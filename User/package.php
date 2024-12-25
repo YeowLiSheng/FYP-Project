@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         // Insert into shopping cart
         $insert_query = "
             INSERT INTO shopping_cart (
-                user_id, package_id, package_qty, total_price,
+                user_id, package_id, qty, total_price,
                 product1_color, product1_size, product2_color, product2_size, product3_color, product3_size
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $connect->prepare($insert_query);
