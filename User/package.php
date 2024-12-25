@@ -85,19 +85,22 @@ if (isset($_GET['package_id'])) {
             pkg.package_id, 
             pkg.package_name, 
             p1.product_id AS product1_id, 
-            p1.product_name AS product1_name, 
+            p1.product_name AS product1_name,
+            p1.product_image As product1_image, 
             p1.color1 AS product1_color1, 
             p1.color2 AS product1_color2, 
             p1.size1 AS product1_size1, 
             p1.size2 AS product1_size2, 
-            p2.product_id AS product2_id, 
+            p2.product_id AS product2_id,
+            p2.product_image As product2_image,  
             p2.product_name AS product2_name, 
             p2.color1 AS product2_color1, 
             p2.color2 AS product2_color2, 
             p2.size1 AS product2_size1, 
             p2.size2 AS product2_size2, 
             p3.product_id AS product3_id, 
-            p3.product_name AS product3_name, 
+            p3.product_name AS product3_name,
+            p3.product_image As product3_image, 
             p3.color1 AS product3_color1, 
             p3.color2 AS product3_color2, 
             p3.size1 AS product3_size1, 
@@ -122,6 +125,7 @@ if (isset($_GET['package_id'])) {
                 $response['products'][] = [
                     'id' => $package_data["product{$i}_id"],
                     'name' => $package_data["product{$i}_name"],
+                    'image' => $package_data["product{$i}_image"],
                     'colors' => [
                         $package_data["product{$i}_color1"],
                         $package_data["product{$i}_color2"]
@@ -310,6 +314,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         font-size: 20px;
         font-weight: bold;
     }
+    .p-image {
+        max-width: 80px;
+        height: auto;
+        border-radius: 5px;
+        margin-right: 15px;
+    }
+
 </style>
 </head>
 <body class="animsition">
@@ -800,6 +811,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         formHtml += `
                             <div class="product">
                                 <h4>${product.name}</h4>
+                                <img src="images/${product.image}" class="p-image">
                                 <label>Color:</label>
                                 <select name="product${index + 1}_color">
                                     ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}

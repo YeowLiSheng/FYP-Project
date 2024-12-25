@@ -1856,7 +1856,7 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                 formHtml += `
                     <div class="product-options" id="product_${index + 1}">
                         <h3>${product.product_name || `Product ${index + 1}`}</h3>
-                        <img src="images/${product.product_image || 'default.jpg'}" class="p-image">
+                        <img src="images/${product.product_image}" class="p-image">
                         <label for="color_${index + 1}">Color:</label>
                         <select name="color_${index + 1}" id="color_${index + 1}">
                             <option value="">Choose an option</option>
