@@ -83,7 +83,8 @@ if (isset($_GET['package_id'])) {
     $package_query = "
         SELECT 
             pkg.package_id, 
-            pkg.package_name, 
+            pkg.package_name,
+            pkg.package_stock, 
             p1.product_id AS product1_id, 
             p1.product_name AS product1_name,
             p1.product_image As product1_image, 
@@ -117,6 +118,7 @@ if (isset($_GET['package_id'])) {
         $package_data = $package_result->fetch_assoc();
         $response = [
             'success' => true,
+            'package_stock' => $package_data['package_stock'],
             'products' => []
         ];
 
@@ -802,7 +804,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 if (response.success) {
                     console.log("Response indicates success. Generating form.");
                     let formHtml = `<h3>Select Options for Package</h3>
-                        <form id="packageForm" data-package-id="${packageId}">
+                        <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
                             <input type="hidden" name="package_id" value="${packageId}">`; // Include hidden field for package_id
 
                     // Generate form fields for each product in the package
@@ -822,10 +824,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                                 </select>
                             </div>`;
                     });
-
                     formHtml += `
-                        <label>Quantity:</label>
-                        <input type="number" name="qty" value="1" min="1">
+                        <div class="qty-controls">
+                            <button class="qty-btn minus" type="button">-</button>
+                            <input type="number" value="1" min="1" class="qty-input">
+                            <button class="qty-btn plus" type="button">+</button>
+                            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
+                        </div>`;
+                    formHtml += `
                         <button type="submit" class="btn btn-success">Add to Cart</button>
                     </form>`;
 
@@ -843,6 +849,45 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         });
     });
+    $(document).on('click', '.qty-btn.plus', function () {
+        const $form = $(this).closest('#packageForm');
+        const maxStock = parseInt($form.data('package-stock')) || Infinity;
+        const $input = $form.find('.qty-input');
+        const $message = $form.find('.stock-message');
+        const currentQty = parseInt($input.val()) || 1;
+
+        if (currentQty < maxStock) {
+            $input.val(currentQty + 1).trigger('change');
+            $message.hide();
+        } else {
+            $message.show();
+        }
+    });
+
+    $(document).on('click', '.qty-btn.minus', function () {
+        const $form = $(this).closest('#packageForm');
+        const $input = $form.find('.qty-input');
+        const $message = $form.find('.stock-message');
+        const currentQty = parseInt($input.val()) || 1;
+
+        if (currentQty > 1) {
+            $input.val(currentQty - 1).trigger('change');
+            $message.hide();
+        }
+    });
+
+
+    $(document).on('click change', '.qty-btn, .qty-input', function () {
+		const $input = $(this).closest('.qty-container').find('.qty-input'); // Find the related input
+		const enteredQty = parseInt($input.val()) || 1; // Get the entered quantity (default to 1)
+		
+		// Pass the quantity to the package form
+		const $packageForm = $('#package-form'); // Replace with the actual form ID
+		$packageForm.find('.qty-display').text(enteredQty); // Update the display field
+		
+		// Optional: Add the qty as a hidden input in the form for submission
+		$packageForm.find('input[name="qty"]').val(enteredQty);
+	});
 
     // Handle form submission
     $(document).on('submit', '#packageForm', function (e) {

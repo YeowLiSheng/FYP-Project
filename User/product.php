@@ -53,7 +53,10 @@ $cart_items_query = "
         sc.product_id, 
         sc.color, 
         sc.size, 
-        sc.package_id";
+        sc.package_id,
+        sc.product1_color, sc.product1_size,
+        sc.product2_color, sc.product2_size,
+        sc.product3_color, sc.product3_size";
 $cart_items_result = $connect->query($cart_items_query);
 
 // Handle AJAX request to fetch product details
@@ -191,7 +194,10 @@ if (isset($_POST['add_package_to_cart'])) {
         $product3_size,
         $package_qty
     );
-
+    if (!$stmt->execute()) {
+        echo json_encode(['success' => false, 'message' => 'Insert failed: ' . $stmt->error]);
+        exit;
+    }
     $response = [
         'success' => true,
         'message' => 'Package added to cart successfully.'
@@ -740,6 +746,7 @@ body {
                     if ($cart_items_result->num_rows > 0) {
                         while ($cart_item = $cart_items_result->fetch_assoc()) {
                             $total_price += $cart_item['total_price'];
+                            
                             if (!empty($cart_item['package_id'])) {
                                 // Render package details
                                 echo '
@@ -785,6 +792,7 @@ body {
                     } else {
                         echo '<p>Your cart is empty.</p>';
                     }
+                    
 
                 ?>
             </ul>
