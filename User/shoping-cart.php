@@ -766,10 +766,23 @@ if ($distinct_products_result) {
 							<th class="column-5">Total</th>
 						</tr>
 						<?php
+						$package_quantities = [];
+
+						foreach ($cart_items as $cart_item) {
+							if (!empty($cart_item['package_id'])) {
+								$package_id = $cart_item['package_id'];
+								if (!isset($package_quantities[$package_id])) {
+									$package_quantities[$package_id] = 0;
+								}
+								$package_quantities[$package_id] += $cart_item['total_qty'];
+							}
+						}
 						if (!empty($cart_items)) {
 							foreach ($cart_items as $cart_item) {
 								if (!empty($cart_item['package_id'])) {
-									$stock_exceeded = $cart_item['total_qty'] > $cart_item['package_stock'];
+									$package_id = $cart_item['package_id'];
+									$stock_exceeded = $package_quantities[$package_id] > $cart_item['package_stock'];
+									
 									// Render package details
 									echo '
 									<tr class="table_row">
@@ -779,7 +792,7 @@ if ($distinct_products_result) {
 											</div>
 										</td>
 										<td class="column-2">
-											'. $cart_item['package_name'] . '
+											' . $cart_item['package_name'] . '
 											<br>
 											<small>Includes:</small>
 											<ul>
@@ -791,12 +804,12 @@ if ($distinct_products_result) {
 										<td class="column-3">$' . number_format($cart_item['total_price'], 2) . '</td>
 										<td class="column-4">
 											<div class="wrap-num-product flex-w m-l-auto m-r-0">
-												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-product-id="' . $cart_item['package_id'] . '">
+												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-product-id="' . $package_id . '">
 													<i class="fs-16 zmdi zmdi-minus"></i>
 												</div>
-												<input type="hidden" name="package_id[]" value="' . $cart_item['package_id'] . '">
-												<input class="mtext-104 cl3 txt-center num-product" type="number" name="package_qty[' . $cart_item['package_id'] . ']" value="' . $cart_item['total_qty'] . '" readonly>
-												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-product-id="' . $cart_item['package_id'] . '">
+												<input type="hidden" name="package_id[]" value="' . $package_id . '">
+												<input class="mtext-104 cl3 txt-center num-product" type="number" name="package_qty[' . $package_id . ']" value="' . $cart_item['total_qty'] . '" readonly>
+												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-product-id="' . $package_id . '">
 													<i class="fs-16 zmdi zmdi-plus"></i>
 												</div>
 											</div>
