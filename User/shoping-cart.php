@@ -72,43 +72,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
 
     // Update package quantities
     if (isset($_POST['package_qty'])) {
-        foreach ($_POST['package_qty'] as $package_id => $new_qty) {
-            $new_qty = intval($new_qty);
-
-            // Get the package price and current quantity
-            $current_query = "
-                SELECT qty, 
-                       (SELECT package_price FROM product_package WHERE package_id = $package_id) AS package_price 
-                FROM shopping_cart 
-                WHERE user_id = $user_id AND package_id = $package_id LIMIT 1";
-            $current_result = $connect->query($current_query);
-
-            if ($current_result && $current_result->num_rows > 0) {
-                $current_row = $current_result->fetch_assoc();
-                $current_qty = intval($current_row['qty']);
-                $package_price = floatval($current_row['package_price']);
-
-                // Calculate the new total price
-                $new_total_price = $new_qty * $package_price;
-
-                if ($new_qty > 0) {
-                    // Update quantity and total price in the database
-                    $update_query = "
-                        UPDATE shopping_cart 
-                        SET qty = $new_qty, 
-                            total_price = $new_total_price 
-                        WHERE user_id = $user_id AND package_id = $package_id LIMIT 1";
-                    $connect->query($update_query);
-                } else {
-                    // Remove the package if quantity is 0
-                    $delete_query = "
-                        DELETE FROM shopping_cart 
-                        WHERE user_id = $user_id AND package_id = $package_id LIMIT 1";
-                    $connect->query($delete_query);
-                }
-            }
-        }
-    }
+		foreach ($_POST['package_qty'] as $unique_key => $new_qty) {
+			$new_qty = intval($new_qty);
+	
+			// Parse the unique key to extract package ID and product details
+			$details = explode('_', $unique_key);
+			$package_id = intval($details[0]);
+			$product1_size = $connect->real_escape_string($details[1]);
+			$product1_color = $connect->real_escape_string($details[2]);
+			$product2_size = $connect->real_escape_string($details[3]);
+			$product2_color = $connect->real_escape_string($details[4]);
+			$product3_size = $connect->real_escape_string($details[5]);
+			$product3_color = $connect->real_escape_string($details[6]);
+	
+			// Query to get current package details
+			$current_query = "
+				SELECT qty, 
+					   (SELECT package_price FROM product_package WHERE package_id = $package_id) AS package_price 
+				FROM shopping_cart 
+				WHERE user_id = $user_id 
+				  AND package_id = $package_id
+				  AND product1_size = '$product1_size'
+				  AND product1_color = '$product1_color'
+				  AND product2_size = '$product2_size'
+				  AND product2_color = '$product2_color'
+				  AND product3_size = '$product3_size'
+				  AND product3_color = '$product3_color'
+				LIMIT 1";
+			$current_result = $connect->query($current_query);
+	
+			if ($current_result && $current_result->num_rows > 0) {
+				$current_row = $current_result->fetch_assoc();
+				$current_qty = intval($current_row['qty']);
+				$package_price = floatval($current_row['package_price']);
+	
+				// Calculate the new total price
+				$new_total_price = $new_qty * $package_price;
+	
+				if ($new_qty > 0) {
+					// Update quantity and total price in the database
+					$update_query = "
+						UPDATE shopping_cart 
+						SET qty = $new_qty, 
+							total_price = $new_total_price 
+						WHERE user_id = $user_id 
+						  AND package_id = $package_id
+						  AND product1_size = '$product1_size'
+						  AND product1_color = '$product1_color'
+						  AND product2_size = '$product2_size'
+						  AND product2_color = '$product2_color'
+						  AND product3_size = '$product3_size'
+						  AND product3_color = '$product3_color'
+						LIMIT 1";
+					$connect->query($update_query);
+				} else {
+					// Remove the package if quantity is 0
+					$delete_query = "
+						DELETE FROM shopping_cart 
+						WHERE user_id = $user_id 
+						  AND package_id = $package_id
+						  AND product1_size = '$product1_size'
+						  AND product1_color = '$product1_color'
+						  AND product2_size = '$product2_size'
+						  AND product2_color = '$product2_color'
+						  AND product3_size = '$product3_size'
+						  AND product3_color = '$product3_color'
+						LIMIT 1";
+					$connect->query($delete_query);
+				}
+			}
+		}
+	}
 
     // Always recalculate voucher and final total price after cart updates
     recalculateFinalTotalAndVoucher($connect, $user_id);
@@ -780,10 +814,11 @@ if ($distinct_products_result) {
 						if (!empty($cart_items)) {
 							foreach ($cart_items as $cart_item) {
 								if (!empty($cart_item['package_id'])) {
-									$package_id = $cart_item['package_id'];
-									$stock_exceeded = $package_quantities[$package_id] > $cart_item['package_stock'];
+									// Generate a unique key based on package ID and product details
+									$unique_key = $cart_item['package_id'] . '_' . $cart_item['product1_size'] . '_' . $cart_item['product1_color'] . '_' . $cart_item['product2_size'] . '_' . $cart_item['product2_color'] . '_' . $cart_item['product3_size'] . '_' . $cart_item['product3_color'];
 									
-									// Render package details
+									$stock_exceeded = $package_quantities[$cart_item['package_id']] > $cart_item['package_stock'];
+							
 									echo '
 									<tr class="table_row">
 										<td class="column-1">
@@ -804,12 +839,12 @@ if ($distinct_products_result) {
 										<td class="column-3">$' . number_format($cart_item['total_price'], 2) . '</td>
 										<td class="column-4">
 											<div class="wrap-num-product flex-w m-l-auto m-r-0">
-												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-product-id="' . $package_id . '">
+												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-unique-key="' . $unique_key . '">
 													<i class="fs-16 zmdi zmdi-minus"></i>
 												</div>
-												<input type="hidden" name="package_id[]" value="' . $package_id . '">
-												<input class="mtext-104 cl3 txt-center num-product" type="number" name="package_qty[' . $package_id . ']" value="' . $cart_item['total_qty'] . '" readonly>
-												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-product-id="' . $package_id . '">
+												<input type="hidden" name="unique_keys[]" value="' . $unique_key . '">
+												<input class="mtext-104 cl3 txt-center num-product" type="number" name="package_qty[' . $unique_key . ']" value="' . $cart_item['total_qty'] . '" readonly>
+												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['package_stock'] . '" data-unique-key="' . $unique_key . '">
 													<i class="fs-16 zmdi zmdi-plus"></i>
 												</div>
 											</div>
