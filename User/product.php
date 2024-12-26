@@ -33,7 +33,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 $currency_column = 'product_price_' . strtolower($currency); // 动态选择货币列
 $sql = "SELECT product_name, $currency_column AS product_price FROM product";
-$result = $conn->query($sql);
+$result = $connect->query($sql);
 
 while ($row = $result->fetch_assoc()) {
     echo '<div class="product">';
