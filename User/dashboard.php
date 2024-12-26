@@ -145,9 +145,13 @@ $product_result = $connect->query($sql);
 							EN
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
-						</a>
+						<div class="currency-switcher">
+    <select id="currency-selector" class="flex-c-m trans-04 p-lr-25">
+        <option value="AUS" selected>AUS</option>
+        <option value="MYR">MYR</option>
+        <option value="SGD">SGD</option>
+    </select>
+</div>
 
 
 
