@@ -31,7 +31,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 $total_price = 0;
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
-// Fetch and combine cart items with stock information
+// Fetch and combine cart items with stock informatio
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
 		   sc.color, sc.size,    
