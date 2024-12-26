@@ -10,6 +10,14 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
+if (isset($_POST['currency'])) {
+    $currency = $_POST['currency'];
+    $_SESSION['currency'] = $currency; // 存储用户选择的货币
+    header("Location: " . $_SERVER['HTTP_REFERER']); // 重定向回用户所在的页面
+    exit();
+}
+
+
 // Check if the database connection exists
 if (!isset($connect) || !$connect) {
     die("Database connection failed.");
@@ -144,13 +152,14 @@ $product_result = $connect->query($sql);
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
-
 						<div class="currency-switcher">
-    <select id="currency-selector" class="flex-c-m trans-04 p-lr-25">
-        <option value="AUS" selected>AUS</option>
-        <option value="MYR">MYR</option>
-        <option value="SGD">SGD</option>
-    </select>
+    <form id="currency-form" method="post" action="currency_switch.php">
+        <select name="currency" id="currency-selector" onchange="document.getElementById('currency-form').submit();">
+            <option value="AUS" <?= $_SESSION['currency'] == 'AUS' ? 'selected' : '' ?>>AUS</option>
+            <option value="MYR" <?= $_SESSION['currency'] == 'MYR' ? 'selected' : '' ?>>MYR</option>
+            <option value="SGD" <?= $_SESSION['currency'] == 'SGD' ? 'selected' : '' ?>>SGD</option>
+        </select>
+    </form>
 </div>
 
 

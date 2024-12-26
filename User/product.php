@@ -9,6 +9,10 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
+if (!isset($_SESSION['currency'])) {
+    $_SESSION['currency'] = 'AUS'; // 默认货币
+}
+$currency = $_SESSION['currency']; // 当前会话的货币
 
 // Check if the database connection exists
 if (!isset($connect) || !$connect) { // Changed $connect to $conn
@@ -25,6 +29,17 @@ if ($result && mysqli_num_rows($result) > 0) {
 } else {
     echo "User not found.";
     exit;
+}
+
+$currency_column = 'product_price_' . strtolower($currency); // 动态选择货币列
+$sql = "SELECT product_name, $currency_column AS product_price FROM product";
+$result = $conn->query($sql);
+
+while ($row = $result->fetch_assoc()) {
+    echo '<div class="product">';
+    echo '<h3>' . $row['product_name'] . '</h3>';
+    echo '<p>Price: ' . number_format($row['product_price'], 2) . ' ' . $currency . '</p>';
+    echo '</div>';
 }
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
@@ -615,9 +630,15 @@ body {
 							EN
 						</a>
 
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							USD
-						</a>
+						<div class="currency-switcher">
+    <form id="currency-form" method="post" action="currency_switch.php">
+        <select name="currency" id="currency-selector" onchange="document.getElementById('currency-form').submit();">
+            <option value="AUS" <?= $_SESSION['currency'] == 'AUS' ? 'selected' : '' ?>>Australian Dollar (AUS)</option>
+            <option value="MYR" <?= $_SESSION['currency'] == 'MYR' ? 'selected' : '' ?>>Malaysian Ringgit (MYR)</option>
+            <option value="SGD" <?= $_SESSION['currency'] == 'SGD' ? 'selected' : '' ?>>Singapore Dollar (SGD)</option>
+        </select>
+    </form>
+</div>
 
 
 
