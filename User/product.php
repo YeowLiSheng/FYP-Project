@@ -82,7 +82,8 @@ if (isset($_GET['fetch_packages']) && isset($_GET['product_id'])) {
             p.package_price, 
             p.package_description, 
             p.package_image,
-            p.package_stock
+            p.package_stock,
+            p.package_status
         FROM product_package p
         LEFT JOIN product prod1 ON p.product1_id = prod1.product_id
         LEFT JOIN product prod2 ON p.product2_id = prod2.product_id
@@ -574,6 +575,20 @@ body {
 
 .close-popup:hover {
     color: #000;
+}
+
+.package-card.unavailable {
+    pointer-events: none; /* Disable all interactions */
+    cursor: not-allowed;
+}
+
+.package-card.unavailable .qty-btn,
+.package-card.unavailable .selectPackage {
+    display: none; /* Hide interactive buttons */
+}
+
+.unavailable-message {
+    font-weight: bold;
 }
 
 </style>
@@ -1483,9 +1498,21 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
                 if (packages.length > 0) {
                     packages.forEach(pkg => {
-                        if (pkg.package_stock > 0) { // Only display packages with stock > 0
-                            const packageHtml = `
-                                <h1 class="package-title">Valuable Packages</h1>
+                        let packageHtml = '';
+                        if (pkg.package_status == 2) {
+                            // Unavailable package (light gray, locked, with a message)
+                            packageHtml = `
+                                <div class="package-card unavailable" style="background-color: lightgray; opacity: 0.5;" data-package-id="${pkg.package_id}">
+                                    <img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
+                                    <div class="package-info">
+                                        <h3 class="package-name">${pkg.package_name}</h3>
+                                        <p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
+                                        <p class="unavailable-message" style="color: red;">Package is unavailable.</p>
+                                    </div>
+                                </div>`;
+                        } else if (pkg.package_stock > 0) {
+                            // Available package
+                            packageHtml = `
                                 <div class="package-card" data-package-id="${pkg.package_id}" data-package-stock="${pkg.package_stock}">
                                     <img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
                                     <div class="package-info">
@@ -1500,10 +1527,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                                         <button class="selectPackage btn-primary">Select Package</button>
                                     </div>
                                 </div>`;
-                            packageBox.append(packageHtml);
                         } else {
-                            packageBox.append('<p>No packages found for this product.</p>');
+                            packageHtml = '<p>No packages found for this product.</p>';
                         }
+                        packageBox.append(packageHtml);
                     });
                 } else {
                     packageBox.append('<p>No packages found for this product.</p>');
