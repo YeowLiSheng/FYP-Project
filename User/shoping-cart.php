@@ -693,6 +693,7 @@ if ($distinct_products_result) {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
+					$cart_items_result = $connect->query($cart_items_query);
                     // Display combined cart items
                     $total_price = 0;
 
