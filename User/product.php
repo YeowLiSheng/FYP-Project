@@ -11,7 +11,7 @@ if (!isset($_SESSION['id'])) {
 }
 $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
-$query = "SELECT product_id, product_name, $currency_field AS product_price FROM products";
+$query = "SELECT product_id, product_name, $price_field AS product_price FROM products";
 $result = mysqli_query($conn, $query);
 
 // Check if the database connection exists
