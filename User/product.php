@@ -321,7 +321,7 @@ if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
 }
 
 $product_result = $connect->query($product_query);
-
+$product_price = $product[$currency_field];
 // Render filtered products as HTML for AJAX response
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
     ob_start();
@@ -1220,6 +1220,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</div>
 
 	<!-- Modal1 -->
+     
 <div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
 	<div class="overlay-modal1 js-hide-modal1"></div>
 
