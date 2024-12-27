@@ -11,7 +11,7 @@ if (!isset($_SESSION['id'])) {
 }
 $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
-$product_price = $product[$currency_field];
+
 
 // Check if the database connection exists
 if (!isset($connect) || !$connect) { // Changed $connect to $conn
