@@ -30,18 +30,26 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
+$valid_columns = ['product_price_aus', 'product_price_myr', 'product_price_sgd'];
+$currency_column = 'product_price_' . strtolower($currency);
 
-$currency_column = 'product_price_' . strtolower($currency); // 动态选择货币列
+if (!in_array($currency_column, $valid_columns)) {
+    die("Invalid currency selected.");
+}
 $sql = "SELECT product_name, $currency_column AS product_price FROM product";
 $result = $connect->query($sql);
 
-while ($row = $result->fetch_assoc()) {
-    echo '<div class="product">';
-    echo '<h3>' . $row['product_name'] . '</h3>';
-    echo '<p>Price: ' . number_format($row['product_price'], 2) . ' ' . $currency . '</p>';
-    echo '</div>';
+if (!$result) {
+    die("Query failed: " . $connect->error);
 }
 
+while ($row = $result->fetch_assoc()) {
+    $price = isset($row['product_price']) ? $row['product_price'] : 0.00;
+    echo '<div class="product">';
+    echo '<h3>' . htmlspecialchars($row['product_name']) . '</h3>';
+    echo '<p>Price: ' . number_format($price, 2) . ' ' . htmlspecialchars($currency) . '</p>';
+    echo '</div>';
+}
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT 
