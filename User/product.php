@@ -75,10 +75,11 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
     $query = "SELECT * FROM product WHERE product_id = $product_id";
     $result = $connect->query($query);
-    $product_price = $product[$currency_field];
-
+    
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
+        $product_price = $product[$currency_field];
+
         echo json_encode($product);
     } else {
         echo json_encode(null);
