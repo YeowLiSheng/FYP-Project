@@ -339,8 +339,9 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                             <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">'
                             . $product['product_name'] . 
                             '</a>
-                            <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
-                        </div>
+<span class="stext-105 cl3">' 
+                                . strtoupper($currency) . ' ' . number_format($product_price, 2) .  
+                                '</span>                        </div>
                         <div class="block2-txt-child2 flex-r p-t-3">
                             <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
                                 <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
