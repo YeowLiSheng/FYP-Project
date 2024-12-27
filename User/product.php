@@ -36,10 +36,10 @@ if (!$result) {
 }
 
 while ($row = $result->fetch_assoc()) {
-    $price = isset($row['product_price']) ? $row['product_price'] : 0.00;
+    $price = isset($row[$currency_field]) ? $row[$currency_field] : 0.00; // 使用动态字段
     echo '<div class="product">';
     echo '<h3>' . htmlspecialchars($row['product_name']) . '</h3>';
-    echo '<p>Price: ' . number_format($price, 2) . ' ' . htmlspecialchars($currency) . '</p>';
+    echo '<p>Price: ' . number_format($price, 2) . ' ' . htmlspecialchars(strtoupper($currency)) . '</p>';
     echo '</div>';
 }
 // Fetch and combine cart items for the logged-in user where the product_id is the same
@@ -1276,10 +1276,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 						<span class="mtext-106 cl2">
 							$<?php 
-                                          $product_price = isset($product[$currency_field]) ? $product[$currency_field] : 0;
+                                        $product_price = $product[$currency_field];
 
-                                          // 格式化输出价格信息
-                                          echo strtoupper($currency) . ' ' . number_format((float)$product_price, 2); 
+                            echo strtoupper($currency) . ' ' . number_format($product_price, 2); 
                             
                             ?>
 						</span>
