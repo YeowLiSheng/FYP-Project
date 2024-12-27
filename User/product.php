@@ -69,13 +69,13 @@ $cart_items_query = "
         sc.size, 
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
-$product_price = $product[$currency_field];
 
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
     $query = "SELECT * FROM product WHERE product_id = $product_id";
     $result = $connect->query($query);
+    $product_price = $product[$currency_field];
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
