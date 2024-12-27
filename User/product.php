@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; // 默认 USD
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; 
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
 
@@ -41,6 +41,20 @@ while ($row = $result->fetch_assoc()) {
     echo '<h3>' . htmlspecialchars($row['product_name']) . '</h3>';
     echo '<p>Price: ' . number_format($price, 2) . ' ' . htmlspecialchars($currency) . '</p>';
     echo '</div>';
+}
+
+switch ($currency) {
+    case 'AUD':
+        $currency_field = 'product_price_aud';
+        break;
+    case 'RM':
+        $currency_field = 'product_price_rm';
+        break;
+    case 'SGD':
+        $currency_field = 'product_price_sgd';
+        break;
+    default:
+        $currency_field = 'product_price_aud'; // 默认值
 }
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
@@ -1274,9 +1288,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						</h4>
 
 						<span class="mtext-106 cl2">
-							$<?php echo $product['product_price']; 
-                            
-                            ?>
+                        <?php 
+    // 动态获取价格
+    $product_price = $product[$currency_field] ?? 0; // 使用 null 合并操作符防止未定义索引错误
+    echo strtoupper($currency) . ' ' . number_format($product_price, 2); 
+    ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
