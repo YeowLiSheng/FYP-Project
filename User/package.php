@@ -27,7 +27,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items for the logged-in user where the product_id is the samem
 $cart_items_query = "
     SELECT 
         sc.product_id, 
