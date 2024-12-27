@@ -34,7 +34,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 if (!$result) {
     die("Query failed: " . $connect->error);
 }
-$product_price = $product[$currency_field];
 while ($row = $result->fetch_assoc()) {
     $price = isset($row[$currency_field]) ? $row[$currency_field] : 0.00; // 使用动态字段
     echo '<div class="product">';
@@ -70,6 +69,7 @@ $cart_items_query = "
         sc.size, 
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
+$product_price = $product[$currency_field];
 
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
