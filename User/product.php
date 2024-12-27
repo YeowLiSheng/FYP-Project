@@ -1041,6 +1041,9 @@ body {
                             <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
                             <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                 data-id="' . $product['product_id'] . '">
+                                data-name="' . $product['product_name'] . '">
+                                data-price="' . $product[$currency_field] . '">
+
                                 Quick View
                             </a>
                         </div>
@@ -1973,7 +1976,17 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     });
 });
 
+document.querySelectorAll('.js-show-modal1').forEach(button => {
+    button.addEventListener('click', function () {
+        const modal = document.querySelector('.js-modal1');
+        const productName = this.getAttribute('data-name');
+        const productPrice = this.getAttribute('data-price');
 
+        modal.querySelector('.js-name-detail').textContent = productName;
+        modal.querySelector('.mtext-106').textContent = productPrice;
+        modal.classList.add('show-modal');
+    });
+});
 
 
 
