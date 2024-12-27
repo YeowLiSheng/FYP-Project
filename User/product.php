@@ -1025,7 +1025,7 @@ body {
                                         <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">'
                                         . $product['product_name'] . 
                                         '</a>
-                                        <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
+                                        <span class="stext-105 cl3">$' . $currency . ' $' . number_format($product_price, 2) .  '</span>
                                     </div>
                                     <div class="block2-txt-child2 flex-r p-t-3">
                                         <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
