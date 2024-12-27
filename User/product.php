@@ -11,7 +11,20 @@ if (!isset($_SESSION['id'])) {
 }
 $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; 
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
-
+switch ($currency) {
+    case 'AUD':
+        $currency_field = 'product_price_aud';
+        break;
+    case 'RM':
+        $currency_field = 'product_price_rm';
+        break;
+    case 'SGD':
+        $currency_field = 'product_price_sgd';
+        break;
+    default:
+        $currency_field = 'product_price_aud'; // 默认字段
+        break;
+}
 
 // Check if the database connection exists
 if (!isset($connect) || !$connect) { // Changed $connect to $conn
@@ -1276,8 +1289,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						</h4>
 
 						<span class="mtext-106 cl2">
-                        <?php echo strtoupper($currency) . ' ' . number_format($product[$currency_field], 2); ?>
-						</span>
+                        <?php 
+								echo strtoupper($currency) . ' ' . number_format($product[$currency_field], 2); 
+							?>						</span>
 						
 
 						<p class="stext-102 cl3 p-t-23">
