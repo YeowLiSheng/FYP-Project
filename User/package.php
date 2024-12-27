@@ -39,7 +39,6 @@ $cart_items_query = "
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price,
         sc.package_id,
-        sc.package_qty,
         sc.product1_color, sc.product1_size,
         sc.product2_color, sc.product2_size,
         sc.product3_color, sc.product3_size,
@@ -64,6 +63,8 @@ $package_query = "
         pkg.package_image, 
         pkg.package_price, 
         pkg.package_description, 
+        pkg.package_stock,
+        pkg.package_status,
         p1.product_name AS product1_name, 
         p1.product_image AS product1_image,
         p2.product_name AS product2_name, 
@@ -273,6 +274,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
     .package-card img {
         height: 200px;
         object-fit: cover;
+        display: block; 
+        margin: 0 auto;
+        margin-top: 25px;
+    }
+    .package-card.unavailable {
+        background-color: #f0f0f0;
+        pointer-events: none;
+        opacity: 0.7;
+        border: 1px solid #aaa;
+    }
+    .unavailable-message {
+        position: absolute; /* Position relative to the container */
+        top: 50%; /* Move the text to the vertical center */
+        left: 50%; /* Move the text to the horizontal center */
+        transform: translate(-50%, -50%); /* Center the text precisely */
+        font-weight: bold;
+        color: red;
+        font-size: 1.5rem;
+        text-align: center;
+        z-index: 10; /* Ensure it stays in front of other content */
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+        padding: 10px 20px;
+        background: none;
+    }
+    .btn-primary.selectPackage:hover {
+        background-color: #0056b3;
     }
     .package-card-title {
         font-size: 1.5rem;
@@ -559,39 +586,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         </div>
     </div>
     <div class="package-container mt-5">
-        <h1 class="mb-4">Winter New Combo!!!</h1>
+    <h1 class="mb-4">Winter New Combo!!!</h1>
 
-        <?php
-        if ($package_result && $package_result->num_rows > 0) {
-            while ($row = $package_result->fetch_assoc()) {
-                echo "<div class='package-card mb-4' data-package-id='" . htmlspecialchars($row['package_id']) . "'>";
-                echo "  <div class='row g-0'>";
-                echo "      <div class='col-md-4'>";
-                echo "          <img src='images/" . htmlspecialchars($row['package_image']) . "' class='img-fluid rounded-start' alt='Package Image'>";
-                echo "      </div>";
-                echo "      <div class='col-md-8'>";
-                echo "          <div class='card-body'>";
-                echo "              <h5 class='package-card-title'>" . htmlspecialchars($row['package_name']) . "</h5>";
-                echo "              <p class='package-card-text'>Price: $" . number_format($row['package_price'], 2) . "</p>";
-                echo "              <p class='package-card-text'>" . htmlspecialchars($row['package_description']) . "</p>";
-                echo "              <ul class='list-group list-group-flush'>";
-                echo "                  <li class='list-group-item'>Product 1: " . htmlspecialchars($row['product1_name']) . "</li>";
-                echo "                  <li class='list-group-item'>Product 2: " . htmlspecialchars($row['product2_name']) . "</li>";
-                if (!empty($row['product3_name'])) {
-                    echo "                  <li class='list-group-item'>Product 3: " . htmlspecialchars($row['product3_name']) . "</li>";
-                }
-                echo "              </ul>";
-                echo "          </div>";
-                echo "      </div>";
-                echo "  </div>";
-				echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
-                echo "</div>";
+    <?php
+    if ($package_result && $package_result->num_rows > 0) {
+        while ($row = $package_result->fetch_assoc()) {
+            // Check conditions for unavailable packages
+            $isUnavailable = ($row['package_status'] == 2 || $row['package_stock'] == 0);
+            $unavailableMessage = $row['package_status'] == 2 
+                ? "Package is not available" 
+                : ($row['package_stock'] == 0 
+                    ? "Package is out of stock" 
+                    : "");
+
+            // Add appropriate classes for styling
+            $containerClass = $isUnavailable ? "package-card unavailable" : "package-card";
+
+            echo "<div class='$containerClass mb-4' data-package-id='" . htmlspecialchars($row['package_id']) . "'>";
+            echo "  <div class='row g-0'>";
+
+            // Package Image
+            echo "      <div class='col-md-4'>";
+            echo "          <img src='images/" . htmlspecialchars($row['package_image']) . "' class='img-fluid rounded-start' alt='Package Image'>";
+            echo "      </div>";
+
+            // Package Details
+            echo "      <div class='col-md-8'>";
+            echo "          <div class='card-body'>";
+            echo "              <h5 class='package-card-title'>" . htmlspecialchars($row['package_name']) . "</h5>";
+            echo "              <p class='package-card-text'>Price: $" . number_format($row['package_price'], 2) . "</p>";
+            echo "              <p class='package-card-text'>" . htmlspecialchars($row['package_description']) . "</p>";
+
+            // Product List
+            echo "              <ul class='list-group list-group-flush'>";
+            echo "                  <li class='list-group-item'>Product 1: " . htmlspecialchars($row['product1_name']) . "</li>";
+            echo "                  <li class='list-group-item'>Product 2: " . htmlspecialchars($row['product2_name']) . "</li>";
+            if (!empty($row['product3_name'])) {
+                echo "                  <li class='list-group-item'>Product 3: " . htmlspecialchars($row['product3_name']) . "</li>";
             }
-        } else {
-            echo "<p class='text-warning'>No packages found.</p>";
+            echo "              </ul>";
+
+            // Unavailable Message
+            if ($isUnavailable) {
+                echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
+            } else {
+                echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
+            }
+
+            echo "          </div>";
+            echo "      </div>";
+            echo "  </div>";
+            echo "</div>";
         }
-        ?>
-    </div>
+    } else {
+        echo "<p class='text-warning'>No packages found.</p>";
+    }
+    ?>
+</div>
+
+
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
 		<div class="popup-content">
 			<span class="close-popup">&times;</span>
