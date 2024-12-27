@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
 
@@ -1276,7 +1276,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 						<span class="mtext-106 cl2">
 							$<?php 
-                      
+                                        $product_price = $product[$currency_field];
 
                             echo strtoupper($currency) . ' ' . number_format($product_price, 2); 
                             
