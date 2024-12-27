@@ -34,9 +34,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 }
 $valid_columns = ['product_price_aus', 'product_price_myr', 'product_price_sgd'];
 
-if (!in_array($currency_column, $valid_columns)) {
-    die("Invalid currency selected.");
-}
+
 $sql = "SELECT product_name, $currency_column AS product_price FROM product";
 $result = $connect->query($sql);
 
