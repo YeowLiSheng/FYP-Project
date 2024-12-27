@@ -637,8 +637,8 @@ body {
 						<div class="currency-switcher">
     <form id="currency-form" method="post" action="currency_switch.php">
         <select name="currency" id="currency-selector" onchange="document.getElementById('currency-form').submit();">
-            <option value="AUS" <?= $_SESSION['currency'] == 'AUS' ? 'selected' : '' ?>>Australian Dollar (AUS)</option>
-            <option value="RM" <?= $_SESSION['currency'] == 'RM' ? 'selected' : '' ?>>Malaysian Ringgit (MYR)</option>
+            <option value="AUD" <?= $_SESSION['currency'] == 'AUD' ? 'selected' : '' ?>>Australian Dollar (AUD)</option>
+            <option value="RM" <?= $_SESSION['currency'] == 'RM' ? 'selected' : '' ?>>Malaysian Ringgit (RM)</option>
             <option value="SGD" <?= $_SESSION['currency'] == 'SGD' ? 'selected' : '' ?>>Singapore Dollar (SGD)</option>
         </select>
     </form>
