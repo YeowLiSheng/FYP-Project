@@ -1282,11 +1282,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							 <?php 
 
 switch (strtoupper($currency)) {
-    case 'USD':
-        $product_price = $product['product_price_usd'];
+    case 'AUD':
+        $product_price = $product['product_price_aud'];
         break;
-    case 'MYR':
-        $product_price = $product['product_price_myr'];
+    case 'RM':
+        $product_price = $product['product_price_rm'];
         break;
     case 'SGD':
         $product_price = $product['product_price_sgd'];
