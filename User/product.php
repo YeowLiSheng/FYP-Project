@@ -34,6 +34,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 if (!$result) {
     die("Query failed: " . $connect->error);
 }
+
 while ($row = $result->fetch_assoc()) {
     $price = isset($row[$currency_field]) ? $row[$currency_field] : 0.00; // 使用动态字段
     echo '<div class="product">';
@@ -69,17 +70,15 @@ $cart_items_query = "
         sc.size, 
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
-
+$product = []; 
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
     $query = "SELECT * FROM product WHERE product_id = $product_id";
     $result = $connect->query($query);
-    
+
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
-        $product_price = $product[$currency_field];
-
         echo json_encode($product);
     } else {
         echo json_encode(null);
@@ -1278,7 +1277,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 						<span class="mtext-106 cl2">
 							$<?php 
-                                       
+                                        $product_price = $product[$currency_field];
+
                             echo strtoupper($currency) . ' ' . number_format($product_price, 2); 
                             
                             ?>
@@ -1431,6 +1431,24 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 </script>
 <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 <script>
+
+$.ajax({
+    url: 'your_script.php',
+    type: 'GET',
+    data: { fetch_product: true, id: product_id },
+    dataType: 'json',
+    success: function (product) {
+        if (product) {
+            $('.js-name-detail').text(product.product_name);
+            $('.mtext-106.cl2').text(product.product_price + ' ' + product.currency); // 动态更新价格
+        } else {
+            alert('Product not found.');
+        }
+    },
+    error: function () {
+        alert('Failed to fetch product details.');
+    }
+});
     $('.js-pscroll').each(function(){
         $(this).css('position','relative');
         $(this).css('overflow','hidden');
