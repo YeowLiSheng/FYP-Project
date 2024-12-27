@@ -1220,19 +1220,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</div>
     <?php
 
-switch (strtoupper($currency)) {
-    case 'USD':
-        $product_price = $product['product_price_usd'];
-        break;
-    case 'MYR':
-        $product_price = $product['product_price_myr'];
-        break;
-    case 'SGD':
-        $product_price = $product['product_price_sgd'];
-        break;
-    default:
-        $product_price = $product['product_price_usd']; // 默认 USD
-}
+
 ?>
 	<!-- Modal1 -->
 <div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
@@ -1293,8 +1281,20 @@ switch (strtoupper($currency)) {
                             
 							 <?php 
 
-
-                             echo strtoupper($currency) . ' ' . number_format($product_price, 2); ?>
+switch (strtoupper($currency)) {
+    case 'USD':
+        $product_price = $product['product_price_usd'];
+        break;
+    case 'MYR':
+        $product_price = $product['product_price_myr'];
+        break;
+    case 'SGD':
+        $product_price = $product['product_price_sgd'];
+        break;
+    default:
+        $product_price = $product['product_price_usd']; // 默认 USD
+}
+ echo strtoupper($currency) . ' ' . number_format($product_price, 2); ?>
 
 						</span>
 
