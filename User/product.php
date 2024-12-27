@@ -1286,20 +1286,25 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                             
 							 <?php 
 
-switch (strtoupper($currency)) {
-    case 'AUD':
-        $product_price = $product['product_price_aud'];
-        break;
-    case 'RM':
-        $product_price = $product['product_price_rm'];
-        break;
-    case 'SGD':
-        $product_price = $product['product_price_sgd'];
-        break;
-    default:
-        $product_price = $product['product_price_usd']; // 默认 USD
+if ($product) {
+    switch (strtoupper($currency)) {
+        case 'USD':
+            $product_price = $product['product_price_usd'] ?? 0;
+            break;
+        case 'MYR':
+            $product_price = $product['product_price_myr'] ?? 0;
+            break;
+        case 'SGD':
+            $product_price = $product['product_price_sgd'] ?? 0;
+            break;
+        default:
+            $product_price = $product['product_price_usd'] ?? 0; // 默认 USD
+    }
+    echo strtoupper($currency) . ' ' . number_format($product_price, 2);
+} else {
+    echo "Product not found.";
 }
- echo strtoupper($currency) . ' ' . number_format($product_price, 2); ?>
+ ?>
 
 						</span>
 
