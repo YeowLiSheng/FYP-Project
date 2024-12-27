@@ -1011,16 +1011,16 @@ body {
 
 	        <div class="row isotope-grid">
     <?php
-    // 确定用户选择的货币
+
 
 
     // Display products dynamically
     if ($product_result->num_rows > 0) {
         while($product = $product_result->fetch_assoc()) {
-            // 动态获取产品价格
+    
             $product_price = $product[$currency_field];
 
-            // 显示产品
+   
             echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
                     <div class="block2">
                         <div class="block2-pic hov-img0">
@@ -1274,7 +1274,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						</h4>
 
 						<span class="mtext-106 cl2">
-							$<?php echo $product['product_price']; ?>
+							$<?php echo  strtoupper($currency) . ' ' . number_format($product_price, 2)  ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
