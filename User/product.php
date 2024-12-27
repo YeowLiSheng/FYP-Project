@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; // 默认 USD
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; 
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
 
@@ -74,7 +74,7 @@ $product = [];
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
-    $query = "SELECT * FROM product WHERE product_id = $product_id";
+    $query = "SELECT product_id, product_name, product_image, $currency_field FROM product WHERE product_id = $product_id";
     $result = $connect->query($query);
 
     if ($result->num_rows > 0) {
@@ -1432,23 +1432,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 <script>
 
-$.ajax({
-    url: 'your_script.php',
-    type: 'GET',
-    data: { fetch_product: true, id: product_id },
-    dataType: 'json',
-    success: function (product) {
-        if (product) {
-            $('.js-name-detail').text(product.product_name);
-            $('.mtext-106.cl2').text(product.product_price + ' ' + product.currency); // 动态更新价格
-        } else {
-            alert('Product not found.');
-        }
-    },
-    error: function () {
-        alert('Failed to fetch product details.');
-    }
-});
+    
     $('.js-pscroll').each(function(){
         $(this).css('position','relative');
         $(this).css('overflow','hidden');
