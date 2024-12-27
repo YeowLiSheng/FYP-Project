@@ -13,6 +13,8 @@ if (!isset($_SESSION['currency'])) {
     $_SESSION['currency'] = 'AUS'; // 默认货币
 }
 $currency = $_SESSION['currency']; // 当前会话的货币
+$currency_field = 'product_price_' . strtolower($currency); // 动态构建字段名
+
 
 // Check if the database connection exists
 if (!isset($connect) || !$connect) { // Changed $connect to $conn
@@ -31,7 +33,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 $valid_columns = ['product_price_aus', 'product_price_myr', 'product_price_sgd'];
-$currency_column = 'product_price_' . strtolower($currency);
 
 if (!in_array($currency_column, $valid_columns)) {
     die("Invalid currency selected.");
@@ -56,7 +57,7 @@ $cart_items_query = "
         sc.product_id, 
         p.product_name, 
         p.product_image, 
-        p.product_price,
+        $currency_field AS product_price,
         sc.color, 
         sc.size, 
         SUM(sc.qty) AS total_qty, 
