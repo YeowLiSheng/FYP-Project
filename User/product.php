@@ -366,7 +366,7 @@ if (!empty($output)) {
     error_log("Unexpected output: $output"); // Log unexpected output for debugging
 }
 
-$product_price = isset($product['product_price']) ? $product['product_price'] : 0.00;
+$product_price = isset($row[$currency_field]) ? $row[$currency_field] : 0.00;
 
 ?>
 <!DOCTYPE html>
@@ -1278,7 +1278,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 						<span class="mtext-106 cl2">
                         
-                        <?php echo strtoupper($currency) . ' ' . number_format($product_price, 2); ?>
+                        $<?php strtoupper($currency) . ' ' . number_format($product_price, 2) ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
