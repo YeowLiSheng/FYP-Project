@@ -30,9 +30,6 @@ if ($result && mysqli_num_rows($result) > 0) {
 }
 
 
-$sql = "SELECT product_name, $currency_column AS product_price FROM product";
-$result = $connect->query($sql);
-
 if (!$result) {
     die("Query failed: " . $connect->error);
 }
