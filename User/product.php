@@ -74,7 +74,7 @@ $product = [];
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
-    $query = "SELECT product_id, product_name, product_image, $currency_field FROM product WHERE product_id = $product_id";
+    $query = "SELECT * FROM product WHERE product_id = $product_id";
     $result = $connect->query($query);
 
     if ($result->num_rows > 0) {
