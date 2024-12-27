@@ -326,9 +326,9 @@ $product_result = $connect->query($product_query);
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
     ob_start();
 	if ($product_result->num_rows > 0) {
-    while ($product = $product_result->fetch_assoc()) {
         $product_price = $product[$currency_field];
 
+    while ($product = $product_result->fetch_assoc()) {
         echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
                 <div class="block2">
                     <div class="block2-pic hov-img0">
@@ -1017,6 +1017,7 @@ body {
     if ($product_result->num_rows > 0) {
         while($product = $product_result->fetch_assoc()) {
             // 动态获取产品价格
+            $product_price = $product[$currency_field];
 
             // 显示产品
             echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
