@@ -257,7 +257,7 @@ if ($distinct_products_result) {
 
 // Fetch products
 $product_query = "SELECT * FROM product WHERE 1";
-
+$product_price = $product[$currency_field];
 $product_result = $connect->query($product_query);
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
@@ -321,7 +321,7 @@ if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
 }
 
 $product_result = $connect->query($product_query);
-$product_price = $product[$currency_field];
+
 // Render filtered products as HTML for AJAX response
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
     ob_start();
