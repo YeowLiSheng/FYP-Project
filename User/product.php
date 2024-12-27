@@ -9,11 +9,9 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'AUD'; // 默认货币
-$price_field = 'product_price_' . strtolower($currency);
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; // 默认 USD
+$currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
-$query = "SELECT product_name, $price_field AS product_price, Quick_View1, Quick_View2, Quick_View3 FROM products WHERE product_id = ?";
-$stmt = $connect->prepare($query);
 
 // Check if the database connection exists
 if (!isset($connect) || !$connect) { // Changed $connect to $conn
@@ -1275,9 +1273,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							<?php echo $product['product_name']; ?>
 						</h4>
 
-                        <span class="mtext-106 cl2">
-                            $<?php echo number_format($product['product_price'], 2); ?>
-                        </span>
+						<span class="mtext-106 cl2">
+							$<?php echo $product['product_price']; 
+                            
+                            ?>
+						</span>
 
 						<p class="stext-102 cl3 p-t-23">
 							<?php echo $product['product_des']; ?>
