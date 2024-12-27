@@ -1274,7 +1274,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						</h4>
 
 						<span class="mtext-106 cl2">
-							$<?php echo  strtoupper($currency) . ' ' . number_format($product_price, 2)  ?>
+							$<?php  strtoupper($currency) . ' ' . number_format($product_price, 2)  ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
