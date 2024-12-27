@@ -1276,9 +1276,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 						<span class="mtext-106 cl2">
 							$<?php 
-                                        $product_price = $product[$currency_field];
+                                          $product_price = isset($product[$currency_field]) ? $product[$currency_field] : 0;
 
-                            echo strtoupper($currency) . ' ' . number_format($product_price, 2); 
+                                          // 格式化输出价格信息
+                                          echo strtoupper($currency) . ' ' . number_format((float)$product_price, 2); 
                             
                             ?>
 						</span>
