@@ -9,12 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-
-if (isset($_SESSION['currency'])) {
-    $currency = $_SESSION['currency'];
-} else {
-    $currency = 'aud'; // 默认货币
-}
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
 
@@ -370,7 +365,6 @@ $output = ob_get_clean(); // Get any unexpected output
 if (!empty($output)) {
     error_log("Unexpected output: $output"); // Log unexpected output for debugging
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1223,10 +1217,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			<i class="zmdi zmdi-chevron-up"></i>
 		</span>
 	</div>
-    <?php
 
-
-?>
 	<!-- Modal1 -->
 <div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
 	<div class="overlay-modal1 js-hide-modal1"></div>
@@ -1283,29 +1274,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						</h4>
 
 						<span class="mtext-106 cl2">
+							$<?php echo $product['product_price']; 
                             
-							 <?php 
-
-if ($product) {
-    switch (strtoupper($currency)) {
-        case 'USD':
-            $product_price = $product['product_price_usd'] ?? 0;
-            break;
-        case 'MYR':
-            $product_price = $product['product_price_myr'] ?? 0;
-            break;
-        case 'SGD':
-            $product_price = $product['product_price_sgd'] ?? 0;
-            break;
-        default:
-            $product_price = $product['product_price_usd'] ?? 0; // 默认 USD
-    }
-    echo strtoupper($currency) . ' ' . number_format($product_price, 2);
-} else {
-    echo "Product not found.";
-}
- ?>
-
+                            ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
