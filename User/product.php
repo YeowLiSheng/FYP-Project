@@ -11,6 +11,7 @@ if (!isset($_SESSION['id'])) {
 }
 $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
+$product_price = $product[$currency_field];
 
 
 // Check if the database connection exists
@@ -1015,7 +1016,6 @@ body {
     if ($product_result->num_rows > 0) {
         while($product = $product_result->fetch_assoc()) {
             // 动态获取产品价格
-            $product_price = $product[$currency_field];
 
             // 显示产品
             echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
