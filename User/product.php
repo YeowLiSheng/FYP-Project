@@ -14,7 +14,6 @@ $price_field = 'product_price_' . strtolower($currency);
 
 $query = "SELECT product_name, $price_field AS product_price, Quick_View1, Quick_View2, Quick_View3 FROM products WHERE product_id = ?";
 $stmt = $connect->prepare($query);
-$stmt->bind_param("i", $product_id); 
 
 // Check if the database connection exists
 if (!isset($connect) || !$connect) { // Changed $connect to $conn
