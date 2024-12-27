@@ -34,7 +34,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 if (!$result) {
     die("Query failed: " . $connect->error);
 }
-
+$product_price = $product[$currency_field];
 while ($row = $result->fetch_assoc()) {
     $price = isset($row[$currency_field]) ? $row[$currency_field] : 0.00; // 使用动态字段
     echo '<div class="product">';
@@ -257,7 +257,7 @@ if ($distinct_products_result) {
 
 // Fetch products
 $product_query = "SELECT * FROM product WHERE 1";
-$product_price = $product[$currency_field];
+
 $product_result = $connect->query($product_query);
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
