@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; 
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
 
@@ -36,10 +36,10 @@ if (!$result) {
 }
 
 while ($row = $result->fetch_assoc()) {
-    $price = isset($row[$currency_field]) ? $row[$currency_field] : 0.00; // 使用动态字段
+    $price = isset($row['product_price']) ? $row['product_price'] : 0.00;
     echo '<div class="product">';
     echo '<h3>' . htmlspecialchars($row['product_name']) . '</h3>';
-    echo '<p>Price: ' . number_format($price, 2) . ' ' . htmlspecialchars(strtoupper($currency)) . '</p>';
+    echo '<p>Price: ' . number_format($price, 2) . ' ' . htmlspecialchars($currency) . '</p>';
     echo '</div>';
 }
 // Fetch and combine cart items for the logged-in user where the product_id is the same
@@ -70,7 +70,7 @@ $cart_items_query = "
         sc.size, 
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
-$product = []; 
+
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
@@ -1220,7 +1220,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</div>
 
 	<!-- Modal1 -->
-     
 <div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
 	<div class="overlay-modal1 js-hide-modal1"></div>
 
@@ -1277,9 +1276,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 						<span class="mtext-106 cl2">
 							$<?php 
-                                        $product_price = $product[$currency_field];
-
-                            echo strtoupper($currency) . ' ' . number_format($product_price, 2); 
+                            
+                            echo strtoupper($currency) . ' ' . number_format($currency_field, 2); 
                             
                             ?>
 						</span>
@@ -1431,8 +1429,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 </script>
 <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 <script>
-
-    
     $('.js-pscroll').each(function(){
         $(this).css('position','relative');
         $(this).css('overflow','hidden');
