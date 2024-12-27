@@ -318,22 +318,38 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
     ob_start();
 	if ($product_result->num_rows > 0) {
     while ($product = $product_result->fetch_assoc()) {
+        // Determine product availability and stock status
+        $isUnavailable = $product['product_status'] == 2;
+        $isOutOfStock = $product['product_stock'] == 0;
+
+        // Apply light grey color if unavailable or out of stock
+        $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+
+        // Determine the message to show
+        $message = '';
+        if ($isUnavailable) {
+            $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+        } elseif ($isOutOfStock) {
+            $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+        }
+
         echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
-                <div class="block2">
+                <div class="block2 ' . $productStyle . '">
                     <div class="block2-pic hov-img0">
                         <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
                         <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-                            data-id="' . $product['product_id'] . '">Quick View</a>
+                            data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
                     </div>
                     <div class="block2-txt flex-w flex-t p-t-14">
                         <div class="block2-txt-child1 flex-col-l ">
-                            <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">'
+                            <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                             . $product['product_name'] . 
                             '</a>
                             <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
+                            ' . $message . '
                         </div>
                         <div class="block2-txt-child2 flex-r p-t-3">
-                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
                                 <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
                                 <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
                             </a>
@@ -590,7 +606,35 @@ body {
 .unavailable-message {
     font-weight: bold;
 }
+.unavailable-product{
+    background-color: lightgrey; /* Soft grey background */
+    border: 1px solid #d9d9d9; /* Light border for separation */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px;
+    transition: all 0.3s ease; /* Smooth hover effect */
+    opacity: 0.8; /* Slight transparency */
+}
+.unavailable-product:hover {
+    opacity: 1; /* Bring back full opacity on hover */
+}
+.unavailable-product .block2-pic img {
+    filter: grayscale(30%);
+    opacity: 0.7; /* Slightly dim the image */
+    transition: all 0.3s ease; /* Smooth transition for hover */
+}
+.unavailable-product:hover .block2-pic img {
+    filter: grayscale(30%); /* Lessen greyscale on hover */
+    opacity: 1; /* Full visibility on hover */
+}
 
+/* Message Styling */
+.unavailable-message {
+    color: #d9534f; /* Bright red */
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 5px;
+}
 </style>
 
 </head>
