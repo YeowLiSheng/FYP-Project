@@ -9,7 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
+$currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aud'; // 默认 USD
 $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
 
