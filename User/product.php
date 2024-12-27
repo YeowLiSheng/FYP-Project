@@ -9,11 +9,7 @@ if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
-if (!isset($_SESSION['currency'])) {
-    $_SESSION['currency'] = 'AUS'; // 默认货币
-}
-$currency = $_SESSION['currency']; // 当前会话的货币
-$currency_field = 'product_price_' . strtolower($currency); // 动态构建字段名
+
 
 
 // Check if the database connection exists
@@ -32,7 +28,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
-$valid_columns = ['product_price_aus', 'product_price_myr', 'product_price_sgd'];
 
 
 $sql = "SELECT product_name, $currency_column AS product_price FROM product";
@@ -1016,7 +1011,7 @@ body {
     <?php
     // 确定用户选择的货币
     session_start();
-    $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'usd'; // 默认 USD
+    $currency = isset($_SESSION['currency']) ? $_SESSION['currency'] : 'aus'; // 默认 USD
     $currency_field = 'product_price_' . strtolower($currency); // 动态选择数据库字段
 
     // Display products dynamically
