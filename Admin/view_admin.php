@@ -135,7 +135,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             width: 100%;
             border-radius: 8px;
         }
-        .btn-group {
+        .btn-group { 
             display: flex;
             gap: 10px;
         }
