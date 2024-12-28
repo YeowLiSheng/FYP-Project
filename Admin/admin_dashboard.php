@@ -59,13 +59,44 @@ $topProducts = getTopProducts($connect);
 function getWeeklySalesWithDates($connect) {
     $query = "
         SELECT 
-            CONCAT(DATE_FORMAT(order_date, '%Y-%m-%d'), ' ~ ', DATE_FORMAT(order_date + INTERVAL (6 - WEEKDAY(order_date)) DAY, '%Y-%m-%d')) AS week_range, 
+            CONCAT(
+                DATE_FORMAT(order_date - INTERVAL WEEKDAY(order_date) DAY, '%Y-%m-%d'), ' ~ ',
+                DATE_FORMAT(order_date + INTERVAL (6 - WEEKDAY(order_date)) DAY, '%Y-%m-%d')
+            ) AS week_range,
             SUM(final_amount) AS total_sales
         FROM orders
         WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 最近一个月
         GROUP BY YEAR(order_date), WEEK(order_date)";
+
     $result = mysqli_query($connect, $query);
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    $salesData = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+    // 填补缺失的周数据
+    $filledData = [];
+    $startDate = new DateTime(date('Y-m-d', strtotime('-1 month')));
+    $endDate = new DateTime(date('Y-m-d'));
+    $interval = new DateInterval('P7D');
+    $period = new DatePeriod($startDate, $interval, $endDate);
+
+    foreach ($period as $weekStart) {
+        $weekEnd = (clone $weekStart)->modify('+6 days');
+        $weekRange = $weekStart->format('Y-m-d') . ' ~ ' . $weekEnd->format('Y-m-d');
+        $found = false;
+
+        foreach ($salesData as $data) {
+            if ($data['week_range'] === $weekRange) {
+                $filledData[] = $data;
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $filledData[] = ['week_range' => $weekRange, 'total_sales' => 0];
+        }
+    }
+
+    return $filledData;
 }
 $weeklySales = getWeeklySalesWithDates($connect);
 
