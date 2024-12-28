@@ -6,6 +6,13 @@ include 'admin_sidebar.php';
 $startDate = date('Y-m-d', strtotime('-30 days'));
 $endDate = date('Y-m-d');
 
+// Check if dates or view mode are submitted via POST
+$viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
+if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
+    $startDate = $_POST['start_date'];
+    $endDate = $_POST['end_date'];
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_mode']) && $_POST['view_mode'] === 'sales_trend') {
     $startDate = $_POST['start_date'] ?? $startDate;
     $endDate = $_POST['end_date'] ?? $endDate;
