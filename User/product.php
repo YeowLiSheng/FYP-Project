@@ -430,129 +430,115 @@ body {
 
 /* General Container Styling */
 #packageBox {
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        max-width: 800px;
-        margin: 0 auto;
-    }
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 0 auto;
+}
 
-    /* Section Title */
-    .package-title {
-        text-align: center;
-        font-size: 24px;
-        color: #333;
-        margin-bottom: 20px;
-    }
+/* Section Title */
+.package-title {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
 
-    /* Package Card Styling */
-    .package-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        background-color: #fff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
+/* Package Card Styling */
+.package-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-    .package-card:hover {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }
+.package-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
 
-    /* Image Styling */
-    .p-image {
-        max-width: 80px;
-        height: auto;
-        border-radius: 5px;
-        margin-right: 15px;
-    }
+/* Image Styling */
+.p-image {
+    max-width: 100px;
+    height: auto;
+    border-radius: 5px;
+    margin-right: 15px;
+}
 
-    /* Package Info */
-    .package-info {
-        flex-grow: 1;
-        padding-left: 15px;
-    }
+/* Package Info */
+.package-info {
+    flex-grow: 1;
+    padding-left: 15px;
+}
 
-    .package-name {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #555;
-    }
+.package-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
 
-    .package-price {
-        font-size: 16px;
-        color: #666;
-        margin-bottom: 10px;
-    }
+.package-price {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
 
-    /* Quantity Controls */
-    .qty-controls {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }
+/* Quantity Controls */
+.qty-controls {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+}
 
-    .qty-btn {
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
-        border-radius: 4px;
-        font-size: 16px;
-    }
+.qty-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+}
 
-    .qty-btn:hover {
-        background-color: #0056b3;
-    }
+.qty-btn:hover {
+    background-color: #0056b3;
+}
 
-    .qty-input {
-        width: 50px;
-        text-align: center;
-        margin: 0 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 5px;
-    }
+.qty-input {
+    width: 50px;
+    text-align: center;
+    margin: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
 
-    /* Select Button */
-    .btn-primary {
-        background-color: #28a745;
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        font-size: 14px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+/* Select Button */
+.btn-primary {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
 
-    .btn-primary:hover {
-        background-color: #218838;
-    }
+.btn-primary:hover {
+    background-color: #218838;
+}
 
-    /* Responsive Design */
-    @media (max-width: 600px) {
-        .package-card {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .p-image {
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-
-        .package-info {
-            padding-left: 0;
-            text-align: center;
-        }
-    }
-/* Fullscreen overlay */
+/* Popup Styles */
 .popup-overlay {
     display: none; /* Hidden by default */
     position: fixed;
@@ -575,7 +561,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     max-width: 90%;
-    width: 500px;
+    width: 800px;
 }
 
 /* Close button */
@@ -592,6 +578,67 @@ body {
 .close-popup:hover {
     color: #000;
 }
+
+/* Form Styling */
+#packageForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product-options {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fefefe;
+}
+
+.product-options img {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.product-options h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    flex: 1;
+}
+
+.product-options label {
+    font-size: 14px;
+    color: #555;
+    margin-right: 5px;
+}
+
+.product-options select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .product-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .product-options img {
+        margin-bottom: 10px;
+    }
+
+    .popup-content {
+        width: 90%;
+    }
+}
+
 
 .package-card.unavailable {
     pointer-events: none; /* Disable all interactions */
@@ -1907,117 +1954,117 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     </script>
 	<script>
 		$(document).on('click', '.selectPackage', function () {
-    const packageId = $(this).closest('.package-card').data('package-id');
-    console.log("Package ID:", packageId);
+            const packageId = $(this).closest('.package-card').data('package-id');
+            console.log("Package ID:", packageId);
 
-    if (!packageId) {
-        alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
-        return;
-    }
-
-    // Fetch the products in the package
-    $.ajax({
-        url: '', // PHP endpoint to handle this request
-        type: 'GET',
-        data: { fetch_package_products: true, package_id: packageId },
-        dataType: 'json',
-        success: function (response) {
-            console.log("Response:", response);
-
-            if (!response.products || response.products.length === 0) {
-                console.error("Error: response.products is undefined or empty.");
-                alert("No products found for this package.");
+            if (!packageId) {
+                alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
                 return;
             }
 
-            let formHtml = `<h2>Select Options for Your Package</h2><form id="packageForm">`;
-            const selectedQty = $('.qty-input').val() || 1;
-            console.log("Selected Quantity:", selectedQty);
+            // Fetch the products in the package
+            $.ajax({
+                url: '', // PHP endpoint to handle this request
+                type: 'GET',
+                data: { fetch_package_products: true, package_id: packageId },
+                dataType: 'json',
+                success: function (response) {
+                    console.log("Response:", response);
 
-            if (!selectedQty) {
-                alert("Error: Quantity is undefined.");
-                return;
-            }
-
-            formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
-            formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
-
-            // Loop through products and generate the form
-            response.products.forEach((product, index) => {
-                if (!product) {
-                    console.error(`Error: Product at index ${index} is undefined.`);
-                    return;
-                }
-
-                formHtml += `
-                    <div class="product-options" id="product_${index + 1}">
-                        <h3>${product.product_name || `Product ${index + 1}`}</h3>
-                        <img src="images/${product.product_image}" class="p-image">
-                        <label for="color_${index + 1}">Color:</label>
-                        <select name="color_${index + 1}" id="color_${index + 1}">
-                            <option value="">Choose an option</option>
-                            <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
-                            <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
-                        </select>
-                        <label for="size_${index + 1}">Size:</label>
-                        <select name="size_${index + 1}" id="size_${index + 1}">
-                            <option value="">Choose an option</option>
-                            <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
-                            <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
-                        </select>
-                    </div>
-                `;
-            });
-
-            formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
-
-            // Inject the form into the popup container
-            $('#packageFormContainer').html(formHtml);
-            $('#packageFormPopup').fadeIn();
-
-            // Handle form submission
-            $('#packageForm').on('submit', function (e) {
-                e.preventDefault();
-
-                // Collect the form data
-                const packageData = {
-                    add_package_to_cart: true,
-                    package_id: packageId,
-                    qty: selectedQty
-                };
-
-                // Loop through inputs and append data
-                response.products.forEach((product, index) => {
-                    packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
-                    packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
-                });
-
-                console.log("Package Data:", packageData);
-
-                $.ajax({
-                    url: '', // Replace with actual PHP script
-                    type: 'POST',
-                    data: packageData,
-                    success: function (response) {
-                        console.log("Add to Cart Response:", response);
-                        if (response.success) {
-                            alert('Package added to cart!');
-                            $('#packageFormPopup').fadeOut();
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    },
-                    error: function () {
-                        alert('An error occurred while adding the package to the cart.');
+                    if (!response.products || response.products.length === 0) {
+                        console.error("Error: response.products is undefined or empty.");
+                        alert("No products found for this package.");
+                        return;
                     }
-                });
+
+                    let formHtml = `<h3>Select Options for Your Package</h3><form id="packageForm">`;
+                    const selectedQty = $('.qty-input').val() || 1;
+                    console.log("Selected Quantity:", selectedQty);
+
+                    if (!selectedQty) {
+                        alert("Error: Quantity is undefined.");
+                        return;
+                    }
+
+                    formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
+                    formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
+
+                    // Loop through products and generate the form
+                    response.products.forEach((product, index) => {
+                        if (!product) {
+                            console.error(`Error: Product at index ${index} is undefined.`);
+                            return;
+                        }
+
+                        formHtml += `
+                            <div class="product-options" id="product_${index + 1}">
+                                <h3>${product.product_name || `Product ${index + 1}`}</h3>
+                                <img src="images/${product.product_image}" class="p-image">
+                                <label for="color_${index + 1}">Color:</label>
+                                <select name="color_${index + 1}" id="color_${index + 1}">
+                                    <option value="">Choose an option</option>
+                                    <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
+                                    <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
+                                </select>
+                                <label for="size_${index + 1}">Size:</label>
+                                <select name="size_${index + 1}" id="size_${index + 1}">
+                                    <option value="">Choose an option</option>
+                                    <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
+                                    <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
+                                </select>
+                            </div>
+                        `;
+                    });
+
+                    formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
+
+                    // Inject the form into the popup container
+                    $('#packageFormContainer').html(formHtml);
+                    $('#packageFormPopup').fadeIn();
+
+                    // Handle form submission
+                    $('#packageForm').on('submit', function (e) {
+                        e.preventDefault();
+
+                        // Collect the form data
+                        const packageData = {
+                            add_package_to_cart: true,
+                            package_id: packageId,
+                            qty: selectedQty
+                        };
+
+                        // Loop through inputs and append data
+                        response.products.forEach((product, index) => {
+                            packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
+                            packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
+                        });
+
+                        console.log("Package Data:", packageData);
+
+                        $.ajax({
+                            url: '', // Replace with actual PHP script
+                            type: 'POST',
+                            data: packageData,
+                            success: function (response) {
+                                console.log("Add to Cart Response:", response);
+                                if (response.success) {
+                                    alert('Package added to cart!');
+                                    $('#packageFormPopup').fadeOut();
+                                } else {
+                                    alert('Error: ' + response.message);
+                                }
+                            },
+                            error: function () {
+                                alert('An error occurred while adding the package to the cart.');
+                            }
+                        });
+                    });
+                },
+                error: function () {
+                    alert('An error occurred while fetching package details.');
+                }
             });
-        },
-        error: function () {
-            alert('An error occurred while fetching package details.');
-        }
-    });
-});
+        });
 
 
 
