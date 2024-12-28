@@ -443,7 +443,7 @@ $categorySalesJson = json_encode($categorySalesData);
 
  // Parse PHP data into JavaScript
 
-google.charts.load('current', { packages: ['corechart'] });
+ google.charts.load('current', { packages: ['corechart'] });
 
 google.charts.setOnLoadCallback(drawCategoryChart);
 
