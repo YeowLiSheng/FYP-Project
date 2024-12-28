@@ -57,48 +57,52 @@ function getTopProducts($connect) {
 $topProducts = getTopProducts($connect);
 
 function getWeeklySalesWithDates($connect) {
+    // Create an array to hold the results, ensuring all weeks in the past month are included
+    $weeks = [];
+
+    // Calculate the start and end dates of the last 4 weeks (1 month)
+    $start_date = date('Y-m-d', strtotime('monday this week -3 weeks'));
+    $end_date = date('Y-m-d', strtotime('sunday this week'));
+
+    // Populate all week ranges for the past month
+    for ($i = 0; $i < 4; $i++) {
+        $week_start = date('Y-m-d', strtotime($start_date . " +" . ($i * 7) . " days"));
+        $week_end = date('Y-m-d', strtotime($week_start . " +6 days"));
+        $weeks[] = [
+            'week_range' => "$week_start ~ $week_end",
+            'total_sales' => 0
+        ];
+    }
+
+    // Query to get sales grouped by week
     $query = "
         SELECT 
-            CONCAT(
-                DATE_FORMAT(order_date - INTERVAL WEEKDAY(order_date) DAY, '%Y-%m-%d'), ' ~ ',
-                DATE_FORMAT(order_date + INTERVAL (6 - WEEKDAY(order_date)) DAY, '%Y-%m-%d')
-            ) AS week_range,
+            CONCAT(DATE_FORMAT(order_date - INTERVAL WEEKDAY(order_date) DAY, '%Y-%m-%d'), ' ~ ', 
+                   DATE_FORMAT(order_date + INTERVAL (6 - WEEKDAY(order_date)) DAY, '%Y-%m-%d')) AS week_range,
             SUM(final_amount) AS total_sales
         FROM orders
-        WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) -- 最近一个月
-        GROUP BY YEAR(order_date), WEEK(order_date)";
+        WHERE order_date BETWEEN '$start_date' AND '$end_date'
+        GROUP BY YEAR(order_date), WEEK(order_date)
+    ";
 
     $result = mysqli_query($connect, $query);
-    $salesData = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    $sales_data = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-    // 填补缺失的周数据
-    $filledData = [];
-    $startDate = new DateTime(date('Y-m-d', strtotime('-1 month')));
-    $endDate = new DateTime(date('Y-m-d'));
-    $interval = new DateInterval('P7D');
-    $period = new DatePeriod($startDate, $interval, $endDate);
-
-    foreach ($period as $weekStart) {
-        $weekEnd = (clone $weekStart)->modify('+6 days');
-        $weekRange = $weekStart->format('Y-m-d') . ' ~ ' . $weekEnd->format('Y-m-d');
-        $found = false;
-
-        foreach ($salesData as $data) {
-            if ($data['week_range'] === $weekRange) {
-                $filledData[] = $data;
-                $found = true;
+    // Merge the query result with the full week list
+    foreach ($weeks as &$week) {
+        foreach ($sales_data as $data) {
+            if ($week['week_range'] === $data['week_range']) {
+                $week['total_sales'] = $data['total_sales'];
                 break;
             }
         }
-
-        if (!$found) {
-            $filledData[] = ['week_range' => $weekRange, 'total_sales' => 0];
-        }
     }
 
-    return $filledData;
+    return $weeks;
 }
+
 $weeklySales = getWeeklySalesWithDates($connect);
+
 
 
 function getRecentUsers($connect) {
