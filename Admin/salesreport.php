@@ -6,13 +6,21 @@ include 'admin_sidebar.php';
 $startDate = date('Y-m-d', strtotime('-30 days'));
 $endDate = date('Y-m-d');
 
-// Check if dates or view mode are submitted via POST
-$viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
-if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
-    $startDate = $_POST['start_date'];
-    $endDate = $_POST['end_date'];
-}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['view_mode']) && $_POST['view_mode'] === 'sales_trend') {
+    $startDate = $_POST['start_date'] ?? $startDate;
+    $endDate = $_POST['end_date'] ?? $endDate;
 
+    $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
+                         FROM orders 
+                         WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate' 
+                         GROUP BY DATE(order_date) 
+                         ORDER BY DATE(order_date)";
+    $salesTrend_result = $connect->query($salesTrend_query);
+    $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
+
+    echo json_encode($salesTrend);
+    exit;
+}
 // Fetch total orders
 $order_query = "SELECT COUNT(*) AS order_count FROM `orders`";
 $order_result = $connect->query($order_query);
@@ -277,7 +285,13 @@ $categorySalesJson = json_encode($categorySalesData);
                 <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
             </select>
         </div>
+        <div class="col-auto" id="dateSelector" style="display: none;">
+    <label for="start_date" class="form-label">Start Date</label>
+    <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>">
 
+    <label for="end_date" class="form-label">End Date</label>
+    <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>">
+</div>
         <!-- Year Selector -->
         <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
             <label for="selected_year" class="form-label">Select Year</label>
@@ -437,8 +451,39 @@ $categorySalesJson = json_encode($categorySalesData);
 
     document.getElementById('view_mode').addEventListener('change', function () {
     const yearSelector = document.getElementById('yearSelector');
+    const dateSelector = document.getElementById('dateSelector');
+
     yearSelector.style.display = this.value === 'monthly_sales' ? 'block' : 'none';
+    dateSelector.style.display = this.value === 'sales_trend' ? 'block' : 'none';
+
+    if (this.value === 'sales_trend') {
+        updateSalesTrendChart(); // 更新 Sales Trend 图表
+    }
 });
+
+document.querySelectorAll('#start_date, #end_date').forEach(input => {
+    input.addEventListener('change', updateSalesTrendChart); // 日期变化时更新图表
+});
+
+function updateSalesTrendChart() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    if (startDate && endDate) {
+        fetch('your_php_script.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ view_mode: 'sales_trend', start_date: startDate, end_date: endDate })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const dates = data.map(item => item.date);
+            const sales = data.map(item => parseFloat(item.daily_sales));
+            createLineChart('Daily Sales (RM)', dates, sales);
+        });
+    }
+}
+
 
 
  // Parse PHP data into JavaScript
