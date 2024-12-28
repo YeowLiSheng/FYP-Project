@@ -8,7 +8,7 @@ $endDate = date('Y-m-d');
 
 // Check if dates or view mode are submitted via POST
 $viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
-if ($viewMode === 'sales_trend' && isset($_POST['start_date'], $_POST['end_date'])) {
+if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
     $startDate = $_POST['start_date'];
     $endDate = $_POST['end_date'];
 }
@@ -277,7 +277,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
             </select>
         </div>
-        
+
         <!-- Year Selector -->
         <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
             <label for="selected_year" class="form-label">Select Year</label>
@@ -294,14 +294,7 @@ $categorySalesJson = json_encode($categorySalesData);
         </div>
     </div>
 </form>
-<form method="POST" id="dateFilterForm">
-    <input type="hidden" name="view_mode" value="sales_trend">
-    <label for="start_date">Start Date:</label>
-    <input type="date" name="start_date" id="start_date" value="<?php echo htmlspecialchars($startDate); ?>">
-    <label for="end_date">End Date:</label>
-    <input type="date" name="end_date" id="end_date" value="<?php echo htmlspecialchars($endDate); ?>">
-    <button type="submit">Filter</button>
-</form>
+
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
@@ -381,17 +374,6 @@ $categorySalesJson = json_encode($categorySalesData);
         createBarChart('Yearly Sales (RM)', years, sales);
     }
 
-    document.getElementById('dateFilterForm').addEventListener('submit', function (event) {
-        event.preventDefault();
-        this.submit(); // Submit the form via POST to reload the page
-    });
-
-    const chartData = <?php echo json_encode($salesTrend); ?>;
-    const dates = chartData.map(item => item.date);
-    const sales = chartData.map(item => parseFloat(item.daily_sales));
-
-    createLineChart('Daily Sales (RM)', dates, sales);
-
     function createLineChart(label, labels, data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
         new Chart(ctx, {
@@ -422,6 +404,7 @@ $categorySalesJson = json_encode($categorySalesData);
             }
         });
     }
+
     function createBarChart(label, labels, data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
         new Chart(ctx, {
