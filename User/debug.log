@@ -34,3 +34,43 @@ Array
     [product3_color] => Yellow
     [product3_size] => PM
 )
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => product
+    [color] => Black
+    [size] => PM
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => product
+    [color] => 
+    [size] => 
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => package
+    [product1_color] => Black
+    [product1_size] => MM
+    [product2_color] => White
+    [product2_size] => MM
+    [product3_color] => Beige
+    [product3_size] => MM
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => package
+    [product1_color] => Brown
+    [product1_size] => PM
+    [product2_color] => Grey
+    [product2_size] => PM
+    [product3_color] => Yellow
+    [product3_size] => PM
+)

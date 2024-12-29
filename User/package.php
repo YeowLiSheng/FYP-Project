@@ -54,7 +54,78 @@ $cart_items_query = "
         sc.size, 
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
+// Handle AJAX request to delete item
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
+    $id = intval($_POST['id']); // Ensure ID is an integer
+    $type = $_POST['type'];     // Either 'product' or 'package'
 
+    $response = ['success' => false];
+
+    // Debug: Log incoming POST data
+    file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
+
+    if ($type === 'product') {
+        $color = $_POST['color'];
+        $size = $_POST['size'];
+
+        // Delete the specific product with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
+        ");
+        $stmt->bind_param('issi', $id, $color, $size, $user_id);
+    } elseif ($type === 'package') {
+        $product1_color = $_POST['product1_color'];
+        $product1_size = $_POST['product1_size'];
+        $product2_color = $_POST['product2_color'];
+        $product2_size = $_POST['product2_size'];
+        $product3_color = $_POST['product3_color'];
+        $product3_size = $_POST['product3_size'];
+
+        // Delete the specific package with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE package_id = ? 
+              AND product1_color = ? AND product1_size = ?
+              AND product2_color = ? AND product2_size = ?
+              AND product3_color = ? AND product3_size = ?
+              AND user_id = ?
+        ");
+        $stmt->bind_param(
+            'ississsi',
+            $id,
+            $product1_color, $product1_size,
+            $product2_color, $product2_size,
+            $product3_color, $product3_size,
+            $user_id
+        );
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid type']);
+        exit;
+    }
+
+    // Execute the query and check if it was successful
+    if ($stmt->execute()) {
+        // Check affected rows to confirm deletion
+        if ($stmt->affected_rows > 0) {
+            // Recalculate the new total price
+            $result = $connect->query("SELECT SUM(total_price) AS new_total FROM shopping_cart WHERE user_id = $user_id");
+            $row = $result->fetch_assoc();
+            $response['new_total'] = $row['new_total'] ?? 0;
+            $response['success'] = true;
+        } else {
+            $response['message'] = 'No matching row found for deletion.';
+        }
+    } else {
+        // Debug: Log SQL errors
+        $response['message'] = 'Query failed: ' . $connect->error;
+        file_put_contents('debug.log', "SQL Error: " . $connect->error . "\n", FILE_APPEND);
+    }
+
+    $stmt->close();
+    echo json_encode($response);
+    exit;
+}
 // Query to fetch package data along with product names
 $package_query = "
     SELECT 
@@ -259,6 +330,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     .package-container {
         max-width: 1500px;
@@ -644,11 +716,17 @@ form {
                         if ($cart_items_result->num_rows > 0) {
                             while ($cart_item = $cart_items_result->fetch_assoc()) {
                                 $total_price += $cart_item['total_price'];
+                                
                                 if (!empty($cart_item['package_id'])) {
                                     // Render package details
                                     echo '
                                     <li class="header-cart-item flex-w flex-t m-b-12">
-                                        <div class="header-cart-item-img">
+                                        <div class="header-cart-item-img delete-item" data-id="' . $cart_item['package_id'] . '" data-type="package"data-product1-color="' . $cart_item['product1_color'] . '" 
+                                        data-product1-size="' . $cart_item['product1_size'] . '" 
+                                        data-product2-color="' . $cart_item['product2_color'] . '" 
+                                        data-product2-size="' . $cart_item['product2_size'] . '" 
+                                        data-product3-color="' . $cart_item['product3_color'] . '" 
+                                        data-product3-size="' . $cart_item['product3_size'] . '">
                                             <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
                                         </div>
                                         <div class="header-cart-item-txt p-t-8">
@@ -656,7 +734,7 @@ form {
                                                 ' . $cart_item['package_name'] . '
                                             </a>
                                             <span class="header-cart-item-info">
-                                                ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                                ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
                                             </span>
                                             <span class="header-cart-item-info">
                                                 Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
@@ -669,7 +747,7 @@ form {
                                     // Render individual product details
                                     echo '
                                     <li class="header-cart-item flex-w flex-t m-b-12">
-                                        <div class="header-cart-item-img">
+                                        <div class="header-cart-item-img delete-item" data-id="' . $cart_item['product_id'] . '" data-type="product"  data-color="' . $cart_item['color'] . '" data-size="' . $cart_item['size'] . '">
                                             <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                                         </div>
                                         <div class="header-cart-item-txt p-t-8">
@@ -689,6 +767,7 @@ form {
                         } else {
                             echo '<p>Your cart is empty.</p>';
                         }
+                        
 
                     ?>
                 </ul>
@@ -935,6 +1014,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="vendor/bootstrap/js/popper.js"></script>
 	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 	<script src="vendor/select2/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
 		$(".js-select2").each(function(){
 			$(this).select2({
@@ -1098,11 +1178,20 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 console.log("AJAX success response:", response);
                 if (response.success) {
                     console.log("Package successfully added to cart.");
-                    alert("Package added to cart!");
+                    Swal.fire({
+                        title: 'Package has been added to your cart!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
                     $('#packageFormPopup').fadeOut();
                 } else {
                     console.error("Error adding package to cart:", response.message);
-                    alert("Error: " + response.message);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message || 'Failed to add product to cart.',
+                        icon: 'error',
+                        confirmButtonText: 'Try Again'
+                    });
                 }
             },
             error: function (xhr, status, error) {
@@ -1125,7 +1214,80 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
     });
 </script>
+<script>
+    // Add click event listener to cart item images
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
 
+            let body = `delete_item=1&id=${id}&type=${type}`;
+
+            // Append additional data based on the type
+            if (type === 'product') {
+                const color = this.dataset.color;
+                const size = this.dataset.size;
+                body += `&color=${color}&size=${size}`;
+                console.log('Deleting product:', { id, color, size });
+            } else if (type === 'package') {
+                const product1_color = this.dataset.product1Color;
+                const product1_size = this.dataset.product1Size;
+                const product2_color = this.dataset.product2Color;
+                const product2_size = this.dataset.product2Size;
+                const product3_color = this.dataset.product3Color;
+                const product3_size = this.dataset.product3Size;
+
+                body += `&product1_color=${product1_color}&product1_size=${product1_size}`;
+                body += `&product2_color=${product2_color}&product2_size=${product2_size}`;
+                body += `&product3_color=${product3_color}&product3_size=${product3_size}`;
+                console.log('Deleting package:', { id, product1_color, product1_size, product2_color, product2_size, product3_color, product3_size });
+            }
+
+            // Confirm deletion
+            if (confirm('Are you sure you want to delete this item from your cart?')) {
+                // Send AJAX request to delete the item
+                fetch(location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: body,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Response:', data); // Log response for debugging
+                    if (data.success) {
+                        // Remove the item from the DOM
+                        this.closest('.header-cart-item').remove();
+                        // Update the total price
+                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                        Swal.fire({
+                                title: 'Item Deleted!',
+                                text: 'The item has been successfully removed from your cart.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to delete the item. Please try again.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+});
+
+
+
+</script>
 
 
 
