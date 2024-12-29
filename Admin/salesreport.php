@@ -399,45 +399,36 @@ $categorySalesJson = json_encode($categorySalesData);
         createBarChart('Yearly Sales (RM)', years, sales);
     }
 
-
-
-function createLineChart(label, labels, data) {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-
-    // 销毁旧的图表实例
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
-
-    // 创建新的图表
-    chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: label,
-                data: data,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
+    function createLineChart(label, labels, data) {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
             },
-            scales: {
-                x: { title: { display: true, text: 'Date' } },
-                y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Date' } },
+                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+                }
             }
-        }
-    });
-}
+        });
+    }
 
     function createBarChart(label, labels, data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
