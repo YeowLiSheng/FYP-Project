@@ -331,39 +331,43 @@ $categorySalesJson = json_encode($categorySalesData);
         </div>
 
         <!-- Year Range Filter for Yearly Sales -->
-        <div class="col-auto" id="yearRangeFilter" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
-            <div class="row g-3 align-items-center">
-                <!-- Start Year -->
-                <div class="col">
-                    <label for="start_year" class="form-label">From Year</label>
-                    <select id="start_year" name="start_year" class="form-select" onchange="updateViewMode();">
-                        <?php
-                        $currentYear = date('Y');
-                        for ($i = 0; $i <= 10; $i++) {
-                            $year = $currentYear - $i;
-                            $selected = isset($_POST['start_year']) && $_POST['start_year'] == $year ? 'selected' : '';
-                            echo "<option value='$year' $selected>$year</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <!-- End Year -->
-                <div class="col">
-                    <label for="end_year" class="form-label">To Year</label>
-                    <select id="end_year" name="end_year" class="form-select" onchange="updateViewMode();">
-                        <?php
-                        $currentYear = date('Y');
-                        for ($i = 0; $i <= 10; $i++) {
-                            $year = $currentYear - $i;
-                            $selected = isset($_POST['end_year']) && $_POST['end_year'] == $year ? 'selected' : '';
-                            echo "<option value='$year' $selected>$year</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-            </div>
+<div class="col-auto" id="yearRangeFilter" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
+    <div class="row g-3 align-items-center">
+        <!-- Start Year -->
+        <div class="col">
+            <label for="start_year" class="form-label">From Year</label>
+            <select id="start_year" name="start_year" class="form-select" onchange="updateEndYearOptions(); updateViewMode();">
+                <?php
+                $currentYear = date('Y');
+                for ($i = 0; $i <= 10; $i++) {
+                    $year = $currentYear - $i;
+                    $selected = isset($_POST['start_year']) && $_POST['start_year'] == $year ? 'selected' : '';
+                    echo "<option value='$year' $selected>$year</option>";
+                }
+                ?>
+            </select>
         </div>
+        <!-- End Year -->
+        <div class="col">
+            <label for="end_year" class="form-label">To Year</label>
+            <select id="end_year" name="end_year" class="form-select" onchange="updateViewMode();">
+                <?php
+                $startYear = isset($_POST['start_year']) ? intval($_POST['start_year']) : $currentYear - 10;
+                $endYear = isset($_POST['end_year']) ? intval($_POST['end_year']) : $currentYear;
 
+                // make sure end year is >=start year
+                for ($i = 0; $i <= 10; $i++) {
+                    $year = $currentYear - $i;
+                    if ($year >= $startYear) {
+                        $selected = $endYear == $year ? 'selected' : '';
+                        echo "<option value='$year' $selected>$year</option>";
+                    }
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
         
     </div>
 </form>
@@ -437,7 +441,30 @@ $categorySalesJson = json_encode($categorySalesData);
         document.getElementById('viewForm').submit();
     }
 
-    
+    function updateEndYearOptions() {
+    const startYear = parseInt(document.getElementById('start_year').value, 10);
+    const endYearSelect = document.getElementById('end_year');
+
+
+    const currentYear = new Date().getFullYear();
+
+
+    endYearSelect.innerHTML = '';
+
+
+    for (let year = currentYear; year >= startYear; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+
+  
+        if (year === parseInt(endYearSelect.dataset.selectedYear, 10)) {
+            option.selected = true;
+        }
+
+        endYearSelect.appendChild(option);
+    }
+}
     function updateEndDate() {
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
