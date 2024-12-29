@@ -64,26 +64,36 @@ $monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthl
     return $result;
 }, []);
 
-// Fetch yearly sales data
+// Default from and to year
+$fromYear = date('Y') - 5;
+$toYear = date('Y');
+
+// Check if the user has selected a year range
+if ($viewMode === 'yearly_sales' && isset($_POST['from_year']) && isset($_POST['to_year'])) {
+    $fromYear = $_POST['from_year'];
+    $toYear = $_POST['to_year'];
+}
+
+// Fetch yearly sales data based on the selected year range
 $yearlySales_query = "
     SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
     FROM orders 
+    WHERE YEAR(order_date) BETWEEN '$fromYear' AND '$toYear' 
     GROUP BY YEAR(order_date) 
-    ORDER BY YEAR(order_date) DESC";
+    ORDER BY YEAR(order_date)";
 $yearlySales_result = $connect->query($yearlySales_query);
 $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// Fill yearly sales data if less than 6 years
-if (count($yearlySales) < 6) {
-    $currentYear = date('Y');
-    for ($i = 5; $i >= 0; $i--) {
-        $year = $currentYear - $i;
+// Fill missing years if necessary
+if (count($yearlySales) < ($toYear - $fromYear + 1)) {
+    for ($year = $fromYear; $year <= $toYear; $year++) {
         $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
         if (empty($exists)) {
             $yearlySales[] = ['year' => $year, 'yearly_sales' => 0];
         }
     }
     usort($yearlySales, fn($a, $b) => $a['year'] - $b['year']);
+
 
     // Fetch recent 5 orders
 $recentOrders_query = "
@@ -310,6 +320,37 @@ $categorySalesJson = json_encode($categorySalesData);
                 ?>
             </select>
         </div>
+
+        <!-- Year Range Filter -->
+<div class="col-auto" id="yearRangeFilter" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
+    <div class="row g-3 align-items-center">
+        <!-- From Year -->
+        <div class="col">
+            <label for="from_year" class="form-label">From Year</label>
+            <select id="from_year" name="from_year" class="form-select">
+                <?php
+                for ($i = $currentYear - 5; $i <= $currentYear; $i++) {
+                    $selected = isset($_POST['from_year']) && $_POST['from_year'] == $i ? 'selected' : '';
+                    echo "<option value='$i' $selected>$i</option>";
+                }
+                ?>
+            </select>
+        </div>
+        <!-- To Year -->
+        <div class="col">
+            <label for="to_year" class="form-label">To Year</label>
+            <select id="to_year" name="to_year" class="form-select">
+                <?php
+                for ($i = $currentYear - 5; $i <= $currentYear; $i++) {
+                    $selected = isset($_POST['to_year']) && $_POST['to_year'] == $i ? 'selected' : '';
+                    echo "<option value='$i' $selected>$i</option>";
+                }
+                ?>
+            </select>
+        </div>
+    </div>
+</div>
+
     </div>
 </form>
 
@@ -375,6 +416,7 @@ $categorySalesJson = json_encode($categorySalesData);
 
         document.getElementById('dateFilter').style.display = viewMode === 'sales_trend' ? 'block' : 'none';
 
+        document.getElementById('yearRangeFilter').style.display = viewMode === 'yearly_sales' ? 'block' : 'none';
 
         document.getElementById('viewForm').submit();
     }
