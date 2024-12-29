@@ -636,42 +636,51 @@ if ($paymentSuccess) {
     $order_id = $stmt->insert_id;
 
     // 重置购物车结果指针
-mysqli_data_seek($cart_result, 0);
+mysqli_data_seek($cart_result, 0); 
 
-// 遍历购物车数据并插入到 order_details
+// 遍历购物车数据
 while ($row = mysqli_fetch_assoc($cart_result)) {
-    $product_id = $row['product_id'] ?: NULL; // 如果为 0，设为 NULL
-    $package_id = $row['package_id'] ?: NULL; // 如果为 0，设为 NULL
+    $product_id = !empty($row['product_id']) ? $row['product_id'] : null; // 检查是否为 null
+    $package_id = !empty($row['package_id']) ? $row['package_id'] : null; // 检查是否为 null
     $item_name = $row['item_name'];
-    $quantity = $row['total_qty'];
-    $unit_price = $row['item_price'];
-    $total_price = $row['item_total_price'];
+    $quantity = (int)$row['total_qty'];
+    $unit_price = (float)$row['item_price'];
+    $total_price = (float)$row['item_total_price'];
 
     // 插入到 `order_details`
-    $detail_query = "INSERT INTO order_details 
-                     (order_id, product_id, product_name, package_id, quantity, unit_price, total_price) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?)";
-
+    $detail_query = "
+        INSERT INTO order_details 
+        (order_id, product_id, product_name, package_id, quantity, unit_price, total_price) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)";
     $detail_stmt = $conn->prepare($detail_query);
+
     if (!$detail_stmt) {
         die("Prepare failed: " . $conn->error);
     }
 
-    // 绑定参数并执行
-    $detail_stmt->bind_param(
+    // 检查绑定是否成功
+    $bind_result = $detail_stmt->bind_param(
         "iisiidd",
-        $order_id,
-        $product_id,
-        $item_name,
-        $package_id,
-        $quantity,
-        $unit_price,
+        $order_id, 
+        $product_id, 
+        $item_name, 
+        $package_id, 
+        $quantity, 
+        $unit_price, 
         $total_price
     );
 
+    if (!$bind_result) {
+        die("Bind failed: " . $detail_stmt->error);
+    }
+
+    // 执行语句
     if (!$detail_stmt->execute()) {
         die("Execute failed: " . $detail_stmt->error);
     }
+
+    // 关闭语句
+    $detail_stmt->close();
 }
     // 更新库存
     mysqli_data_seek($cart_result, 0); // 再次重置购物车结果指针
