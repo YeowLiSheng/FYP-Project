@@ -282,12 +282,19 @@ $categorySalesJson = json_encode($categorySalesData);
             </select>
         </div>
         <!-- Date Range Filter -->
-<div class="col-auto" id="dateFilter" style="display: <?php echo $viewMode === 'sales_trend' ? 'block' : 'none'; ?>;">
-    <label for="start_date" class="form-label">Start Date</label>
-    <input type="date" id="start_date" name="start_date" class="form-control"  value="<?php echo $startDate; ?>" onchange="document.getElementById('viewForm').submit();">
-
-    <label for="end_date" class="form-label">End Date</label>
-    <input type="date" id="end_date" name="end_date" class="form-control"  value="<?php echo $endDate; ?>" onchange="document.getElementById('viewForm').submit();">
+        <div class="col-auto" id="dateFilter" style="display: <?php echo $viewMode === 'sales_trend' ? 'block' : 'none'; ?>;">
+    <div class="row g-3 align-items-center">
+        <!-- Start Date -->
+        <div class="col">
+            <label for="start_date" class="form-label">Start Date</label>
+            <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>" onchange="document.getElementById('viewForm').submit();">
+        </div>
+        <!-- End Date -->
+        <div class="col">
+            <label for="end_date" class="form-label">End Date</label>
+            <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" onchange="document.getElementById('viewForm').submit();">
+        </div>
+    </div>
 </div>
         <!-- Year Selector -->
         <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
