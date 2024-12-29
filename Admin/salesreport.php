@@ -284,10 +284,10 @@ $categorySalesJson = json_encode($categorySalesData);
         <!-- Date Range Filter -->
 <div class="col-auto" id="dateFilter" style="display: <?php echo $viewMode === 'sales_trend' ? 'block' : 'none'; ?>;">
     <label for="start_date" class="form-label">Start Date</label>
-    <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>">
+    <input type="date" id="start_date" name="start_date" class="form-control"  value="<?php echo $startDate; ?>" onchange="document.getElementById('viewForm').submit();">
 
     <label for="end_date" class="form-label">End Date</label>
-    <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>">
+    <input type="date" id="end_date" name="end_date" class="form-control"  value="<?php echo $endDate; ?>" onchange="document.getElementById('viewForm').submit();">
 </div>
         <!-- Year Selector -->
         <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
@@ -399,36 +399,45 @@ $categorySalesJson = json_encode($categorySalesData);
         createBarChart('Yearly Sales (RM)', years, sales);
     }
 
-    function createLineChart(label, labels, data) {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: label,
-                    data: data,
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Date' } },
-                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
-                }
-            }
-        });
+    let chartInstance = null;
+
+function createLineChart(label, labels, data) {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+
+    // 销毁旧的图表实例
+    if (chartInstance) {
+        chartInstance.destroy();
     }
+
+    // 创建新的图表
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: data,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Date' } },
+                y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+            }
+        }
+    });
+}
 
     function createBarChart(label, labels, data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
