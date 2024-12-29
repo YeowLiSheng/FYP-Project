@@ -315,24 +315,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         color: #495057;
     }
 	.popup-overlay {
+        display: none; /* Hidden by default */
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+        z-index: 9999; /* Ensures it appears above other content */
     }
 
     .popup-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         background: #fff;
         padding: 20px;
         border-radius: 8px;
-        max-width: 600px;
-        width: 100%;
-        position: relative;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        max-width: 90%;
+        width: 800px;
     }
 
     .close-popup {
@@ -341,7 +344,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         right: 10px;
         cursor: pointer;
         font-size: 20px;
+        color: #aaa;
         font-weight: bold;
+    }
+    .close-popup:hover {
+        color: #000;
     }
     .p-image {
         max-width: 80px;
@@ -350,16 +357,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         margin-right: 15px;
     }
     
-/* Form Container */
-#packageFormContainer {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    max-width: 600px;
-    margin: 20px auto;
-}
-
 /* Form Elements */
 form {
     display: flex;
@@ -368,35 +365,38 @@ form {
 }
 
 .product {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
     display: flex;
-    gap: 15px;
     align-items: center;
+    gap: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fefefe;
 }
 
 .product img {
     width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+    height: auto;
+    border-radius: 4px;
 }
-
+.product h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    flex: 1;
+}
 .product label {
-    display: block;
-    margin-top: 10px;
-    font-size: 0.9rem;
+    font-size: 14px;
     color: #555;
+    margin-right: 5px;
 }
 
 .product select {
-    padding: 5px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    width: 100%;
+    font-size: 14px;
 }
 
 /* Quantity Controls */
@@ -451,31 +451,6 @@ form {
     background-color: #45a049;
 }
 
-/* Popup Styling */
-#packageFormPopup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-/* Form Container */
-#packageFormContainer {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    max-width: 600px;
-    width: 100%;
-    animation: fadeIn 0.3s ease;
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -486,7 +461,21 @@ form {
         transform: translateY(0);
     }
 }
+/* Responsive Design */
+@media (max-width: 600px) {
+    .product {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
+    .product img {
+        margin-bottom: 10px;
+    }
+
+    .popup-content {
+        width: 90%;
+    }
+}
 </style>
 </head>
 <body class="animsition">
@@ -1002,14 +991,16 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         console.log(`Processing product ${index + 1}:`, product);
                         formHtml += `
                             <div class="product">
-                                <h4>${product.name}</h4>
+                                <h3>${product.name}</h3>
                                 <img src="images/${product.image}" class="p-image">
                                 <label>Color:</label>
                                 <select name="product${index + 1}_color">
+                                    <option value="">Choose an option</option>
                                     ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}
                                 </select>
                                 <label>Size:</label>
                                 <select name="product${index + 1}_size">
+                                    <option value="">Choose an option</option>
                                     ${product.sizes.filter(Boolean).map(size => `<option value="${size}">${size}</option>`).join('')}
                                 </select>
                             </div>`;
