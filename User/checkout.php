@@ -111,40 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 ?>
 
 <?php if ($paymentSuccess): ?>
-    <?php
-    // 检查购物车并根据类型更新库存
-    if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-        while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-            $product_id = $cart_item['product_id'];
-            $package_id = $cart_item['package_id'];
-            $quantity_to_deduct = $cart_item['total_qty'];
-
-            if ($package_id > 0) {
-                // 如果是套餐，更新套餐库存
-                $update_package_stock_query = "UPDATE product_package SET package_stock = package_stock - ? WHERE package_id = ?";
-                $stmt = $conn->prepare($update_package_stock_query);
-                $stmt->bind_param("ii", $quantity_to_deduct, $package_id);
-                $stmt->execute();
-
-                if ($stmt->affected_rows <= 0) {
-                    echo "<script>alert('Failed to update stock for package ID: $package_id');</script>";
-                }
-            } elseif ($product_id > 0) {
-                // 如果是单个产品，更新产品库存
-                $update_product_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-                $stmt = $conn->prepare($update_product_stock_query);
-                $stmt->bind_param("ii", $quantity_to_deduct, $product_id);
-                $stmt->execute();
-
-                if ($stmt->affected_rows <= 0) {
-                    echo "<script>alert('Failed to update stock for product ID: $product_id');</script>";
-                }
-            }
-
-            $stmt->close();
-        }
-    }
-    ?>
+   
     <script>
         window.onload = function() {
             confirmPayment();
@@ -687,7 +654,26 @@ if ($paymentSuccess) {
         $detail_stmt->execute();
     }
 
+	// 更新库存
+    foreach ($cart_items as $item) {
+        $item_id = $item['item_id'];
+        $quantity = $item['total_qty'];
 
+        // 如果是 package，更新 package_stock
+        if (!empty($item['package_id'])) {
+            $update_package_stock_query = "UPDATE product_package SET package_stock = package_stock - ? WHERE package_id = ?";
+            $update_package_stmt = $conn->prepare($update_package_stock_query);
+            $update_package_stmt->bind_param("ii", $quantity, $item['package_id']);
+            $update_package_stmt->execute();
+        } 
+        // 如果是 product，更新 product_stock
+        else {
+            $update_product_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
+            $update_product_stock_stmt = $conn->prepare($update_product_stock_query);
+            $update_product_stock_stmt->bind_param("ii", $quantity, $item_id);
+            $update_product_stock_stmt->execute();
+        }
+    }
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
