@@ -435,6 +435,8 @@ body {
     border-radius: 8px;
     max-width: 800px;
     margin: 0 auto;
+    height: 300px;
+    overflow-y: auto;
 }
 
 /* Section Title */
@@ -1606,6 +1608,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 packageBox.empty(); // Clear existing packages
 
                 if (packages.length > 0) {
+                    packageBox.append('<h2>Valuable Packages</h2>');
                     packages.forEach(pkg => {
                         let packageHtml = '';
                         if (pkg.package_status == 2) {
