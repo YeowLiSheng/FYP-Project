@@ -1869,8 +1869,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                             title: 'Product has been added to your cart!',
                             icon: 'success',
                             confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
                         });
-                        location.reload(); // Refresh the page after a successful addition
                     } else {
                         alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
                     }
@@ -2164,8 +2167,12 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                                         title: 'Package has been added to your cart!',
                                         icon: 'success',
                                         confirmButtonText: 'OK'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            location.reload();
+                                            $('#packageFormPopup').fadeOut();
+                                        }
                                     });
-                                    $('#packageFormPopup').fadeOut();
                                 } else {
                                     alert('Error: ' + response.message);
                                 }
