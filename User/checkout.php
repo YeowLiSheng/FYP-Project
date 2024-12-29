@@ -38,20 +38,22 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
 $cart_query = "
     SELECT 
-        p.product_id,
-        p.product_name, 
-        p.product_price, 
-        p.product_image,
+        IF(sc.product_id = 0, pp.package_id, p.product_id) AS item_id,
+        IF(sc.product_id = 0, pp.package_name, p.product_name) AS item_name,
+        IF(sc.product_id = 0, pp.package_price, p.product_price) AS item_price,
+        IF(sc.product_id = 0, pp.package_image, p.product_image) AS item_image,
         SUM(sc.qty) AS total_qty, 
-        (p.product_price * SUM(sc.qty)) AS item_total_price
+        IF(sc.product_id = 0, pp.package_price * SUM(sc.qty), p.product_price * SUM(sc.qty)) AS item_total_price
     FROM 
         shopping_cart AS sc
-    JOIN 
+    LEFT JOIN 
         product AS p ON sc.product_id = p.product_id
+    LEFT JOIN 
+        product_package AS pp ON sc.package_id = pp.package_id
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
-        p.product_id
+        item_id
 ";
 
 $cart_result = mysqli_query($conn, $cart_query);
@@ -577,9 +579,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						$grand_total = 0;
 
 						while ($row = mysqli_fetch_assoc($cart_result)):
-							$product_name = $row['product_name'];
-							$product_price = $row['product_price'];
-							$product_image = $row['product_image'];
+							$item_name = $row['item_name'];
+							$item_price = $row['item_price'];
+							$item_image = $row['item_image'];
 							$total_qty = $row['total_qty'];
 							$item_total_price = $row['item_total_price'];
 
@@ -589,11 +591,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 							?>
 							<div class="checkout-order-item">
-								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
-									alt="<?php echo htmlspecialchars($product_name); ?>">
+								<img src="images/<?php echo htmlspecialchars($item_image); ?>"
+									alt="<?php echo htmlspecialchars($item_name); ?>">
 								<div>
-									<p><?php echo htmlspecialchars($product_name); ?></p>
-									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
+									<p><?php echo htmlspecialchars($item_name); ?></p>
+									<span>Price: RM<?php echo number_format($item_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
 									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
 								</div>
