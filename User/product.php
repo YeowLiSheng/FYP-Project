@@ -500,6 +500,8 @@ if (!empty($output)) {
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 
 <style>
 .selected {
@@ -1575,7 +1577,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 </div>
 
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
 <script src="vendor/animsition/js/animsition.min.js"></script>
 <script src="vendor/bootstrap/js/popper.js"></script>
@@ -1860,7 +1862,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        alert(`${productName} has been added to your cart!`);
+                        Swal.fire({
+                            title: 'Product has been added to your cart!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
                         location.reload(); // Refresh the page after a successful addition
                     } else {
                         alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
@@ -2151,7 +2157,11 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                             success: function (response) {
                                 console.log("Add to Cart Response:", response);
                                 if (response.success) {
-                                    alert('Package added to cart!');
+                                    Swal.fire({
+                                        title: 'Package has been added to your cart!',
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    });
                                     $('#packageFormPopup').fadeOut();
                                 } else {
                                     alert('Error: ' + response.message);
@@ -2232,8 +2242,18 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                         this.closest('.header-cart-item').remove();
                         // Update the total price
                         document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                        Swal.fire({
+                            title: 'Item has been removed from your cart!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        });
                     } else {
-                        alert('Failed to delete the item: ' + (data.message || 'Please try again.'));
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to remove the item. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
                     }
                 })
                 .catch(error => {
