@@ -336,7 +336,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <!-- Start Year -->
                 <div class="col">
                     <label for="start_year" class="form-label">From Year</label>
-                    <select id="start_year" name="start_year" class="form-select" onchange="updateViewMode();"onchange="updateEndYearOptions();">
+                    <select id="start_year" name="start_year" class="form-select" onchange="updateViewMode();">
                         <?php
                         $currentYear = date('Y');
                         for ($i = 0; $i <= 10; $i++) {
@@ -350,7 +350,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <!-- End Year -->
                 <div class="col">
                     <label for="end_year" class="form-label">To Year</label>
-                    <select id="end_year" name="end_year" class="form-select" id="end_year"onchange="updateViewMode();">
+                    <select id="end_year" name="end_year" class="form-select" onchange="updateViewMode();">
                         <?php
                         $currentYear = date('Y');
                         for ($i = 0; $i <= 10; $i++) {
@@ -437,24 +437,7 @@ $categorySalesJson = json_encode($categorySalesData);
         document.getElementById('viewForm').submit();
     }
 
-    function updateEndYearOptions() {
-    const startYear = parseInt(document.getElementById('start_year').value, 10);
-    const endYearSelect = document.getElementById('end_year');
     
-
-    endYearSelect.innerHTML = '';
-
-
-    const currentYear = new Date().getFullYear();
-
-
-    for (let year = startYear; year <= currentYear; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        endYearSelect.appendChild(option);
-    }
-}
     function updateEndDate() {
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
