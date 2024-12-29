@@ -57,6 +57,79 @@ $cart_items_query = "
         sc.product2_color, sc.product2_size,
         sc.product3_color, sc.product3_size";
 $cart_items_result = $connect->query($cart_items_query);
+// Handle AJAX request to delete item
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
+    $id = intval($_POST['id']); // Ensure ID is an integer
+    $type = $_POST['type'];     // Either 'product' or 'package'
+
+    $response = ['success' => false];
+
+    // Debug: Log incoming POST data
+    file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
+
+    if ($type === 'product') {
+        $color = $_POST['color'];
+        $size = $_POST['size'];
+
+        // Delete the specific product with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
+        ");
+        $stmt->bind_param('issi', $id, $color, $size, $user_id);
+    } elseif ($type === 'package') {
+        $product1_color = $_POST['product1_color'];
+        $product1_size = $_POST['product1_size'];
+        $product2_color = $_POST['product2_color'];
+        $product2_size = $_POST['product2_size'];
+        $product3_color = $_POST['product3_color'];
+        $product3_size = $_POST['product3_size'];
+
+        // Delete the specific package with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE package_id = ? 
+              AND product1_color = ? AND product1_size = ?
+              AND product2_color = ? AND product2_size = ?
+              AND product3_color = ? AND product3_size = ?
+              AND user_id = ?
+        ");
+        $stmt->bind_param(
+            'ississsi',
+            $id,
+            $product1_color, $product1_size,
+            $product2_color, $product2_size,
+            $product3_color, $product3_size,
+            $user_id
+        );
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid type']);
+        exit;
+    }
+
+    // Execute the query and check if it was successful
+    if ($stmt->execute()) {
+        // Check affected rows to confirm deletion
+        if ($stmt->affected_rows > 0) {
+            // Recalculate the new total price
+            $result = $connect->query("SELECT SUM(total_price) AS new_total FROM shopping_cart WHERE user_id = $user_id");
+            $row = $result->fetch_assoc();
+            $response['new_total'] = $row['new_total'] ?? 0;
+            $response['success'] = true;
+        } else {
+            $response['message'] = 'No matching row found for deletion.';
+        }
+    } else {
+        // Debug: Log SQL errors
+        $response['message'] = 'Query failed: ' . $connect->error;
+        file_put_contents('debug.log', "SQL Error: " . $connect->error . "\n", FILE_APPEND);
+    }
+
+    $stmt->close();
+    echo json_encode($response);
+    exit;
+}
+
 
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
@@ -235,13 +308,35 @@ $selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) 
 $category_query = "SELECT * FROM category";
 $category_result = $connect->query($category_query);
 
-// Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
-$distinct_products_result = $connect->query($distinct_products_query);
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.product_id, 
+            sc.package_id,
+            sc.color, 
+            sc.size,
+            sc.product1_color, sc.product1_size,
+            sc.product2_color, sc.product2_size,
+            sc.product3_color, sc.product3_size
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.product_id, 
+            sc.package_id, 
+            sc.color, 
+            sc.size,
+            sc.product1_color, sc.product1_size,
+            sc.product2_color, sc.product2_size,
+            sc.product3_color, sc.product3_size
+    ) AS distinct_items";
+
+$distinct_items_result = $connect->query($distinct_items_query);
 $distinct_count = 0;
 
-if ($distinct_products_result) {
-    $row = $distinct_products_result->fetch_assoc();
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
 
@@ -858,7 +953,12 @@ body {
                                 // Render package details
                                 echo '
                                 <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
+                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['package_id'] . '" data-type="package"data-product1-color="' . $cart_item['product1_color'] . '" 
+                                    data-product1-size="' . $cart_item['product1_size'] . '" 
+                                    data-product2-color="' . $cart_item['product2_color'] . '" 
+                                    data-product2-size="' . $cart_item['product2_size'] . '" 
+                                    data-product3-color="' . $cart_item['product3_color'] . '" 
+                                    data-product3-size="' . $cart_item['product3_size'] . '">
                                         <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
                                     </div>
                                     <div class="header-cart-item-txt p-t-8">
@@ -879,7 +979,7 @@ body {
                                 // Render individual product details
                                 echo '
                                 <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
+                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['product_id'] . '" data-type="product"  data-color="' . $cart_item['color'] . '" data-size="' . $cart_item['size'] . '">
                                         <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                                     </div>
                                     <div class="header-cart-item-txt p-t-8">
@@ -2083,6 +2183,69 @@ $(document).on('click', '.filter-tope-group button', function(event) {
 				$('#packageFormPopup').fadeOut();
 			}
 		});
+</script>
+<script>
+    // Add click event listener to cart item images
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+
+            let body = `delete_item=1&id=${id}&type=${type}`;
+
+            // Append additional data based on the type
+            if (type === 'product') {
+                const color = this.dataset.color;
+                const size = this.dataset.size;
+                body += `&color=${color}&size=${size}`;
+                console.log('Deleting product:', { id, color, size });
+            } else if (type === 'package') {
+                const product1_color = this.dataset.product1Color;
+                const product1_size = this.dataset.product1Size;
+                const product2_color = this.dataset.product2Color;
+                const product2_size = this.dataset.product2Size;
+                const product3_color = this.dataset.product3Color;
+                const product3_size = this.dataset.product3Size;
+
+                body += `&product1_color=${product1_color}&product1_size=${product1_size}`;
+                body += `&product2_color=${product2_color}&product2_size=${product2_size}`;
+                body += `&product3_color=${product3_color}&product3_size=${product3_size}`;
+                console.log('Deleting package:', { id, product1_color, product1_size, product2_color, product2_size, product3_color, product3_size });
+            }
+
+            // Confirm deletion
+            if (confirm('Are you sure you want to delete this item from your cart?')) {
+                // Send AJAX request to delete the item
+                fetch(location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: body,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Response:', data); // Log response for debugging
+                    if (data.success) {
+                        // Remove the item from the DOM
+                        this.closest('.header-cart-item').remove();
+                        // Update the total price
+                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                    } else {
+                        alert('Failed to delete the item: ' + (data.message || 'Please try again.'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+});
+
+
+
 </script>
 <script src="js/main.js"></script>
 

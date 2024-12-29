@@ -1,0 +1,36 @@
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => product
+    [color] => undefined
+    [size] => undefined
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => product
+    [color] => undefined
+    [size] => undefined
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => product
+    [color] => Brown
+    [size] => MM
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 1
+    [type] => package
+    [product1_color] => Brown
+    [product1_size] => PM
+    [product2_color] => Grey
+    [product2_size] => PM
+    [product3_color] => Yellow
+    [product3_size] => PM
+)
