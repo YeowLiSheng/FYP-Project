@@ -56,28 +56,6 @@ $cart_query = "
 
 $cart_result = mysqli_query($conn, $cart_query);
 
-
-// Fetch packages that include products in the shopping cart
-$package_query = "
-    SELECT 
-        pp.package_id, 
-        pp.package_name, 
-        pp.package_price, 
-        pp.package_image,
-        pp.package_description,
-        pp.product1_id,
-        pp.product2_id,
-        pp.product3_id
-    FROM 
-        product_package AS pp
-    WHERE 
-        pp.product1_id IN (SELECT product_id FROM shopping_cart WHERE user_id = '$user_id')
-        OR pp.product2_id IN (SELECT product_id FROM shopping_cart WHERE user_id = '$user_id')
-        OR pp.product3_id IN (SELECT product_id FROM shopping_cart WHERE user_id = '$user_id')
-";
-
-$package_result = mysqli_query($conn, $package_query);
-
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
@@ -592,70 +570,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 					<!-- Order Summary Section -->
 					<div class="checkout-column checkout-order-summary">
-						<h3 class="checkout-title">  Your Order</h3>
+						<h3 class="checkout-title">Your Order</h3>
 						<!-- Product List -->
 						<?php
 
-						// Display the cart and package details
-if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && mysqli_num_rows($package_result) > 0)) {
-    echo '<div class="checkout-column checkout-order-summary">';
+						$grand_total = 0;
 
-    $grand_total = 0;
-
-    // Display regular cart items
-    while ($row = mysqli_fetch_assoc($cart_result)) {
-        $product_name = $row['product_name'];
-        $product_price = $row['product_price'];
-        $product_image = $row['product_image'];
-        $total_qty = $row['total_qty'];
-        $item_total_price = $row['item_total_price'];
-
-        $grand_total += $item_total_price;
-
-        echo '<div class="checkout-order-item">';
-        echo '<img src="images/' . htmlspecialchars($product_image) . '" alt="' . htmlspecialchars($product_name) . '">';
-        echo '<div>';
-        echo '<p>' . htmlspecialchars($product_name) . '</p>';
-        echo '<span>Price: RM' . number_format($product_price, 2) . '</span><br>';
-        echo '<span>Quantity: ' . $total_qty . '</span><br>';
-        echo '<span>Subtotal: RM' . number_format($item_total_price, 2) . '</span>';
-        echo '</div></div>';
-    }
-
-    // Display package details
-    while ($row = mysqli_fetch_assoc($package_result)) {
-        $package_name = $row['package_name'];
-        $package_price = $row['package_price'];
-        $package_image = $row['package_image'];
-        $package_description = $row['package_description'];
+						while ($row = mysqli_fetch_assoc($cart_result)):
+							$product_name = $row['product_name'];
+							$product_price = $row['product_price'];
+							$product_image = $row['product_image'];
+							$total_qty = $row['total_qty'];
+							$item_total_price = $row['item_total_price'];
 
 
-        $grand_total += $package_price;
+							// Accumulate the grand total
+							$grand_total += $item_total_price;
 
-        echo '<div class="checkout-order-item">';
-        echo '<img src="images/' . htmlspecialchars($package_image) . '" alt="' . htmlspecialchars($package_name) . '">';
-        echo '<div>';
-        echo '<p>' . htmlspecialchars($package_name) . '</p>';
-        echo '<span>Price: RM' . number_format($package_price, 2) . '</span><br>';
-        echo '<span>Description: ' . htmlspecialchars($package_description) . '</span><br>';
+							?>
+							<div class="checkout-order-item">
+								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
+									alt="<?php echo htmlspecialchars($product_name); ?>">
+								<div>
+									<p><?php echo htmlspecialchars($product_name); ?></p>
+									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
+									<span>Quantity: <?php echo $total_qty; ?></span><br>
+									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
+								</div>
+							</div>
+						<?php endwhile; ?>
 
-		echo '<span>Subtotal: RM' . number_format($package_price, 2) . '</span>';
-
-        echo '</div></div>';
-    }
-
-    // Order Totals
-    $total_payment = $grand_total - $discount_amount ;
-
-    echo '<div class="checkout-order-totals">';
-    echo '<p>Grand total: <span>RM' . number_format($grand_total, 2) . '</span></p>';
-    echo '<p>Discount: <span>-RM' . number_format($discount_amount, 2) . '</span></p>';
-    echo '<p class="checkout-total">Total Payment: <span>RM' . number_format($total_payment, 2) . '</span></p>';
-    echo '</div></div>';
-} else {
-    echo '<p>Your cart is empty.</p>';
-}
-?>
+						<!-- Order Totals -->
+						<div class="checkout-order-totals">
+							<?php
+							// Assuming $discount is calculated elsewhere or based on some logic
+							$delivery_charge = 10;
+							$total_payment = $grand_total - $discount_amount + $delivery_charge;
+							?>
+							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
+							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
+							<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
+							<p class="checkout-total">Total Payment:
+								<span>RM<?php echo number_format($total_payment, 2); ?></span>
+							</p>
+						</div>
 
 
 						<!-- Confirm Payment Button -->
