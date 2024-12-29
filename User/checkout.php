@@ -598,7 +598,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						// Display the cart and package details
 if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && mysqli_num_rows($package_result) > 0)) {
-    echo '<div class="checkout-column checkout-order-summary">';
+
 
     $grand_total = 0;
 
