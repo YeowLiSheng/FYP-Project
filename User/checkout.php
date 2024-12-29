@@ -637,7 +637,7 @@ if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && m
         echo '<div>';
         echo '<p>' . htmlspecialchars($package_name) . '</p>';
         echo '<span>Price: RM' . number_format($package_price, 2) . '</span><br>';
-        echo '<span>Description: ' . htmlspecialchars($package_description) . '</span>';
+        echo '<span>Description: ' . htmlspecialchars($package_description) . '</span><br>';
 
 		echo '<span>Subtotal: RM' . number_format($package_price, 2) . '</span>';
 
