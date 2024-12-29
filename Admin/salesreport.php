@@ -320,7 +320,30 @@ $categorySalesJson = json_encode($categorySalesData);
             </select>
         </div>
 
-        
+        <!-- Year Range Selector -->
+<div class="col-auto" id="yearRangeSelector" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
+    <label for="start_year" class="form-label">From Year</label>
+    <select id="start_year" name="start_year" class="form-select">
+        <?php
+        $currentYear = date('Y');
+        for ($i = 0; $i < 6; $i++) {
+            $year = $currentYear - $i;
+            echo "<option value='$year'>$year</option>";
+        }
+        ?>
+    </select>
+
+    <label for="end_year" class="form-label">To Year</label>
+    <select id="end_year" name="end_year" class="form-select">
+        <?php
+        $currentYear = date('Y');
+        for ($i = 0; $i < 6; $i++) {
+            $year = $currentYear - $i;
+            echo "<option value='$year'>$year</option>";
+        }
+        ?>
+    </select>
+</div>
     </div>
 </form>
 
@@ -385,6 +408,7 @@ $categorySalesJson = json_encode($categorySalesData);
 
 
         document.getElementById('dateFilter').style.display = viewMode === 'sales_trend' ? 'block' : 'none';
+        document.getElementById('yearRangeSelector').style.display = viewMode === 'yearly_sales' ? 'block' : 'none';
 
 
         document.getElementById('viewForm').submit();
@@ -539,6 +563,13 @@ function drawCategoryChart() {
     // Create and draw the chart
     var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
     categoryPieChart.draw(categorySalesData, categoryChartOptions);
+}
+
+if (<?php echo json_encode($viewMode); ?> === 'yearly_sales') {
+    const labels = <?php echo json_encode(array_column($yearlySales, 'year')); ?>;
+    const data = <?php echo json_encode(array_column($yearlySales, 'yearly_sales')); ?>;
+
+    createBarChart('Yearly Sales', labels, data);
 }
 </script>
 </body>
