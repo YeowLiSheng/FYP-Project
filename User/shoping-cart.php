@@ -886,6 +886,7 @@ if ($distinct_products_result) {
 												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
 													<i class="fs-16 zmdi zmdi-plus"></i>
 												</div>
+												
 											</div>
 											' . $message . '
 										</td>
