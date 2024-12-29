@@ -591,12 +591,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 					</div>
 
 					<!-- Order Summary Section -->
-					<div class="checkout-column checkout-order-summary">
-						<h3 class="checkout-title">Your Order</h3>
+
 						<!-- Product List -->
 						<?php
 
-						$grand_total = 0;
 
 						// Display the cart and package details
 if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && mysqli_num_rows($package_result) > 0)) {
