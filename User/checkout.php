@@ -591,6 +591,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 					</div>
 
 					<!-- Order Summary Section -->
+					<div class="checkout-column checkout-order-summary">
 						<h3 class="checkout-title">Your Order</h3>
 						<!-- Product List -->
 						<?php
