@@ -64,6 +64,15 @@ $monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthl
     return $result;
 }, []);
 
+// Fetch yearly sales data
+$yearlySales_query = "
+    SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
+    FROM orders 
+    GROUP BY YEAR(order_date) 
+    ORDER BY YEAR(order_date) DESC";
+$yearlySales_result = $connect->query($yearlySales_query);
+$yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
+
 if ($viewMode === 'yearly_sales') {
     $startYear = isset($_POST['start_year']) ? $_POST['start_year'] : date('Y', strtotime('-5 years'));
     $endYear = isset($_POST['end_year']) ? $_POST['end_year'] : date('Y');
