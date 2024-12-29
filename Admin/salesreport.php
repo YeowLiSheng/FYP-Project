@@ -9,8 +9,8 @@ $endDate = date('Y-m-d');
 // Check if dates or view mode are submitted via POST
 $viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
 if ($viewMode === 'sales_trend' && (!isset($_POST['start_date']) || !isset($_POST['end_date']))) {
-    $startDate = date('Y-m-d', strtotime('-30 days')); // 默认开始日期
-    $endDate = date('Y-m-d'); // 默认结束日期
+    $startDate = date('Y-m-d', strtotime('-30 days')); 
+    $endDate = date('Y-m-d'); 
 } else {
     $startDate = $_POST['start_date'];
     $endDate = $_POST['end_date'];
@@ -73,12 +73,12 @@ $yearlySales_query = "
 $yearlySales_result = $connect->query($yearlySales_query);
 $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// 默认年份范围（最近 6 年）
+
 $defaultYearRange = range(date('Y') - 5, date('Y'));
 $startYear = $_POST['start_year'] ?? min($defaultYearRange);
 $endYear = $_POST['end_year'] ?? max($defaultYearRange);
 
-// Yearly Sales 数据查询
+
 if ($viewMode === 'yearly_sales') {
     $yearlySales_query = "
         SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
@@ -89,7 +89,7 @@ if ($viewMode === 'yearly_sales') {
     $yearlySales_result = $connect->query($yearlySales_query);
     $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-    // 填充缺失年份
+
     $allYears = range($startYear, $endYear);
     $yearlySales = array_reduce($allYears, function ($result, $year) use ($yearlySales) {
         $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
@@ -98,7 +98,7 @@ if ($viewMode === 'yearly_sales') {
     }, []);
 }
 
-// 渲染图表数据
+
 if ($viewMode === 'yearly_sales') {
     $labels = array_column($yearlySales, 'year');
     $data = array_column($yearlySales, 'yearly_sales');
@@ -336,7 +336,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <!-- Start Year -->
                 <div class="col">
                     <label for="start_year" class="form-label">From Year</label>
-                    <select id="start_year" name="start_year" class="form-select" onchange="updateViewMode();">
+                    <select id="start_year" name="start_year" class="form-select" onchange="updateEndYearOptions();">
                         <?php
                         $currentYear = date('Y');
                         for ($i = 0; $i <= 10; $i++) {
@@ -350,7 +350,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <!-- End Year -->
                 <div class="col">
                     <label for="end_year" class="form-label">To Year</label>
-                    <select id="end_year" name="end_year" class="form-select" onchange="updateViewMode();">
+                    <select id="end_year" name="end_year" class="form-select" id="end_year"">
                         <?php
                         $currentYear = date('Y');
                         for ($i = 0; $i <= 10; $i++) {
@@ -421,6 +421,8 @@ $categorySalesJson = json_encode($categorySalesData);
 </div>
 </div>
 <script>
+
+
     function updateViewMode() {
         const viewMode = document.getElementById('view_mode').value;
 
@@ -435,6 +437,24 @@ $categorySalesJson = json_encode($categorySalesData);
         document.getElementById('viewForm').submit();
     }
 
+    function updateEndYearOptions() {
+    const startYear = parseInt(document.getElementById('start_year').value, 10);
+    const endYearSelect = document.getElementById('end_year');
+    
+
+    endYearSelect.innerHTML = '';
+
+
+    const currentYear = new Date().getFullYear();
+
+
+    for (let year = startYear; year <= currentYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        endYearSelect.appendChild(option);
+    }
+}
     function updateEndDate() {
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
