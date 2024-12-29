@@ -64,27 +64,29 @@ $monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthl
     return $result;
 }, []);
 
-// Fetch yearly sales data
-$yearlySales_query = "
-    SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
-    FROM orders 
-    GROUP BY YEAR(order_date) 
-    ORDER BY YEAR(order_date) DESC";
-$yearlySales_result = $connect->query($yearlySales_query);
-$yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
+if ($viewMode === 'yearly_sales') {
+    // 获取用户选择的年份范围
+    $startYear = isset($_POST['start_year']) ? $_POST['start_year'] : date('Y', strtotime('-5 years'));
+    $endYear = isset($_POST['end_year']) ? $_POST['end_year'] : date('Y');
 
-// Fill yearly sales data if less than 6 years
-if (count($yearlySales) < 6) {
-    $currentYear = date('Y');
-    for ($i = 5; $i >= 0; $i--) {
-        $year = $currentYear - $i;
+    // 查询指定年份范围的数据
+    $yearlySales_query = "
+        SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
+        FROM orders 
+        WHERE YEAR(order_date) BETWEEN '$startYear' AND '$endYear' 
+        GROUP BY YEAR(order_date) 
+        ORDER BY YEAR(order_date)";
+    $yearlySales_result = $connect->query($yearlySales_query);
+    $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
+
+    // 填补缺少的年份数据为 0
+    $allYears = range($startYear, $endYear);
+    $yearlySales = array_reduce($allYears, function ($result, $year) use ($yearlySales) {
         $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
-        if (empty($exists)) {
-            $yearlySales[] = ['year' => $year, 'yearly_sales' => 0];
-        }
-    }
-    usort($yearlySales, fn($a, $b) => $a['year'] - $b['year']);
-
+        $result[] = ['year' => $year, 'yearly_sales' => $exists ? current($exists)['yearly_sales'] : 0];
+        return $result;
+    }, []);
+}
     // Fetch recent 5 orders
 $recentOrders_query = "
 SELECT o.order_id, u.user_name, o.order_date, o.final_amount, o.order_status 
@@ -95,7 +97,7 @@ LIMIT 5";
 $recentOrders_result = $connect->query($recentOrders_query);
 $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
-}
+
 
 // Fetch category-wise sales data
 $categorySales_query = "
@@ -310,7 +312,28 @@ $categorySalesJson = json_encode($categorySalesData);
                 ?>
             </select>
         </div>
-
+<!-- Year Range Filter -->
+<div class="col-auto" id="yearRangeFilter" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
+    <label for="start_year" class="form-label">Start Year</label>
+    <select id="start_year" name="start_year" class="form-select" onchange="document.getElementById('viewForm').submit();">
+        <?php
+        $currentYear = date('Y');
+        for ($i = $currentYear - 10; $i <= $currentYear; $i++) {
+            $selected = isset($_POST['start_year']) && $_POST['start_year'] == $i ? 'selected' : '';
+            echo "<option value='$i' $selected>$i</option>";
+        }
+        ?>
+    </select>
+    <label for="end_year" class="form-label">End Year</label>
+    <select id="end_year" name="end_year" class="form-select" onchange="document.getElementById('viewForm').submit();">
+        <?php
+        for ($i = $currentYear - 10; $i <= $currentYear; $i++) {
+            $selected = isset($_POST['end_year']) && $_POST['end_year'] == $i ? 'selected' : ($i === $currentYear ? 'selected' : '');
+            echo "<option value='$i' $selected>$i</option>";
+        }
+        ?>
+    </select>
+</div>
         
     </div>
 </form>
@@ -458,34 +481,34 @@ $categorySalesJson = json_encode($categorySalesData);
     }
 
     function createBarChart(label, labels, data) {
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: label,
-                    data: data,
-                    backgroundColor: '#007bff',
-                    borderColor: '#0056b3',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                },
-                scales: {
-                    x: { title: { display: true, text: 'Date' } },
-                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: data,
+                backgroundColor: '#007bff',
+                borderColor: '#0056b3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
                 }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Year' } },
+                y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
             }
-        });
-    }
+        }
+    });
+}
 
     document.getElementById('view_mode').addEventListener('change', function () {
     const yearSelector = document.getElementById('yearSelector');
