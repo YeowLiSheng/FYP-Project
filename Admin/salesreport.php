@@ -287,12 +287,12 @@ $categorySalesJson = json_encode($categorySalesData);
         <!-- Start Date -->
         <div class="col">
             <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>"  onchange="validateDates(); document.getElementById('viewForm').submit();">
+            <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>"  onchange="updateEndDate(); document.getElementById('viewForm').submit();">
         </div>
         <!-- End Date -->
         <div class="col">
             <label for="end_date" class="form-label">End Date</label>
-            <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" onchange="validateDates(); document.getElementById('viewForm').submit();">
+            <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" onchange=" document.getElementById('viewForm').submit();">
         </div>
     </div>
 </div>
@@ -379,15 +379,23 @@ $categorySalesJson = json_encode($categorySalesData);
         document.getElementById('viewForm').submit();
     }
 
-    function validateDates() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
+    function updateEndDate() {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
 
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-        alert('End Date cannot be earlier than Start Date.');
-        document.getElementById('end_date').value = ''; // Clear invalid End Date
+        if (startDateInput.value) {
+            // Set the minimum value for End Date to the Start Date value
+            endDateInput.min = startDateInput.value;
+
+            // Ensure End Date is not earlier than Start Date
+            if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                endDateInput.value = startDateInput.value;
+            }
+        }
     }
-}
+
+    // Initialize the minimum value for End Date on page load
+    document.addEventListener('DOMContentLoaded', updateEndDate);
 </script>
 <script>
     // Retrieve PHP data
