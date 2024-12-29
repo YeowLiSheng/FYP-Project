@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 		// Deduct product stock
 		if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 			while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-				$product_id = $cart_item['product_id'];
+				$product_id = $cart_item['item_id'];
 				$quantity_to_deduct = $cart_item['total_qty'];
 	
 				// Update the product stock
