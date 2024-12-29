@@ -287,12 +287,12 @@ $categorySalesJson = json_encode($categorySalesData);
         <!-- Start Date -->
         <div class="col">
             <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>" onchange="document.getElementById('viewForm').submit();">
+            <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>"  onchange="validateDates(); document.getElementById('viewForm').submit();">
         </div>
         <!-- End Date -->
         <div class="col">
             <label for="end_date" class="form-label">End Date</label>
-            <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" onchange="document.getElementById('viewForm').submit();">
+            <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>" onchange="validateDates(); document.getElementById('viewForm').submit();">
         </div>
     </div>
 </div>
@@ -369,15 +369,25 @@ $categorySalesJson = json_encode($categorySalesData);
     function updateViewMode() {
         const viewMode = document.getElementById('view_mode').value;
 
-        // 控制年份选择器的显示
+ 
         document.getElementById('yearSelector').style.display = viewMode === 'monthly_sales' ? 'block' : 'none';
 
-        // 控制日期过滤器的显示
+
         document.getElementById('dateFilter').style.display = viewMode === 'sales_trend' ? 'block' : 'none';
 
-        // 提交表单
+
         document.getElementById('viewForm').submit();
     }
+
+    function validateDates() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+        alert('End Date cannot be earlier than Start Date.');
+        document.getElementById('end_date').value = ''; // Clear invalid End Date
+    }
+}
 </script>
 <script>
     // Retrieve PHP data
