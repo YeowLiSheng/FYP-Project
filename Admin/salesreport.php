@@ -399,7 +399,7 @@ $categorySalesJson = json_encode($categorySalesData);
         createBarChart('Yearly Sales (RM)', years, sales);
     }
 
-    let chartInstance = null;
+
 
 function createLineChart(label, labels, data) {
     const ctx = document.getElementById('salesChart').getContext('2d');
