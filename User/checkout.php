@@ -35,10 +35,10 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
 	$address = mysqli_fetch_assoc($address_result);
 }
 
-// Retrieve unique products with total quantity and price in the cart for the logged-in user
 $cart_query = "
     SELECT 
-        IF(sc.product_id = 0, pp.package_id, p.product_id) AS item_id,
+        sc.product_id, 
+        sc.package_id,
         IF(sc.product_id = 0, pp.package_name, p.product_name) AS item_name,
         IF(sc.product_id = 0, pp.package_price, p.product_price) AS item_price,
         IF(sc.product_id = 0, pp.package_image, p.product_image) AS item_image,
@@ -53,10 +53,14 @@ $cart_query = "
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
-        item_id
+        sc.product_id, sc.package_id
 ";
 
+// 执行查询
 $cart_result = mysqli_query($conn, $cart_query);
+if (!$cart_result) {
+    die("Query failed: " . mysqli_error($conn));
+}
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
@@ -616,38 +620,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // Get necessary data
+    // 获取必要数据
     $final_amount = $total_payment;
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
 
-    // Insert into `orders`
+    // 插入到 `orders`
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) 
                     VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
     $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
 
-    // Get the inserted order ID
+    // 获取订单 ID
     $order_id = $stmt->insert_id;
 
-    // Store cart items for processing
-    $cart_items = [];
-    mysqli_data_seek($cart_result, 0); // Reset cart result pointer
+    // 处理购物车数据
+    mysqli_data_seek($cart_result, 0); // 重置购物车结果指针
     while ($row = mysqli_fetch_assoc($cart_result)) {
-        $cart_items[] = $row;
-    }
+        $product_id = $row['product_id'];
+        $package_id = $row['package_id'];
+        $item_name = $row['item_name'];
+        $quantity = $row['total_qty'];
+        $unit_price = $row['item_price'];
+        $total_price = $row['item_total_price'];
 
-    // Insert into `order_details`
-    foreach ($cart_items as $item) {
-        $item_id = $item['item_id'];
-        $item_name = $item['item_name'];
-        $quantity = $item['total_qty'];
-        $unit_price = $item['item_price'];
-        $total_price = $item['item_total_price'];
-        $product_id = ($item['item_id'] > 0 && empty($item['package_id'])) ? $item_id : 0;
-        $package_id = !empty($item['package_id']) ? $item_id : 0;
-
+        // 插入到 `order_details`
         $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, package_id, quantity, unit_price, total_price) 
                          VALUES (?, ?, ?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
@@ -655,41 +653,39 @@ if ($paymentSuccess) {
         $detail_stmt->execute();
     }
 
-    // Update stock
-    foreach ($cart_items as $item) {
-        $item_id = $item['item_id'];
-        $quantity = $item['total_qty'];
+    // 更新库存
+    mysqli_data_seek($cart_result, 0); // 再次重置购物车结果指针
+    while ($row = mysqli_fetch_assoc($cart_result)) {
+        $item_id = $row['product_id'] ?: $row['package_id'];
+        $quantity = $row['total_qty'];
 
-        if (!empty($item['package_id'])) {
-            // Update package stock
+        if ($row['package_id']) {
+            // 更新包裹库存
             $update_package_stock_query = "UPDATE product_package SET package_stock = package_stock - ? WHERE package_id = ?";
             $update_package_stmt = $conn->prepare($update_package_stock_query);
-            $update_package_stmt->bind_param("ii", $quantity, $item['package_id']);
+            $update_package_stmt->bind_param("ii", $quantity, $row['package_id']);
             $update_package_stmt->execute();
         } else {
-            // Update product stock
+            // 更新产品库存
             $update_product_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
             $update_product_stock_stmt = $conn->prepare($update_product_stock_query);
-            $update_product_stock_stmt->bind_param("ii", $quantity, $item_id);
+            $update_product_stock_stmt->bind_param("ii", $quantity, $row['product_id']);
             $update_product_stock_stmt->execute();
         }
     }
 
-    // Clear the cart
+    // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
 
-    // Insert payment record
+    // 插入支付记录
     $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed';
     $payment_stmt = $conn->prepare($payment_query);
     $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
     $payment_stmt->execute();
-
-
-	
 }
 ?>
 	<!-- Footer -->
