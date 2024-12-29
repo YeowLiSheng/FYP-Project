@@ -8,10 +8,14 @@ $endDate = date('Y-m-d');
 
 // Check if dates or view mode are submitted via POST
 $viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
-if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
+if ($viewMode === 'sales_trend' && (!isset($_POST['start_date']) || !isset($_POST['end_date']))) {
+    $startDate = date('Y-m-d', strtotime('-30 days')); // 默认开始日期
+    $endDate = date('Y-m-d'); // 默认结束日期
+} else {
     $startDate = $_POST['start_date'];
     $endDate = $_POST['end_date'];
 }
+
 
 // Fetch total orders
 $order_query = "SELECT COUNT(*) AS order_count FROM `orders`";
@@ -277,7 +281,14 @@ $categorySalesJson = json_encode($categorySalesData);
                 <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
             </select>
         </div>
+        <!-- Date Range Filter -->
+<div class="col-auto" id="dateFilter" style="display: <?php echo $viewMode === 'sales_trend' ? 'block' : 'none'; ?>;">
+    <label for="start_date" class="form-label">Start Date</label>
+    <input type="date" id="start_date" name="start_date" class="form-control"  value="<?php echo $startDate; ?>" onchange="document.getElementById('viewForm').submit();">
 
+    <label for="end_date" class="form-label">End Date</label>
+    <input type="date" id="end_date" name="end_date" class="form-control"  value="<?php echo $endDate; ?>" onchange="document.getElementById('viewForm').submit();">
+</div>
         <!-- Year Selector -->
         <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
             <label for="selected_year" class="form-label">Select Year</label>
@@ -347,6 +358,20 @@ $categorySalesJson = json_encode($categorySalesData);
     </div>
 </div>
 </div>
+<script>
+    function updateViewMode() {
+        const viewMode = document.getElementById('view_mode').value;
+
+        // 控制年份选择器的显示
+        document.getElementById('yearSelector').style.display = viewMode === 'monthly_sales' ? 'block' : 'none';
+
+        // 控制日期过滤器的显示
+        document.getElementById('dateFilter').style.display = viewMode === 'sales_trend' ? 'block' : 'none';
+
+        // 提交表单
+        document.getElementById('viewForm').submit();
+    }
+</script>
 <script>
     // Retrieve PHP data
     const viewMode = '<?php echo $viewMode; ?>';
