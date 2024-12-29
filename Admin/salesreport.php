@@ -336,7 +336,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <!-- Start Year -->
                 <div class="col">
                     <label for="start_year" class="form-label">From Year</label>
-                    <select id="start_year" name="start_year" class="form-select" onchange="updateEndYearOptions();">
+                    <select id="start_year" name="start_year" class="form-select" onchange="updateViewMode();"onchange="updateEndYearOptions();">
                         <?php
                         $currentYear = date('Y');
                         for ($i = 0; $i <= 10; $i++) {
@@ -350,7 +350,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 <!-- End Year -->
                 <div class="col">
                     <label for="end_year" class="form-label">To Year</label>
-                    <select id="end_year" name="end_year" class="form-select" id="end_year"">
+                    <select id="end_year" name="end_year" class="form-select" id="end_year"onchange="updateViewMode();">
                         <?php
                         $currentYear = date('Y');
                         for ($i = 0; $i <= 10; $i++) {
