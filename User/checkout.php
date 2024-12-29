@@ -644,13 +644,11 @@ if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && m
     }
 
     // Order Totals
-    $delivery_charge = 10;
-    $total_payment = $grand_total - $discount_amount + $delivery_charge;
+    $total_payment = $grand_total - $discount_amount ;
 
     echo '<div class="checkout-order-totals">';
     echo '<p>Grand total: <span>RM' . number_format($grand_total, 2) . '</span></p>';
     echo '<p>Discount: <span>-RM' . number_format($discount_amount, 2) . '</span></p>';
-    echo '<p>Delivery Charge: <span>RM' . number_format($delivery_charge, 2) . '</span></p>';
     echo '<p class="checkout-total">Total Payment: <span>RM' . number_format($total_payment, 2) . '</span></p>';
     echo '</div></div>';
 } else {
