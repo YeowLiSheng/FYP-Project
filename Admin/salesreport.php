@@ -64,35 +64,45 @@ $monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthl
     return $result;
 }, []);
 
-// 默认年份范围（最近 6 年）
-$defaultYearRange = range(date('Y') - 5, date('Y'));
-$startYear = $_POST['start_year'] ?? min($defaultYearRange);
-$endYear = $_POST['end_year'] ?? max($defaultYearRange);
-
-// Yearly Sales 数据查询
 if ($viewMode === 'yearly_sales') {
+    // 确保 $startYear 和 $endYear 是有效的年份
+    $startYear = isset($_POST['start_year']) ? intval($_POST['start_year']) : date('Y') - 5;
+    $endYear = isset($_POST['end_year']) ? intval($_POST['end_year']) : date('Y');
+
+    // 防止无效的年份范围
+    if ($startYear > $endYear) {
+        $startYear = $endYear;
+    }
+
+    // 查询数据
     $yearlySales_query = "
         SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
         FROM orders 
         WHERE YEAR(order_date) BETWEEN '$startYear' AND '$endYear'
-        GROUP BY YEAR(order_date) 
+        GROUP BY YEAR(order_date)
         ORDER BY YEAR(order_date)";
     $yearlySales_result = $connect->query($yearlySales_query);
-    $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-    // 填充缺失年份
-    $allYears = range($startYear, $endYear);
-    $yearlySales = array_reduce($allYears, function ($result, $year) use ($yearlySales) {
-        $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
-        $result[] = ['year' => $year, 'yearly_sales' => $exists ? current($exists)['yearly_sales'] : 0];
-        return $result;
-    }, []);
-}
+    // 处理结果
+    $yearlySales = [];
+    while ($row = $yearlySales_result->fetch_assoc()) {
+        $yearlySales[$row['year']] = $row['yearly_sales'];
+    }
 
-// 渲染图表数据
-if ($viewMode === 'yearly_sales') {
-    $labels = array_column($yearlySales, 'year');
-    $data = array_column($yearlySales, 'yearly_sales');
+    // 补全缺失年份，并设置默认销售额为 0
+    for ($year = $startYear; $year <= $endYear; $year++) {
+        if (!isset($yearlySales[$year])) {
+            $yearlySales[$year] = 0;
+        }
+    }
+
+    // 按年份排序
+    ksort($yearlySales);
+
+    // 准备图表数据
+    $labels = array_keys($yearlySales);
+    $data = array_values($yearlySales);
+
     echo "<script>createBarChart('Yearly Sales', " . json_encode($labels) . ", " . json_encode($data) . ");</script>";
 }
 
