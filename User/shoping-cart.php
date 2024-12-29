@@ -862,7 +862,7 @@ if ($distinct_products_result) {
 								}else {
 									$message = '';
 									if ($cart_item['product_status']==2) {
-										$message = '<p class="text-danger">This product is unavailable</p>';
+										$message = '<p class="text-danger">This product is unavailable, please remove it from your cart</p>';
 									} elseif ($cart_item['total_qty'] > $cart_item['product_stock']) {
 										$message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>';
 									}
@@ -944,12 +944,12 @@ if ($distinct_products_result) {
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
-    					<?php if ($checkout_locked): ?>
-							<p class="text-danger">You cannot proceed to checkout. Please adjust the items in your cart.</p>
-						<?php endif; ?>
 						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10" <?php echo $checkout_locked ? 'disabled' : ''; ?>>
 							Check Out
 						</button>
+						<?php if ($checkout_locked): ?>
+							<p class="text-danger">You cannot proceed to checkout. Please adjust the items in your cart.</p>
+						<?php endif; ?>
 					</div>
                 </div>
             </div>
