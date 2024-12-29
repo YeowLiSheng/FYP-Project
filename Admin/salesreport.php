@@ -64,46 +64,28 @@ $monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthl
     return $result;
 }, []);
 
-if ($viewMode === 'yearly_sales') {
-    // 确保 $startYear 和 $endYear 是有效的年份
-    $startYear = isset($_POST['start_year']) ? intval($_POST['start_year']) : date('Y') - 5;
-    $endYear = isset($_POST['end_year']) ? intval($_POST['end_year']) : date('Y');
+// Fetch yearly sales data
+$yearlySales_query = "
+    SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
+    FROM orders 
+    GROUP BY YEAR(order_date) 
+    ORDER BY YEAR(order_date) DESC";
+$yearlySales_result = $connect->query($yearlySales_query);
+$yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-    // 防止无效的年份范围
-    if ($startYear > $endYear) {
-        $startYear = $endYear;
-    }
-
-    // 查询数据
-    $yearlySales_query = "
-        SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
-        FROM orders 
-        WHERE YEAR(order_date) BETWEEN '$startYear' AND '$endYear'
-        GROUP BY YEAR(order_date)
-        ORDER BY YEAR(order_date)";
-    $yearlySales_result = $connect->query($yearlySales_query);
-
-    // 处理结果
-    $yearlySales = [];
-    while ($row = $yearlySales_result->fetch_assoc()) {
-        $yearlySales[$row['year']] = $row['yearly_sales'];
-    }
-
-    // 补全缺失年份，并设置默认销售额为 0
-    for ($year = $startYear; $year <= $endYear; $year++) {
-        if (!isset($yearlySales[$year])) {
-            $yearlySales[$year] = 0;
+// Fill yearly sales data if less than 6 years
+if (count($yearlySales) < 6) {
+    $currentYear = date('Y');
+    for ($i = 5; $i >= 0; $i--) {
+        $year = $currentYear - $i;
+        $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
+        if (empty($exists)) {
+            $yearlySales[] = ['year' => $year, 'yearly_sales' => 0];
         }
     }
+    usort($yearlySales, fn($a, $b) => $a['year'] - $b['year']);
 
-    // 按年份排序
-    ksort($yearlySales);
-
-    // 准备图表数据
-    $labels = array_keys($yearlySales);
-    $data = array_values($yearlySales);
-
-    echo "<script>createBarChart('Yearly Sales', " . json_encode($labels) . ", " . json_encode($data) . ");</script>";
+    
 }
 
 // Fetch recent 5 orders
@@ -331,39 +313,7 @@ $categorySalesJson = json_encode($categorySalesData);
             </select>
         </div>
 
-        <!-- Year Range Filter for Yearly Sales -->
-        <div class="col-auto" id="yearRangeFilter" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
-            <div class="row g-3 align-items-center">
-                <!-- Start Year -->
-                <div class="col">
-                    <label for="start_year" class="form-label">From Year</label>
-                    <select id="start_year" name="start_year" class="form-select" onchange="updateViewMode();">
-                        <?php
-                        $currentYear = date('Y');
-                        for ($i = 0; $i <= 10; $i++) {
-                            $year = $currentYear - $i;
-                            $selected = isset($_POST['start_year']) && $_POST['start_year'] == $year ? 'selected' : '';
-                            echo "<option value='$year' $selected>$year</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <!-- End Year -->
-                <div class="col">
-                    <label for="end_year" class="form-label">To Year</label>
-                    <select id="end_year" name="end_year" class="form-select" onchange="updateViewMode();">
-                        <?php
-                        $currentYear = date('Y');
-                        for ($i = 0; $i <= 10; $i++) {
-                            $year = $currentYear - $i;
-                            $selected = isset($_POST['end_year']) && $_POST['end_year'] == $year ? 'selected' : '';
-                            echo "<option value='$year' $selected>$year</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </form>
 
@@ -429,7 +379,6 @@ $categorySalesJson = json_encode($categorySalesData);
 
         document.getElementById('dateFilter').style.display = viewMode === 'sales_trend' ? 'block' : 'none';
 
-        document.getElementById('yearRangeFilter').style.display = viewMode === 'yearly_sales' ? 'block' : 'none';
 
         document.getElementById('viewForm').submit();
     }
