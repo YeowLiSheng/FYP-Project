@@ -628,7 +628,7 @@ if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && m
         $package_price = $row['package_price'];
         $package_image = $row['package_image'];
         $package_description = $row['package_description'];
-        $package_qty = $row['total_qty'];
+        $total_qty = $row['total_qty'];
 
         $grand_total += $package_price;
 
@@ -638,7 +638,7 @@ if (($cart_result && mysqli_num_rows($cart_result) > 0) || ($package_result && m
         echo '<p>' . htmlspecialchars($package_name) . '</p>';
         echo '<span>Price: RM' . number_format($package_price, 2) . '</span><br>';
         echo '<span>Description: ' . htmlspecialchars($package_description) . '</span>';
-		echo '<span>Quantity: ' . $package_qty . '</span><br>';
+		echo '<span>Quantity: ' . $total_qty . '</span><br>';
 		echo '<span>Subtotal: RM' . number_format($package_price, 2) . '</span>';
 
         echo '</div></div>';
