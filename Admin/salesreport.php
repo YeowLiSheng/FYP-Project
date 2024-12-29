@@ -312,28 +312,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 ?>
             </select>
         </div>
-<!-- Year Range Filter -->
-<div class="col-auto" id="yearRangeFilter" style="display: <?php echo $viewMode === 'yearly_sales' ? 'block' : 'none'; ?>;">
-    <label for="start_year" class="form-label">Start Year</label>
-    <select id="start_year" name="start_year" class="form-select" onchange="document.getElementById('viewForm').submit();">
-        <?php
-        $currentYear = date('Y');
-        for ($i = $currentYear - 10; $i <= $currentYear; $i++) {
-            $selected = isset($_POST['start_year']) && $_POST['start_year'] == $i ? 'selected' : '';
-            echo "<option value='$i' $selected>$i</option>";
-        }
-        ?>
-    </select>
-    <label for="end_year" class="form-label">End Year</label>
-    <select id="end_year" name="end_year" class="form-select" onchange="document.getElementById('viewForm').submit();">
-        <?php
-        for ($i = $currentYear - 10; $i <= $currentYear; $i++) {
-            $selected = isset($_POST['end_year']) && $_POST['end_year'] == $i ? 'selected' : ($i === $currentYear ? 'selected' : '');
-            echo "<option value='$i' $selected>$i</option>";
-        }
-        ?>
-    </select>
-</div>
+
         
     </div>
 </form>
