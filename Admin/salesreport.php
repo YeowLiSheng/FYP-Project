@@ -8,10 +8,14 @@ $endDate = date('Y-m-d');
 
 // Check if dates or view mode are submitted via POST
 $viewMode = isset($_POST['view_mode']) ? $_POST['view_mode'] : 'sales_trend';
-if (isset($_POST['start_date']) && isset($_POST['end_date'])) {
+if ($viewMode === 'sales_trend' && (!isset($_POST['start_date']) || !isset($_POST['end_date']))) {
+    $startDate = date('Y-m-d', strtotime('-30 days')); // 默认开始日期
+    $endDate = date('Y-m-d'); // 默认结束日期
+} else {
     $startDate = $_POST['start_date'];
     $endDate = $_POST['end_date'];
 }
+
 
 // Fetch total orders
 $order_query = "SELECT COUNT(*) AS order_count FROM `orders`";
@@ -122,30 +126,6 @@ unset($data);
 
 // Pass the data to JavaScript
 $categorySalesJson = json_encode($categorySalesData);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_date'], $_POST['end_date'])) {
-    $startDate = $_POST['start_date'];
-    $endDate = $_POST['end_date'];
-
-    $query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
-              FROM orders 
-              WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate' 
-              GROUP BY DATE(order_date) 
-              ORDER BY DATE(order_date)";
-    $result = $connect->query($query);
-
-    $salesTrend = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $salesTrend[] = $row;
-        }
-    }
-
-    // 返回 JSON 格式数据
-    header('Content-Type: application/json');
-    echo json_encode($salesTrend);
-    exit; // 确保后续代码不被执行
-}
 ?>
 
 <!DOCTYPE html>
@@ -301,7 +281,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_date'], $_POST[
                 <option value="yearly_sales" <?php if ($viewMode === 'yearly_sales') echo 'selected'; ?>>Yearly Sales</option>
             </select>
         </div>
+        <!-- Date Range Filter -->
+<div class="col-auto" id="dateFilter" style="display: <?php echo $viewMode === 'sales_trend' ? 'block' : 'none'; ?>;">
+    <label for="start_date" class="form-label">Start Date</label>
+    <input type="date" id="start_date" name="start_date" class="form-control" value="<?php echo $startDate; ?>">
 
+    <label for="end_date" class="form-label">End Date</label>
+    <input type="date" id="end_date" name="end_date" class="form-control" value="<?php echo $endDate; ?>">
+</div>
         <!-- Year Selector -->
         <div class="col-auto" id="yearSelector" style="display: <?php echo $viewMode === 'monthly_sales' ? 'block' : 'none'; ?>;">
             <label for="selected_year" class="form-label">Select Year</label>
@@ -318,13 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_date'], $_POST[
         </div>
     </div>
 </form>
-<form id="dateForm" onsubmit="return false;">
-    <label for="start_date">Start Date:</label>
-    <input type="date" id="start_date" name="start_date" value="<?php echo $startDate; ?>" onchange="updateChartData();">
-    
-    <label for="end_date">End Date:</label>
-    <input type="date" id="end_date" name="end_date" value="<?php echo $endDate; ?>" onchange="updateChartData();">
-</form>
+
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
@@ -377,6 +358,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_date'], $_POST[
     </div>
 </div>
 </div>
+<script>
+    function updateViewMode() {
+        const viewMode = document.getElementById('view_mode').value;
+
+        // 控制年份选择器的显示
+        document.getElementById('yearSelector').style.display = viewMode === 'monthly_sales' ? 'block' : 'none';
+
+        // 控制日期过滤器的显示
+        document.getElementById('dateFilter').style.display = viewMode === 'sales_trend' ? 'block' : 'none';
+
+        // 提交表单
+        document.getElementById('viewForm').submit();
+    }
+</script>
 <script>
     // Retrieve PHP data
     const viewMode = '<?php echo $viewMode; ?>';
@@ -434,61 +429,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_date'], $_POST[
             }
         });
     }
-    async function updateChartData() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
 
-    if (new Date(startDate) > new Date(endDate)) {
-        alert('End date must be after start date.');
-        return;
-    }
-
-    // Fetch sales trend data
-    const response = await fetch('', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`
-    });
-
-    const salesData = await response.json();
-
-    const dates = salesData.map(item => item.date);
-    const sales = salesData.map(item => parseFloat(item.daily_sales));
-
-    // Update chart
-    if (salesChart) {
-        salesChart.destroy();
-    }
-
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Daily Sales (RM)',
-                data: sales,
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Date' } },
-                y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
-            }
-        }
-    });
-}
     function createBarChart(label, labels, data) {
         const ctx = document.getElementById('salesChart').getContext('2d');
         new Chart(ctx, {
