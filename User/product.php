@@ -781,6 +781,9 @@ body {
     text-align: center;
     margin-top: 5px;
 }
+.swal2-container {
+    z-index: 99999 !important; /* Ensure it appears above all other elements */
+}
 </style>
 
 </head>

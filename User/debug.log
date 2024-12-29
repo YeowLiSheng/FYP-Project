@@ -74,3 +74,19 @@ Array
     [product3_color] => Yellow
     [product3_size] => PM
 )
+Array
+(
+    [delete_item] => 1
+    [id] => 3
+    [type] => product
+    [color] => Beige
+    [size] => PM
+)
+Array
+(
+    [delete_item] => 1
+    [id] => 3
+    [type] => product
+    [color] => Beige
+    [size] => PM
+)
