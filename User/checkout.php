@@ -110,7 +110,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 ?>
 
-		
+<?php if ($paymentSuccess): 
+	
+	if ($paymentSuccess) {
+		// Deduct product stock
+		if ($cart_result && mysqli_num_rows($cart_result) > 0) {
+			while ($cart_item = mysqli_fetch_assoc($cart_result)) {
+				$product_id = $cart_item['product_id'];
+				$quantity_to_deduct = $cart_item['total_qty'];
+	
+				// Update the product stock
+				$update_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
+				$stmt = $conn->prepare($update_stock_query);
+				$stmt->bind_param("ii", $quantity_to_deduct, $product_id);
+				$stmt->execute();
+	
+				if ($stmt->affected_rows <= 0) {
+					echo "<script>alert('Failed to update stock for product ID: $product_id');</script>";
+				}
+	
+				$stmt->close();
+			}
+		}
+	}?>
+	<script>
+	window.onload = function() {
+	confirmPayment();
+	}
+	</script>
+	<?php endif; ?>			
 
 
 <!DOCTYPE html>
@@ -640,20 +668,18 @@ if ($paymentSuccess) {
         $detail_stmt->execute();
     }
 
-
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
     $clear_cart_stmt->execute();
 
-	$payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
+    // 插入支付记录
+    $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
     $payment_stmt = $conn->prepare($payment_query);
     $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
     $payment_stmt->execute();
-
-	
 }
 ?>
 	<!-- Footer -->
