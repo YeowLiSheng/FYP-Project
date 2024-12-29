@@ -481,34 +481,34 @@ $categorySalesJson = json_encode($categorySalesData);
     }
 
     function createBarChart(label, labels, data) {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: label,
-                data: data,
-                backgroundColor: '#007bff',
-                borderColor: '#0056b3',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: '#007bff',
+                    borderColor: '#0056b3',
+                    borderWidth: 1
+                }]
             },
-            scales: {
-                x: { title: { display: true, text: 'Year' } },
-                y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Date' } },
+                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+                }
             }
-        }
-    });
-}
+        });
+    }
 
     document.getElementById('view_mode').addEventListener('change', function () {
     const yearSelector = document.getElementById('yearSelector');
