@@ -64,28 +64,26 @@ $monthlySales = array_reduce($allMonths, function ($result, $month) use ($monthl
     return $result;
 }, []);
 
-// Fetch yearly sales data
-$yearlySales_query = "
-    SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
-    FROM orders 
-    GROUP BY YEAR(order_date) 
-    ORDER BY YEAR(order_date) DESC";
-$yearlySales_result = $connect->query($yearlySales_query);
-$yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
+if ($viewMode === 'yearly_sales') {
+    $startYear = isset($_POST['start_year']) ? $_POST['start_year'] : date('Y', strtotime('-5 years'));
+    $endYear = isset($_POST['end_year']) ? $_POST['end_year'] : date('Y');
 
-// Fill yearly sales data if less than 6 years
-if (count($yearlySales) < 6) {
-    $currentYear = date('Y');
-    for ($i = 5; $i >= 0; $i--) {
-        $year = $currentYear - $i;
+    $yearlySales_query = "
+        SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
+        FROM orders 
+        WHERE YEAR(order_date) BETWEEN '$startYear' AND '$endYear'
+        GROUP BY YEAR(order_date) 
+        ORDER BY YEAR(order_date) DESC";
+    $yearlySales_result = $connect->query($yearlySales_query);
+    $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
+
+    // 填充指定年份范围内的数据为空的年份为 0
+    $allYears = range($startYear, $endYear);
+    $yearlySales = array_reduce($allYears, function ($result, $year) use ($yearlySales) {
         $exists = array_filter($yearlySales, fn($data) => $data['year'] == $year);
-        if (empty($exists)) {
-            $yearlySales[] = ['year' => $year, 'yearly_sales' => 0];
-        }
-    }
-    usort($yearlySales, fn($a, $b) => $a['year'] - $b['year']);
-
-    
+        $result[] = ['year' => $year, 'yearly_sales' => $exists ? current($exists)['yearly_sales'] : 0];
+        return $result;
+    }, []);
 }
 
 // Fetch recent 5 orders
