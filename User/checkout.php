@@ -110,76 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 ?>
 
-<?php if ($paymentSuccess): 
-	
-	if ($paymentSuccess) {
-		// Deduct product and package stock
-		if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-			while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-				$product_id = $cart_item['product_id'] ?? null; // 可能为 null
-				$package_id = $cart_item['package_id'] ?? null; // 可能为 null
-				$quantity_to_deduct = $cart_item['total_qty'];
-	
-				if ($product_id) {
-					// 更新单个产品库存
-					$update_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-					$stmt = $conn->prepare($update_stock_query);
-					$stmt->bind_param("ii", $quantity_to_deduct, $product_id);
-					$stmt->execute();
-	
-					if ($stmt->affected_rows <= 0) {
-						echo "<script>alert('Failed to update stock for product ID: $product_id');</script>";
-					}
-	
-					$stmt->close();
-				}
-	
-				if ($package_id) {
-					// 更新套餐库存
-					$update_package_stock_query = "UPDATE product_package SET package_stock = package_stock - ? WHERE package_id = ?";
-					$stmt = $conn->prepare($update_package_stock_query);
-					$stmt->bind_param("ii", $quantity_to_deduct, $package_id);
-					$stmt->execute();
-	
-					if ($stmt->affected_rows <= 0) {
-						echo "<script>alert('Failed to update stock for package ID: $package_id');</script>";
-					}
-	
-					$stmt->close();
-	
-					// 同时更新套餐中包含的产品库存
-					$package_query = "SELECT product1_id, product2_id, product3_id FROM product_package WHERE package_id = ?";
-					$package_stmt = $conn->prepare($package_query);
-					$package_stmt->bind_param("i", $package_id);
-					$package_stmt->execute();
-					$package_result = $package_stmt->get_result();
-	
-					if ($package_result->num_rows > 0) {
-						$package_data = $package_result->fetch_assoc();
-	
-						foreach (['product1_id', 'product2_id', 'product3_id'] as $product_key) {
-							$package_product_id = $package_data[$product_key];
-	
-							if ($package_product_id) {
-								$update_product_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-								$product_stmt = $conn->prepare($update_product_stock_query);
-								$product_stmt->bind_param("ii", $quantity_to_deduct, $package_product_id);
-								$product_stmt->execute();
-	
-								if ($product_stmt->affected_rows <= 0) {
-									echo "<script>alert('Failed to update stock for product in package (Product ID: $package_product_id)');</script>";
-								}
-	
-								$product_stmt->close();
-							}
-						}
-					}
-	
-					$package_stmt->close();
-				}
-			}
-		}
-	}?>
+<?php if ($paymentSuccess): ?>
 	<script>
 	window.onload = function() {
 	confirmPayment();
