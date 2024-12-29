@@ -349,6 +349,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         border-radius: 5px;
         margin-right: 15px;
     }
+    
+/* Form Container */
+#packageFormContainer {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+/* Form Elements */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.product img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.product label {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.product select {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    width: 100%;
+}
+
+/* Quantity Controls */
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.qty-btn {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.qty-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.qty-input {
+    width: 50px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.stock-message {
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* Submit Button */
+.btn-success {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #45a049;
+}
+
+/* Popup Styling */
+#packageFormPopup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Form Container */
+#packageFormContainer {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
 </style>
 </head>
@@ -856,7 +993,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 console.log("AJAX success response received:", response);
                 if (response.success) {
                     console.log("Response indicates success. Generating form.");
-                    let formHtml = `<h3>Select Options for Package</h3>
+                    let formHtml = `<h3>Select Options for Your Package</h3>
                         <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
                             <input type="hidden" name="package_id" value="${packageId}">`; // Include hidden field for package_id
 
