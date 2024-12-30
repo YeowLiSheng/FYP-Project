@@ -635,24 +635,25 @@ if ($paymentSuccess) {
     // 获取订单 ID
     $order_id = $stmt->insert_id;
 
-    // 处理购物车数据
-    mysqli_data_seek($cart_result, 0); // 重置购物车结果指针
-    while ($row = mysqli_fetch_assoc($cart_result)) {
-        $product_id = $row['product_id'];
-        $package_id = $row['package_id'];
-        $item_name = $row['item_name'];
-        $quantity = $row['total_qty'];
-        $unit_price = $row['item_price'];
-        $total_price = $row['item_total_price'];
+    
+ // 插入到 `order_details`
+ mysqli_data_seek($cart_result, 0); // 重置购物车结果指针
+ while ($row = mysqli_fetch_assoc($cart_result)) {
+	 $product_id = $row['product_id'] ?: null; // 如果是包裹，则产品 ID 为 NULL
+	 $package_id = $row['package_id'] ?: null; // 如果是产品，则包裹 ID 为 NULL
+	 $item_name = $row['item_name'];
+	 $quantity = $row['total_qty'];
+	 $unit_price = $row['item_price'];
+	 $total_price = $row['item_total_price'];
 
-        // 插入到 `order_details`
-        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, package_id, quantity, unit_price, total_price) 
-                         VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisiidd", $order_id, $product_id, $item_name, $package_id, $quantity, $unit_price, $total_price);
-        $detail_stmt->execute();
-    }
-
+	 // 插入订单详情
+	 $order_details_query = "
+		 INSERT INTO order_details (order_id, product_id, product_name, package_id, quantity, unit_price, total_price)
+		 VALUES (?, ?, ?, ?, ?, ?, ?)";
+	 $details_stmt = $conn->prepare($order_details_query);
+	 $details_stmt->bind_param("iisiiid", $order_id, $product_id, $item_name, $package_id, $quantity, $unit_price, $total_price);
+	 $details_stmt->execute();
+ }
     // 更新库存
     mysqli_data_seek($cart_result, 0); // 再次重置购物车结果指针
     while ($row = mysqli_fetch_assoc($cart_result)) {
