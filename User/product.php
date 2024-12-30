@@ -748,10 +748,6 @@ body {
 .package-card.unavailable .selectPackage {
     display: none; /* Hide interactive buttons */
 }
-
-.unavailable-message {
-    font-weight: bold;
-}
 .unavailable-product{
     background-color: lightgrey; /* Soft grey background */
     border: 1px solid #d9d9d9; /* Light border for separation */
@@ -2034,43 +2030,6 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     updateProducts();
 });
 </script>
-<script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Handle quantity adjustments
-            document.querySelectorAll(".qty-controls").forEach(control => {
-                const minusButton = control.querySelector(".minus");
-                const plusButton = control.querySelector(".plus");
-                const qtyInput = control.querySelector("input");
-
-                minusButton.addEventListener("click", () => {
-                    const qty = Math.max(1, parseInt(qtyInput.value) - 1);
-                    qtyInput.value = qty;
-                });
-
-                plusButton.addEventListener("click", () => {
-                    qtyInput.value = parseInt(qtyInput.value) + 1;
-                });
-            });
-
-            // Handle package selection
-            document.querySelectorAll(".selectPackage").forEach(button => {
-                button.addEventListener("click", function () {
-                    const packageDiv = this.closest(".package");
-                    const isSelected = packageDiv.classList.contains("selected");
-
-                    if (isSelected) {
-                        // Deselect the package
-                        packageDiv.classList.remove("selected");
-                        console.log(`Package ${packageDiv.dataset.packageId} deselected.`);
-                    } else {
-                        // Select the package
-                        packageDiv.classList.add("selected");
-                        console.log(`Package ${packageDiv.dataset.packageId} selected.`);
-                    }
-                });
-            });
-        });
-    </script>
 	<script>
 		$(document).on('click', '.selectPackage', function () {
             const packageId = $(this).closest('.package-card').data('package-id');
