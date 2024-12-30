@@ -50,6 +50,10 @@
 
     
     <style>
+		
+    .swal2-container {
+        z-index: 99999     
+	}
         body {
             font-family: Arial, sans-serif;
             background-color: white;
@@ -1119,8 +1123,6 @@
 </body>
 </html>
 
-
-
 <?php
 // Database connection
 include 'dataconnection.php';
@@ -1136,55 +1138,172 @@ if (isset($_POST["signupbtn"])) {
     $contact = mysqli_real_escape_string($connect, $_POST["contact"]);
     $gender = mysqli_real_escape_string($connect, $_POST["gender"]);  
     $dob = mysqli_real_escape_string($connect, $_POST["dob"]); 
-    $password = $_POST["password"];  // Plain text password
+    $password = $_POST["password"];
     $confirmPassword = $_POST["confirmPassword"];
 
     $now = new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur'));
     $currentDateTime = $now->format('Y-m-d H:i:s');
 
-
-
-	$secret_key = '6Ld-vZAqAAAAAPQuvjldDRNuWB9MDnZ78CPYRSzo';
+    $secret_key = '6Ld-vZAqAAAAAPQuvjldDRNuWB9MDnZ78CPYRSzo';
 
     // Validate reCAPTCHA
     if (empty($_POST['g-recaptcha-response'])) {
-        
-		echo "<script>
-		alert('Please complete the CAPTCHA verification..');
-		window.location.href = 'login.php';
-	  	</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'CAPTCHA Required',
+                    text: 'Please complete the CAPTCHA verification.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'register.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit();
     }
+
     $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secret_key . '&response=' . $_POST['g-recaptcha-response']);
     $response_data = json_decode($response);
 
     if (!$response_data->success) {
-        
-		echo "<script>
-		alert('CAPTCHA verification failed. Please try again.');
-		window.location.href = 'login.php';
-	  	</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Verification Failed',
+                    text: 'CAPTCHA verification failed. Please try again.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'register.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit();
     }
 
     // Check if email already exists
-    $verify_query = mysqli_query($connect, "SELECT * FROM user WHERE user_email='$email'");
-    if (mysqli_num_rows($verify_query) > 0) {
-        echo "<script>alert('The email has already been used. Please choose another email.');window.location.href='register.php';</script>";
-    } else if ($password != $confirmPassword) {
-        echo "<script>alert('The password and confirm password must match.');window.location.href='register.php';</script>";
-    } else {
-        // Insert data into the database without encryption
-        $insert_query = mysqli_query($connect, "INSERT INTO user (user_email, user_name, user_contact_number, user_gender, user_date_of_birth, user_password, user_join_time) 
-        VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$password', '$currentDateTime')");
-        
-        if ($insert_query) {
-            echo "<script>alert('Registration successful.');window.location.href='login.php';</script>";
+    $verify_email_query = mysqli_query($connect, "SELECT * FROM user WHERE user_email='$email'");
+    if (mysqli_num_rows($verify_email_query) > 0) {
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Email Already Exists',
+                    text: 'The email has already been used. Please choose another email.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'register.php';
+                });
+            </script>
+        </body>
+        </html>";
+    } 
+    // Check if contact number already exists
+    else {
+        $verify_contact_query = mysqli_query($connect, "SELECT * FROM user WHERE user_contact_number='$contact'");
+        if (mysqli_num_rows($verify_contact_query) > 0) {
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Contact Number Already Exists',
+                        text: 'The contact number has already been used. Please choose another contact number.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'register.php';
+                    });
+                </script>
+            </body>
+            </html>";
+        } 
+        // Proceed with registration if both email and contact are unique
+        else if ($password != $confirmPassword) {
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Password Mismatch',
+                        text: 'The password and confirm password must match.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'register.php';
+                    });
+                </script>
+            </body>
+            </html>";
         } else {
-            echo "Error: " . mysqli_error($connect); // Show the error message
-            echo "<script>alert('Registration failed. Please try again.');window.location.href='register.php';</script>";
+            // Insert data into the database
+            $insert_query = mysqli_query($connect, "INSERT INTO user (user_email, user_name, user_contact_number, user_gender, user_date_of_birth, user_password, user_join_time) 
+            VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$password', '$currentDateTime')");
+            
+            if ($insert_query) {
+                echo "<!DOCTYPE html>
+                <html>
+                <head>
+                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+                </head>
+                <body>
+                    <script>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Registration Successful',
+                            text: 'You have successfully registered.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'login.php';
+                        });
+                    </script>
+                </body>
+                </html>";
+            } else {
+                echo "<!DOCTYPE html>
+                <html>
+                <head>
+                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+                </head>
+                <body>
+                    <script>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Failed',
+                            text: 'Please try again later.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'register.php';
+                        });
+                    </script>
+                </body>
+                </html>";
+            }
         }
     }
 }
 ?>
-

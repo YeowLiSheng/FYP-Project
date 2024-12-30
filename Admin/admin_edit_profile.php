@@ -1,8 +1,6 @@
 <?php
-
 include("dataconnection.php");
 include 'admin_sidebar.php';
-
 
 // Check if admin is logged in
 if (!isset($_SESSION['admin_id'])) {
@@ -67,16 +65,79 @@ if (isset($_POST['submitbtn'])) {
         }
     }
 
-    // Update admin data in the database, including gender and image
-    $update_query = "UPDATE admin SET admin_name='$name', admin_email='$email', admin_password='$password', admin_contact_number='$contact', admin_gender='$gender', admin_image='$image' WHERE admin_id='$admin_id'";
+    // Check if the email or contact already exists (excluding the current admin)
+    $email_check = mysqli_query($connect, "SELECT * FROM admin WHERE admin_email = '$email' AND admin_id != '$admin_id'");
+    $contact_check = mysqli_query($connect, "SELECT * FROM admin WHERE admin_contact_number = '$contact' AND admin_id != '$admin_id'");
 
-    if (mysqli_query($connect, $update_query)) {
-        echo "<script>alert('Admin profile updated successfully.'); window.location.href='admin_edit_profile.php';</script>";
+    if (mysqli_num_rows($email_check) > 0) {
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Email Already Taken',
+                    text: 'The email is already taken. Please choose another one.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'admin_edit_profile.php';
+                });
+            </script>
+        </body>
+        </html>";
+    } elseif (mysqli_num_rows($contact_check) > 0) {
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Contact Number Already Taken',
+                    text: 'The contact number is already taken. Please choose another one.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'admin_edit_profile.php';
+                });
+            </script>
+        </body>
+        </html>";
     } else {
-        echo "Error updating profile: " . mysqli_error($connect);
+        // Update admin data in the database, including gender and image
+        $update_query = "UPDATE admin SET admin_name='$name', admin_email='$email', admin_password='$password', admin_contact_number='$contact', admin_gender='$gender', admin_image='$image' WHERE admin_id='$admin_id'";
+
+        if (mysqli_query($connect, $update_query)) {
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profile Updated',
+                        text: 'Admin profile updated successfully.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'admin_edit_profile.php'; // Redirect to the same page to see the updated profile
+                    });
+                </script>
+            </body>
+            </html>";
+        } else {
+            echo "Error updating profile: " . mysqli_error($connect);
+        }
     }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -344,6 +405,8 @@ body {
 </form>
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     // Preview image function
     function previewAdminImage(event) {
@@ -356,67 +419,69 @@ body {
     }
 
     function validateAdminForm() {
-        // Add any specific form validation rules here
-        return true;
+        const name = document.getElementById("admin_name").value;
+        const email = document.getElementById("admin_email").value;
+        const password = document.getElementById("admin_password").value;
+        const contact = document.getElementById("admin_contact").value;
+
+        // Validate name (at least 5 characters)
+        if (name.length < 5) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Name',
+                text: 'Name must be at least 5 characters long.',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        // Validate email (must contain @gmail.com)
+        if (!email.endsWith("@gmail.com")) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Email',
+                text: 'Email must end with "@gmail.com".',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        // Validate password (at least 1 uppercase letter, 1 number, 1 special character, and 8 characters long)
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Password',
+                text: 'Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        // Validate contact number (xxx-xxxxxxxx or xxx-xxxxxxx format)
+        const contactPattern = /^\d{3}-\d{7,8}$/;
+        if (!contactPattern.test(contact)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Contact Number',
+                text: 'Contact number must be in the format xxx-xxxxxxxx or xxx-xxxxxxx.',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        return true; // If all validations pass
     }
 
-
-
+    // Toggle password visibility
     function togglePasswordVisibility() {
-        const passwordField = document.getElementById('admin_password');
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
+        const passwordInput = document.getElementById("admin_password");
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
         } else {
-            passwordField.type = 'password';
+            passwordInput.type = "password";
         }
     }
-
-
-    function validateAdminForm() {
-    const name = document.getElementById("admin_name").value;
-    const email = document.getElementById("admin_email").value;
-    const password = document.getElementById("admin_password").value;
-    const contact = document.getElementById("admin_contact").value;
-
-    // Validate name (at least 5 characters)
-    if (name.length < 5) {
-        alert("Name must be at least 5 characters long.");
-        return false;
-    }
-
-    // Validate email (must contain @gmail.com)
-    if (!email.endsWith("@gmail.com")) {
-        alert("Email must end with '@gmail.com'.");
-        return false;
-    }
-
-    // Validate password (exactly 5 characters)
-    if (password.length < 5) {
-        alert("Password must be exactly 5 characters.");
-        return false;
-    }
-
-    // Validate contact number (xxx-xxxxxxxx or xxx-xxxxxxx format)
-    const contactPattern = /^\d{3}-\d{7,8}$/;
-    if (!contactPattern.test(contact)) {
-        alert("Contact number must be in the format xxx-xxxxxxxx or xxx-xxxxxxx.");
-        return false;
-    }
-
-    return true; // If all validations pass
-}
-
-// Toggle password visibility
-function togglePasswordVisibility() {
-    const passwordInput = document.getElementById("admin_password");
-    if (passwordInput.type === "password") {
-        passwordInput.type = "text";
-    } else {
-        passwordInput.type = "password";
-    }
-}
-
-
 </script>
 
 </body>

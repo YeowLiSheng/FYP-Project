@@ -13,8 +13,24 @@ if (isset($_GET['blog_id'])) {
     // Execute the query
     if (mysqli_query($connect, $query)) {
         // Redirect to the blog management page after successful deletion
-       
-        echo "<script>alert('Blog deleted successfully.');window.location.href='view_blog.php';</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Blog deleted successfully.',
+                    text: 'The blog has been deleted.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'view_blog.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit;
     } else {
         // If there is an error in deletion, display an error message

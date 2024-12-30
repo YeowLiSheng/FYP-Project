@@ -628,23 +628,22 @@ form {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
-							<li class="label1 active-menu" data-label1="hot">
+                            <li class="active-menu">
+								<a href="package.php">Packages</a>
+							</li>
+
+							<li class="label1" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
@@ -1090,8 +1089,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                             <button class="qty-btn minus" type="button">-</button>
                             <input type="number" value="1" min="1" class="qty-input">
                             <button class="qty-btn plus" type="button">+</button>
-                            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
-                        </div>`;
+                        </div>
+                        <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>`;
                     formHtml += `
                         <button type="submit" class="btn btn-success">Add to Cart</button>
                     </form>`;
@@ -1187,16 +1186,21 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 } else {
                     console.error("Error adding package to cart:", response.message);
                     Swal.fire({
-                        title: 'Error!',
-                        text: response.message || 'Failed to add product to cart.',
+                        title: 'Add to cart Failed!',
+                        text: response.message || 'Failed to add package to cart.',
                         icon: 'error',
-                        confirmButtonText: 'Try Again'
+                        confirmButtonText: 'OK'
                     });
                 }
             },
             error: function (xhr, status, error) {
                 console.error("AJAX error:", status, error);
-                alert("An error occurred. Please try again.");
+                Swal.fire({
+                    title: 'Error!',
+                    text:'An error occurred. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         });
     });
@@ -1245,42 +1249,62 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
 
             // Confirm deletion
-            if (confirm('Are you sure you want to delete this item from your cart?')) {
-                // Send AJAX request to delete the item
-                fetch(location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: body,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Response:', data); // Log response for debugging
-                    if (data.success) {
-                        // Remove the item from the DOM
-                        this.closest('.header-cart-item').remove();
-                        // Update the total price
-                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
-                        Swal.fire({
-                                title: 'Item Deleted!',
-                                text: 'The item has been successfully removed from your cart.',
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to delete this item from your cart?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, keep it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send AJAX request to delete the item
+                    fetch(location.href, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: body,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response:', data); // Log response for debugging
+                        if (data.success) {
+                            // Remove the item from the DOM
+                            document.querySelector('.header-cart-item').remove();
+                            // Update the total price
+                            document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                            Swal.fire({
+                                title: 'Item removed!',
+                                text: 'The item has been removed from your cart.',
                                 icon: 'success',
-                                confirmButtonText: 'OK'
-                        });
-                    } else {
-                        Swal.fire({
-                                title: 'Error!',
-                                text: data.message || 'Failed to delete the item. Please try again.',
+                                confirmButtonText: 'OK',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Remove Failed!',
+                                text: data.message || 'Failed to remove the item. Please try again.',
                                 icon: 'error',
-                                confirmButtonText: 'OK'
+                                confirmButtonText: 'OK',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again later.',
+                            icon: 'error',
+                            confirmButtonText: 'OK',
                         });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
+                    });
+                }
+            });
+
         });
     });
 });
