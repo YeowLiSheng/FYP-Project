@@ -2170,7 +2170,6 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                                     }).then((result) => {
                                         if (result.isConfirmed) {
                                             location.reload();
-                                            $('#packageFormPopup').fadeOut();
                                         }
                                     });
                                 } else {
@@ -2256,6 +2255,10 @@ $(document).on('click', '.filter-tope-group button', function(event) {
                             title: 'Item has been removed from your cart!',
                             icon: 'success',
                             confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
                         });
                     } else {
                         Swal.fire({
