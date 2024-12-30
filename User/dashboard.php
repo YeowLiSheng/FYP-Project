@@ -199,11 +199,11 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     exit;
 }
 // Fetch products
-$product_query = "SELECT * FROM product WHERE 1";
+$product_query = "SELECT * FROM product ORDER BY product_id DESC LIMIT 4";
+$product_result = $connect->query($product_query);
+
 // Get the category_id from the URL
 $category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
-
-$product_result = $connect->query($product_query);;
 ?>
 
 
@@ -728,13 +728,6 @@ $product_result = $connect->query($product_query);;
 				}
 				?>
         	</div>
-
-			<!-- Load more -->
-			<div class="flex-c-m flex-w w-full p-t-45">
-				<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-					Load More
-				</a>
-			</div>
 		</div>
 	</section>
 
