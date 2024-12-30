@@ -1,32 +1,69 @@
 <?php
-// Start session
-session_start();
+session_start(); // Start the session
 
 // Include the database connection file
 include("dataconnection.php"); 
 
-$user_email = '';
-// Check if the user is logged in
-if (isset($_SESSION['id'])) {
-    // Check if the database connection exists
-    if (!isset($connect) || !$connect) {
-        die("Database connection failed.");
-    }
+// Check if the user is logged i
+if (!isset($_SESSION['id'])) {
+    header("Location: login.php"); // Redirect to login page if not logged in
+    exit;
+}
 
-    // Retrieve the user information
-    $user_id = $_SESSION['id'];
-    $result = mysqli_query($connect, "SELECT * FROM user WHERE user_id = '$user_id'");
+// Check if the database connection exists
+if (!isset($connect) || !$connect) { // Changed $connect to $conn
+    die("Database connection failed.");
+}
 
-    // Check if the query was successful and fetch user data
-    if ($result && mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_assoc($result);
-        $user_name = htmlspecialchars($row["user_name"]); // Get the user name
-		 $user_email = $row['user_email'];
-    } else {
-        echo "User not found.";
-        exit;
+// Retrieve the user information
+$user_id = $_SESSION['id'];
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
+
+// Check if the query was successful and fetch user data
+if ($result && mysqli_num_rows($result) > 0) {
+	$user_data = mysqli_fetch_assoc($result);
+	$user_name = htmlspecialchars($user_data["user_name"]); // Get the user name
+	 $user_email = $user_data['user_email'];
+} else {
+	echo "User not found.";
+	exit;
+}
+
+// Initialize total_price before fetching cart items
+$total_price = 0;
+
+// Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items with stock information
+$cart_items_query = "
+    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
+		   sc.color, sc.size,    
+		   SUM(sc.qty) AS total_qty, 
+           SUM(sc.qty * p.product_price) AS total_price, 
+           MAX(sc.final_total_price) AS final_total_price, 
+           MAX(sc.voucher_applied) AS voucher_applied
+    FROM shopping_cart sc 
+    JOIN product p ON sc.product_id = p.product_id 
+    WHERE sc.user_id = $user_id 
+    GROUP BY sc.product_id, sc.color, sc.size";
+$cart_items_result = $connect->query($cart_items_query);
+
+// Calculate total price and final total price
+if ($cart_items_result && $cart_items_result->num_rows > 0) {
+    while ($cart_item = $cart_items_result->fetch_assoc()) {
+        $total_price += $cart_item['total_price'];
     }
 }
+
+// Count distinct product IDs in the shopping cart for the logged-in user
+$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+$distinct_products_result = $connect->query($distinct_products_query);
+$distinct_count = 0;
+
+if ($distinct_products_result) {
+    $row = $distinct_products_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+
 ?>
 
 
@@ -210,20 +247,15 @@ if (isset($_SESSION['id'])) {
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li>
-								<a href="index.html">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
+								<a href="dashboard.php">Home</a>
 							</li>
 
 							<li>
@@ -268,127 +300,6 @@ if (isset($_SESSION['id'])) {
 					</div>
 				</nav>
 			</div>	
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->		
-			<div class="logo-mobile">
-				<a href="homepage.php"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="2">
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-
-
-
-
-						
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="homepage.php">Home</a>
-					
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.html">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.php">Contact</a>
-				</li>
-			</ul>
-		</div>
-
-
-
-
-
-
-
-		<!-- Modal Search -->
-		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
-			<div class="container-search-header">
-				<button class="flex-c-m btn-hide-modal-search trans-04 js-hide-modal-search">
-					<img src="images/icons/icon-close2.png" alt="CLOSE">
-				</button>
-
-				<form class="wrap-search-header flex-w p-l-15">
-					<button class="flex-c-m trans-04">
-						<i class="zmdi zmdi-search"></i>
-					</button>
-					<input class="plh3" type="text" name="search" placeholder="Search...">
-				</form>
-			</div>
 		</div>
 	</header>
 
