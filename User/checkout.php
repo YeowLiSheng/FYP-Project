@@ -635,42 +635,20 @@ if ($paymentSuccess) {
     // 获取订单 ID
     $order_id = $stmt->insert_id;
 
-
-
- // 插入到 `order_details`
- mysqli_data_seek($cart_result, 0); // 重置购物车结果指针
- while ($row = mysqli_fetch_assoc($cart_result)) {
-	 $product_id = $row['product_id'] ?: null;
-	 $package_id = $row['package_id'] ?: null;
-	 $quantity = $row['total_qty'];
-	 $unit_price = $row['item_price'];
-	 $total_price = $row['item_total_price'];
-
-	 $order_details_query = "INSERT INTO order_details (order_id, product_id, package_id, quantity, unit_price, total_price) 
-							 VALUES (?, ?, ?, ?, ?, ?)";
-	 $details_stmt = $conn->prepare($order_details_query);
-	 $details_stmt->bind_param("iisiddd", $order_id, $product_id, $package_id, $quantity, $unit_price, $total_price);
-	 $details_stmt->execute();
- }
-    // 更新库存
-    mysqli_data_seek($cart_result, 0); // 再次重置购物车结果指针
+    // 插入订单详情到 `order_details`
+    mysqli_data_seek($cart_result, 0); // 重置购物车结果指针
     while ($row = mysqli_fetch_assoc($cart_result)) {
-        $item_id = $row['product_id'] ?: $row['package_id'];
+        $product_id = $row['product_id'];
+        $package_id = $row['package_id'];
         $quantity = $row['total_qty'];
+        $unit_price = $row['item_price'];
+        $total_price = $row['item_total_price'];
 
-        if ($row['package_id']) {
-            // 更新包裹库存
-            $update_package_stock_query = "UPDATE product_package SET package_stock = package_stock - ? WHERE package_id = ?";
-            $update_package_stmt = $conn->prepare($update_package_stock_query);
-            $update_package_stmt->bind_param("ii", $quantity, $row['package_id']);
-            $update_package_stmt->execute();
-        } else {
-            // 更新产品库存
-            $update_product_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-            $update_product_stock_stmt = $conn->prepare($update_product_stock_query);
-            $update_product_stock_stmt->bind_param("ii", $quantity, $row['product_id']);
-            $update_product_stock_stmt->execute();
-        }
+        $insert_detail_query = "INSERT INTO order_details (order_id, product_id, package_id, quantity, unit_price, total_price) 
+                                VALUES (?, ?, ?, ?, ?, ?)";
+        $detail_stmt = $conn->prepare($insert_detail_query);
+        $detail_stmt->bind_param("iiiiii", $order_id, $product_id, $package_id, $quantity, $unit_price, $total_price);
+        $detail_stmt->execute();
     }
 
     // 清空购物车
