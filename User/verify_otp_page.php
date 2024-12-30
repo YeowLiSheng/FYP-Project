@@ -16,15 +16,32 @@ if (isset($_POST['verify_otp'])) {
         $otp_generated_time = $_SESSION['otp_generated_time'];
         $current_time = time();
 
-        if ($current_time - $otp_generated_time > 60) {
+        if ($current_time - $otp_generated_time > 30) {
             $error = "OTP has expired. Please request a new one.";
             unset($_SESSION['otp']); // Clear expired OTP
             unset($_SESSION['otp_generated_time']); // Clear OTP generation time
             $expired = true;
         } elseif ($entered_otp == $_SESSION['otp']) {
-            // OTP verified, redirect to reset password page
-            header("Location: resetpassword_page.php");
-            exit();
+    // OTP verified, show success popup and redirect to reset password page
+    echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'OTP Verified!',
+                    text: 'Your OTP has been successfully verified. You will be redirected to the reset password page.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'resetpassword_page.php';
+                });
+            </script>
+        </body>
+        </html>";
+    exit();
         } else {
             $error = "Invalid OTP. Please try again.";
         }
@@ -49,17 +66,45 @@ if (isset($_POST['resend_otp'])) {
         $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 
         if (mail($to, $subject, $content, $headers)) {
-            ?>
-            <script>
-                alert("A new OTP has been sent to your email.");
-            </script>
-            <?php
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'New OTP Sent!',
+                        text: 'A new OTP has been sent to your email.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'verify_otp_page.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit();
         } else {
-            ?>
-            <script>
-                alert("Failed to send a new OTP or generate. Please try again.");
-            </script>
-            <?php
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Send OTP',
+                        text: 'Failed to send a new OTP. Please try again.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'verify_otp_page.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit();
         }
     }
 }
@@ -69,6 +114,7 @@ if (isset($_POST['resend_otp'])) {
 <html>
 <head>
     <title>Verify OTP</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Reset some basic styles for uniformity */
         * {
@@ -90,12 +136,18 @@ if (isset($_POST['resend_otp'])) {
         /* Container for the form */
         .container {
             background-color: #fff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        padding: 40px 30px;
+        width: 100%;
+        max-width: 450px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .container:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
 
         /* Heading style */
         h1 {
@@ -127,13 +179,13 @@ if (isset($_POST['resend_otp'])) {
         }
 
         input[type="text"]:focus, input[type="submit"]:hover, button:hover {
-            border-color: #007BFF;
+            border-color: #4CAF50;
             transition: 0.3s;
         }
 
         /* Submit button styling */
         input[type="submit"] {
-            background-color: #007BFF;
+            background-color: #4CAF50;
             color: white;
             cursor: pointer;
             font-weight: bold;
@@ -141,7 +193,7 @@ if (isset($_POST['resend_otp'])) {
         }
 
         input[type="submit"]:hover {
-            background-color: #0056b3;
+            background-color: #45a049;
         }
 
         /* Button for requesting new OTP */
@@ -164,13 +216,13 @@ if (isset($_POST['resend_otp'])) {
         }
 
         .back-link a {
-            color: #007BFF;
-            text-decoration: none;
-            font-size: 14px;
+            color: #555;
+        font-size: 14px;
+        text-decoration: none;
         }
 
         .back-link a:hover {
-            text-decoration: underline;
+            color: #4CAF50;
         }
 
         /* Error message styling */

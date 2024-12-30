@@ -8,7 +8,6 @@ if (!isset($_SESSION['email'])) {
 }
 
 $email = $_SESSION['email'];
-$error = "";
 
 if (isset($_POST['reset_password'])) {
     $new_password = $_POST['new_password'];
@@ -26,27 +25,82 @@ if (isset($_POST['reset_password'])) {
         $row = mysqli_fetch_assoc($result);
 
         if ($row['user_password'] === $new_password) {
-            $error = "New password cannot be the same as the current password.";
+            // Show SweetAlert when the new password is the same as the current password
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'New password cannot be the same as the current password.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'resetpassword_page.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit();
         } else {
             $sql = "UPDATE user SET user_password='$new_password' WHERE user_email='$email'";
             $result = mysqli_query($connect, $sql);
 
             if ($result) {
                 unset($_SESSION['email']);
-                ?>
-                <script>
-                    alert("Password reset successfully! Please log in with your new password.");
-                </script>
-                <?php
-                header("refresh:0.5; url=login.php");
+                echo "<!DOCTYPE html>
+                <html>
+                <head>
+                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+                </head>
+                <body>
+                    <script>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Password reset successfully!',
+                            text: 'Please log in with your new password.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'login.php';
+                        });
+                    </script>
+                </body>
+                </html>";
                 exit();
             } else {
                 $error = "Failed to update password. Please try again.";
             }
         }
     }
+
+    // If there's any other error, show a general SweetAlert (optional)
+    if (isset($error) && $error) {
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: '$error',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'resetpassword_page.php';
+                });
+            </script>
+        </body>
+        </html>";
+        exit();
+    }
 }
 ?>
+
+
 
 <!DOCTYPE HTML>
 <html lang="en">
@@ -122,7 +176,7 @@ if (isset($_POST['reset_password'])) {
         }
 
         input[type="password"]:focus, input[type="text"]:focus {
-            border-color: #2575fc;
+            border-color: #4CAF50;
             background-color: #fff;
             outline: none;
         }
@@ -139,13 +193,13 @@ if (isset($_POST['reset_password'])) {
         }
 
         .eye-icon:hover {
-            color: #2575fc; /* Highlight on hover */
+            color:#4CAF50; /* Highlight on hover */
         }
 
         input[type="submit"] {
             width: 108%;
             padding: 12px;
-            background-color: #2575fc;
+            background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 8px;
@@ -156,7 +210,7 @@ if (isset($_POST['reset_password'])) {
         }
 
         input[type="submit"]:hover {
-            background-color: #6a11cb;
+            background-color: #45a049;
         }
 
         .error-message {
@@ -185,13 +239,13 @@ if (isset($_POST['reset_password'])) {
         }
 
         .back-link a {
-            color: #007BFF;
-            text-decoration: none;
-            font-size: 14px;
+            color: #555;
+        font-size: 14px;
+        text-decoration: none;
         }
 
         .back-link a:hover {
-            text-decoration: underline;
+            color: #4CAF50;
         }
 
     </style>
