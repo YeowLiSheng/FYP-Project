@@ -235,6 +235,7 @@ $cart_items_query = "
         p.product_image, 
         p.product_price,
 		p.product_stock,
+		p.product_status,
         sc.color, 
         sc.size, 
         SUM(sc.qty) AS total_qty, 
@@ -248,6 +249,7 @@ $cart_items_query = "
         pkg.package_name, 
         pkg.package_image,
 		pkg.package_stock,
+		pkg.package_status,
 		pkg.package_price
     FROM shopping_cart sc
     LEFT JOIN product p ON sc.product_id = p.product_id
@@ -274,16 +276,16 @@ if ($cart_items_result && $cart_items_result->num_rows > 0) {
 
         // Check if it's a package or individual product
         if (!empty($cart_item['package_id'])) {
-            // Check if package quantity exceeds stock
-            if ($cart_item['total_qty'] > $cart_item['package_stock']) {
+            // Check package status for unavailability
+            if ($cart_item['package_status'] == 2 || $cart_item['package_stock'] == 0) {
+                $cart_item['unavailable'] = true;
                 $checkout_locked = true;
-                $error_messages[$cart_item['package_id']] = "The package '{$cart_item['package_name']}' has exceeded the available stock. Max stock: {$cart_item['package_stock']}. Please adjust the quantity.";
             }
         } else {
-            // Check if product quantity exceeds stock
-            if ($cart_item['total_qty'] > $cart_item['product_stock']) {
+            // Check product status for unavailability
+            if ($cart_item['product_status'] == 2 || $cart_item['product_stock'] == 0) {
+                $cart_item['unavailable'] = true;
                 $checkout_locked = true;
-                $error_messages[$cart_item['product_id']] = "The product '{$cart_item['product_name']}' has exceeded the available stock. Max stock: {$cart_item['product_stock']}. Please adjust the quantity.";
             }
         }
     }
@@ -818,8 +820,12 @@ if ($distinct_products_result) {
 									// Generate a unique key based on package ID and product details
 									$unique_key = $cart_item['package_id'] . '_' . $cart_item['product1_size'] . '_' . $cart_item['product1_color'] . '_' . $cart_item['product2_size'] . '_' . $cart_item['product2_color'] . '_' . $cart_item['product3_size'] . '_' . $cart_item['product3_color'];
 									
-									$stock_exceeded = $package_quantities[$cart_item['package_id']] > $cart_item['package_stock'];
-							
+									$message = '';
+                                        if ($cart_item['package_status']==2) {
+                                            $message = '<p class="text-danger">This package is unavailable</p>';
+                                        } elseif ($package_quantities[$cart_item['package_id']] > $cart_item['package_stock']) {
+                                            $message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['package_stock'] . '</p>';
+                                        }
 									echo '
 									<tr class="table_row">
 										<td class="column-1">
@@ -849,12 +855,18 @@ if ($distinct_products_result) {
 													<i class="fs-16 zmdi zmdi-plus"></i>
 												</div>
 											</div>
-											' . ($stock_exceeded ? '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['package_stock'] . '</p>' : '') . '
+											' . $message . '
 										</td>
 										<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
 									</tr>';
 								}else {
-									$stock_exceeded = $cart_item['total_qty'] > $cart_item['product_stock'];
+									$message = '';
+									if ($cart_item['product_status']==2) {
+										$message = '<p class="text-danger">This product is unavailable</p>';
+									} elseif ($cart_item['total_qty'] > $cart_item['product_stock']) {
+										$message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>';
+									}
+
 									echo '
 									<tr class="table_row">
 										<td class="column-1">
@@ -874,8 +886,9 @@ if ($distinct_products_result) {
 												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
 													<i class="fs-16 zmdi zmdi-plus"></i>
 												</div>
+												
 											</div>
-											' . ($stock_exceeded ? '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>' : '') . '
+											' . $message . '
 										</td>
 										<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
 									</tr>';
@@ -932,12 +945,12 @@ if ($distinct_products_result) {
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
-    					<?php if ($checkout_locked): ?>
-							<p class="text-danger">You cannot proceed to checkout. Please adjust the quantities to match available stock.</p>
-						<?php endif; ?>
 						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10" <?php echo $checkout_locked ? 'disabled' : ''; ?>>
 							Check Out
 						</button>
+						<?php if ($checkout_locked): ?>
+							<p class="text-danger">You cannot proceed to checkout. Please adjust the items in your cart.</p>
+						<?php endif; ?>
 					</div>
                 </div>
             </div>

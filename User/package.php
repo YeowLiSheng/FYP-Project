@@ -27,7 +27,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items for the logged-in user where the product_id is the samem
 $cart_items_query = "
     SELECT 
         sc.product_id, 
@@ -39,7 +39,6 @@ $cart_items_query = "
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price,
         sc.package_id,
-        sc.package_qty,
         sc.product1_color, sc.product1_size,
         sc.product2_color, sc.product2_size,
         sc.product3_color, sc.product3_size,
@@ -55,7 +54,78 @@ $cart_items_query = "
         sc.size, 
         sc.package_id";
 $cart_items_result = $connect->query($cart_items_query);
+// Handle AJAX request to delete item
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
+    $id = intval($_POST['id']); // Ensure ID is an integer
+    $type = $_POST['type'];     // Either 'product' or 'package'
 
+    $response = ['success' => false];
+
+    // Debug: Log incoming POST data
+    file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
+
+    if ($type === 'product') {
+        $color = $_POST['color'];
+        $size = $_POST['size'];
+
+        // Delete the specific product with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
+        ");
+        $stmt->bind_param('issi', $id, $color, $size, $user_id);
+    } elseif ($type === 'package') {
+        $product1_color = $_POST['product1_color'];
+        $product1_size = $_POST['product1_size'];
+        $product2_color = $_POST['product2_color'];
+        $product2_size = $_POST['product2_size'];
+        $product3_color = $_POST['product3_color'];
+        $product3_size = $_POST['product3_size'];
+
+        // Delete the specific package with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE package_id = ? 
+              AND product1_color = ? AND product1_size = ?
+              AND product2_color = ? AND product2_size = ?
+              AND product3_color = ? AND product3_size = ?
+              AND user_id = ?
+        ");
+        $stmt->bind_param(
+            'ississsi',
+            $id,
+            $product1_color, $product1_size,
+            $product2_color, $product2_size,
+            $product3_color, $product3_size,
+            $user_id
+        );
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid type']);
+        exit;
+    }
+
+    // Execute the query and check if it was successful
+    if ($stmt->execute()) {
+        // Check affected rows to confirm deletion
+        if ($stmt->affected_rows > 0) {
+            // Recalculate the new total price
+            $result = $connect->query("SELECT SUM(total_price) AS new_total FROM shopping_cart WHERE user_id = $user_id");
+            $row = $result->fetch_assoc();
+            $response['new_total'] = $row['new_total'] ?? 0;
+            $response['success'] = true;
+        } else {
+            $response['message'] = 'No matching row found for deletion.';
+        }
+    } else {
+        // Debug: Log SQL errors
+        $response['message'] = 'Query failed: ' . $connect->error;
+        file_put_contents('debug.log', "SQL Error: " . $connect->error . "\n", FILE_APPEND);
+    }
+
+    $stmt->close();
+    echo json_encode($response);
+    exit;
+}
 // Query to fetch package data along with product names
 $package_query = "
     SELECT 
@@ -64,6 +134,8 @@ $package_query = "
         pkg.package_image, 
         pkg.package_price, 
         pkg.package_description, 
+        pkg.package_stock,
+        pkg.package_status,
         p1.product_name AS product1_name, 
         p1.product_image AS product1_image,
         p2.product_name AS product2_name, 
@@ -258,6 +330,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
     .package-container {
         max-width: 1500px;
@@ -273,6 +346,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
     .package-card img {
         height: 200px;
         object-fit: cover;
+        display: block; 
+        margin: 0 auto;
+        margin-top: 25px;
+    }
+    .package-card.unavailable {
+        background-color: #f0f0f0;
+        pointer-events: none;
+        opacity: 0.7;
+        border: 1px solid #aaa;
+    }
+    .unavailable-message {
+        position: absolute; /* Position relative to the container */
+        top: 50%; /* Move the text to the vertical center */
+        left: 50%; /* Move the text to the horizontal center */
+        transform: translate(-50%, -50%); /* Center the text precisely */
+        font-weight: bold;
+        color: red;
+        font-size: 1.5rem;
+        text-align: center;
+        z-index: 10; /* Ensure it stays in front of other content */
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+        padding: 10px 20px;
+        background: none;
+    }
+    .btn-primary.selectPackage:hover {
+        background-color: #0056b3;
     }
     .package-card-title {
         font-size: 1.5rem;
@@ -288,24 +387,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         color: #495057;
     }
 	.popup-overlay {
+        display: none; /* Hidden by default */
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+        z-index: 9999; /* Ensures it appears above other content */
     }
 
     .popup-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         background: #fff;
         padding: 20px;
         border-radius: 8px;
-        max-width: 600px;
-        width: 100%;
-        position: relative;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        max-width: 90%;
+        width: 800px;
     }
 
     .close-popup {
@@ -314,7 +416,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         right: 10px;
         cursor: pointer;
         font-size: 20px;
+        color: #aaa;
         font-weight: bold;
+    }
+    .close-popup:hover {
+        color: #000;
     }
     .p-image {
         max-width: 80px;
@@ -322,7 +428,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         border-radius: 5px;
         margin-right: 15px;
     }
+    
+/* Form Elements */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
+.product {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fefefe;
+}
+
+.product img {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+}
+.product h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    flex: 1;
+}
+.product label {
+    font-size: 14px;
+    color: #555;
+    margin-right: 5px;
+}
+
+.product select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Quantity Controls */
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.qty-btn {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.qty-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.qty-input {
+    width: 50px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.stock-message {
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* Submit Button */
+.btn-success {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #45a049;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Responsive Design */
+@media (max-width: 600px) {
+    .product {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .product img {
+        margin-bottom: 10px;
+    }
+
+    .popup-content {
+        width: 90%;
+    }
+}
 </style>
 </head>
 <body class="animsition">
@@ -491,11 +716,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
                         if ($cart_items_result->num_rows > 0) {
                             while ($cart_item = $cart_items_result->fetch_assoc()) {
                                 $total_price += $cart_item['total_price'];
+                                
                                 if (!empty($cart_item['package_id'])) {
                                     // Render package details
                                     echo '
                                     <li class="header-cart-item flex-w flex-t m-b-12">
-                                        <div class="header-cart-item-img">
+                                        <div class="header-cart-item-img delete-item" data-id="' . $cart_item['package_id'] . '" data-type="package"data-product1-color="' . $cart_item['product1_color'] . '" 
+                                        data-product1-size="' . $cart_item['product1_size'] . '" 
+                                        data-product2-color="' . $cart_item['product2_color'] . '" 
+                                        data-product2-size="' . $cart_item['product2_size'] . '" 
+                                        data-product3-color="' . $cart_item['product3_color'] . '" 
+                                        data-product3-size="' . $cart_item['product3_size'] . '">
                                             <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
                                         </div>
                                         <div class="header-cart-item-txt p-t-8">
@@ -503,7 +734,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
                                                 ' . $cart_item['package_name'] . '
                                             </a>
                                             <span class="header-cart-item-info">
-                                                ' . $cart_item['package_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                                ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
                                             </span>
                                             <span class="header-cart-item-info">
                                                 Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
@@ -516,7 +747,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
                                     // Render individual product details
                                     echo '
                                     <li class="header-cart-item flex-w flex-t m-b-12">
-                                        <div class="header-cart-item-img">
+                                        <div class="header-cart-item-img delete-item" data-id="' . $cart_item['product_id'] . '" data-type="product"  data-color="' . $cart_item['color'] . '" data-size="' . $cart_item['size'] . '">
                                             <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                                         </div>
                                         <div class="header-cart-item-txt p-t-8">
@@ -536,6 +767,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
                         } else {
                             echo '<p>Your cart is empty.</p>';
                         }
+                        
 
                     ?>
                 </ul>
@@ -559,39 +791,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         </div>
     </div>
     <div class="package-container mt-5">
-        <h1 class="mb-4">Winter New Combo!!!</h1>
+    <h1 class="mb-4">Winter New Combo!!!</h1>
 
-        <?php
-        if ($package_result && $package_result->num_rows > 0) {
-            while ($row = $package_result->fetch_assoc()) {
-                echo "<div class='package-card mb-4' data-package-id='" . htmlspecialchars($row['package_id']) . "'>";
-                echo "  <div class='row g-0'>";
-                echo "      <div class='col-md-4'>";
-                echo "          <img src='images/" . htmlspecialchars($row['package_image']) . "' class='img-fluid rounded-start' alt='Package Image'>";
-                echo "      </div>";
-                echo "      <div class='col-md-8'>";
-                echo "          <div class='card-body'>";
-                echo "              <h5 class='package-card-title'>" . htmlspecialchars($row['package_name']) . "</h5>";
-                echo "              <p class='package-card-text'>Price: $" . number_format($row['package_price'], 2) . "</p>";
-                echo "              <p class='package-card-text'>" . htmlspecialchars($row['package_description']) . "</p>";
-                echo "              <ul class='list-group list-group-flush'>";
-                echo "                  <li class='list-group-item'>Product 1: " . htmlspecialchars($row['product1_name']) . "</li>";
-                echo "                  <li class='list-group-item'>Product 2: " . htmlspecialchars($row['product2_name']) . "</li>";
-                if (!empty($row['product3_name'])) {
-                    echo "                  <li class='list-group-item'>Product 3: " . htmlspecialchars($row['product3_name']) . "</li>";
-                }
-                echo "              </ul>";
-                echo "          </div>";
-                echo "      </div>";
-                echo "  </div>";
-				echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
-                echo "</div>";
+    <?php
+    if ($package_result && $package_result->num_rows > 0) {
+        while ($row = $package_result->fetch_assoc()) {
+            // Check conditions for unavailable packages
+            $isUnavailable = ($row['package_status'] == 2 || $row['package_stock'] == 0);
+            $unavailableMessage = $row['package_status'] == 2 
+                ? "Package is not available" 
+                : ($row['package_stock'] == 0 
+                    ? "Package is out of stock" 
+                    : "");
+
+            // Add appropriate classes for styling
+            $containerClass = $isUnavailable ? "package-card unavailable" : "package-card";
+
+            echo "<div class='$containerClass mb-4' data-package-id='" . htmlspecialchars($row['package_id']) . "'>";
+            echo "  <div class='row g-0'>";
+
+            // Package Image
+            echo "      <div class='col-md-4'>";
+            echo "          <img src='images/" . htmlspecialchars($row['package_image']) . "' class='img-fluid rounded-start' alt='Package Image'>";
+            echo "      </div>";
+
+            // Package Details
+            echo "      <div class='col-md-8'>";
+            echo "          <div class='card-body'>";
+            echo "              <h5 class='package-card-title'>" . htmlspecialchars($row['package_name']) . "</h5>";
+            echo "              <p class='package-card-text'>Price: $" . number_format($row['package_price'], 2) . "</p>";
+            echo "              <p class='package-card-text'>" . htmlspecialchars($row['package_description']) . "</p>";
+
+            // Product List
+            echo "              <ul class='list-group list-group-flush'>";
+            echo "                  <li class='list-group-item'>Product 1: " . htmlspecialchars($row['product1_name']) . "</li>";
+            echo "                  <li class='list-group-item'>Product 2: " . htmlspecialchars($row['product2_name']) . "</li>";
+            if (!empty($row['product3_name'])) {
+                echo "                  <li class='list-group-item'>Product 3: " . htmlspecialchars($row['product3_name']) . "</li>";
             }
-        } else {
-            echo "<p class='text-warning'>No packages found.</p>";
+            echo "              </ul>";
+
+            // Unavailable Message
+            if ($isUnavailable) {
+                echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
+            } else {
+                echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
+            }
+
+            echo "          </div>";
+            echo "      </div>";
+            echo "  </div>";
+            echo "</div>";
         }
-        ?>
-    </div>
+    } else {
+        echo "<p class='text-warning'>No packages found.</p>";
+    }
+    ?>
+</div>
+
+
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
 		<div class="popup-content">
 			<span class="close-popup">&times;</span>
@@ -756,6 +1014,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	<script src="vendor/bootstrap/js/popper.js"></script>
 	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 	<script src="vendor/select2/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
 		$(".js-select2").each(function(){
 			$(this).select2({
@@ -803,7 +1062,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 console.log("AJAX success response received:", response);
                 if (response.success) {
                     console.log("Response indicates success. Generating form.");
-                    let formHtml = `<h3>Select Options for Package</h3>
+                    let formHtml = `<h3>Select Options for Your Package</h3>
                         <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
                             <input type="hidden" name="package_id" value="${packageId}">`; // Include hidden field for package_id
 
@@ -812,14 +1071,16 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         console.log(`Processing product ${index + 1}:`, product);
                         formHtml += `
                             <div class="product">
-                                <h4>${product.name}</h4>
+                                <h3>${product.name}</h3>
                                 <img src="images/${product.image}" class="p-image">
                                 <label>Color:</label>
                                 <select name="product${index + 1}_color">
+                                    <option value="">Choose an option</option>
                                     ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}
                                 </select>
                                 <label>Size:</label>
                                 <select name="product${index + 1}_size">
+                                    <option value="">Choose an option</option>
                                     ${product.sizes.filter(Boolean).map(size => `<option value="${size}">${size}</option>`).join('')}
                                 </select>
                             </div>`;
@@ -917,11 +1178,20 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 console.log("AJAX success response:", response);
                 if (response.success) {
                     console.log("Package successfully added to cart.");
-                    alert("Package added to cart!");
+                    Swal.fire({
+                        title: 'Package has been added to your cart!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
                     $('#packageFormPopup').fadeOut();
                 } else {
                     console.error("Error adding package to cart:", response.message);
-                    alert("Error: " + response.message);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message || 'Failed to add product to cart.',
+                        icon: 'error',
+                        confirmButtonText: 'Try Again'
+                    });
                 }
             },
             error: function (xhr, status, error) {
@@ -944,7 +1214,80 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
     });
 </script>
+<script>
+    // Add click event listener to cart item images
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
 
+            let body = `delete_item=1&id=${id}&type=${type}`;
+
+            // Append additional data based on the type
+            if (type === 'product') {
+                const color = this.dataset.color;
+                const size = this.dataset.size;
+                body += `&color=${color}&size=${size}`;
+                console.log('Deleting product:', { id, color, size });
+            } else if (type === 'package') {
+                const product1_color = this.dataset.product1Color;
+                const product1_size = this.dataset.product1Size;
+                const product2_color = this.dataset.product2Color;
+                const product2_size = this.dataset.product2Size;
+                const product3_color = this.dataset.product3Color;
+                const product3_size = this.dataset.product3Size;
+
+                body += `&product1_color=${product1_color}&product1_size=${product1_size}`;
+                body += `&product2_color=${product2_color}&product2_size=${product2_size}`;
+                body += `&product3_color=${product3_color}&product3_size=${product3_size}`;
+                console.log('Deleting package:', { id, product1_color, product1_size, product2_color, product2_size, product3_color, product3_size });
+            }
+
+            // Confirm deletion
+            if (confirm('Are you sure you want to delete this item from your cart?')) {
+                // Send AJAX request to delete the item
+                fetch(location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: body,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Response:', data); // Log response for debugging
+                    if (data.success) {
+                        // Remove the item from the DOM
+                        this.closest('.header-cart-item').remove();
+                        // Update the total price
+                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                        Swal.fire({
+                                title: 'Item Deleted!',
+                                text: 'The item has been successfully removed from your cart.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to delete the item. Please try again.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+});
+
+
+
+</script>
 
 
 

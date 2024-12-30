@@ -57,6 +57,79 @@ $cart_items_query = "
         sc.product2_color, sc.product2_size,
         sc.product3_color, sc.product3_size";
 $cart_items_result = $connect->query($cart_items_query);
+// Handle AJAX request to delete item
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
+    $id = intval($_POST['id']); // Ensure ID is an integer
+    $type = $_POST['type'];     // Either 'product' or 'package'
+
+    $response = ['success' => false];
+
+    // Debug: Log incoming POST data
+    file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
+
+    if ($type === 'product') {
+        $color = $_POST['color'];
+        $size = $_POST['size'];
+
+        // Delete the specific product with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
+        ");
+        $stmt->bind_param('issi', $id, $color, $size, $user_id);
+    } elseif ($type === 'package') {
+        $product1_color = $_POST['product1_color'];
+        $product1_size = $_POST['product1_size'];
+        $product2_color = $_POST['product2_color'];
+        $product2_size = $_POST['product2_size'];
+        $product3_color = $_POST['product3_color'];
+        $product3_size = $_POST['product3_size'];
+
+        // Delete the specific package with matching attributes
+        $stmt = $connect->prepare("
+            DELETE FROM shopping_cart 
+            WHERE package_id = ? 
+              AND product1_color = ? AND product1_size = ?
+              AND product2_color = ? AND product2_size = ?
+              AND product3_color = ? AND product3_size = ?
+              AND user_id = ?
+        ");
+        $stmt->bind_param(
+            'ississsi',
+            $id,
+            $product1_color, $product1_size,
+            $product2_color, $product2_size,
+            $product3_color, $product3_size,
+            $user_id
+        );
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invalid type']);
+        exit;
+    }
+
+    // Execute the query and check if it was successful
+    if ($stmt->execute()) {
+        // Check affected rows to confirm deletion
+        if ($stmt->affected_rows > 0) {
+            // Recalculate the new total price
+            $result = $connect->query("SELECT SUM(total_price) AS new_total FROM shopping_cart WHERE user_id = $user_id");
+            $row = $result->fetch_assoc();
+            $response['new_total'] = $row['new_total'] ?? 0;
+            $response['success'] = true;
+        } else {
+            $response['message'] = 'No matching row found for deletion.';
+        }
+    } else {
+        // Debug: Log SQL errors
+        $response['message'] = 'Query failed: ' . $connect->error;
+        file_put_contents('debug.log', "SQL Error: " . $connect->error . "\n", FILE_APPEND);
+    }
+
+    $stmt->close();
+    echo json_encode($response);
+    exit;
+}
+
 
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
@@ -235,13 +308,35 @@ $selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) 
 $category_query = "SELECT * FROM category";
 $category_result = $connect->query($category_query);
 
-// Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
-$distinct_products_result = $connect->query($distinct_products_query);
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.product_id, 
+            sc.package_id,
+            sc.color, 
+            sc.size,
+            sc.product1_color, sc.product1_size,
+            sc.product2_color, sc.product2_size,
+            sc.product3_color, sc.product3_size
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.product_id, 
+            sc.package_id, 
+            sc.color, 
+            sc.size,
+            sc.product1_color, sc.product1_size,
+            sc.product2_color, sc.product2_size,
+            sc.product3_color, sc.product3_size
+    ) AS distinct_items";
+
+$distinct_items_result = $connect->query($distinct_items_query);
 $distinct_count = 0;
 
-if ($distinct_products_result) {
-    $row = $distinct_products_result->fetch_assoc();
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
 
@@ -318,22 +413,38 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
     ob_start();
 	if ($product_result->num_rows > 0) {
     while ($product = $product_result->fetch_assoc()) {
+        // Determine product availability and stock status
+        $isUnavailable = $product['product_status'] == 2;
+        $isOutOfStock = $product['product_stock'] == 0;
+
+        // Apply light grey color if unavailable or out of stock
+        $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+
+        // Determine the message to show
+        $message = '';
+        if ($isUnavailable) {
+            $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+        } elseif ($isOutOfStock) {
+            $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+        }
+
         echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
-                <div class="block2">
+                <div class="block2 ' . $productStyle . '">
                     <div class="block2-pic hov-img0">
                         <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
                         <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-                            data-id="' . $product['product_id'] . '">Quick View</a>
+                            data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
                     </div>
                     <div class="block2-txt flex-w flex-t p-t-14">
                         <div class="block2-txt-child1 flex-col-l ">
-                            <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">'
+                            <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                             . $product['product_name'] . 
                             '</a>
                             <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
+                            ' . $message . '
                         </div>
                         <div class="block2-txt-child2 flex-r p-t-3">
-                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
                                 <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
                                 <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
                             </a>
@@ -389,6 +500,8 @@ if (!empty($output)) {
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 
 <style>
 .selected {
@@ -414,129 +527,117 @@ body {
 
 /* General Container Styling */
 #packageBox {
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        max-width: 800px;
-        margin: 0 auto;
-    }
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 0 auto;
+    height: 300px;
+    overflow-y: auto;
+}
 
-    /* Section Title */
-    .package-title {
-        text-align: center;
-        font-size: 24px;
-        color: #333;
-        margin-bottom: 20px;
-    }
+/* Section Title */
+.package-title {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
 
-    /* Package Card Styling */
-    .package-card {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        background-color: #fff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
+/* Package Card Styling */
+.package-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-    .package-card:hover {
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }
+.package-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
 
-    /* Image Styling */
-    .p-image {
-        max-width: 80px;
-        height: auto;
-        border-radius: 5px;
-        margin-right: 15px;
-    }
+/* Image Styling */
+.p-image {
+    max-width: 100px;
+    height: auto;
+    border-radius: 5px;
+    margin-right: 15px;
+}
 
-    /* Package Info */
-    .package-info {
-        flex-grow: 1;
-        padding-left: 15px;
-    }
+/* Package Info */
+.package-info {
+    flex-grow: 1;
+    padding-left: 15px;
+}
 
-    .package-name {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #555;
-    }
+.package-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
 
-    .package-price {
-        font-size: 16px;
-        color: #666;
-        margin-bottom: 10px;
-    }
+.package-price {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
 
-    /* Quantity Controls */
-    .qty-controls {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }
+/* Quantity Controls */
+.qty-controls {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+}
 
-    .qty-btn {
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
-        border-radius: 4px;
-        font-size: 16px;
-    }
+.qty-btn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+}
 
-    .qty-btn:hover {
-        background-color: #0056b3;
-    }
+.qty-btn:hover {
+    background-color: #0056b3;
+}
 
-    .qty-input {
-        width: 50px;
-        text-align: center;
-        margin: 0 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 5px;
-    }
+.qty-input {
+    width: 50px;
+    text-align: center;
+    margin: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
 
-    /* Select Button */
-    .btn-primary {
-        background-color: #28a745;
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        font-size: 14px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
+/* Select Button */
+.btn-primary {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
 
-    .btn-primary:hover {
-        background-color: #218838;
-    }
+.btn-primary:hover {
+    background-color: #218838;
+}
 
-    /* Responsive Design */
-    @media (max-width: 600px) {
-        .package-card {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .p-image {
-            margin-right: 0;
-            margin-bottom: 10px;
-        }
-
-        .package-info {
-            padding-left: 0;
-            text-align: center;
-        }
-    }
-/* Fullscreen overlay */
+/* Popup Styles */
 .popup-overlay {
     display: none; /* Hidden by default */
     position: fixed;
@@ -559,7 +660,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     max-width: 90%;
-    width: 500px;
+    width: 800px;
 }
 
 /* Close button */
@@ -577,6 +678,67 @@ body {
     color: #000;
 }
 
+/* Form Styling */
+#packageForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product-options {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fefefe;
+}
+
+.product-options img {
+    width: 80px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.product-options h3 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+    flex: 1;
+}
+
+.product-options label {
+    font-size: 14px;
+    color: #555;
+    margin-right: 5px;
+}
+
+.product-options select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .product-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .product-options img {
+        margin-bottom: 10px;
+    }
+
+    .popup-content {
+        width: 90%;
+    }
+}
+
+
 .package-card.unavailable {
     pointer-events: none; /* Disable all interactions */
     cursor: not-allowed;
@@ -590,7 +752,38 @@ body {
 .unavailable-message {
     font-weight: bold;
 }
+.unavailable-product{
+    background-color: lightgrey; /* Soft grey background */
+    border: 1px solid #d9d9d9; /* Light border for separation */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px;
+    transition: all 0.3s ease; /* Smooth hover effect */
+    opacity: 0.8; /* Slight transparency */
+}
+.unavailable-product:hover {
+    opacity: 1; /* Bring back full opacity on hover */
+}
+.unavailable-product .block2-pic img {
+    filter: grayscale(30%);
+    opacity: 0.7; /* Slightly dim the image */
+    transition: all 0.3s ease; /* Smooth transition for hover */
+}
+.unavailable-product:hover .block2-pic img {
+    filter: grayscale(30%); /* Lessen greyscale on hover */
+    opacity: 1; /* Full visibility on hover */
+}
 
+/* Message Styling */
+.unavailable-message {
+    color: #d9534f; /* Bright red */
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 5px;
+}
+.swal2-container {
+    z-index: 99999 !important; /* Ensure it appears above all other elements */
+}
 </style>
 
 </head>
@@ -765,7 +958,12 @@ body {
                                 // Render package details
                                 echo '
                                 <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
+                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['package_id'] . '" data-type="package"data-product1-color="' . $cart_item['product1_color'] . '" 
+                                    data-product1-size="' . $cart_item['product1_size'] . '" 
+                                    data-product2-color="' . $cart_item['product2_color'] . '" 
+                                    data-product2-size="' . $cart_item['product2_size'] . '" 
+                                    data-product3-color="' . $cart_item['product3_color'] . '" 
+                                    data-product3-size="' . $cart_item['product3_size'] . '">
                                         <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
                                     </div>
                                     <div class="header-cart-item-txt p-t-8">
@@ -786,7 +984,7 @@ body {
                                 // Render individual product details
                                 echo '
                                 <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
+                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['product_id'] . '" data-type="product"  data-color="' . $cart_item['color'] . '" data-size="' . $cart_item['size'] . '">
                                         <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                                     </div>
                                     <div class="header-cart-item-txt p-t-8">
@@ -1011,25 +1209,43 @@ body {
             // Display products dynamically
             if ($product_result->num_rows > 0) {
                 while($product = $product_result->fetch_assoc()) {
+
+                    // Determine product availability and stock status
+                    $isUnavailable = $product['product_status'] == 2;
+                    $isOutOfStock = $product['product_stock'] == 0;
+
+                    // Apply light grey color if unavailable or out of stock
+                    $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+
+                    // Determine the message to show
+                    $message = '';
+                    if ($isUnavailable) {
+                        $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+                    } elseif ($isOutOfStock) {
+                        $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+                    }
+
+
                     // Assign a class to each product based on its category_id
                     echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
-                            <div class="block2">
+                            <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
 									<a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-										data-id="' . $product['product_id'] . '">
+										data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
 										Quick View
 								 	</a>
                                 </div>
                                 <div class="block2-txt flex-w flex-t p-t-14">
                                     <div class="block2-txt-child1 flex-col-l ">
-                                        <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">'
+                                        <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                         . $product['product_name'] . 
                                         '</a>
                                         <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
+                                        ' . $message . '
                                     </div>
                                     <div class="block2-txt-child2 flex-r p-t-3">
-                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
                                             <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
                                             <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
                                         </a>
@@ -1364,7 +1580,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 </div>
 
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
 <script src="vendor/animsition/js/animsition.min.js"></script>
 <script src="vendor/bootstrap/js/popper.js"></script>
@@ -1497,6 +1713,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 packageBox.empty(); // Clear existing packages
 
                 if (packages.length > 0) {
+                    packageBox.append('<h2>Valuable Packages</h2>');
                     packages.forEach(pkg => {
                         let packageHtml = '';
                         if (pkg.package_status == 2) {
@@ -1620,7 +1837,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
    			const selectedSize = $('select[name="size"]').val();
 
 			if (!selectedColor || !selectedSize) {
-				alert('Please select a color and size.');
+				Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to remove the item. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
 				return;
 			}
 
@@ -1648,8 +1870,15 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        alert(`${productName} has been added to your cart!`);
-                        location.reload(); // Refresh the page after a successful addition
+                        Swal.fire({
+                            title: 'Product has been added to your cart!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
+                        });
                     } else {
                         alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
                     }
@@ -1845,117 +2074,124 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     </script>
 	<script>
 		$(document).on('click', '.selectPackage', function () {
-    const packageId = $(this).closest('.package-card').data('package-id');
-    console.log("Package ID:", packageId);
+            const packageId = $(this).closest('.package-card').data('package-id');
+            console.log("Package ID:", packageId);
 
-    if (!packageId) {
-        alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
-        return;
-    }
-
-    // Fetch the products in the package
-    $.ajax({
-        url: '', // PHP endpoint to handle this request
-        type: 'GET',
-        data: { fetch_package_products: true, package_id: packageId },
-        dataType: 'json',
-        success: function (response) {
-            console.log("Response:", response);
-
-            if (!response.products || response.products.length === 0) {
-                console.error("Error: response.products is undefined or empty.");
-                alert("No products found for this package.");
+            if (!packageId) {
+                alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
                 return;
             }
 
-            let formHtml = `<h2>Select Options for Your Package</h2><form id="packageForm">`;
-            const selectedQty = $('.qty-input').val() || 1;
-            console.log("Selected Quantity:", selectedQty);
+            // Fetch the products in the package
+            $.ajax({
+                url: '', // PHP endpoint to handle this request
+                type: 'GET',
+                data: { fetch_package_products: true, package_id: packageId },
+                dataType: 'json',
+                success: function (response) {
+                    console.log("Response:", response);
 
-            if (!selectedQty) {
-                alert("Error: Quantity is undefined.");
-                return;
-            }
-
-            formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
-            formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
-
-            // Loop through products and generate the form
-            response.products.forEach((product, index) => {
-                if (!product) {
-                    console.error(`Error: Product at index ${index} is undefined.`);
-                    return;
-                }
-
-                formHtml += `
-                    <div class="product-options" id="product_${index + 1}">
-                        <h3>${product.product_name || `Product ${index + 1}`}</h3>
-                        <img src="images/${product.product_image}" class="p-image">
-                        <label for="color_${index + 1}">Color:</label>
-                        <select name="color_${index + 1}" id="color_${index + 1}">
-                            <option value="">Choose an option</option>
-                            <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
-                            <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
-                        </select>
-                        <label for="size_${index + 1}">Size:</label>
-                        <select name="size_${index + 1}" id="size_${index + 1}">
-                            <option value="">Choose an option</option>
-                            <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
-                            <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
-                        </select>
-                    </div>
-                `;
-            });
-
-            formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
-
-            // Inject the form into the popup container
-            $('#packageFormContainer').html(formHtml);
-            $('#packageFormPopup').fadeIn();
-
-            // Handle form submission
-            $('#packageForm').on('submit', function (e) {
-                e.preventDefault();
-
-                // Collect the form data
-                const packageData = {
-                    add_package_to_cart: true,
-                    package_id: packageId,
-                    qty: selectedQty
-                };
-
-                // Loop through inputs and append data
-                response.products.forEach((product, index) => {
-                    packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
-                    packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
-                });
-
-                console.log("Package Data:", packageData);
-
-                $.ajax({
-                    url: '', // Replace with actual PHP script
-                    type: 'POST',
-                    data: packageData,
-                    success: function (response) {
-                        console.log("Add to Cart Response:", response);
-                        if (response.success) {
-                            alert('Package added to cart!');
-                            $('#packageFormPopup').fadeOut();
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    },
-                    error: function () {
-                        alert('An error occurred while adding the package to the cart.');
+                    if (!response.products || response.products.length === 0) {
+                        console.error("Error: response.products is undefined or empty.");
+                        alert("No products found for this package.");
+                        return;
                     }
-                });
+
+                    let formHtml = `<h3>Select Options for Your Package</h3><form id="packageForm">`;
+                    const selectedQty = $('.qty-input').val() || 1;
+                    console.log("Selected Quantity:", selectedQty);
+
+                    if (!selectedQty) {
+                        alert("Error: Quantity is undefined.");
+                        return;
+                    }
+
+                    formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
+                    formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
+
+                    // Loop through products and generate the form
+                    response.products.forEach((product, index) => {
+                        if (!product) {
+                            console.error(`Error: Product at index ${index} is undefined.`);
+                            return;
+                        }
+
+                        formHtml += `
+                            <div class="product-options" id="product_${index + 1}">
+                                <h3>${product.product_name || `Product ${index + 1}`}</h3>
+                                <img src="images/${product.product_image}" class="p-image">
+                                <label for="color_${index + 1}">Color:</label>
+                                <select name="color_${index + 1}" id="color_${index + 1}">
+                                    <option value="">Choose an option</option>
+                                    <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
+                                    <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
+                                </select>
+                                <label for="size_${index + 1}">Size:</label>
+                                <select name="size_${index + 1}" id="size_${index + 1}">
+                                    <option value="">Choose an option</option>
+                                    <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
+                                    <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
+                                </select>
+                            </div>
+                        `;
+                    });
+
+                    formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
+
+                    // Inject the form into the popup container
+                    $('#packageFormContainer').html(formHtml);
+                    $('#packageFormPopup').fadeIn();
+
+                    // Handle form submission
+                    $('#packageForm').on('submit', function (e) {
+                        e.preventDefault();
+
+                        // Collect the form data
+                        const packageData = {
+                            add_package_to_cart: true,
+                            package_id: packageId,
+                            qty: selectedQty
+                        };
+
+                        // Loop through inputs and append data
+                        response.products.forEach((product, index) => {
+                            packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
+                            packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
+                        });
+
+                        console.log("Package Data:", packageData);
+
+                        $.ajax({
+                            url: '', // Replace with actual PHP script
+                            type: 'POST',
+                            data: packageData,
+                            success: function (response) {
+                                console.log("Add to Cart Response:", response);
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: 'Package has been added to your cart!',
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            location.reload();
+                                        }
+                                    });
+                                } else {
+                                    alert('Error: ' + response.message);
+                                }
+                            },
+                            error: function () {
+                                alert('An error occurred while adding the package to the cart.');
+                            }
+                        });
+                    });
+                },
+                error: function () {
+                    alert('An error occurred while fetching package details.');
+                }
             });
-        },
-        error: function () {
-            alert('An error occurred while fetching package details.');
-        }
-    });
-});
+        });
 
 
 
@@ -1971,6 +2207,83 @@ $(document).on('click', '.filter-tope-group button', function(event) {
 				$('#packageFormPopup').fadeOut();
 			}
 		});
+</script>
+<script>
+    // Add click event listener to cart item images
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.delete-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const id = this.dataset.id;
+            const type = this.dataset.type;
+
+            let body = `delete_item=1&id=${id}&type=${type}`;
+
+            // Append additional data based on the type
+            if (type === 'product') {
+                const color = this.dataset.color;
+                const size = this.dataset.size;
+                body += `&color=${color}&size=${size}`;
+                console.log('Deleting product:', { id, color, size });
+            } else if (type === 'package') {
+                const product1_color = this.dataset.product1Color;
+                const product1_size = this.dataset.product1Size;
+                const product2_color = this.dataset.product2Color;
+                const product2_size = this.dataset.product2Size;
+                const product3_color = this.dataset.product3Color;
+                const product3_size = this.dataset.product3Size;
+
+                body += `&product1_color=${product1_color}&product1_size=${product1_size}`;
+                body += `&product2_color=${product2_color}&product2_size=${product2_size}`;
+                body += `&product3_color=${product3_color}&product3_size=${product3_size}`;
+                console.log('Deleting package:', { id, product1_color, product1_size, product2_color, product2_size, product3_color, product3_size });
+            }
+
+            // Confirm deletion
+            if (confirm('Are you sure you want to delete this item from your cart?')) {
+                // Send AJAX request to delete the item
+                fetch(location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: body,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Response:', data); // Log response for debugging
+                    if (data.success) {
+                        // Remove the item from the DOM
+                        this.closest('.header-cart-item').remove();
+                        // Update the total price
+                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                        Swal.fire({
+                            title: 'Item has been removed from your cart!',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to remove the item. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+});
+
+
+
 </script>
 <script src="js/main.js"></script>
 
