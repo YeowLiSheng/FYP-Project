@@ -1839,7 +1839,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			if (!selectedColor || !selectedSize) {
 				Swal.fire({
                     title: 'Error!',
-                    text: data.message || 'Failed to remove the item. Please try again.',
+                    text: 'Please select a color or size.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
