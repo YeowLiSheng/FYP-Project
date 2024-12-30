@@ -620,23 +620,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // 获取必要数据
+
     $final_amount = $total_payment;
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
 
-    // 插入到 `orders`
+  
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) 
                     VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
     $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
 
-    // 获取订单 ID
+  
     $order_id = $stmt->insert_id;
 
- // 插入 order_details 表
- mysqli_data_seek($cart_result, 0); // 重置购物车结果指针
+
+ mysqli_data_seek($cart_result, 0); 
  while ($row = mysqli_fetch_assoc($cart_result)) {
 	$product_id = !empty($row['product_id']) ? $row['product_id'] : null;
 	$package_id = !empty($row['package_id']) ? $row['package_id'] : null;
@@ -651,7 +651,7 @@ if ($paymentSuccess) {
 	 $details_stmt->execute();
  }
 
-    // 清空购物车
+    // CLEAR SHOPPING CART
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
