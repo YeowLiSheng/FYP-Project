@@ -1837,7 +1837,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
    			const selectedSize = $('select[name="size"]').val();
 
 			if (!selectedColor || !selectedSize) {
-				alert('Please select a color and size.');
+				Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to remove the item. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
 				return;
 			}
 

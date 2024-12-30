@@ -822,7 +822,7 @@ if ($distinct_products_result) {
 									
 									$message = '';
                                         if ($cart_item['package_status']==2) {
-                                            $message = '<p class="text-danger">This package is unavailable, please remove it from your cart</p>';
+                                            $message = '<p class="text-danger">This package is unavailable</p>';
                                         } elseif ($package_quantities[$cart_item['package_id']] > $cart_item['package_stock']) {
                                             $message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['package_stock'] . '</p>';
                                         }
@@ -862,7 +862,7 @@ if ($distinct_products_result) {
 								}else {
 									$message = '';
 									if ($cart_item['product_status']==2) {
-										$message = '<p class="text-danger">This product is unavailable, please remove it from your cart</p>';
+										$message = '<p class="text-danger">This product is unavailable</p>';
 									} elseif ($cart_item['total_qty'] > $cart_item['product_stock']) {
 										$message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>';
 									}
