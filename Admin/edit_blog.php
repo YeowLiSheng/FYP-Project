@@ -18,7 +18,26 @@ if (isset($_GET['blog_id'])) {
         $date = $row['date'];
         $picture = $row['picture']; // Current image filename
     } else {
-        echo "<script>alert('Blog not found.');window.location.href='view_blog.php';</script>";
+        // Blog not found, show SweetAlert
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Blog not found',
+                    text: 'The blog could not be found in the database.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'view_blog.php';
+                });
+            </script>
+        </body>
+        </html>";
+        exit;
     }
 
     // Update the blog details when the form is submitted
@@ -46,7 +65,15 @@ if (isset($_GET['blog_id'])) {
             if ($uploadOk) {
                 $image_path = $filename;
             } else {
-                echo "<script>alert('Error uploading new image.');</script>";
+                // If the upload fails, keep the current image
+                echo "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error uploading image',
+                        text: 'There was an error uploading the image. The current image will be kept.',
+                        confirmButtonText: 'OK'
+                    });
+                </script>";
                 $image_path = $picture; // Retain the old image if new one fails
             }
         } else {
@@ -57,17 +84,73 @@ if (isset($_GET['blog_id'])) {
         $sql_update = "UPDATE blog SET picture = '$image_path', title = '$title', subtitle = '$subtitle', description = '$description', date = '$date' WHERE blog_id = $blog_id";
 
         if (mysqli_query($connect, $sql_update)) {
-            echo "<script>alert('Blog updated successfully.');window.location.href='view_blog.php';</script>";
+            // On success, show SweetAlert
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Blog updated successfully',
+                        text: 'The blog has been updated.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'view_blog.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit;
         } else {
-            echo "Error: " . mysqli_error($connect);
+            // On error, show SweetAlert
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error updating blog',
+                        text: 'There was an issue updating the blog. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                </script>
+            </body>
+            </html>";
+            exit;
         }
     }
 
     mysqli_close($connect);
 } else {
-    echo "<script>alert('Blog ID missing.');window.location.href='view_blog.php';</script>";
+    // If blog_id is not set, show SweetAlert
+    echo "<!DOCTYPE html>
+    <html>
+    <head>
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    </head>
+    <body>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Blog ID missing',
+                text: 'Blog ID is missing from the URL.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'view_blog.php';
+            });
+        </script>
+    </body>
+    </html>";
+    exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

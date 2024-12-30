@@ -792,13 +792,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = mysqli_real_escape_string($connect, $_POST['email']);
     $name = mysqli_real_escape_string($connect, $_POST['name']);
     $comment = mysqli_real_escape_string($connect, $_POST['comment']);
+    
+    // Assuming $blog_id is dynamically set or passed as a parameter (e.g., via GET)
+    $blog_id = $_GET['id'];  // Get the blog_id from the URL or set it based on the context
 
     $insert_sql = "INSERT INTO blog_comment (blog_id, user_email, user_name, comment) 
                    VALUES ('$blog_id', '$email', '$name', '$comment')";
     if (mysqli_query($connect, $insert_sql)) {
-        echo '<script>alert("Comment submitted successfully!");</script>';
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: 'Comment submitted successfully!',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'blog-detail.php?id=" . $blog_id . "'; // Redirect to dynamic blog-detail.php based on blog_id
+                });
+            </script>
+        </body>
+        </html>";
     } else {
         echo "Error: " . mysqli_error($connect);
     }
 }
 ?>
+

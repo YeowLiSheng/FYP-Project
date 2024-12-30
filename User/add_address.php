@@ -46,12 +46,30 @@ if (isset($_POST['submitbtn'])) {
 
     if (mysqli_query($connect, $insert_query)) {
         echo "<script type='text/javascript'>
-                alert('Address has been added successfully.');
-                window.location.href='edit_profile.php';
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Address has been added successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(function() {
+                        window.location.href='edit_profile.php';
+                    });
+                });
               </script>";
     } else {
-        echo "Error adding address: " . mysqli_error($connect);
+        echo "<script type='text/javascript'>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error adding address: " . mysqli_error($connect) . "',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+              </script>";
     }
+    
 }
 ?>
 
@@ -61,6 +79,8 @@ if (isset($_POST['submitbtn'])) {
     <meta charset="UTF-8">
     <title>Add Address</title>
     <link rel="stylesheet" href="styles.css"> <!-- Add your CSS file -->
+    <!-- SweetAlert CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Form Container */
         .edit-address-form {
@@ -258,8 +278,14 @@ if (isset($_POST['submitbtn'])) {
 
 <?php if ($hasAddress): ?>
     <script type="text/javascript">
-        alert("You already have an address.");
-        window.location.href = 'edit_profile.php'; // Redirect after alert
+        Swal.fire({
+            title: 'Error',
+            text: 'You already have an address.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        }).then(function() {
+            window.location.href = 'edit_profile.php'; // Redirect after SweetAlert
+        });
     </script>
 <?php endif; ?>
 

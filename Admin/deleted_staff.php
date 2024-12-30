@@ -14,8 +14,25 @@ if (isset($_GET['staff_id'])) {
 
     // Prevent superadmin from deleting themselves
     if ($admin_id === 'superadmin' && $staff_id === '15') {
-        // Inform the user and redirect if superadmin tries to delete themselves
-        echo "<script>alert('Superadmin cannot delete yourself.');window.location.href='view_admin.php';</script>";
+        // Inform the user and redirect if superadmin tries to delete themselves using SweetAlert
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Superadmin Cannot Delete Yourself',
+                    text: 'You cannot delete the superadmin account.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'view_admin.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit(); // Stop further script execution
     }
 
@@ -26,9 +43,43 @@ if (isset($_GET['staff_id'])) {
 
     // Check if deletion was successful
     if ($stmt->affected_rows > 0) {
-        echo "<script>alert('Staff deleted successfully.');window.location.href='view_admin.php';</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Staff Deleted Successfully',
+                    text: 'The staff member has been deleted.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'view_admin.php';
+                });
+            </script>
+        </body>
+        </html>";
     } else {
-        echo "<script>alert('Failed to delete staff or staff not found.');window.location.href='view_admin.php';</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed to Delete Staff',
+                    text: 'Staff could not be deleted or does not exist.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'view_admin.php';
+                });
+            </script>
+        </body>
+        </html>";
     }
 
     $stmt->close();

@@ -56,14 +56,28 @@ if (isset($_POST['submitbtn'])) {
     $update_query = "UPDATE user SET user_name='$name', user_email='$email', user_password='$password', user_contact_number='$contact', user_date_of_birth='$dob', user_image='$image' WHERE user_id='$user_id'";
     
     if (mysqli_query($connect, $update_query)) {
-        echo 
-            "<script type='text/javascript'>
-				alert('Record has been saved successfully.');
-				window.location.href='edit_profile.php';
-			</script>";
-    } else {
-        echo "Error updating profile: " . mysqli_error($connect);
-    }
+		echo "<!DOCTYPE html>
+		<html>
+		<head>
+			<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+		</head>
+		<body>
+			<script>
+				Swal.fire({
+					icon: 'success',
+					title: 'Record Saved',
+					text: 'Your profile has been saved successfully.',
+					confirmButtonText: 'OK'
+				}).then(() => {
+					window.location.href = 'edit_profile.php';
+				});
+			</script>
+		</body>
+		</html>";
+	} else {
+		echo "Error updating profile: " . mysqli_error($connect);
+	}
+	
 }
 ?>
 

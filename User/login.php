@@ -13,22 +13,49 @@ if (isset($_POST["loginbtn"])) {
 
     // Validate reCAPTCHA
     if (empty($_POST['g-recaptcha-response'])) {
-        
-		echo "<script>
-		alert('Please complete the CAPTCHA verification..');
-		window.location.href = 'login.php';
-	  	</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'CAPTCHA Required',
+                    text: 'Please complete the CAPTCHA verification.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'login.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit();
     }
+
     $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secret_key . '&response=' . $_POST['g-recaptcha-response']);
     $response_data = json_decode($response);
 
     if (!$response_data->success) {
-        
-		echo "<script>
-		alert('CAPTCHA verification failed. Please try again.');
-		window.location.href = 'login.php';
-	  	</script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Verification Failed',
+                    text: 'CAPTCHA verification failed. Please try again.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'login.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit();
     }
 
@@ -47,23 +74,48 @@ if (isset($_POST["loginbtn"])) {
     if ($row && $password === $row['user_password']) {
         $_SESSION['user_name'] = $row['user_name'];
         $_SESSION['id'] = $row['user_id'];
-        echo "<script>
-                alert('Login successful!');
-                window.location.href = 'dashboard.php';
-              </script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome to the dashboard!',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'dashboard.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit();
     } else {
-        echo '<script>alert("Invalid Email or Password.");</script>';
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Credentials',
+                    text: 'Invalid Email or Password.',
+                    confirmButtonText: 'OK'
+                });
+            </script>
+        </body>
+        </html>";
     }
 
     $stmt->close();
     $con->close();
 }
-
-
-
 ?>
-
 
 <?php
 
@@ -85,7 +137,6 @@ if (isset($_POST["loginbtn"])) {
 	}
 	}
 
-	
 
 ?>
 
