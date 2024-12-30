@@ -190,7 +190,19 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                             echo "<td><a href='edit_blog.php?blog_id=" . $row['blog_id'] . "'>" . $row['title'] . "</a></td>";
                             echo "<td>";
                             echo "<button onclick=\"location.href='view_comment.php?blog_id=" . $row['blog_id'] . "'\">View Comments</button>";
-                            echo "<button style=\"background-color: #ff4d4d;\" onclick=\"if(confirm('Are you sure you want to delete this blog?')) location.href='delete_blog.php?blog_id=" . $row['blog_id'] . "'\">Delete</button>";
+                            echo "<button style=\"background-color: #ff4d4d;\" onclick=\"Swal.fire({
+                                icon: 'warning',
+                                title: 'Are you sure?',
+                                text: 'This blog will be deleted.',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, delete it!',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.href='delete_blog.php?blog_id=" . $row['blog_id'] . "';
+                                }
+                            })\">Delete</button>";
+                            
                             echo "</td>";
                             echo "</tr>";
                         }

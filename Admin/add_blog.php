@@ -32,17 +32,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES ('$image_path', '$title', '$subtitle', '$description', '$date')";
 
         if (mysqli_query($connect, $sql)) {
-            echo "<script>alert('Blog added successfully.');window.location.href='view_blog.php';</script>";
+            // Success, display SweetAlert
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Blog added successfully',
+                        text: 'The blog has been added to the database.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'view_blog.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit;
         } else {
-            echo "Error: " . mysqli_error($connect);
+            // Error in database, show SweetAlert
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error adding blog',
+                        text: 'There was an issue while adding the blog. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                </script>
+            </body>
+            </html>";
+            exit;
         }
     } else {
-        echo "<script>alert('Sorry, there was an error uploading your file.');window.location.href='add_blog.php';</script>";
+        // Error uploading file, show SweetAlert
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error uploading file',
+                    text: 'Sorry, there was an error uploading your file. Please try again.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'add_blog.php';
+                });
+            </script>
+        </body>
+        </html>";
+        exit;
     }
 }
 
 mysqli_close($connect);
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
