@@ -195,12 +195,16 @@ if ($distinct_products_result) {
 								<a href="product.php">Shop</a>
 							</li>
 
+							<li>
+								<a href="package.php">Packages</a>
+							</li>
+
 							<li class="label1 active-menu" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>

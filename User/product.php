@@ -876,12 +876,16 @@ body {
 								<a href="product.php">Shop</a>
 							</li>
 
+                            <li>
+								<a href="package.php">Packages</a>
+							</li>
+
 							<li class="label1" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
@@ -1838,7 +1842,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 			if (!selectedColor || !selectedSize) {
 				Swal.fire({
-                    title: 'Error!',
+                    title: 'Color and Size required!',
                     text: 'Please select a color or size.',
                     icon: 'error',
                     confirmButtonText: 'OK'
@@ -2239,45 +2243,62 @@ $(document).on('click', '.filter-tope-group button', function(event) {
             }
 
             // Confirm deletion
-            if (confirm('Are you sure you want to delete this item from your cart?')) {
-                // Send AJAX request to delete the item
-                fetch(location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: body,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Response:', data); // Log response for debugging
-                    if (data.success) {
-                        // Remove the item from the DOM
-                        this.closest('.header-cart-item').remove();
-                        // Update the total price
-                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
-                        Swal.fire({
-                            title: 'Item has been removed from your cart!',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                location.reload();
-                            }
-                        });
-                    } else {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to delete this item from your cart?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, keep it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send AJAX request to delete the item
+                    fetch(location.href, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: body,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response:', data); // Log response for debugging
+                        if (data.success) {
+                            // Remove the item from the DOM
+                            document.querySelector('.header-cart-item').remove();
+                            // Update the total price
+                            document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                            Swal.fire({
+                                title: 'Item removed!',
+                                text: 'The item has been removed from your cart.',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to remove the item. Please try again.',
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
                         Swal.fire({
                             title: 'Error!',
-                            text: data.message || 'Failed to remove the item. Please try again.',
+                            text: 'Something went wrong. Please try again later.',
                             icon: 'error',
-                            confirmButtonText: 'OK'
+                            confirmButtonText: 'OK',
                         });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
+                    });
+                }
+            });
+
         });
     });
 });
