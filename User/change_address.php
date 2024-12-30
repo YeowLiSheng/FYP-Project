@@ -24,10 +24,24 @@ if (isset($_POST['deletebtn'])) {
     $delete_query = "DELETE FROM user_address WHERE user_id='$user_id'";
     
     if (mysqli_query($connect, $delete_query)) {
-        echo "<script type='text/javascript'>
-                alert('Address has been deleted successfully.');
-                window.location.href='edit_profile.php';
-              </script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Address Deleted',
+                    text: 'Address has been deleted successfully.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'edit_profile.php';
+                });
+            </script>
+        </body>
+        </html>";
     } else {
         echo "Error deleting address: " . mysqli_error($connect);
     }
@@ -41,11 +55,25 @@ if ($address_result) {
     if (mysqli_num_rows($address_result) > 0) {
         $address_row = mysqli_fetch_assoc($address_result); // Fetch address data
     } else {
-        // No address found, redirect to add address page with an alert
-        echo "<script type='text/javascript'>
-                alert('No address found. Please add an address before editing.');
-                window.location.href='add_address.php';
-              </script>";
+        // No address found, redirect to add address page with a SweetAlert
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Address Found',
+                    text: 'Please add an address before editing.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'add_address.php';
+                });
+            </script>
+        </body>
+        </html>";
         exit;
     }
 } else {
@@ -65,15 +93,30 @@ if (isset($_POST['submitbtn'])) {
     $update_query = "UPDATE user_address SET address='$address', state='$state', city='$city', postcode='$postcode' WHERE user_id='$user_id'";
 
     if (mysqli_query($connect, $update_query)) {
-        echo "<script type='text/javascript'>
-                alert('Address has been updated successfully.');
-                window.location.href='edit_profile.php';
-              </script>";
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Address Updated',
+                    text: 'Address has been updated successfully.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'edit_profile.php';
+                });
+            </script>
+        </body>
+        </html>";
     } else {
         echo "Error updating address: " . mysqli_error($connect);
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

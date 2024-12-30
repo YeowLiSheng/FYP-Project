@@ -954,7 +954,24 @@ if (isset($_POST['submitbtn'])) {
     $stmt->bind_param("ssii", $email, $message, $user_id, $status);
 
     if ($stmt->execute()) {
-        echo '<script>alert("The Message Send Successful");</script>';
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Message Sent!',
+                    text: 'The message has been sent successfully.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'contact.php'; // Redirect to the contact page or any desired page
+                });
+            </script>
+        </body>
+        </html>";
     } else {
         echo "Error: " . $stmt->error;
     }
