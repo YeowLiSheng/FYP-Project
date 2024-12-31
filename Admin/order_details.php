@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="section">
             <h3><i class="fas fa-list-ul icon"></i>Order Items</h3>
             <table>
-                <tr><th>Product</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
+                <tr><th>Item</th><th>Item Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
                     <tr>
                         <td><img src="../User/images/<?= $row['item_image'] ?>" alt="<?= $row['item_name'] ?>" class="product-image"></td>
