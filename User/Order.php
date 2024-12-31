@@ -740,7 +740,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				echo '
 
                     <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-					<img src="images/' . $order['product_image'] . '" alt="Product Image">
+                    <img src="images/' . $order['image'] . '" alt="Order Image">
 					<div>
 						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
                         <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
