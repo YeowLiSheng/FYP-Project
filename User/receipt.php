@@ -33,8 +33,15 @@ $order_stmt->execute();
 $order = $order_stmt->get_result()->fetch_assoc();
 
 $details_stmt = $conn->prepare("
-    SELECT od.product_name, od.quantity, od.unit_price, od.total_price
+    SELECT 
+        od.quantity, od.unit_price, od.total_price,
+        CASE
+            WHEN od.product_id IS NOT NULL THEN p.product_name
+            ELSE pp.package_name
+        END AS item_name
     FROM order_details od
+    LEFT JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN product_package pp ON od.package_id = pp.package_id
     WHERE od.order_id = ?
 ");
 $details_stmt->bind_param("i", $order_id);
