@@ -912,40 +912,39 @@ textarea {
 <?php } ?>
 <div id="ratePopup" class="popup-container" style="display: none;">
     <div class="popup-content">
-        <h2>Rate Product</h2>
+        <h2>Rate Item</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <!-- 产品选择 -->
-            <label for="productSelect">Select Product:</label>
+            <!-- 选择项 -->
+            <label for="itemSelect">Select Item:</label>
             <div class="item-select-container">
-        <select id="itemSelect" name="item_id" required>
-            <option value="" disabled selected>Select an item</option>
-            <!-- Product Options -->
-            <?php foreach ($order_details as $detail) { ?>
-                <?php if (isset($detail['product_id'])) { ?>
-                    <option value="<?= $detail['product_id'] ?>" 
-                            data-type="product" 
-                            data-img="images/<?= $detail['product_image'] ?>">
-                        Product: <?= $detail['product_name'] ?>
-                    </option>
-                <?php } ?>
-            <?php } ?>
-            <!-- Package Options -->
-            <?php foreach ($order_details as $detail) { ?>
-                <?php if (isset($detail['package_id'])) { ?>
-                    <option value="<?= $detail['package_id'] ?>" 
-                            data-type="package" 
-                            data-img="images/<?= $detail['package_image'] ?>">
-                        Package: <?= $detail['package_name'] ?>
-                    </option>
-                <?php } ?>
-            <?php } ?>
-        </select>
-        <div class="selected-item-preview" id="itemPreview">
-            <img id="itemImage" src="" alt="Item Image" style="display: none;" />
-            <span id="itemName" style="display: block;"></span>
-        </div>
-    </div>
-
+                <select id="itemSelect" name="item_id" required>
+                    <option value="" disabled selected>Select an item</option>
+                    <!-- Product Options -->
+                    <?php foreach ($order_details as $detail) { ?>
+                        <?php if (isset($detail['product_id'])) { ?>
+                            <option value="<?= $detail['product_id'] ?>" 
+                                    data-type="product" 
+                                    data-img="images/<?= $detail['product_image'] ?>">
+                                Product: <?= $detail['product_name'] ?>
+                            </option>
+                        <?php } ?>
+                    <?php } ?>
+                    <!-- Package Options -->
+                    <?php foreach ($order_details as $detail) { ?>
+                        <?php if (isset($detail['package_id'])) { ?>
+                            <option value="<?= $detail['package_id'] ?>" 
+                                    data-type="package" 
+                                    data-img="images/<?= $detail['package_image'] ?>">
+                                Package: <?= $detail['package_name'] ?>
+                            </option>
+                        <?php } ?>
+                    <?php } ?>
+                </select>
+                <div class="selected-item-preview" id="itemPreview">
+                    <img id="itemImage" src="" alt="Item Image" style="display: none;" />
+                    <span id="itemName" style="display: block;"></span>
+                </div>
+            </div>
 
             <!-- 评分 -->
             <label for="rating">Rating:</label>
