@@ -59,7 +59,7 @@ $order_id = intval($_GET['order_id']); // 或使用适当的获取方式
 
 // 使用预处理语句获取订单信息
 $order_stmt = $conn->prepare("
-    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount, o.delivery_charge,
+    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount,
            o.final_amount, o.order_status, o.shipping_address, o.shipping_method, o.user_message,
            u.user_name
     FROM orders o
