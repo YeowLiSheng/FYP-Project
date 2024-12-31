@@ -103,26 +103,38 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $product_id = intval($_POST['product_id']);
-    $rating = intval($_POST['rating']);
-    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
-    $user_id = $_SESSION['id'];
-    $image_path = null;
+	$item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : null;
+	$item_type = isset($_POST['item_type']) ? $_POST['item_type'] : null;
+	$rating = intval($_POST['rating']);
+	$comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
+	$user_id = $_SESSION['id'];
+	$image_path = null;
 
-    // 获取 detail_id
-    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
-    $detail_query->bind_param("ii", $product_id, $order_id);
-    $detail_query->execute();
-    $detail_result = $detail_query->get_result();
+	// 验证 item_type 和 item_id
+	if (!$item_id || !$item_type || !in_array($item_type, ['product', 'package'])) {
+		echo "error: invalid input";
+		exit;
+	}
 
-    if ($detail_result->num_rows === 0) {
-        echo "error";
-        exit;
-    }
+	// 获取 detail_id
+	if ($item_type === "product") {
+		$detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
+		$detail_query->bind_param("ii", $item_id, $order_id);
+	} else {
+		$detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE package_id = ? AND order_id = ?");
+		$detail_query->bind_param("ii", $item_id, $order_id);
+	}
 
-    $detail = $detail_result->fetch_assoc();
-    $detail_id = $detail['detail_id'];
+	$detail_query->execute();
+	$detail_result = $detail_query->get_result();
 
+	if ($detail_result->num_rows === 0) {
+		echo "error: detail not found";
+		exit;
+	}
+
+	$detail = $detail_result->fetch_assoc();
+	$detail_id = $detail['detail_id'];
 
 	
     // 处理图片上传
@@ -904,21 +916,36 @@ textarea {
         <form id="rateForm" method="POST" enctype="multipart/form-data">
             <!-- 产品选择 -->
             <label for="productSelect">Select Product:</label>
-            <div class="product-select-container">
-                <select id="productSelect" name="product_id" required>
-                    <option value="" disabled selected>Select a product</option>
-                    <?php foreach ($order_details as $detail) { ?>
-                        <option value="<?= $detail['product_id'] ?>" 
-                                data-img="images/<?= $detail['product_image'] ?>">
-                            <?= $detail['product_name'] ?>
-                        </option>
-                    <?php } ?>
-                </select>
-                <div class="selected-product-preview" id="productPreview">
-                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
-                    <span id="productName" style="display: block;"></span>
-                </div>
-            </div>
+            <div class="item-select-container">
+        <select id="itemSelect" name="item_id" required>
+            <option value="" disabled selected>Select an item</option>
+            <!-- Product Options -->
+            <?php foreach ($order_details as $detail) { ?>
+                <?php if (isset($detail['product_id'])) { ?>
+                    <option value="<?= $detail['product_id'] ?>" 
+                            data-type="product" 
+                            data-img="images/<?= $detail['product_image'] ?>">
+                        Product: <?= $detail['product_name'] ?>
+                    </option>
+                <?php } ?>
+            <?php } ?>
+            <!-- Package Options -->
+            <?php foreach ($order_details as $detail) { ?>
+                <?php if (isset($detail['package_id'])) { ?>
+                    <option value="<?= $detail['package_id'] ?>" 
+                            data-type="package" 
+                            data-img="images/<?= $detail['package_image'] ?>">
+                        Package: <?= $detail['package_name'] ?>
+                    </option>
+                <?php } ?>
+            <?php } ?>
+        </select>
+        <div class="selected-item-preview" id="itemPreview">
+            <img id="itemImage" src="" alt="Item Image" style="display: none;" />
+            <span id="itemName" style="display: block;"></span>
+        </div>
+    </div>
+
 
             <!-- 评分 -->
             <label for="rating">Rating:</label>
@@ -1450,31 +1477,29 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
-// 产品预览逻辑
-const productSelect = document.getElementById("productSelect");
-const productImage = document.getElementById("productImage");
-const productName = document.getElementById("productName");
+const itemSelect = document.getElementById("itemSelect");
+        const itemImage = document.getElementById("itemImage");
+        const itemName = document.getElementById("itemName");
 
-productSelect.addEventListener("change", function () {
-    const selectedOption = productSelect.options[productSelect.selectedIndex];
-    const imgSrc = selectedOption.getAttribute("data-img");
-    const name = selectedOption.textContent;
+        itemSelect.addEventListener("change", function () {
+            const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+            const imgSrc = selectedOption.getAttribute("data-img");
+            const name = selectedOption.textContent;
 
-    if (imgSrc) {
-        productImage.src = imgSrc;
-        productImage.style.display = "block";
-    } else {
-        productImage.style.display = "none";
-    }
+            if (imgSrc) {
+                itemImage.src = imgSrc;
+                itemImage.style.display = "block";
+            } else {
+                itemImage.style.display = "none";
+            }
 
-    productName.textContent = name;
-});
+            itemName.textContent = name;
+        });
 
-function resetProductPreview() {
-    productImage.style.display = "none";
-    productName.textContent = "";
-}
-
+        function resetItemPreview() {
+            itemImage.style.display = "none";
+            itemName.textContent = "";
+        }
 
 
 </script>
