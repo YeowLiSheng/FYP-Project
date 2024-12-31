@@ -22,7 +22,7 @@ if (!isset($_SESSION['id']) || !isset($_GET['order_id'])) {
 $order_id = intval($_GET['order_id']);
 
 $order_stmt = $conn->prepare("
-    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount, o.delivery_charge,
+    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount,
            o.final_amount, o.order_status, o.shipping_address, o.shipping_method, u.user_name
     FROM orders o
     JOIN user u ON o.user_id = u.user_id
@@ -33,8 +33,15 @@ $order_stmt->execute();
 $order = $order_stmt->get_result()->fetch_assoc();
 
 $details_stmt = $conn->prepare("
-    SELECT od.product_name, od.quantity, od.unit_price, od.total_price
+    SELECT 
+        od.quantity, od.unit_price, od.total_price,
+        CASE
+            WHEN od.product_id IS NOT NULL THEN p.product_name
+            ELSE pp.package_name
+        END AS item_name
     FROM order_details od
+    LEFT JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN product_package pp ON od.package_id = pp.package_id
     WHERE od.order_id = ?
 ");
 $details_stmt->bind_param("i", $order_id);
@@ -117,8 +124,6 @@ $pdf->Cell(151, 6, 'Grand Total:', 0, 0, 'R');
 $pdf->Cell(40, 6, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
 $pdf->Cell(151, 6, 'Discount:', 0, 0, 'R');
 $pdf->Cell(40, 6, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
-$pdf->Cell(151, 6, 'Delivery Charge:', 0, 0, 'R');
-$pdf->Cell(40, 6, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'R');
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(151, 10, 'Total Amount:', 0, 0, 'R');
 $pdf->Cell(40, 10, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
