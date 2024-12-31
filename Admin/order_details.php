@@ -235,7 +235,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
             <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
             <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
-            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
             <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
