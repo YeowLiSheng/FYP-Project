@@ -414,19 +414,19 @@ if ($stmt->execute()) {
     text-align: center;
 }
 
-.product-select-container {
+.item-select-container {
     position: relative;
     margin-bottom: 20px;
 }
 
-.selected-product-preview {
+.selected-item-preview {
     display: flex;
     flex-direction: column; /* 垂直对齐 */
     align-items: center;
     margin-top: 10px;
 }
 
-.selected-product-preview img {
+.selected-item-preview img {
     width: 100px; /* 调整图片大小 */
     height: 100px;
     border-radius: 10px;
