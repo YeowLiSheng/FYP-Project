@@ -16,9 +16,18 @@ if (isset($_GET['order_id'])) {
 
     // 查询订单详情信息
     $order_details_query = "
-        SELECT od.*, p.product_name, p.product_image
+        SELECT od.*,
+        CASE
+               WHEN od.product_id IS NOT NULL THEN p.product_name
+               ELSE pp.package_name
+           END AS item_name,
+           CASE
+               WHEN od.product_id IS NOT NULL THEN p.product_image
+               ELSE pp.package_image
+           END AS item_image
         FROM order_details od
-        JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN product_package pp ON od.package_id = pp.package_id
         WHERE od.order_id = $order_id";
     $order_details_result = mysqli_query($connect, $order_details_query);
 } else {
@@ -220,8 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Product</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
                     <tr>
-                        <td><img src="../User/images/<?= $row['product_image'] ?>" alt="<?= $row['product_name'] ?>" class="product-image"></td>
-                        <td><?= $row['product_name'] ?></td>
+                        <td><img src="../User/images/<?= $row['item_image'] ?>" alt="<?= $row['item_name'] ?>" class="product-image"></td>
+                        <td><?= $row['item_name'] ?></td>
                         <td><?= $row['quantity'] ?></td>
                         <td>RM <?= number_format($row['unit_price'], 2) ?></td>
                         <td>RM <?= number_format($row['total_price'], 2) ?></td>
