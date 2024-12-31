@@ -48,23 +48,25 @@ $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
 // Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status = null) {
+// Fetch orders with products and packages for each order
+function fetchOrdersWithProductsAndPackages($conn, $status = null) {
     $sql = "
         SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
+               GROUP_CONCAT(DISTINCT p.product_name SEPARATOR ', ') AS products,
+               GROUP_CONCAT(DISTINCT pp.package_name SEPARATOR ', ') AS packages, 
+               IFNULL(MIN(p.product_image), MIN(pp.package_image)) AS image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id";
-        
-    // Add a condition to filter by status if provided
+        LEFT JOIN product p ON od.product_id = p.product_id
+        LEFT JOIN product_package pp ON od.package_id = pp.package_id";
+
     if ($status) {
         $sql .= " WHERE o.order_status = ?";
     }
 
     $sql .= " GROUP BY o.order_id 
               ORDER BY o.order_date DESC";
-    
+
     $stmt = $conn->prepare($sql);
     if ($status) {
         $stmt->bind_param("s", $status);  // Bind the status parameter
@@ -74,10 +76,10 @@ function fetchOrdersWithProducts($conn, $status = null) {
 }
 
 // Fetch orders for each tab
-$all_orders = fetchOrdersWithProducts($conn);
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+$all_orders = fetchOrdersWithProductsAndPackages($conn);
+$processing_orders = fetchOrdersWithProductsAndPackages($conn, 'Processing');
+$shipping_orders = fetchOrdersWithProductsAndPackages($conn, 'Shipping');
+$completed_orders = fetchOrdersWithProductsAndPackages($conn, 'Complete');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     // 获取订单 ID
@@ -741,9 +743,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 					<img src="images/' . $order['product_image'] . '" alt="Product Image">
 					<div>
 						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-						<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+                        <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
+                        <p><i class="fa fa-tag"></i> Products: ' . ($order['products'] ?: 'None') . '</p>';
+
+            if ($order['packages']) {
+                echo '<p><i class="fa fa-gift"></i> Packages: ' . $order['packages'] . '</p>';
+            }
+
+            echo '<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+
 						
 				// 如果需要显示 "Complete" 按钮
 				if ($showCompleteButton) {
