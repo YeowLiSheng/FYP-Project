@@ -851,12 +851,12 @@ textarea {
 
     <!-- 产品明细 -->
     <div class="card">
-        <h2><span class="icon">🛒</span>Product Details</h2>
+        <h2><span class="icon">🛒</span>Purchasing Details</h2>
         <table class="product-table">
             <thead>
                 <tr>
                     <th>Image</th>
-                    <th>Product Name</th>
+                    <th>Item Name</th>
                     <th>Quantity</th>
                     <th>Unit Price</th>
                     <th>Total Price</th>
