@@ -79,9 +79,18 @@ $order = $order_result->fetch_assoc();
 
 // 获取订单详情
 $details_stmt = $conn->prepare("
-    SELECT od.product_id, od.quantity, od.unit_price, od.total_price, p.product_name, p.product_image
+    SELECT od.detail_id, od.order_id, od.quantity, od.unit_price, od.total_price,
+           CASE
+               WHEN od.product_id IS NOT NULL THEN p.product_name
+               ELSE pp.package_name
+           END AS item_name,
+           CASE
+               WHEN od.product_id IS NOT NULL THEN p.product_image
+               ELSE pp.package_image
+           END AS item_image
     FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN product_package pp ON od.package_id = pp.package_id
     WHERE od.order_id = ?
 ");
 $details_stmt->bind_param("i", $order_id);
@@ -89,8 +98,7 @@ $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
 $order_details = [];
-while ($detail = $details_result->fetch_assoc()) 
-{
+while ($detail = $details_result->fetch_assoc()) {
     $order_details[] = $detail;
 }
 
@@ -865,8 +873,8 @@ textarea {
             <tbody>
 			<?php foreach ($order_details as $detail) { ?>
                 <tr>
-                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
-                    <td><?= $detail['product_name'] ?></td>
+				<td><img src="images/<?= $detail['item_image'] ?>" alt="<?= $detail['item_name'] ?>" class="product-image"></td>
+                <td><?= $detail['item_name'] ?></td>
                     <td><?= $detail['quantity'] ?></td>
                     <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
                     <td>RM <?= number_format($detail['total_price'], 2) ?></td>
