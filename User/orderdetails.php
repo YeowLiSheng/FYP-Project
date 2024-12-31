@@ -863,7 +863,7 @@ textarea {
         <table class="product-table">
             <thead>
                 <tr>
-                    <th>Image</th>
+                    <th>Item</th>
                     <th>Item Name</th>
                     <th>Quantity</th>
                     <th>Unit Price</th>
