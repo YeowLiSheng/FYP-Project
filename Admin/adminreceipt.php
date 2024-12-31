@@ -110,7 +110,7 @@ $itemNumber = 1;
 
 while ($detail = $details_result->fetch_assoc()) {
     $pdf->Cell(20, 8, $itemNumber, 1, 0, 'C');
-    $pdf->Cell(85, 8, $detail['product_name'], 1, 0, 'C');
+    $pdf->Cell(85, 8, $detail['Item_name'], 1, 0, 'C');
     $pdf->Cell(30, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
     $pdf->Cell(20, 8, $detail['quantity'], 1, 0, 'C');
     $pdf->Cell(35, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
