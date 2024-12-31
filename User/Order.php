@@ -734,46 +734,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         <!-- Order Containers for Each Status -->
         <?php
-       function renderOrders($orders, $showCompleteButton = false) {
+     function renderOrders($orders, $showCompleteButton = false) {
 		if ($orders->num_rows > 0) {
 			while ($order = $orders->fetch_assoc()) {
-				echo '
-
-                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-                    <img src="images/' . $order['image'] . '" alt="Order Image">
-					<div>
-						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-                        <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-                        <p><i class="fa fa-tag"></i> Products: ' . ($order['products'] ?: 'None') . '</p>';
-
-            if ($order['packages']) {
-                echo '<p><i class="fa fa-gift"></i> Packages: ' . $order['packages'] . '</p>';
-            }
-
-            echo '<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
-
-						
-				// 如果需要显示 "Complete" 按钮
-				if ($showCompleteButton) {
-					echo '
-						<button type="button" class="complete-btn" 
-								onclick="openPopup(' . $order['order_id'] . ')">
-							Complete
-						</button>';
+				echo '<div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
+						<img src="images/' . $order['image'] . '" alt="Order Image">
+						<div>
+							<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+							<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>';
+	
+				if ($order['products'] && !$order['packages']) {
+					echo '<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>';
 				}
 	
-				echo '
-					</div>
-				</div>';
+				if ($order['packages']) {
+					echo '<p><i class="fa fa-gift"></i> Packages: ' . $order['packages'] . '</p>';
+				}
+	
+				echo '<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+	
+				if ($showCompleteButton) {
+					echo '<button type="button" class="complete-btn" onclick="openPopup(' . $order['order_id'] . ')">Complete</button>';
+				}
+	
+				echo '</div></div>';
 			}
 		} else {
-			echo '
-			<div class="no-orders">
-				<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-				<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
-			</div>';
+			echo '<div class="no-orders">
+					<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+					<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
+				  </div>';
 		}
 	}
+	
 	
         ?>
 
