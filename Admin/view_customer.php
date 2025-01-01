@@ -138,43 +138,57 @@ include 'dataconnection.php';
 
         <hr>
         <div class="card">
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Contact</th>
-                        <th scope="col">Joined Time</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <?php
-                    // Initial fetch to display all users
-                    $result = mysqli_query($connect, "SELECT * FROM user");
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            ?>
-                            <tr onclick="window.location='customer_detail.php?ID=<?php echo $row['user_id'] ?>';">
-                                <th scope="row"><?php echo $row["user_id"] ?></th>
-                                <td><?php echo $row["user_name"]; ?></td>
-                                <td style="vertical-align: middle;">
-                                    Telephone.No: <?php echo $row["user_contact_number"] ?><br>
-                                    Email: <?php echo $row["user_email"] ?>
-                                </td>
-                                <td><?php echo $row["user_join_time"] ?></td>
-                            </tr>
-                            <?php
-                        }
-                    } else {
-                        ?>
-                        <td colspan="5" style="text-align:center"><b>No users found.</b></td>
-                        <?php
-                    }
-                    ?>
-                </tbody>
-            </table>
-        </div><!-- end of card-->
-    </div><!-- end of main-->
+        <table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Contact</th>
+            <th scope="col">Joined Time</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody id="table-body">
+        <?php
+        // Initial fetch to display all users
+        $result = mysqli_query($connect, "SELECT * FROM user");
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                ?>
+                <tr onclick="window.location='customer_detail.php?ID=<?php echo $row['user_id']; ?>';">
+                    <th scope="row"><?php echo $row["user_id"] ?></th>
+                    <td><?php echo $row["user_name"]; ?></td>
+                    <td style="vertical-align: middle;">
+                        Telephone.No: <?php echo $row["user_contact_number"] ?><br>
+                        Email: <?php echo $row["user_email"] ?>
+                    </td>
+                    <td><?php echo $row["user_join_time"] ?></td>
+                    <td>
+                        <form method="POST" action="update_user_status.php" style="margin: 0;">
+                            <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
+                            <button 
+                                type="submit" 
+                                name="toggle_status" 
+                                class="btn" 
+                                style="background-color: <?php echo $row['user_status'] == 1 ? '#4CAF50' : '#ff4d4d'; ?>; color: white; border: none; padding: 5px 10px;">
+                                <?php echo $row['user_status'] == 1 ? 'Active' : 'Deactivate'; ?>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <?php
+            }
+        } else {
+            ?>
+            <td colspan="5" style="text-align:center"><b>No users found.</b></td>
+            <?php
+        }
+        ?>
+    </tbody>
+</table>
+
+</div><!-- end of card -->
+
 
     <script>
         // Use AJAX to fetch the filtered results when user types
