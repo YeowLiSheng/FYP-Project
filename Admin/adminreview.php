@@ -456,28 +456,21 @@ function filterByDate() {
     });
 }
 
-      
-            function filterTable() {
-    const selectedValue = document.getElementById("filter-status").value;
-    const rows = document.querySelectorAll("#table-body tr");
+function filterTable() {
+    const selectedCategory = document.getElementById("filter-status").value; // 获取选中的值
+    const rows = document.querySelectorAll("#table-body tr"); // 获取所有表格行
 
     rows.forEach(row => {
-        const productCategory = row.cells[2].textContent.trim(); // 假设类别在第3列
-        const isPackage = row.classList.contains("package"); // 检查行是否属于package
-
-        if (selectedValue === "") {
-            // 显示所有行
-            row.style.display = "";
-        } else if (selectedValue === "package") {
-            // 仅显示package行
-            row.style.display = isPackage ? "" : "none";
+        const itemCategory = row.cells[2].textContent.trim(); // 第三列是类别 (Category 或 Package)
+        
+        // 如果选中值与当前行的类别匹配，或者选中值为空，则显示，否则隐藏
+        if (selectedCategory === "" || itemCategory === selectedCategory) {
+            row.style.display = ""; // 显示行
         } else {
-            // 根据类别过滤
-            row.style.display = (productCategory === selectedValue) ? "" : "none";
+            row.style.display = "none"; // 隐藏行
         }
     });
 }
-
 
 function sortTable() {
     const rows = Array.from(document.querySelectorAll("#table-body tr"));
