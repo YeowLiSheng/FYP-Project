@@ -283,7 +283,7 @@ $categorySalesJson = json_encode($categorySalesData);
         </div>
         <div class="ccard">
             <i class="fas fa-tags icon"></i>
-            <p class="number"><?php echo $total_itemd_sold; ?></p>
+            <p class="number"><?php echo $total_item_sold; ?></p>
             <p class="name">Total item Sold</p>
         </div>
     </div>
