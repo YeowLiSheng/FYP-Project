@@ -11,6 +11,8 @@ $review = "
         item.item_name AS review_item_name,
         item.item_image AS review_item_image,
         item.category_name AS review_category_name,
+        item.item_type AS review_item_type, 
+
         COUNT(r.review_id) AS total_reviews,
         ROUND(AVG(r.rating), 1) AS avg_rating,
         MAX(r.created_at) AS latest_review
@@ -21,6 +23,8 @@ $review = "
             p.product_name AS item_name,
             p.product_image AS item_image,
             c.category_name AS category_name,
+            'product' AS item_type, -- 指定类型为 product
+
             od.detail_id
         FROM product p
         INNER JOIN category c ON p.category_id = c.category_id
@@ -35,6 +39,8 @@ $review = "
             pp.package_name AS item_name,
             pp.package_image AS item_image,
             'Package' AS category_name,
+            'package' AS item_type, -- 指定类型为 package
+
             od.detail_id
         FROM product_package pp
         INNER JOIN order_details od ON pp.package_id = od.package_id
@@ -343,7 +349,7 @@ $reviewresult = $connect->query($review);
                 <?php    
                           if ($reviewresult->num_rows > 0) {
                             while ($row = $reviewresult->fetch_assoc()) {
-                                echo "<tr onclick=\"viewReviewDetails('{$row['review_item_id']}')\">";
+                                echo "<tr onclick=\"viewReviewDetails('{$row['review_item_id']}', '{$row['review_item_type']}')\">";
                                 echo "<td><img src='../User/images/{$row['review_item_image']}' alt='{$row['review_item_name']}' style='width: 50px; height: auto;'></td>";
                                 echo "<td>{$row['review_item_name']}</td>";
                                 echo "<td>{$row['review_category_name']}</td>";
@@ -489,9 +495,9 @@ function searchTable() {
     });
 }
 
-        function viewReviewDetails(productId) {
-            window.location.href = `adminreviewdetails.php?product_id=${productId}`;
-        }
+function viewReviewDetails(itemId, itemType) {
+    window.location.href = `adminreviewdetails.php?item_id=${itemId}&item_type=${itemType}`;
+}
     </script>
 </body>
 </html>

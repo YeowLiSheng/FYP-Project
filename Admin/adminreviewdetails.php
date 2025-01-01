@@ -2,52 +2,29 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-// 获取参数
-$type = $_GET['type'] ?? 'product'; // 默认为 'product'
-$id = $_GET['id'] ?? 0;
 
-// 检查类型是否合法
-if (!in_array($type, ['product', 'package'])) {
-    die("无效的类型参数");
-}
+$product_id = $_GET['product_id'] ?? 0;
 
-// 根据类型查询基本信息
-if ($type === 'product') {
-    $query = "SELECT product_name AS name, product_image AS image FROM product WHERE product_id = ?";
-} else { // package
-    $query = "SELECT package_name AS name, package_image AS image FROM package WHERE package_id = ?";
-}
-$stmt = $connect->prepare($query);
-$stmt->bind_param("i", $id);
+// 查询产品信息
+$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
+$stmt = $connect->prepare($product_query);
+$stmt->bind_param("i", $product_id);
 $stmt->execute();
-$item = $stmt->get_result()->fetch_assoc();
+$product = $stmt->get_result()->fetch_assoc();
 
-// 查询评论信息
-if ($type === 'product') {
-    $review_query = "
-        SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
-               u.user_name, u.user_image, r.admin_reply, r.status
-        FROM reviews r 
-        INNER JOIN user u ON r.user_id = u.user_id 
-        WHERE r.detail_id IN (
-            SELECT detail_id FROM order_details WHERE product_id = ?
-        )
-        ORDER BY r.created_at DESC
-    ";
-} else { // package
-    $review_query = "
-        SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
-               u.user_name, u.user_image, r.admin_reply, r.status
-        FROM reviews r 
-        INNER JOIN user u ON r.user_id = u.user_id 
-        WHERE r.detail_id IN (
-            SELECT detail_id FROM order_details WHERE package_id = ?
-        )
-        ORDER BY r.created_at DESC
-    ";
-}
+// 查询产品评论
+$review_query = "
+    SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
+           u.user_name, u.user_image, r.admin_reply, r.status
+    FROM reviews r 
+    INNER JOIN user u ON r.user_id = u.user_id 
+    WHERE r.detail_id IN (
+        SELECT detail_id FROM order_details WHERE product_id = ?
+    )
+    ORDER BY r.created_at DESC
+";
 $stmt = $connect->prepare($review_query);
-$stmt->bind_param("i", $id);
+$stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews = $stmt->get_result();
 
@@ -55,6 +32,7 @@ $reviews = $stmt->get_result();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
     $staff_id = $_SESSION['staff_id']; // 使用 login.php 中的键名
+
 
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
@@ -84,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
     }
 
-    echo "<script>window.location.href='adminreviewdetails.php?type=$type&id=$id';</script>";
+    echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
     exit();
 }
 ?>
@@ -245,9 +223,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="main">
     <h1><ion-icon name="chatbubbles-outline"></ion-icon> Product Reviews</h1>
     <div class="product-info">
-    <img src="../User/images/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="product-image">
-    <h2><?= htmlspecialchars($item['name']) ?></h2>
-</div>
+        <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="product-image">
+        <h2><?= htmlspecialchars($product['product_name']) ?></h2>
+    </div>
     <div class="card">
         <table class="table">
             <thead>
