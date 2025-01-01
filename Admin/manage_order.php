@@ -308,12 +308,25 @@ include 'admin_sidebar.php';
 document.getElementById("filter-status").addEventListener("change", filterTable);
 document.getElementById("sort-order").addEventListener("change", sortTable);
 
-        $(function () {
-            $("#start-date, #end-date").datepicker({
-                dateFormat: "yy-mm-dd",
-                onSelect: filterByDate
-            });
-        });
+$(function () {
+    
+    $("#start-date").datepicker({
+        dateFormat: "yy-mm-dd",
+        onSelect: function (selectedDate) {
+            
+            $("#end-date").datepicker("option", "minDate", selectedDate);
+            filterByDate();
+        }
+    });
+
+    $("#end-date").datepicker({
+        dateFormat: "yy-mm-dd",
+        onSelect: function (selectedDate) {
+            
+            filterByDate();
+        }
+    });
+});
 
         document.getElementById("export-pdf").addEventListener("click", exportPDF);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
@@ -378,32 +391,32 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
 
         
 
-        function filterByDate() {
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-            const rows = document.querySelectorAll("#table-body tr");
+function filterByDate() {
+    const startDate = $("#start-date").val();
+    const endDate = $("#end-date").val();
+    const rows = document.querySelectorAll("#table-body tr");
 
-            rows.forEach(row => {
-                const orderDateTime = row.cells[2].textContent; 
-                const orderDate = orderDateTime.split(" ")[0];
+    rows.forEach(row => {
+        const orderDateTime = row.cells[2].textContent; 
+        const orderDate = orderDateTime.split(" ")[0];
 
-                const start = startDate || null;
-                const end = endDate || null;
+        const start = startDate || null;
+        const end = endDate || null;
 
-                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
+        if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+            row.style.display = ""; 
+        } else {
+            row.style.display = "none"; 
         }
+    });
+}
 
         function filterTable() {
     const status = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const orderStatus = row.cells[5].textContent.trim(); // 确保去除空白字符
+        const orderStatus = row.cells[5].textContent.trim(); 
         row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
     });
 }
