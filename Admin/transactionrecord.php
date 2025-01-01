@@ -357,7 +357,6 @@ $(function () {
         { wch: 25 }, // Order Time column
         { wch: 50 }, // Shipped To column
         { wch: 15 }, // Total column
-        { wch: 20 }, // Order Status column
     ];
 
     // Append the sheet to the workbook
