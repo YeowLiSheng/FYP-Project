@@ -3,29 +3,50 @@ include 'dataconnection.php';
 include 'admin_sidebar.php';
 
 $category = "SELECT category_name FROM category";
-$categoryresult=$connect->query($category);
+$categoryresult = $connect->query($category);
 
 $review = "
     SELECT 
-        p.product_id, 
-        p.product_name, 
-        p.product_image, 
-        c.category_name, 
+        item.item_id AS review_item_id,
+        item.item_name AS review_item_name,
+        item.item_image AS review_item_image,
+        item.category_name AS review_category_name,
         COUNT(r.review_id) AS total_reviews,
         ROUND(AVG(r.rating), 1) AS avg_rating,
         MAX(r.created_at) AS latest_review
-    FROM product p
-    INNER JOIN category c ON p.category_id = c.category_id
-    INNER JOIN order_details od ON p.product_id = od.product_id
-    INNER JOIN reviews r ON od.detail_id = r.detail_id
+    FROM (
+        -- Fetch product details
+        SELECT 
+            p.product_id AS item_id,
+            p.product_name AS item_name,
+            p.product_image AS item_image,
+            c.category_name AS category_name,
+            od.detail_id
+        FROM product p
+        INNER JOIN category c ON p.category_id = c.category_id
+        INNER JOIN order_details od ON p.product_id = od.product_id
+        WHERE od.product_id IS NOT NULL
+
+        UNION ALL
+
+        -- Fetch package details
+        SELECT 
+            pp.package_id AS item_id,
+            pp.package_name AS item_name,
+            pp.package_image AS item_image,
+            'Package' AS category_name,
+            od.detail_id
+        FROM product_package pp
+        INNER JOIN order_details od ON pp.package_id = od.package_id
+        WHERE od.package_id IS NOT NULL
+    ) AS item
+    INNER JOIN reviews r ON item.detail_id = r.detail_id
     WHERE r.status = 'active'
-    GROUP BY p.product_id, p.product_name, p.product_image, c.category_name
+    GROUP BY review_item_id, review_item_name, review_item_image, review_category_name
     ORDER BY latest_review DESC
 ";
 
-
-    $reviewresult = $connect->query($review);
-
+$reviewresult = $connect->query($review);
 ?>
 
 <!DOCTYPE html>
@@ -310,8 +331,8 @@ $review = "
             <table class="table">
                 <thead>
                     <tr>
-                    <th><ion-icon name="image-outline"></ion-icon> Product Image</th>
-                        <th><ion-icon name="pricetag-outline"></ion-icon> Product Name</th>
+                    <th><ion-icon name="image-outline"></ion-icon> Item Image</th>
+                        <th><ion-icon name="pricetag-outline"></ion-icon> Item Name</th>
                         <th><ion-icon name="albums-outline"></ion-icon>Category</th>
                         <th><ion-icon name="chatbubble-outline"></ion-icon> Total Reviews</th>
                         <th><ion-icon name="star-half-outline"></ion-icon> Average Rating</th>
@@ -322,10 +343,10 @@ $review = "
                 <?php    
                           if ($reviewresult->num_rows > 0) {
                             while ($row = $reviewresult->fetch_assoc()) {
-                                echo "<tr onclick=\"viewReviewDetails('{$row['product_id']}')\">";
-                                echo "<td><img src='../User/images/{$row['product_image']}' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
-                                echo "<td>{$row['product_name']}</td>";
-                                echo "<td>{$row['category_name']}</td>";
+                                echo "<tr onclick=\"viewReviewDetails('{$row['review_item_id']}')\">";
+                                echo "<td><img src='../User/images/{$row['review_item_image']}' alt='{$row['review_item_name']}' style='width: 50px; height: auto;'></td>";
+                                echo "<td>{$row['review_item_name']}</td>";
+                                echo "<td>{$row['review_category_name']}</td>";
                                 echo "<td>{$row['total_reviews']}</td>";
                                 echo "<td>{$row['avg_rating']}</td>";
                                 echo "<td>{$row['latest_review']}</td>";
