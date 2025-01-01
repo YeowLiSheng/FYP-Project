@@ -1,4 +1,4 @@
-<?php
+<a?php
 session_start();  // 启动会话
 
 // Connect to the database
@@ -706,13 +706,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
             <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-			<li class="profile-item">
+<li class="profile-item">
     <a href="edit_profile.php">
         <i class="fa fa-edit"></i> Edit Profile
     </a>
-</li>            
+</li>
+            <li class="profile-item"><a href=""><i class="fa fa-lock"></i> Change Password</a></li>
             <!-- My Orders -->
-            <li><i class="fa fa-box"></i> My Orders</li>
+            <li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
         </ul>
     </div>
 
