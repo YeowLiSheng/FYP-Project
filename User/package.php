@@ -835,9 +835,10 @@ form {
                 echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
             } else {
                 echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
+                echo "<button class='btn btn-secondary viewReview' data-package-id='" . htmlspecialchars($row['package_id']) . "'>View Review</button>";
+
             }
-// View Review Button
-echo "<button class='btn btn-info viewReview' data-package-id='" . htmlspecialchars($row['package_id']) . "'>View Reviews</button>";
+
             echo "          </div>";
             echo "      </div>";
             echo "  </div>";
@@ -849,20 +850,25 @@ echo "<button class='btn btn-info viewReview' data-package-id='" . htmlspecialch
     ?>
 </div>
 
-<!-- Popup Modal for Reviews -->
-<div id="reviewModal" class="modal" tabindex="-1" role="dialog" style="display: none;">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Package Reviews</h5>
-                <button type="button" class="close" onclick="closeModal()">×</button>
-            </div>
-            <div class="modal-body" id="reviewContent">
-                <!-- Reviews will be loaded here -->
+<!-- Modal -->
+<div id="reviewModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Package Reviews</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="reviewContent">
+                        <!-- Reviews will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
 		<div class="popup-content">
 			<span class="close-popup">&times;</span>
@@ -1323,67 +1329,29 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 });
 
-  // JavaScript for handling modal functionality
-  document.querySelectorAll('.viewReview').forEach(button => {
-        button.addEventListener('click', function() {
+
+document.addEventListener('DOMContentLoaded', function () {
+    const viewReviewButtons = document.querySelectorAll('.viewReview');
+
+    viewReviewButtons.forEach(button => {
+        button.addEventListener('click', function () {
             const packageId = this.getAttribute('data-package-id');
             
             // Fetch reviews for the selected package
-            fetchReviews(packageId);
+            fetch('fetch_reviews.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `package_id=${packageId}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('reviewContent').innerHTML = data;
+                new bootstrap.Modal(document.getElementById('reviewModal')).show();
+            })
+            .catch(error => console.error('Error fetching reviews:', error));
         });
     });
-
-    function fetchReviews(packageId) {
-        const reviews = <?php
-            $reviewsQuery = "
-                SELECT r.*, u.username 
-                FROM reviews r 
-                JOIN order_details od ON r.detail_id = od.detail_id 
-                JOIN user u ON r.user_id = u.user_id 
-                WHERE od.package_id = ?
-            ";
-            if ($stmt = $connect->prepare($reviewsQuery)) {
-                $stmt->bind_param("i", $packageId);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                $reviews = [];
-                while ($row = $result->fetch_assoc()) {
-                    $reviews[] = $row;
-                }
-                $stmt->close();
-                echo json_encode($reviews);
-            } else {
-                echo "[]";
-            }
-        ?>;
-        
-        const reviewContent = document.getElementById('reviewContent');
-        reviewContent.innerHTML = '';
-
-        if (reviews.length > 0) {
-            reviews.forEach(review => {
-                const reviewBlock = `
-                    <div class="review">
-                        <p><strong>User:</strong> ${review.username}</p>
-                        <p><strong>Rating:</strong> ${review.rating}</p>
-                        <p><strong>Comment:</strong> ${review.comment}</p>
-                        ${review.image ? `<img src="images/${review.image}" alt="Review Image" class="img-fluid">` : ''}
-                    </div>
-                    <hr>
-                `;
-                reviewContent.innerHTML += reviewBlock;
-            });
-        } else {
-            reviewContent.innerHTML = '<p>No reviews available for this package.</p>';
-        }
-
-        document.getElementById('reviewModal').style.display = 'block';
-    }
-
-    function closeModal() {
-        document.getElementById('reviewModal').style.display = 'none';
-    }
-
+});
 </script>
 
 
