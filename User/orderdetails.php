@@ -103,7 +103,7 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $product_id = intval($_POST['product_id']);
+	$detail_id = intval($_POST['detail_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
@@ -402,19 +402,19 @@ if ($stmt->execute()) {
     text-align: center;
 }
 
-.item-select-container {
+.product-select-container {
     position: relative;
     margin-bottom: 20px;
 }
 
-.selected-item-preview {
+.selected-product-preview {
     display: flex;
     flex-direction: column; /* 垂直对齐 */
     align-items: center;
     margin-top: 10px;
 }
 
-.selected-item-preview img {
+.selected-product-preview img {
     width: 100px; /* 调整图片大小 */
     height: 100px;
     border-radius: 10px;
@@ -903,9 +903,9 @@ textarea {
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
             <!-- 产品选择 -->
-			<label for="itemSelect">Select Item:</label>
-<div class="item-select-container">
-<select id="productSelect" name="detail_id" required>
+            <label for="productSelect">Select Product:</label>
+            <div class="product-select-container">
+			<select id="productSelect" name="detail_id" required>
     <option value="" disabled selected>Select a product</option>
     <?php foreach ($order_details as $detail) { ?>
         <option value="<?= $detail['detail_id'] ?>" 
@@ -914,12 +914,11 @@ textarea {
         </option>
     <?php } ?>
 </select>
-    <input type="hidden" id="itemType" name="item_type" />
-    <div class="selected-item-preview" id="itemPreview">
-        <img id="itemImage" src="" alt="Item Image" style="display: none;" />
-        <span id="itemName" style="display: block;"></span>
-    </div>
-</div>
+                <div class="selected-product-preview" id="productPreview">
+                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
+                    <span id="productName" style="display: block;"></span>
+                </div>
+            </div>
 
             <!-- 评分 -->
             <label for="rating">Rating:</label>
@@ -1450,34 +1449,28 @@ stars.forEach(star => {
 function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
+const productSelect = document.getElementById("productSelect");
+const productImage = document.getElementById("productImage");
+const productName = document.getElementById("productName");
 
-
-const itemSelect = document.getElementById("itemSelect");
-const itemType = document.getElementById("itemType");
-const itemImage = document.getElementById("itemImage");
-const itemName = document.getElementById("itemName");
-
-itemSelect.addEventListener("change", function () {
-    const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+productSelect.addEventListener("change", function () {
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
     const imgSrc = selectedOption.getAttribute("data-img");
     const name = selectedOption.textContent;
-    const type = selectedOption.getAttribute("data-type");
-
-    itemType.value = type;
 
     if (imgSrc) {
-        itemImage.src = imgSrc;
-        itemImage.style.display = "block";
+        productImage.src = imgSrc;
+        productImage.style.display = "block";
     } else {
-        itemImage.style.display = "none";
+        productImage.style.display = "none";
     }
 
-    itemName.textContent = name;
+    productName.textContent = name;
 });
 
-function resetItemPreview() {
-    itemImage.style.display = "none";
-    itemName.textContent = "";
+function resetProductPreview() {
+    productImage.style.display = "none";
+    productName.textContent = "";
 }
 
 
