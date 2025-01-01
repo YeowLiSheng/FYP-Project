@@ -376,55 +376,49 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
 
-        // 动态设置 end-date 的最小值
-document.getElementById("start-date").addEventListener("change", function () {
-    const startDate = this.value; // 获取用户选择的 start date
-    const endDateInput = document.getElementById("end-date");
+        
 
-    if (startDate) {
-        // 设置 end-date 的最小值为 start-date
-        endDateInput.min = startDate;
-    } else {
-        // 如果 start-date 被清空，移除 end-date 的 min 属性限制
-        endDateInput.removeAttribute("min");
-    }
+$(function () {
+            const orderDates = Array.from(document.querySelectorAll("#table-body tr"))
+                .map(row => row.cells[2].textContent)
+                .sort(); // 获取订单日期并排序
 
-    // 检查当前 end-date 的值是否小于 start-date
-    if (endDateInput.value && endDateInput.value < startDate) {
-        endDateInput.value = ""; // 如果不符合规则，则清空 end-date 的值
-    }
-});
+            const earliestOrderDate = orderDates[0]; // 最早的订单日期
+
+            $("#start-date").datepicker({
+                dateFormat: "yy-mm-dd",
+                minDate: earliestOrderDate,
+                onSelect: function (selectedDate) {
+                    const minEndDate = selectedDate > earliestOrderDate ? selectedDate : earliestOrderDate;
+                    $("#end-date").datepicker("option", "minDate", minEndDate);
+                }
+            });
+
+            $("#end-date").datepicker({
+                dateFormat: "yy-mm-dd",
+                minDate: earliestOrderDate,
+            });
+        });
 
         function filterByDate() {
-    const startDate = $("#start-date").val();
-    const endDate = $("#end-date").val();
-    const rows = document.querySelectorAll("#table-body tr");
+            const startDate = $("#start-date").val();
+            const endDate = $("#end-date").val();
+            const rows = document.querySelectorAll("#table-body tr");
 
-    rows.forEach(row => {
-        const orderDateTime = row.cells[2].textContent; 
-        const orderDate = orderDateTime.split(" ")[0];
+            rows.forEach(row => {
+                const orderDateTime = row.cells[2].textContent;
+                const orderDate = orderDateTime.split(" ")[0];
 
-        const start = startDate || null;
-        const end = endDate || null;
+                const start = startDate || null;
+                const end = endDate || null;
 
-        if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
+                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
         }
-    });
-}
-
-// 动态设置 end-date 的最小值
-$("#start-date").on("change", function () {
-    const startDate = $(this).val();
-    if (startDate) {
-        $("#end-date").attr("min", startDate);
-    } else {
-        $("#end-date").removeAttr("min");
-    }
-});
-
         function filterTable() {
     const status = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
