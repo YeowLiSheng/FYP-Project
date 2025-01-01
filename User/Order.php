@@ -469,11 +469,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
+							
 							</li>
 
 							<li class="active-menu">
@@ -485,15 +481,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>
@@ -584,11 +580,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			<ul class="main-menu-m">
 				<li>
 					<a href="dashboard.php">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
+				
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
@@ -603,15 +595,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				</li>
 
 				<li>
-					<a href="blog.html">Blog</a>
+					<a href="blog.php">Blog</a>
 				</li>
 
 				<li>
-					<a href="about.html">About</a>
+					<a href="about.php">About</a>
 				</li>
 
 				<li>
-					<a href="contact.html">Contact</a>
+					<a href="contact.php">Contact</a>
 				</li>
 			</ul>
 		</div>
@@ -714,8 +706,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
             <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+            <a href="edit_profile.php"></a><li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
+            <a href=""></a><li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
             <!-- My Orders -->
             <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
