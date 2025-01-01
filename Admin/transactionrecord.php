@@ -283,8 +283,6 @@ include 'admin_sidebar.php';
     </div>
     <script>
 
-document.getElementById("filter-status").addEventListener("change", filterTable);
-document.getElementById("sort-order").addEventListener("change", sortTable);
 
 $(function () {
     
@@ -389,36 +387,7 @@ function filterByDate() {
     });
 }
 
-        function filterTable() {
-    const status = document.getElementById("filter-status").value;
-    const rows = document.querySelectorAll("#table-body tr");
 
-    rows.forEach(row => {
-        const orderStatus = row.cells[5].textContent.trim(); 
-        row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
-    });
-}
-
-function sortTable() {
-    const rows = Array.from(document.querySelectorAll("#table-body tr"));
-    const sortOrder = document.getElementById("sort-order").value;
-
-    rows.sort((a, b) => {
-        if (sortOrder === "newest" || sortOrder === "oldest") {
-            const dateA = new Date(a.cells[2].textContent.trim());
-            const dateB = new Date(b.cells[2].textContent.trim());
-            return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-        } else if (sortOrder === "highest" || sortOrder === "lowest") {
-            const totalA = parseFloat(a.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            const totalB = parseFloat(b.cells[4].textContent.replace(/[^\d.-]/g, ""));
-            return sortOrder === "highest" ? totalB - totalA : totalA - totalB;
-        }
-        return 0;
-    });
-
-    const tbody = document.getElementById("table-body");
-    rows.forEach(row => tbody.appendChild(row));
-}
 
 function searchTable() { 
     const query = document.getElementById("search-input").value.toLowerCase().trim();
@@ -430,9 +399,7 @@ function searchTable() {
     });
 }
 
-        function viewOrderDetails(orderId) {
-            window.location.href = `order_details.php?order_id=${orderId}`;
-        }
+   
     </script>
 </body>
 </html>
