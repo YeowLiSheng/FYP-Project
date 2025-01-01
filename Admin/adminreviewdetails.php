@@ -2,50 +2,58 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
+$item_id = $_GET['item_id'] ?? 0; // This can be either a product_id or package_id
+$item_type = $_GET['item_type'] ?? 'product'; // Indicates whether it's a product or package
 
-$product_id = $_GET['product_id'] ?? 0;
+// Query to fetch item details (product or package)
+if ($item_type === 'product') {
+    $item_query = "SELECT product_name AS item_name, product_image AS item_image FROM product WHERE product_id = ?";
+} else {
+    $item_query = "SELECT package_name AS item_name, package_image AS item_image FROM product_package WHERE package_id = ?";
+}
 
-// 查询产品信息
-$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
-$stmt = $connect->prepare($product_query);
-$stmt->bind_param("i", $product_id);
+$stmt = $connect->prepare($item_query);
+$stmt->bind_param("i", $item_id);
 $stmt->execute();
-$product = $stmt->get_result()->fetch_assoc();
+$item = $stmt->get_result()->fetch_assoc();
 
-// 查询产品评论
+// Query to fetch reviews for the item (product or package)
 $review_query = "
     SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
            u.user_name, u.user_image, r.admin_reply, r.status
-    FROM reviews r 
-    INNER JOIN user u ON r.user_id = u.user_id 
+    FROM reviews r
+    INNER JOIN user u ON r.user_id = u.user_id
     WHERE r.detail_id IN (
-        SELECT detail_id FROM order_details WHERE product_id = ?
+        SELECT detail_id 
+        FROM order_details 
+        WHERE " . ($item_type === 'product' ? "product_id" : "package_id") . " = ?
     )
     ORDER BY r.created_at DESC
 ";
+
 $stmt = $connect->prepare($review_query);
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("i", $item_id);
 $stmt->execute();
 $reviews = $stmt->get_result();
 
-// 处理管理员操作
+// Handle admin actions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-    $staff_id = $_SESSION['staff_id']; // 使用 login.php 中的键名
-
+    $staff_id = $_SESSION['staff_id']; // Assuming session holds the staff ID
 
     if (isset($_POST['reply'])) {
+        // Admin reply logic
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews 
                   SET admin_reply = ?, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = ? 
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("sii", $admin_reply, $staff_id, $review_id);
-        $stmt->execute();
         if (!$stmt->execute()) {
-            die("SQL 执行失败：" . $stmt->error);
+            die("SQL execution failed: " . $stmt->error);
         }
     } elseif (isset($_POST['toggle_status'])) {
+        // Toggle review status logic
         $new_status = $_POST['new_status'];
         $query = "UPDATE reviews 
                   SET status = ?, status_updated_at = CURRENT_TIMESTAMP 
@@ -54,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
     } elseif (isset($_POST['delete_reply'])) {
+        // Delete admin reply logic
         $query = "UPDATE reviews 
                   SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = NULL 
                   WHERE review_id = ?";
@@ -62,10 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
     }
 
-    echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
+    // Refresh the page
+    echo "<script>window.location.href='adminreviewdetails.php?item_id=$item_id&item_type=$item_type';</script>";
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
