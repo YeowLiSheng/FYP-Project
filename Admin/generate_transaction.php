@@ -60,6 +60,7 @@ if ($result->num_rows > 0) {
         // Handle word wrapping for the 'Shipped To' column
         $cell_width = 50; // Width of 'Shipped To'
         $cell_height = 6; // Height of each wrapped line
+        $line_count = ceil(num: $pdf->GetStringWidth / $cell_width);
 
         // Set left margin for row data
         $pdf->SetX($left_margin);
