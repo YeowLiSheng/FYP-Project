@@ -293,29 +293,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         echo json_encode(['success' => false, 'message' => 'Invalid package ID.']);
     }
 
-
-    $package_query = "
-    SELECT 
-        p.package_id, 
-        p.package_name, 
-        p.package_description, 
-        od.detail_id
-    FROM 
-        packages p
-    JOIN 
-        order_details od ON p.package_id = od.package_id
-    WHERE 
-        p.package_id = ?"; // 替换为你的查询条件
-
-$stmt = $connect->prepare($package_query);
-if (!$stmt) {
-    die("SQL prepare failed: " . $connect->error);
-}
-$stmt->bind_param("i", $package_id); // $package_id 是当前包裹的 ID，需要动态传入
-$stmt->execute();
-$package_result = $stmt->get_result();
-$package = $package_result->fetch_assoc();
-
     $stmt->close();
     $connect->close();
     exit;
@@ -544,30 +521,6 @@ form {
 
 .btn-success:hover {
     background-color: #45a049;
-}
-
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    padding: 20px;
-    width: 500px;
-    max-width: 90%;
-}
-.modal-content {
-    position: relative;
-}
-.close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 18px;
 }
 
 @keyframes fadeIn {
@@ -882,8 +835,6 @@ form {
                 echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
             } else {
                 echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
-                echo "<button class='btn btn-secondary viewReview' data-detail-id='" . htmlspecialchars($detail_id) . "'>View Review</button>";
-
             }
 
             echo "          </div>";
@@ -897,15 +848,6 @@ form {
     ?>
 </div>
 
-<div id="reviewModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <h2>Package Reviews</h2>
-        <div id="reviewContent">
-            <!-- 评论内容会通过PHP动态填充 -->
-        </div>
-    </div>
-</div>
 
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
 		<div class="popup-content">
@@ -1367,35 +1309,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 });
 
-document.addEventListener('DOMContentLoaded', function () {
-    const modal = document.getElementById('reviewModal');
-    const closeButton = modal.querySelector('.close-button');
-    const reviewContent = document.getElementById('reviewContent');
 
-    document.querySelectorAll('.viewReview').forEach(button => {
-        button.addEventListener('click', function () {
-            const detailId = this.dataset.detailId;
-
-            // Fetch reviews via PHP and insert them into the modal
-            fetch(`fetch_reviews.php?detail_id=${detailId}`)
-                .then(response => response.text())
-                .then(data => {
-                    reviewContent.innerHTML = data;
-                    modal.style.display = 'block';
-                });
-        });
-    });
-
-    closeButton.addEventListener('click', function () {
-        modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-});
 
 </script>
 
