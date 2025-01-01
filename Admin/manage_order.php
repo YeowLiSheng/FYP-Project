@@ -308,12 +308,25 @@ include 'admin_sidebar.php';
 document.getElementById("filter-status").addEventListener("change", filterTable);
 document.getElementById("sort-order").addEventListener("change", sortTable);
 
-        $(function () {
-            $("#start-date, #end-date").datepicker({
-                dateFormat: "yy-mm-dd",
-                onSelect: filterByDate
-            });
-        });
+$(function () {
+    // 初始化日期选择器
+    $("#start-date").datepicker({
+        dateFormat: "yy-mm-dd",
+        onSelect: function (selectedDate) {
+            // 设置 end-date 的最小日期为选中的 start-date
+            $("#end-date").datepicker("option", "minDate", selectedDate);
+            filterByDate();
+        }
+    });
+
+    $("#end-date").datepicker({
+        dateFormat: "yy-mm-dd",
+        onSelect: function (selectedDate) {
+            // 选择 end-date 时调用筛选逻辑
+            filterByDate();
+        }
+    });
+});
 
         document.getElementById("export-pdf").addEventListener("click", exportPDF);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
@@ -378,47 +391,26 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
 
         
 
-$(function () {
-            const orderDates = Array.from(document.querySelectorAll("#table-body tr"))
-                .map(row => row.cells[2].textContent)
-                .sort(); // 获取订单日期并排序
+function filterByDate() {
+    const startDate = $("#start-date").val();
+    const endDate = $("#end-date").val();
+    const rows = document.querySelectorAll("#table-body tr");
 
-            const earliestOrderDate = orderDates[0]; // 最早的订单日期
+    rows.forEach(row => {
+        const orderDateTime = row.cells[2].textContent; // 假设日期在第三列
+        const orderDate = orderDateTime.split(" ")[0];
 
-            $("#start-date").datepicker({
-                dateFormat: "yy-mm-dd",
-                minDate: earliestOrderDate,
-                onSelect: function (selectedDate) {
-                    const minEndDate = selectedDate > earliestOrderDate ? selectedDate : earliestOrderDate;
-                    $("#end-date").datepicker("option", "minDate", minEndDate);
-                }
-            });
+        const start = startDate || null;
+        const end = endDate || null;
 
-            $("#end-date").datepicker({
-                dateFormat: "yy-mm-dd",
-                minDate: earliestOrderDate,
-            });
-        });
-
-        function filterByDate() {
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const orderDateTime = row.cells[2].textContent;
-                const orderDate = orderDateTime.split(" ")[0];
-
-                const start = startDate || null;
-                const end = endDate || null;
-
-                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
+        if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+            row.style.display = ""; // 显示行
+        } else {
+            row.style.display = "none"; // 隐藏行
         }
+    });
+}
+
         function filterTable() {
     const status = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
