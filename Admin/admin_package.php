@@ -26,12 +26,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package'])) {
     exit();
 }
 
-// Handle Delete Package
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_package'])) {
-    $packageId = mysqli_real_escape_string($connect, $_POST['delete_package']);
-    $query = "DELETE FROM product_package WHERE package_id = '$packageId'";
-    if (!mysqli_query($connect, $query)) {
-        echo "Error: " . mysqli_error($connect);
+// Handle active/deactive Package
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['deactivate_package'])) {
+        $packageId = (int)$_POST['deactivate_package'];
+        $query = "UPDATE product_package SET package_status = 2 WHERE package_id = $packageId";
+        if (!mysqli_query($connect, $query)) {
+            echo "Error: " . mysqli_error($connect);
+        }
+    } elseif (isset($_POST['activate_package'])) {
+        $packageId = (int)$_POST['activate_package'];
+        $query = "UPDATE product_package SET package_status = 1 WHERE package_id = $packageId";
+        if (!mysqli_query($connect, $query)) {
+            echo "Error: " . mysqli_error($connect);
+        }
     }
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
@@ -63,21 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
     exit();
 }
 ?>
-
-<head>
-<script>
-    function editPackage(packageId, packageName, packageDescription, product1, product2, product3, packagePrice) {
-        document.getElementById("edit_package_id").value = packageId;
-        document.getElementById("edit_package_name").value = packageName;
-        document.getElementById("edit_package_description").value = packageDescription;
-        document.getElementById("edit_product1").value = product1;
-        document.getElementById("edit_product2").value = product2;
-        document.getElementById("edit_product3").value = product3;
-        document.getElementById("edit_package_price").value = packagePrice;
-        new bootstrap.Modal(document.getElementById("editPackageModal")).show();
-    }
-</script>
-</head>
 
 <body>
     <div class="main p-3">
@@ -167,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
             <div class="modal" id="editPackageModal">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <form method="POST">
+                        <form method="POST" enctype="multipart/form-data">
                             <input type="hidden" id="edit_package_id" name="package_id">
                             <div class="modal-header">
                                 <h4 class="modal-title">Edit Product Package</h4>
@@ -176,8 +169,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                             <div class="modal-body">
                                 <label>Package Name</label>
                                 <input type="text" id="edit_package_name" name="package_name" class="form-control" required>
+                                
                                 <label>Package Description</label>
                                 <textarea id="edit_package_description" name="package_description" class="form-control" required></textarea>
+                                
+                                <label>Package Image</label>
+                                <div>
+                                    <img id="current_package_image" src="" alt="Current Image" style="width: 100px; height: 100px;">
+                                    <input type="file" name="new_package_image" class="form-control" accept="image/*">
+                                </div>
+                                
+                                <label>Package Stock</label>
+                                <div class="input-group">
+                                    <button type="button" class="btn btn-secondary" onclick="changeStock(-1, 'edit_package_stock')">-</button>
+                                    <input type="number" id="edit_package_stock" name="package_stock" class="form-control" min="1" required>
+                                    <button type="button" class="btn btn-secondary" onclick="changeStock(1, 'edit_package_stock')">+</button>
+                                </div>
+                                
+                                <!-- Other fields remain unchanged -->
                                 <label>Product 1</label>
                                 <select id="edit_product1" name="product1" class="form-control" required>
                                     <option value="">Select Product</option>
@@ -223,49 +232,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
             <table class="table table-bordered table-striped">
                 <thead class="table-dark">
                     <tr>
+                        <th>Package ID</th>
                         <th>Package Name</th>
-                        <th>Package Description</th>
-                        <th>Products</th>
-                        <th>Images</th>
+                        <th>Image</th>
+                        <th>Description</th>
                         <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    $packages = mysqli_query($connect, "SELECT * FROM product_package");
-                    while ($package = mysqli_fetch_assoc($packages)) {
-                        $products = [];
-                        $images = [];
-                        if ($package['product1_id']) {
-                            $p1 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT product_name, product_image FROM product WHERE product_id = " . $package['product1_id']));
-                            $products[] = $p1['product_name'];
-                            $images[] = $p1['product_image'];
-                        }
-                        if ($package['product2_id']) {
-                            $p2 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT product_name, product_image FROM product WHERE product_id = " . $package['product2_id']));
-                            $products[] = $p2['product_name'];
-                            $images[] = $p2['product_image'];
-                        }
-                        if ($package['product3_id']) {
-                            $p3 = mysqli_fetch_assoc(mysqli_query($connect, "SELECT product_name, product_image FROM product WHERE product_id = " . $package['product3_id']));
-                            $products[] = $p3['product_name'];
-                            $images[] = $p3['product_image'];
-                        }
-                        ?>
+                    $query = "SELECT * FROM product_package";
+                    $result = mysqli_query($connect, $query);
+                    while ($package = mysqli_fetch_assoc($result)) {
+                    ?>
                         <tr>
+                            <td><?php echo $package['package_id']; ?></td>
                             <td><?php echo $package['package_name']; ?></td>
-                            <td><?php echo $package['package_description']; ?></td>
-                            <td><?php echo implode(', ', $products); ?></td>
                             <td>
-                                <?php foreach ($images as $image) {
-                                    echo "<img src='$image' alt='Product Image' style='width: 50px; height: 50px;'> ";
-                                } ?>
+                                <img src="../User/images/<?php echo $package['package_image']; ?>" alt="Package Image" style="width: 100px; height: 100px;">
                             </td>
-                            <td><?php echo "$" . number_format($package['package_price'], 2); ?></td>
+                            <td><?php echo $package['package_description']; ?></td>
+                            <td><?php echo number_format($package['package_price'], 2); ?></td>
+                            <td><?php echo $package['package_stock']; ?></td>
+                            <td>
+                                <?php echo $package['package_status'] == 1 ? "Active" : "Inactive"; ?>
+                            </td>
                             <td>
                                 <form method="POST" style="display:inline;">
-                                    <button type="submit" name="delete_package" value="<?php echo $package['package_id']; ?>" class="btn btn-danger">Delete</button>
+                                    <?php if ($package['package_status'] == 1) { ?>
+                                        <button type="submit" name="deactivate_package" value="<?php echo $package['package_id']; ?>" class="btn btn-warning">Deactivate</button>
+                                    <?php } else { ?>
+                                        <button type="submit" name="activate_package" value="<?php echo $package['package_id']; ?>" class="btn btn-success">Activate</button>
+                                    <?php } ?>
                                 </form>
                                 <button type="button" class="btn btn-info" onclick="editPackage(
                                     <?php echo $package['package_id']; ?>,
@@ -274,7 +275,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                                     '<?php echo $package['product1_id']; ?>',
                                     '<?php echo $package['product2_id']; ?>',
                                     '<?php echo $package['product3_id']; ?>',
-                                    '<?php echo $package['package_price']; ?>'
+                                    '<?php echo $package['package_price']; ?>',
+                                    '<?php echo $package['package_stock']; ?>',
+                                    '<?php echo $package['package_image']; ?>'
                                 )">Edit</button>
                             </td>
                         </tr>
@@ -290,6 +293,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
         let currentValue = parseInt(stockInput.value);
         currentValue = Math.max(1, currentValue + delta); // Ensure stock value is at least 1
         stockInput.value = currentValue;
+    }
+</script>
+<script>
+    function changeStock(delta, inputId) {
+        const stockInput = document.getElementById(inputId);
+        let currentValue = parseInt(stockInput.value);
+        currentValue = Math.max(1, currentValue + delta); // Ensure stock value is at least 1
+        stockInput.value = currentValue;
+    }
+
+    function editPackage(packageId, packageName, packageDescription, product1, product2, product3, packagePrice, packageStock, packageImage) {
+        document.getElementById("edit_package_id").value = packageId;
+        document.getElementById("edit_package_name").value = packageName;
+        document.getElementById("edit_package_description").value = packageDescription;
+        document.getElementById("edit_product1").value = product1;
+        document.getElementById("edit_product2").value = product2;
+        document.getElementById("edit_product3").value = product3;
+        document.getElementById("edit_package_price").value = packagePrice;
+        document.getElementById("edit_package_stock").value = packageStock;
+        document.getElementById("current_package_image").src = packageImage;
+        new bootstrap.Modal(document.getElementById("editPackageModal")).show();
     }
 </script>
 <?php mysqli_close($connect); ?>
