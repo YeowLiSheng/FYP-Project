@@ -57,10 +57,10 @@ if ($result->num_rows > 0) {
         $transaction_amount = 'RM ' . number_format($row['payment_amount'], 2);
         $payment_date = date('d/m/Y H:i:s', strtotime($row['payment_date']));
 
-        // Handle word wrapping for the 'Shipped To' column
-        $cell_width = 50; // Width of 'Shipped To'
+        // Calculate line count based on the longest cell content
+        $cell_width = 50; // Width for each column
         $cell_height = 6; // Height of each wrapped line
-        $line_count = ceil(num: $pdf->GetStringWidth / $cell_width);
+        $line_count = ceil($pdf->GetStringWidth($transaction_id) / $cell_width); // Adjust line count for transaction ID
 
         // Set left margin for row data
         $pdf->SetX($left_margin);
@@ -68,13 +68,9 @@ if ($result->num_rows > 0) {
         // Output row data
         $pdf->Cell(20, $cell_height * $line_count, $transaction_id, 1, 0, 'C');
         $pdf->Cell(40, $cell_height * $line_count, $customer_name, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $order_id, 1, 1, 'C');
+        $pdf->Cell(25, $cell_height * $line_count, $order_id, 1, 0, 'C');
         $pdf->Cell(25, $cell_height * $line_count, $transaction_amount, 1, 0, 'C');
-        $pdf->Cell(35, $cell_height * $line_count, $payment_date, 1, 0, 'C');
-        $x = $pdf->GetX(); // Save x position
-        $y = $pdf->GetY(); // Save y position
-      
-
+        $pdf->Cell(35, $cell_height * $line_count, $payment_date, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
