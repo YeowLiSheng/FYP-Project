@@ -260,9 +260,9 @@ include 'admin_sidebar.php';
             </div>
             <div class="date-range">
                 <label for="start-date">From:</label>
-                <input type="date" id="start-date" placeholder="Start Date">
+                <input type="text" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
-                <input type="date" id="end-date" placeholder="End Date">
+                <input type="text" id="end-date" placeholder="End Date">
             </div>
         </div>
 
