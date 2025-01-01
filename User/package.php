@@ -830,6 +830,9 @@ form {
             }
             echo "              </ul>";
 
+             // View Review Button
+             echo "<button class='btn btn-secondary viewReview' data-package-id='" . htmlspecialchars($row['package_id']) . "'>View Review</button>";
+
             // Unavailable Message
             if ($isUnavailable) {
                 echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
@@ -848,7 +851,14 @@ form {
     ?>
 </div>
 
-
+<!-- Modal Popup for Reviews -->
+<div id="reviewModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Package Reviews</h2>
+        <div id="reviewContent">Loading reviews...</div>
+    </div>
+</div>
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
 		<div class="popup-content">
 			<span class="close-popup">&times;</span>
@@ -1310,7 +1320,40 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 });
 
 
+document.querySelectorAll('.viewReview').forEach(button => {
+    button.addEventListener('click', function () {
+        const packageId = this.getAttribute('data-package-id');
+        const modal = document.getElementById('reviewModal');
+        const reviewContent = document.getElementById('reviewContent');
 
+        // Show modal
+        modal.style.display = 'block';
+
+        // Fetch reviews
+        fetch(`get_reviews.php?package_id=${packageId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    reviewContent.innerHTML = data.map(review => `
+                        <div class="review">
+                            <p><strong>User:</strong> ${review.username}</p>
+                            <p><strong>Rating:</strong> ${review.rating}</p>
+                            <p>${review.comment}</p>
+                            ${review.image ? `<img src="uploads/${review.image}" alt="Review Image" class="img-fluid">` : ''}
+                        </div>
+                        <hr>
+                    `).join('');
+                } else {
+                    reviewContent.innerHTML = '<p>No reviews found for this package.</p>';
+                }
+            });
+    });
+});
+
+// Close modal
+document.querySelector('.close').addEventListener('click', function () {
+    document.getElementById('reviewModal').style.display = 'none';
+});
 </script>
 
 
