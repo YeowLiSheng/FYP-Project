@@ -260,9 +260,9 @@ include 'admin_sidebar.php';
             </div>
             <div class="date-range">
                 <label for="start-date">From:</label>
-                <input type="text" id="start-date" placeholder="Start Date">
+                <input type="date" id="start-date" placeholder="Start Date">
                 <label for="end-date">To:</label>
-                <input type="text" id="end-date" placeholder="End Date">
+                <input type="date" id="end-date" placeholder="End Date">
             </div>
         </div>
 
@@ -376,9 +376,26 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
 
-        
+        // 动态设置 end-date 的最小值
+document.getElementById("start-date").addEventListener("change", function () {
+    const startDate = this.value; // 获取用户选择的 start date
+    const endDateInput = document.getElementById("end-date");
 
-function filterByDate() {
+    if (startDate) {
+        // 设置 end-date 的最小值为 start-date
+        endDateInput.min = startDate;
+    } else {
+        // 如果 start-date 被清空，移除 end-date 的 min 属性限制
+        endDateInput.removeAttribute("min");
+    }
+
+    // 检查当前 end-date 的值是否小于 start-date
+    if (endDateInput.value && endDateInput.value < startDate) {
+        endDateInput.value = ""; // 如果不符合规则，则清空 end-date 的值
+    }
+});
+
+        function filterByDate() {
     const startDate = $("#start-date").val();
     const endDate = $("#end-date").val();
     const rows = document.querySelectorAll("#table-body tr");
@@ -407,6 +424,7 @@ $("#start-date").on("change", function () {
         $("#end-date").removeAttr("min");
     }
 });
+
         function filterTable() {
     const status = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
