@@ -109,9 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['id'];
     $image_path = null;
 
-   
-
-
 	
     // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
@@ -891,10 +888,10 @@ textarea {
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
             <!-- 产品选择 -->
-            <label for="productSelect">Select Product:</label>
-            <div class="product-select-container">
-			<select id="productSelect" name="detail_id" required>
-    <option value="" disabled selected>Select a product</option>
+            <label for="itemSelect">Select Item:</label>
+            <div class="item-select-container">
+			<select id="itemSelect" name="detail_id" required>
+    <option value="" disabled selected>Select an Item</option>
     <?php foreach ($order_details as $detail) { ?>
         <option value="<?= $detail['detail_id'] ?>" 
                 data-img="images/<?= $detail['item_image'] ?>">
@@ -902,9 +899,9 @@ textarea {
         </option>
     <?php } ?>
 </select>
-                <div class="selected-product-preview" id="productPreview">
-                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
-                    <span id="productName" style="display: block;"></span>
+                <div class="selected-item-preview" id="itemPreview">
+                    <img id="itemImage" src="" alt="item Image" style="display: none;" />
+                    <span id="itemName" style="display: block;"></span>
                 </div>
             </div>
 
@@ -1437,28 +1434,28 @@ stars.forEach(star => {
 function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
-const productSelect = document.getElementById("productSelect");
-const productImage = document.getElementById("productImage");
-const productName = document.getElementById("productName");
+const itemSelect = document.getElementById("itemSelect");
+const itemImage = document.getElementById("itemImage");
+const itemName = document.getElementById("itemName");
 
-productSelect.addEventListener("change", function () {
-    const selectedOption = productSelect.options[productSelect.selectedIndex];
+itemSelect.addEventListener("change", function () {
+    const selectedOption = itemSelect.options[itemSelect.selectedIndex];
     const imgSrc = selectedOption.getAttribute("data-img");
     const name = selectedOption.textContent;
 
     if (imgSrc) {
-        productImage.src = imgSrc;
-        productImage.style.display = "block";
+        itemImage.src = imgSrc;
+        itemImage.style.display = "block";
     } else {
-        productImage.style.display = "none";
+        itemImage.style.display = "none";
     }
 
-    productName.textContent = name;
+    itemName.textContent = name;
 });
 
 function resetProductPreview() {
-    productImage.style.display = "none";
-    productName.textContent = "";
+    itemImage.style.display = "none";
+    itemName.textContent = "";
 }
 
 
