@@ -274,7 +274,7 @@ include 'admin_sidebar.php';
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="6">No orders found.</td>
+                            <td colspan="5">No orders found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
