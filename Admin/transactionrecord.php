@@ -360,10 +360,10 @@ $(function () {
     ];
 
     // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    XLSX.utils.book_append_sheet(wb, ws, "Transaction");
 
     // Save the workbook
-    XLSX.writeFile(wb, "Order_List.xlsx");
+    XLSX.writeFile(wb, "Transaction_List.xlsx");
 }
 
         
