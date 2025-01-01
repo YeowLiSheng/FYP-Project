@@ -33,9 +33,9 @@ $totalCustomers_result = $connect->query($totalCustomers_query);
 $total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
 
 // Fetch total products sold
-$totalProducts_query = "SELECT SUM(quantity) AS total_products_sold FROM order_details";
-$totalProducts_result = $connect->query($totalProducts_query);
-$total_products_sold = $totalProducts_result->num_rows > 0 ? $totalProducts_result->fetch_assoc()['total_products_sold'] : 0;
+$totalitem_query = "SELECT SUM(quantity) AS total_item_sold FROM order_details";
+$totalitem_result = $connect->query($totalitem_query);
+$total_item_sold = $totalitem_result->num_rows > 0 ? $totalitem_result->fetch_assoc()['total_item_sold'] : 0;
 
 // Fetch sales trend data
 $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
@@ -115,14 +115,16 @@ LIMIT 5";
 $recentOrders_result = $connect->query($recentOrders_query);
 $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
-
-// Fetch category-wise sales data
 $categorySales_query = "
-    SELECT c.category_name, SUM(od.quantity) AS total_quantity
+    SELECT 
+        COALESCE(c.category_name, 'Package') AS category_name,
+        SUM(od.quantity) AS total_quantity
     FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
-    JOIN category c ON p.category_id = c.category_id
-    GROUP BY c.category_id";
+    LEFT JOIN product p ON od.product_id = p.product_id
+    LEFT JOIN category c ON p.category_id = c.category_id
+    LEFT JOIN product_package pp ON od.product_id = pp.package_id
+    GROUP BY c.category_name, pp.package_id";
+
 $categorySales_result = $connect->query($categorySales_query);
 
 // Process data for the pie chart
@@ -283,8 +285,8 @@ $categorySalesJson = json_encode($categorySalesData);
         </div>
         <div class="ccard">
             <i class="fas fa-tags icon"></i>
-            <p class="number"><?php echo $total_products_sold; ?></p>
-            <p class="name">Total Products Sold</p>
+            <p class="number"><?php echo $total_item_sold; ?></p>
+            <p class="name">Total item Sold</p>
         </div>
     </div>
 
