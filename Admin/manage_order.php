@@ -309,11 +309,11 @@ document.getElementById("filter-status").addEventListener("change", filterTable)
 document.getElementById("sort-order").addEventListener("change", sortTable);
 
 $(function () {
-    // 初始化日期选择器
+    
     $("#start-date").datepicker({
         dateFormat: "yy-mm-dd",
         onSelect: function (selectedDate) {
-            // 设置 end-date 的最小日期为选中的 start-date
+            
             $("#end-date").datepicker("option", "minDate", selectedDate);
             filterByDate();
         }
@@ -322,7 +322,7 @@ $(function () {
     $("#end-date").datepicker({
         dateFormat: "yy-mm-dd",
         onSelect: function (selectedDate) {
-            // 选择 end-date 时调用筛选逻辑
+            
             filterByDate();
         }
     });
@@ -397,16 +397,16 @@ function filterByDate() {
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const orderDateTime = row.cells[2].textContent; // 假设日期在第三列
+        const orderDateTime = row.cells[2].textContent; 
         const orderDate = orderDateTime.split(" ")[0];
 
         const start = startDate || null;
         const end = endDate || null;
 
         if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-            row.style.display = ""; // 显示行
+            row.style.display = ""; 
         } else {
-            row.style.display = "none"; // 隐藏行
+            row.style.display = "none"; 
         }
     });
 }
