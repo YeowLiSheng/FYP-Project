@@ -523,37 +523,6 @@ form {
     background-color: #45a049;
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%;
-}
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -861,16 +830,14 @@ form {
             }
             echo "              </ul>";
 
-             // View Review Button
-             echo "<button class='btn btn-secondary viewReview' data-package-id='" . htmlspecialchars($row['package_id']) . "'>View Review</button>";
-
             // Unavailable Message
             if ($isUnavailable) {
                 echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
             } else {
                 echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
             }
-
+// View Review Button
+echo "<button class='btn btn-info viewReview' data-package-id='" . htmlspecialchars($row['package_id']) . "'>View Reviews</button>";
             echo "          </div>";
             echo "      </div>";
             echo "  </div>";
@@ -882,12 +849,18 @@ form {
     ?>
 </div>
 
-<!-- Modal Popup for Reviews -->
-<div id="reviewModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Package Reviews</h2>
-        <div id="reviewContent">Loading reviews...</div>
+<!-- Popup Modal for Reviews -->
+<div id="reviewModal" class="modal" tabindex="-1" role="dialog" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Package Reviews</h5>
+                <button type="button" class="close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="reviewContent">
+                <!-- Reviews will be loaded here -->
+            </div>
+        </div>
     </div>
 </div>
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
@@ -1350,41 +1323,67 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 });
 
-
-document.querySelectorAll('.viewReview').forEach(button => {
-    button.addEventListener('click', function () {
-        const packageId = this.getAttribute('data-package-id');
-        const modal = document.getElementById('reviewModal');
-        const reviewContent = document.getElementById('reviewContent');
-
-        // Show modal
-        modal.style.display = 'block';
-
-        // Fetch reviews
-        fetch(`get_reviews.php?package_id=${packageId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    reviewContent.innerHTML = data.map(review => `
-                        <div class="review">
-                            <p><strong>User:</strong> ${review.username}</p>
-                            <p><strong>Rating:</strong> ${review.rating}</p>
-                            <p>${review.comment}</p>
-                            ${review.image ? `<img src="uploads/${review.image}" alt="Review Image" class="img-fluid">` : ''}
-                        </div>
-                        <hr>
-                    `).join('');
-                } else {
-                    reviewContent.innerHTML = '<p>No reviews found for this package.</p>';
-                }
-            });
+  // JavaScript for handling modal functionality
+  document.querySelectorAll('.viewReview').forEach(button => {
+        button.addEventListener('click', function() {
+            const packageId = this.getAttribute('data-package-id');
+            
+            // Fetch reviews for the selected package
+            fetchReviews(packageId);
+        });
     });
-});
 
-// Close modal
-document.querySelector('.close').addEventListener('click', function () {
-    document.getElementById('reviewModal').style.display = 'none';
-});
+    function fetchReviews(packageId) {
+        const reviews = <?php
+            $reviewsQuery = "
+                SELECT r.*, u.username 
+                FROM reviews r 
+                JOIN order_details od ON r.detail_id = od.detail_id 
+                JOIN user u ON r.user_id = u.user_id 
+                WHERE od.package_id = ?
+            ";
+            if ($stmt = $connect->prepare($reviewsQuery)) {
+                $stmt->bind_param("i", $packageId);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $reviews = [];
+                while ($row = $result->fetch_assoc()) {
+                    $reviews[] = $row;
+                }
+                $stmt->close();
+                echo json_encode($reviews);
+            } else {
+                echo "[]";
+            }
+        ?>;
+        
+        const reviewContent = document.getElementById('reviewContent');
+        reviewContent.innerHTML = '';
+
+        if (reviews.length > 0) {
+            reviews.forEach(review => {
+                const reviewBlock = `
+                    <div class="review">
+                        <p><strong>User:</strong> ${review.username}</p>
+                        <p><strong>Rating:</strong> ${review.rating}</p>
+                        <p><strong>Comment:</strong> ${review.comment}</p>
+                        ${review.image ? `<img src="images/${review.image}" alt="Review Image" class="img-fluid">` : ''}
+                    </div>
+                    <hr>
+                `;
+                reviewContent.innerHTML += reviewBlock;
+            });
+        } else {
+            reviewContent.innerHTML = '<p>No reviews available for this package.</p>';
+        }
+
+        document.getElementById('reviewModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('reviewModal').style.display = 'none';
+    }
+
 </script>
 
 
