@@ -751,7 +751,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 					echo '<p><i class="fa fa-gift"></i> Packages: ' . $order['packages'] . '</p>';
 				}
 	
-				echo '<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+				echo '<p><i class="fa fa-dollar-sign"></i> Total Price: $ ' . $order['final_amount'] . '</p>';
 	
 				if ($showCompleteButton) {
 					echo '<button type="button" class="complete-btn" onclick="openPopup(' . $order['order_id'] . ')">Complete</button>';

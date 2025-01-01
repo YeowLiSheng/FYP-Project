@@ -33,9 +33,9 @@ $totalCustomers_result = $connect->query($totalCustomers_query);
 $total_customers = $totalCustomers_result->num_rows > 0 ? $totalCustomers_result->fetch_assoc()['total_customers'] : 0;
 
 // Fetch total products sold
-$totalProducts_query = "SELECT SUM(quantity) AS total_products_sold FROM order_details";
-$totalProducts_result = $connect->query($totalProducts_query);
-$total_products_sold = $totalProducts_result->num_rows > 0 ? $totalProducts_result->fetch_assoc()['total_products_sold'] : 0;
+$totalitem_query = "SELECT SUM(quantity) AS total_item_sold FROM order_details";
+$totalitem_result = $connect->query($totalitem_query);
+$total_item_sold = $totalitem_result->num_rows > 0 ? $totalitem_result->fetch_assoc()['total_item_sold'] : 0;
 
 // Fetch sales trend data
 $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
@@ -283,8 +283,8 @@ $categorySalesJson = json_encode($categorySalesData);
         </div>
         <div class="ccard">
             <i class="fas fa-tags icon"></i>
-            <p class="number"><?php echo $total_products_sold; ?></p>
-            <p class="name">Total Products Sold</p>
+            <p class="number"><?php echo $total_item_sold; ?></p>
+            <p class="name">Total item Sold</p>
         </div>
     </div>
 
