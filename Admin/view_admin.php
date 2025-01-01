@@ -181,10 +181,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                 <hr>
 
                 <?php if($admin_id === 'superadmin'): ?>
-                    <button class="add-staff-btn" onclick="location.href='add_staff.php'">Add Staff</button>
-                <?php else: ?>
-                    <button class="add-staff-btn" onclick="noPermission()">Add Staff</button>
-                <?php endif; ?>
+    <button class="add-staff-btn" onclick="location.href='add_staff.php'">Add Staff</button>
+<?php endif; ?>
 
                 <hr>
 
