@@ -232,10 +232,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="main">
-    <h1><ion-icon name="chatbubbles-outline"></ion-icon> Product Reviews</h1>
-    <div class="product-info">
-        <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="product-image">
-        <h2><?= htmlspecialchars($product['product_name']) ?></h2>
+<h1><ion-icon name="chatbubbles-outline"></ion-icon> Item Reviews</h1>
+    <div class="item-info">
+        <img src="../User/images/<?= htmlspecialchars($item['item_image']) ?>" alt="<?= htmlspecialchars($item['item_name']) ?>" class="item-image">
+        <h2><?= htmlspecialchars($item['item_name']) ?></h2>
     </div>
     <div class="card">
         <table class="table">
