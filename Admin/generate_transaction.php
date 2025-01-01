@@ -28,9 +28,9 @@ $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
     ['Transaction#', 30],
-    ['Customer Name', 50],
+    ['Customer Name', 45],
     ['Order ID', 35],
-    ['Transaction Amount', 50],
+    ['Transaction Amount', 45],
     ['Date', 40]
 ];
 
@@ -61,9 +61,9 @@ if ($result->num_rows > 0) {
 
         // Output row data (adjusting widths and alignment for each column)
         $pdf->Cell(30, 6, $transaction_id, 1, 0, 'C');
-        $pdf->Cell(50, 6, $customer_name, 1, 0, 'L');  // Align customer name to the left
+        $pdf->Cell(45, 6, $customer_name, 1, 0, 'L');  // Align customer name to the left
         $pdf->Cell(35, 6, $order_id, 1, 0, 'C');
-        $pdf->Cell(50, 6, $transaction_amount, 1, 0, 'C');
+        $pdf->Cell(45, 6, $transaction_amount, 1, 0, 'C');
         $pdf->Cell(40, 6, $payment_date, 1, 1, 'C');
     }
 } else {
