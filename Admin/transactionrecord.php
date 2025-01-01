@@ -266,11 +266,13 @@ include 'admin_sidebar.php';
 
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) { ?>
+                        <tr>
                                 <td><?php echo $row["payment_id"]; ?></td>
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_id"]; ?></td>
                                 <td><?php echo $row["payment_amount"]; ?></td>
                                 <td><?php echo $row["payment_datetime"]; ?></td>
+                                </tr>        
                         <?php }
                     } else { ?>
                         <tr>
