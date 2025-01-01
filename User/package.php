@@ -293,6 +293,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         echo json_encode(['success' => false, 'message' => 'Invalid package ID.']);
     }
 
+
+    if (isset($_GET['package_id'])) {
+        $packageId = intval($_GET['package_id']);
+        
+        // 查询与 package_id 相关的评论
+        $query = "
+            SELECT r.rating, r.comment, r.created_at, u.user_name 
+            FROM reviews r
+            JOIN order_details od ON r.detail_id = od.detail_id
+            JOIN user u ON r.user_id = u.user_id
+            WHERE od.package_id = $packageId AND r.status = 'active'
+        ";
+        
+        $result = $conn->query($query);
+    
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                echo "<div class='review'>";
+                echo "<p><strong>User:</strong> " . htmlspecialchars($row['user_name']) . "</p>";
+                echo "<p><strong>Rating:</strong> " . htmlspecialchars($row['rating']) . "/5</p>";
+                echo "<p><strong>Comment:</strong> " . htmlspecialchars($row['comment']) . "</p>";
+                echo "<p><strong>Date:</strong> " . htmlspecialchars($row['created_at']) . "</p>";
+                echo "<hr>";
+                echo "</div>";
+            }
+        } else {
+            echo "<p>No reviews found for this package.</p>";
+        }
+        exit;
+    }
     $stmt->close();
     $connect->close();
     exit;
@@ -521,6 +551,37 @@ form {
 
 .btn-success:hover {
     background-color: #45a049;
+}
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 50%;
+    max-width: 600px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
 }
 
 @keyframes fadeIn {
@@ -835,6 +896,8 @@ form {
                 echo "<p class='unavailable-message' style='color: red;'>" . htmlspecialchars($unavailableMessage) . "</p>";
             } else {
                 echo "<button class='btn btn-primary selectPackage'>Select Package</button>";
+     
+                echo "<button class='btn btn-secondary viewReview' data-package-id='{$package_id}'>View Review</button>";
             }
 
             echo "          </div>";
@@ -848,7 +911,16 @@ form {
     ?>
 </div>
 
-
+<!-- 模态框 -->
+<div id="reviewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Package Reviews</h2>
+            <div id="reviewContent">
+                <!-- 评论内容将动态插入 -->
+            </div>
+        </div>
+    </div>
 	<div id="packageFormPopup" class="popup-overlay" style="display: none;">
 		<div class="popup-content">
 			<span class="close-popup">&times;</span>
@@ -1309,7 +1381,50 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    // 获取模态框和相关元素
+    const modal = document.getElementById("reviewModal");
+    const closeBtn = modal.querySelector(".close");
+    const reviewContent = document.getElementById("reviewContent");
 
+    // 为每个“View Review”按钮添加点击事件
+    document.querySelectorAll(".viewReview").forEach((button) => {
+        button.addEventListener("click", function () {
+            const packageId = this.getAttribute("data-package-id");
+            
+            // 动态加载评论
+            fetchReviews(packageId);
+            
+            // 显示模态框
+            modal.style.display = "block";
+        });
+    });
+
+    // 关闭模态框
+    closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+
+    // 点击模态框外部关闭
+    window.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // 异步加载评论内容
+    function fetchReviews(packageId) {
+        fetch(`?package_id=${packageId}`)
+            .then((response) => response.text())
+            .then((data) => {
+                reviewContent.innerHTML = data;
+            })
+            .catch((error) => {
+                reviewContent.innerHTML = `<p class="text-danger">Failed to load reviews.</p>`;
+                console.error(error);
+            });
+    }
+});
 
 </script>
 
