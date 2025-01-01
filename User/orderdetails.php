@@ -103,38 +103,29 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$item_id = isset($_POST['item_id']) ? intval($_POST['item_id']) : null;
-	$item_type = isset($_POST['item_type']) ? $_POST['item_type'] : null;
-	$rating = intval($_POST['rating']);
-	$comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
-	$user_id = $_SESSION['id'];
-	$image_path = null;
+	$item_id = intval($_POST['item_id']); // item_id 可以是 product_id 或 package_id
+    $item_type = $_POST['item_type']; // 'product' 或 'package'
+    $rating = intval($_POST['rating']);
+    $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
+    $user_id = $_SESSION['id'];
+    $image_path = null;
 
-	// 验证 item_type 和 item_id
-	if (!$item_id || !$item_type || !in_array($item_type, ['product', 'package'])) {
-		echo "error: invalid input";
-		exit;
-	}
+	$column = $item_type === 'product' ? 'product_id' : 'package_id';
 
-	// 获取 detail_id
-	if ($item_type === "product") {
-		$detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
-		$detail_query->bind_param("ii", $item_id, $order_id);
-	} else {
-		$detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE package_id = ? AND order_id = ?");
-		$detail_query->bind_param("ii", $item_id, $order_id);
-	}
+    // 获取 detail_id
+    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
+    $detail_query->bind_param("ii", $product_id, $order_id);
+    $detail_query->execute();
+    $detail_result = $detail_query->get_result();
 
-	$detail_query->execute();
-	$detail_result = $detail_query->get_result();
+    if ($detail_result->num_rows === 0) {
+        echo "error";
+        exit;
+    }
 
-	if ($detail_result->num_rows === 0) {
-		echo "error: detail not found";
-		exit;
-	}
+    $detail = $detail_result->fetch_assoc();
+    $detail_id = $detail['detail_id'];
 
-	$detail = $detail_result->fetch_assoc();
-	$detail_id = $detail['detail_id'];
 
 	
     // 处理图片上传
@@ -914,30 +905,17 @@ textarea {
     <div class="popup-content">
         <h2>Rate Item</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <!-- 选择项 -->
+            <!-- 项目选择 -->
             <label for="itemSelect">Select Item:</label>
             <div class="item-select-container">
                 <select id="itemSelect" name="item_id" required>
                     <option value="" disabled selected>Select an item</option>
-                    <!-- Product Options -->
                     <?php foreach ($order_details as $detail) { ?>
-                        <?php if (isset($detail['product_id'])) { ?>
-                            <option value="<?= $detail['product_id'] ?>" 
-                                    data-type="product" 
-                                    data-img="images/<?= $detail['product_image'] ?>">
-                                Product: <?= $detail['product_name'] ?>
-                            </option>
-                        <?php } ?>
-                    <?php } ?>
-                    <!-- Package Options -->
-                    <?php foreach ($order_details as $detail) { ?>
-                        <?php if (isset($detail['package_id'])) { ?>
-                            <option value="<?= $detail['package_id'] ?>" 
-                                    data-type="package" 
-                                    data-img="images/<?= $detail['package_image'] ?>">
-                                Package: <?= $detail['package_name'] ?>
-                            </option>
-                        <?php } ?>
+                        <option value="<?= isset($detail['product_id']) ? $detail['product_id'] : $detail['package_id'] ?>"
+                                data-type="<?= isset($detail['product_id']) ? 'product' : 'package' ?>"
+                                data-img="images/<?= $detail['item_image'] ?>">
+                            <?= $detail['item_name'] ?>
+                        </option>
                     <?php } ?>
                 </select>
                 <div class="selected-item-preview" id="itemPreview">
@@ -962,6 +940,9 @@ textarea {
             <!-- 上传图片 -->
             <label for="image">Upload Image (optional):</label>
             <input type="file" id="image" name="image" accept="image/*">
+
+            <!-- 项目类型 -->
+            <input type="hidden" id="itemType" name="item_type" value="">
 
             <!-- 按钮 -->
             <button type="submit" class="submit-button">Submit</button>
@@ -1476,29 +1457,31 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
-const itemSelect = document.getElementById("itemSelect");
-        const itemImage = document.getElementById("itemImage");
-        const itemName = document.getElementById("itemName");
+// 产品预览逻辑
+const productSelect = document.getElementById("productSelect");
+const productImage = document.getElementById("productImage");
+const productName = document.getElementById("productName");
 
-        itemSelect.addEventListener("change", function () {
-            const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-            const imgSrc = selectedOption.getAttribute("data-img");
-            const name = selectedOption.textContent;
+productSelect.addEventListener("change", function () {
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    const imgSrc = selectedOption.getAttribute("data-img");
+    const name = selectedOption.textContent;
 
-            if (imgSrc) {
-                itemImage.src = imgSrc;
-                itemImage.style.display = "block";
-            } else {
-                itemImage.style.display = "none";
-            }
+    if (imgSrc) {
+        productImage.src = imgSrc;
+        productImage.style.display = "block";
+    } else {
+        productImage.style.display = "none";
+    }
 
-            itemName.textContent = name;
-        });
+    productName.textContent = name;
+});
 
-        function resetItemPreview() {
-            itemImage.style.display = "none";
-            itemName.textContent = "";
-        }
+function resetProductPreview() {
+    productImage.style.display = "none";
+    productName.textContent = "";
+}
+
 
 
 </script>
