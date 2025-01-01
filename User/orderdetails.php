@@ -109,19 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_SESSION['id'];
     $image_path = null;
 
-    // 获取 detail_id
-    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
-    $detail_query->bind_param("ii", $product_id, $order_id);
-    $detail_query->execute();
-    $detail_result = $detail_query->get_result();
-
-    if ($detail_result->num_rows === 0) {
-        echo "error";
-        exit;
-    }
-
-    $detail = $detail_result->fetch_assoc();
-    $detail_id = $detail['detail_id'];
+   
 
 
 	
