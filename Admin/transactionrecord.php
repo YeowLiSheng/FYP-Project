@@ -310,7 +310,7 @@ $(function () {
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_order.php";
+            window.location.href = "generate_transaction.php";
 
         }
 
@@ -363,7 +363,7 @@ $(function () {
     XLSX.utils.book_append_sheet(wb, ws, "Transaction");
 
     // Save the workbook
-    XLSX.writeFile(wb, "Transaction_List.xlsx");
+    XLSX.writeFile(wb, "Transaction Record.xlsx");
 }
 
         
