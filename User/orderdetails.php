@@ -914,7 +914,7 @@ textarea {
         <option value="" disabled selected>Select an item</option>
         <?php foreach ($order_details as $detail) { ?>
             <option value="<?= $detail['product_id'] ?? $detail['package_id'] ?>" 
-                    data-type="<?= $detail['product_id'] ? 'product' : 'package' ?>"
+            data-type="<?= isset($detail['product_id']) && $detail['product_id'] ? 'product' : 'package' ?>"
                     data-img="<?= $detail['item_image'] ?>">
                 <?= $detail['item_name'] ?>
             </option>
