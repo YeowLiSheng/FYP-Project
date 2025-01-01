@@ -376,52 +376,37 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const startDateInput = document.getElementById("start-date");
-    const endDateInput = document.getElementById("end-date");
+        
 
-    // 当 start-date 改变时，动态设置 end-date 的最小值
-    startDateInput.addEventListener("change", () => {
-        const startDate = startDateInput.value;
-        if (startDate) {
-            endDateInput.min = startDate;
+function filterByDate() {
+    const startDate = $("#start-date").val();
+    const endDate = $("#end-date").val();
+    const rows = document.querySelectorAll("#table-body tr");
+
+    rows.forEach(row => {
+        const orderDateTime = row.cells[2].textContent; 
+        const orderDate = orderDateTime.split(" ")[0];
+
+        const start = startDate || null;
+        const end = endDate || null;
+
+        if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
+            row.style.display = "";
         } else {
-            endDateInput.min = ""; // 重置最小值
+            row.style.display = "none";
         }
     });
+}
 
-    // 当 end-date 改变时，确保它不会早于 start-date
-    endDateInput.addEventListener("change", () => {
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-
-        if (startDate && endDate && endDate < startDate) {
-            alert("End date cannot be earlier than start date.");
-            endDateInput.value = ""; // 清空不合法值
-        }
-    });
+// 动态设置 end-date 的最小值
+$("#start-date").on("change", function () {
+    const startDate = $(this).val();
+    if (startDate) {
+        $("#end-date").attr("min", startDate);
+    } else {
+        $("#end-date").removeAttr("min");
+    }
 });
-
-        function filterByDate() {
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-            const rows = document.querySelectorAll("#table-body tr");
-
-            rows.forEach(row => {
-                const orderDateTime = row.cells[2].textContent; 
-                const orderDate = orderDateTime.split(" ")[0];
-
-                const start = startDate || null;
-                const end = endDate || null;
-
-                if ((!start || orderDate >= start) && (!end || orderDate <= end)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
         function filterTable() {
     const status = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
