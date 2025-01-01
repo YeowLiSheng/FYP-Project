@@ -376,7 +376,31 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
 
-        
+document.addEventListener("DOMContentLoaded", () => {
+    const startDateInput = document.getElementById("start-date");
+    const endDateInput = document.getElementById("end-date");
+
+    // 当 start-date 改变时，动态设置 end-date 的最小值
+    startDateInput.addEventListener("change", () => {
+        const startDate = startDateInput.value;
+        if (startDate) {
+            endDateInput.min = startDate;
+        } else {
+            endDateInput.min = ""; // 重置最小值
+        }
+    });
+
+    // 当 end-date 改变时，确保它不会早于 start-date
+    endDateInput.addEventListener("change", () => {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        if (startDate && endDate && endDate < startDate) {
+            alert("End date cannot be earlier than start date.");
+            endDateInput.value = ""; // 清空不合法值
+        }
+    });
+});
 
         function filterByDate() {
             const startDate = $("#start-date").val();
@@ -403,7 +427,7 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const orderStatus = row.cells[5].textContent.trim(); // 确保去除空白字符
+        const orderStatus = row.cells[5].textContent.trim(); 
         row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
     });
 }
