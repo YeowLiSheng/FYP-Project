@@ -103,38 +103,33 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $item_id = intval($_POST['item_id']);
-    $item_type = $_POST['item_type'];
+	$item_id = intval($_POST['item_id']); // 可以是 product_id 或 package_id
+    $item_type = $_POST['item_type']; // 'product' 或 'package'
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
-    // 获取 detail_id
-    $detail_query = null;
-    if ($item_type === 'product') {
-        $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
-    } else if ($item_type === 'package') {
-        $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE package_id = ? AND order_id = ?");
-    }
+    // 根据 item_type 查询 detail_id
+    $detail_query = $conn->prepare("
+        SELECT detail_id 
+        FROM order_details 
+        WHERE " . ($item_type === 'product' ? "product_id" : "package_id") . " = ? AND order_id = ?
+    ");
+    $detail_query->bind_param("ii", $product_id, $order_id);
+    $detail_query->execute();
+    $detail_result = $detail_query->get_result();
 
-    if ($detail_query) {
-        $detail_query->bind_param("ii", $item_id, $order_id);
-        $detail_query->execute();
-        $detail_result = $detail_query->get_result();
-
-        if ($detail_result->num_rows === 0) {
-            echo "error";
-            exit;
-        }
-
-        $detail = $detail_result->fetch_assoc();
-        $detail_id = $detail['detail_id'];
-    } else {
+    if ($detail_result->num_rows === 0) {
         echo "error";
         exit;
     }
 
+    $detail = $detail_result->fetch_assoc();
+    $detail_id = $detail['detail_id'];
+
+
+	
     // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
@@ -150,30 +145,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 检查是否存在重复评论
-    $check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
-    $check_stmt->bind_param("ii", $detail_id, $user_id);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
+$check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
+$check_stmt->bind_param("ii", $detail_id, $user_id);
+$check_stmt->execute();
+$check_result = $check_stmt->get_result();
 
-    if ($check_result->num_rows > 0) {
-        echo "duplicate"; // 返回重复状态
-        exit;
-    }
-
-    // 插入评论数据
-    $stmt = $conn->prepare("
-        INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-
-    if ($stmt->execute()) {
-        echo "success"; // 向前端返回成功状态
-    } else {
-        echo "error"; // 向前端返回错误状态
-    }
+if ($check_result->num_rows > 0) {
+    echo "duplicate"; // 返回重复状态
     exit;
 }
+
+// 插入评论数据
+$stmt = $conn->prepare("
+    INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
+    VALUES (?, ?, ?, ?, ?)
+");
+$stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
+
+if ($stmt->execute()) {
+    echo "success"; // 向前端返回成功状态
+} else {
+    echo "error"; // 向前端返回错误状态
+}
+    exit;
+}
+
 
 
 ?>
@@ -411,19 +407,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     text-align: center;
 }
 
-.item-select-container {
+.product-select-container {
     position: relative;
     margin-bottom: 20px;
 }
 
-.selected-item-preview {
+.selected-product-preview {
     display: flex;
     flex-direction: column; /* 垂直对齐 */
     align-items: center;
     margin-top: 10px;
 }
 
-.selected-item-preview img {
+.selected-product-preview img {
     width: 100px; /* 调整图片大小 */
     height: 100px;
     border-radius: 10px;
@@ -717,7 +713,11 @@ textarea {
 			<ul class="main-menu-m">
 				<li>
 					<a href="dashboard.php">Home</a>
-
+					<ul class="sub-menu-m">
+						<li><a href="index.html">Homepage 1</a></li>
+						<li><a href="home-02.html">Homepage 2</a></li>
+						<li><a href="home-03.html">Homepage 3</a></li>
+					</ul>
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
@@ -913,14 +913,14 @@ textarea {
     <select id="itemSelect" name="item_id" required>
         <option value="" disabled selected>Select an item</option>
         <?php foreach ($order_details as $detail) { ?>
-            <option value="<?= $detail['product_id'] ?? $detail['package_id'] ?>" 
-            data-type="<?= isset($detail['product_id']) && $detail['product_id'] ? 'product' : 'package' ?>"
+            <option value="<?= $detail['product_id'] ?: $detail['package_id'] ?>" 
+                    data-type="<?= $detail['product_id'] ? 'product' : 'package' ?>"
                     data-img="<?= $detail['item_image'] ?>">
                 <?= $detail['item_name'] ?>
             </option>
         <?php } ?>
     </select>
-    <input type="hidden" name="item_type" id="itemType">
+    <input type="hidden" id="itemType" name="item_type" />
     <div class="selected-item-preview" id="itemPreview">
         <img id="itemImage" src="" alt="Item Image" style="display: none;" />
         <span id="itemName" style="display: block;"></span>
@@ -1398,11 +1398,11 @@ function openPopup() {
 }
 
 // 关闭弹窗
-function closePopup() { 
+function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
     document.getElementById("rateForm").reset(); // 重置表单
     resetStars();   // 重置评分星星
-    resetItemPreview(); // 重置item预览
+    resetProductPreview(); // 重置产品预览
 }
 
 // 禁用重复提交
@@ -1457,8 +1457,9 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
+
 const itemSelect = document.getElementById("itemSelect");
-const itemTypeInput = document.getElementById("itemType");
+const itemType = document.getElementById("itemType");
 const itemImage = document.getElementById("itemImage");
 const itemName = document.getElementById("itemName");
 
@@ -1468,7 +1469,7 @@ itemSelect.addEventListener("change", function () {
     const name = selectedOption.textContent;
     const type = selectedOption.getAttribute("data-type");
 
-    itemTypeInput.value = type;
+    itemType.value = type;
 
     if (imgSrc) {
         itemImage.src = imgSrc;
@@ -1484,7 +1485,6 @@ function resetItemPreview() {
     itemImage.style.display = "none";
     itemName.textContent = "";
 }
-
 
 
 </script>
