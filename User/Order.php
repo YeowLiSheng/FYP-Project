@@ -1,4 +1,4 @@
-<a?php
+<?php
 session_start();  // 启动会话
 
 // Connect to the database
@@ -710,8 +710,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     <a href="edit_profile.php">
         <i class="fa fa-edit"></i> Edit Profile
     </a>
-</li>
-            <li class="profile-item"><a href=""><i class="fa fa-lock"></i> Change Password</a></li>
+</li>            <a href=""></a><li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
             <!-- My Orders -->
             <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
