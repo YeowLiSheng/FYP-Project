@@ -318,7 +318,7 @@ $reviewresult = $connect->query($review);
                     
                     <!-- Package Options -->
     <optgroup label="Package">
-        <option value="package">Package</option>
+        <option value="Package">Package</option>
     </optgroup>
                 </select>
                 <label>Sort by:</label>
