@@ -7,7 +7,7 @@ include 'dataconnection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Handle Add Package
+
 // Handle Add Package
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package'])) {
     $packageName = mysqli_real_escape_string($connect, $_POST['package_name']);
