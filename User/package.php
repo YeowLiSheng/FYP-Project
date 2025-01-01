@@ -293,6 +293,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package_to_cart']
         echo json_encode(['success' => false, 'message' => 'Invalid package ID.']);
     }
 
+
+    $package_query = "
+    SELECT 
+        p.package_id, 
+        p.package_name, 
+        p.package_description, 
+        od.detail_id
+    FROM 
+        packages p
+    JOIN 
+        order_details od ON p.package_id = od.package_id
+    WHERE 
+        p.package_id = ?"; // 替换为你的查询条件
+
+$stmt = $connect->prepare($package_query);
+if (!$stmt) {
+    die("SQL prepare failed: " . $connect->error);
+}
+$stmt->bind_param("i", $package_id); // $package_id 是当前包裹的 ID，需要动态传入
+$stmt->execute();
+$package_result = $stmt->get_result();
+$package = $package_result->fetch_assoc();
+
     $stmt->close();
     $connect->close();
     exit;
