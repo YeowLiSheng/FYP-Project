@@ -113,8 +113,8 @@ if ($distinct_products_result) {
     100% { background-position: 100%; }
 }
 .hov-img0 {
-    width: 500px; /* Adjust width as needed */
-    height: 500px; /* Adjust height as needed */
+    width: 100%; /* Adjust width as needed */
+    height: 100%; /* Adjust height as needed */
     overflow: hidden; /* Ensures the video doesn’t exceed the container bounds */
 }
 .responsive-video {
