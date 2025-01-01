@@ -713,7 +713,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 </li>
             <li class="profile-item"><a href=""><i class="fa fa-lock"></i> Change Password</a></li>
             <!-- My Orders -->
-            <li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
+            <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
     </div>
 
