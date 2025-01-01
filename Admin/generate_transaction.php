@@ -30,8 +30,7 @@ $header = [
     ['Transaction#', 30],
     ['Customer Name', 50],
     ['Order ID', 35],
-    ['Transaction 
-    Amount', 40],
+    ['Transaction Amount', 40],
     ['Date', 40]
 ];
 
