@@ -367,7 +367,7 @@ a.sidebar-link:hover {
                 </li>
                 <li class="sidebar-item">
                     <a href="transactionrecord.php" class="sidebar-link">
-                        <i class="lni lni-cash"></i>
+                        <i class="lni lni-wallet"></i>
                         <span>Transaction Record</span>
                     </a>
                 </li>
