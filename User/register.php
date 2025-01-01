@@ -1260,50 +1260,76 @@ if (isset($_POST["signupbtn"])) {
             </body>
             </html>";
         } else {
-            // Insert data into the database
-            $insert_query = mysqli_query($connect, "INSERT INTO user (user_email, user_name, user_contact_number, user_gender, user_date_of_birth, user_password, user_join_time) 
-            VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$password', '$currentDateTime')");
-            
-            if ($insert_query) {
-                echo "<!DOCTYPE html>
-                <html>
-                <head>
-                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-                </head>
-                <body>
-                    <script>
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Registration Successful',
-                            text: 'You have successfully registered.',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = 'login.php';
-                        });
-                    </script>
-                </body>
-                </html>";
-            } else {
-                echo "<!DOCTYPE html>
-                <html>
-                <head>
-                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-                </head>
-                <body>
-                    <script>
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Registration Failed',
-                            text: 'Please try again later.',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = 'register.php';
-                        });
-                    </script>
-                </body>
-                </html>";
-            }
-        }
+			// Insert data into the database with user_status = 0 initially
+			$insert_query = mysqli_query($connect, "INSERT INTO user (user_email, user_name, user_contact_number, user_gender, user_date_of_birth, user_password, user_join_time, user_status) 
+			VALUES ('$email', '$name', '$contact', '$gender', '$dob', '$password', '$currentDateTime', 0)");
+			
+			if ($insert_query) {
+				// Update user_status to 1 after successful registration
+				$update_query = mysqli_query($connect, "UPDATE user SET user_status = 1 WHERE user_email = '$email'");
+				
+				if ($update_query) {
+					echo "<!DOCTYPE html>
+					<html>
+					<head>
+						<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+					</head>
+					<body>
+						<script>
+							Swal.fire({
+								icon: 'success',
+								title: 'Registration Successful',
+								text: 'You have successfully registered.',
+								confirmButtonText: 'OK'
+							}).then(() => {
+								window.location.href = 'login.php';
+							});
+						</script>
+					</body>
+					</html>";
+				} else {
+					// Handle the case where the user_status update fails
+					echo "<!DOCTYPE html>
+					<html>
+					<head>
+						<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+					</head>
+					<body>
+						<script>
+							Swal.fire({
+								icon: 'warning',
+								title: 'Registration Partially Successful',
+								text: 'Your registration was successful, but some settings could not be updated.',
+								confirmButtonText: 'OK'
+							}).then(() => {
+								window.location.href = 'login.php';
+							});
+						</script>
+					</body>
+					</html>";
+				}
+			} else {
+				echo "<!DOCTYPE html>
+				<html>
+				<head>
+					<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				</head>
+				<body>
+					<script>
+						Swal.fire({
+							icon: 'error',
+							title: 'Registration Failed',
+							text: 'Please try again later.',
+							confirmButtonText: 'OK'
+						}).then(() => {
+							window.location.href = 'register.php';
+						});
+					</script>
+				</body>
+				</html>";
+			}
+		}
+		
     }
 }
 ?>

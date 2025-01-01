@@ -71,29 +71,71 @@ if (isset($_POST["loginbtn"])) {
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
 
-    if ($row && $password === $row['user_password']) {
-        $_SESSION['user_name'] = $row['user_name'];
-        $_SESSION['id'] = $row['user_id'];
-        echo "<!DOCTYPE html>
-        <html>
-        <head>
-            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-        </head>
-        <body>
-            <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome to the dashboard!',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = 'dashboard.php';
-                });
-            </script>
-        </body>
-        </html>";
-        exit();
+    if ($row) {
+        if ($row['user_status'] == 0) {
+            // User is not active
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Account Inactive',
+                        text: 'Your account is not active. Please contact support.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'login.php';
+                    });
+                </script>
+            </body>
+            </html>";
+        } elseif ($password === $row['user_password']) {
+            // Successful login
+            $_SESSION['user_name'] = $row['user_name'];
+            $_SESSION['id'] = $row['user_id'];
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Successful',
+                        text: 'Welcome to the dashboard!',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'dashboard.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit();
+        } else {
+            // Invalid credentials
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Credentials',
+                        text: 'Invalid Email or Password.',
+                        confirmButtonText: 'OK'
+                    });
+                </script>
+            </body>
+            </html>";
+        }
     } else {
+        // No such user
         echo "<!DOCTYPE html>
         <html>
         <head>
@@ -103,9 +145,11 @@ if (isset($_POST["loginbtn"])) {
             <script>
                 Swal.fire({
                     icon: 'error',
-                    title: 'Invalid Credentials',
-                    text: 'Invalid Email or Password.',
+                    title: 'User Not Found',
+                    text: 'No account found with this email.',
                     confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'login.php';
                 });
             </script>
         </body>
@@ -116,6 +160,7 @@ if (isset($_POST["loginbtn"])) {
     $con->close();
 }
 ?>
+
 
 <?php
 

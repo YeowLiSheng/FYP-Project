@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
             <div class="modal" id="addPackageModal">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <form method="POST">
+                        <form method="POST" enctype="multipart/form-data">
                             <div class="modal-header">
                                 <h4 class="modal-title">Add Product Package</h4>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -104,8 +104,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                             <div class="modal-body">
                                 <label>Package Name</label>
                                 <input type="text" name="package_name" class="form-control" required>
+                                
                                 <label>Package Description</label>
                                 <textarea name="package_description" class="form-control" required></textarea>
+                                
+                                <label>Package Image</label>
+                                <input type="file" name="package_image" class="form-control" accept="image/*" required>
+                                
                                 <label>Product 1</label>
                                 <select name="product1" class="form-control" required>
                                     <option value="">Select Product</option>
@@ -116,6 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                                     }
                                     ?>
                                 </select>
+                                
                                 <label>Product 2</label>
                                 <select name="product2" class="form-control" required>
                                     <option value="">Select Product</option>
@@ -126,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                                     }
                                     ?>
                                 </select>
+                                
                                 <label>Product 3 (Optional)</label>
                                 <select name="product3" class="form-control">
                                     <option value="">Select Product</option>
@@ -136,8 +143,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                                     }
                                     ?>
                                 </select>
+                                
                                 <label>Package Price</label>
                                 <input type="text" name="package_price" class="form-control" required>
+                                
+                                <label>Package Stock</label>
+                                <div class="input-group">
+                                    <button type="button" class="btn btn-secondary" onclick="changeStock(-1)">-</button>
+                                    <input type="number" name="package_stock" id="package_stock" class="form-control" value="1" min="1" required>
+                                    <button type="button" class="btn btn-secondary" onclick="changeStock(1)">+</button>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="submit" name="add_package" class="btn btn-primary">Add Package</button>
@@ -269,4 +284,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
         </div>
     </div>
 </body>
+<script>
+    function changeStock(delta) {
+        const stockInput = document.getElementById("package_stock");
+        let currentValue = parseInt(stockInput.value);
+        currentValue = Math.max(1, currentValue + delta); // Ensure stock value is at least 1
+        stockInput.value = currentValue;
+    }
+</script>
 <?php mysqli_close($connect); ?>
