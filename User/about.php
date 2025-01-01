@@ -11,7 +11,7 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-// Check if the user is logged in
+// Check if the user is logged i
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged i
     exit;
