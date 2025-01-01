@@ -354,7 +354,7 @@ a.sidebar-link:hover {
 
                 <li class="sidebar-item">
                     <a href="admin_package.php" class="sidebar-link">
-                        <i class="lni lni-cart-full"></i>
+                        <i class="lni lni-package"></i>
                         <span>Package</span>
                     </a>
                 </li>
