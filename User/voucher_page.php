@@ -184,15 +184,14 @@ if ($distinct_products_result) {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li>
 								<a href="product.php">Shop</a>
+							</li>
+
+							<li>
+								<a href="package.php">Packages</a>
 							</li>
 
 							<li class="label1 active-menu" data-label1="hot">
@@ -200,7 +199,7 @@ if ($distinct_products_result) {
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>

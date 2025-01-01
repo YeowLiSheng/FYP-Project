@@ -748,10 +748,6 @@ body {
 .package-card.unavailable .selectPackage {
     display: none; /* Hide interactive buttons */
 }
-
-.unavailable-message {
-    font-weight: bold;
-}
 .unavailable-product{
     background-color: lightgrey; /* Soft grey background */
     border: 1px solid #d9d9d9; /* Light border for separation */
@@ -865,15 +861,14 @@ body {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li class="active-menu">
 								<a href="product.php">Shop</a>
+							</li>
+
+                            <li>
+								<a href="package.php">Packages</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -881,7 +876,7 @@ body {
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
@@ -1838,7 +1833,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 			if (!selectedColor || !selectedSize) {
 				Swal.fire({
-                    title: 'Error!',
+                    title: 'Color and Size required!',
                     text: 'Please select a color or size.',
                     icon: 'error',
                     confirmButtonText: 'OK'
@@ -2035,43 +2030,6 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     updateProducts();
 });
 </script>
-<script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Handle quantity adjustments
-            document.querySelectorAll(".qty-controls").forEach(control => {
-                const minusButton = control.querySelector(".minus");
-                const plusButton = control.querySelector(".plus");
-                const qtyInput = control.querySelector("input");
-
-                minusButton.addEventListener("click", () => {
-                    const qty = Math.max(1, parseInt(qtyInput.value) - 1);
-                    qtyInput.value = qty;
-                });
-
-                plusButton.addEventListener("click", () => {
-                    qtyInput.value = parseInt(qtyInput.value) + 1;
-                });
-            });
-
-            // Handle package selection
-            document.querySelectorAll(".selectPackage").forEach(button => {
-                button.addEventListener("click", function () {
-                    const packageDiv = this.closest(".package");
-                    const isSelected = packageDiv.classList.contains("selected");
-
-                    if (isSelected) {
-                        // Deselect the package
-                        packageDiv.classList.remove("selected");
-                        console.log(`Package ${packageDiv.dataset.packageId} deselected.`);
-                    } else {
-                        // Select the package
-                        packageDiv.classList.add("selected");
-                        console.log(`Package ${packageDiv.dataset.packageId} selected.`);
-                    }
-                });
-            });
-        });
-    </script>
 	<script>
 		$(document).on('click', '.selectPackage', function () {
             const packageId = $(this).closest('.package-card').data('package-id');
@@ -2239,45 +2197,62 @@ $(document).on('click', '.filter-tope-group button', function(event) {
             }
 
             // Confirm deletion
-            if (confirm('Are you sure you want to delete this item from your cart?')) {
-                // Send AJAX request to delete the item
-                fetch(location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: body,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Response:', data); // Log response for debugging
-                    if (data.success) {
-                        // Remove the item from the DOM
-                        this.closest('.header-cart-item').remove();
-                        // Update the total price
-                        document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
-                        Swal.fire({
-                            title: 'Item has been removed from your cart!',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                location.reload();
-                            }
-                        });
-                    } else {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to delete this item from your cart?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, keep it',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send AJAX request to delete the item
+                    fetch(location.href, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: body,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response:', data); // Log response for debugging
+                        if (data.success) {
+                            // Remove the item from the DOM
+                            document.querySelector('.header-cart-item').remove();
+                            // Update the total price
+                            document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
+                            Swal.fire({
+                                title: 'Item removed!',
+                                text: 'The item has been removed from your cart.',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Failed to remove the item. Please try again.',
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
                         Swal.fire({
                             title: 'Error!',
-                            text: data.message || 'Failed to remove the item. Please try again.',
+                            text: 'Something went wrong. Please try again later.',
                             icon: 'error',
-                            confirmButtonText: 'OK'
+                            confirmButtonText: 'OK',
                         });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            }
+                    });
+                }
+            });
+
         });
     });
 });

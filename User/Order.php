@@ -48,23 +48,25 @@ $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
 // Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status = null) {
+// Fetch orders with products and packages for each order
+function fetchOrdersWithProductsAndPackages($conn, $status = null) {
     $sql = "
         SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
+               GROUP_CONCAT(DISTINCT p.product_name SEPARATOR ', ') AS products,
+               GROUP_CONCAT(DISTINCT pp.package_name SEPARATOR ', ') AS packages, 
+               IFNULL(MIN(p.product_image), MIN(pp.package_image)) AS image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id";
-        
-    // Add a condition to filter by status if provided
+        LEFT JOIN product p ON od.product_id = p.product_id
+        LEFT JOIN product_package pp ON od.package_id = pp.package_id";
+
     if ($status) {
         $sql .= " WHERE o.order_status = ?";
     }
 
     $sql .= " GROUP BY o.order_id 
               ORDER BY o.order_date DESC";
-    
+
     $stmt = $conn->prepare($sql);
     if ($status) {
         $stmt->bind_param("s", $status);  // Bind the status parameter
@@ -74,10 +76,10 @@ function fetchOrdersWithProducts($conn, $status = null) {
 }
 
 // Fetch orders for each tab
-$all_orders = fetchOrdersWithProducts($conn);
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+$all_orders = fetchOrdersWithProductsAndPackages($conn);
+$processing_orders = fetchOrdersWithProductsAndPackages($conn, 'Processing');
+$shipping_orders = fetchOrdersWithProductsAndPackages($conn, 'Shipping');
+$completed_orders = fetchOrdersWithProductsAndPackages($conn, 'Complete');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     // 获取订单 ID
@@ -467,11 +469,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
+							
 							</li>
 
 							<li class="active-menu">
@@ -483,15 +481,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>
@@ -582,11 +580,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			<ul class="main-menu-m">
 				<li>
 					<a href="dashboard.php">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
+				
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
@@ -601,15 +595,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				</li>
 
 				<li>
-					<a href="blog.html">Blog</a>
+					<a href="blog.php">Blog</a>
 				</li>
 
 				<li>
-					<a href="about.html">About</a>
+					<a href="about.php">About</a>
 				</li>
 
 				<li>
-					<a href="contact.html">Contact</a>
+					<a href="contact.php">Contact</a>
 				</li>
 			</ul>
 		</div>
@@ -711,12 +705,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <!-- My Account -->
             <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
-            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+
+<li class="profile-item">
+    <a href="edit_profile.php">
+        <i class="fa fa-edit"></i> Edit Profile
+    </a>
+</li>           
+ <a href=""></a><li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
             <!-- My Orders -->
-            <li><i class="fa fa-box"></i> My Orders</li>
-        </ul>
+			<li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
+			</ul>
     </div>
 
     <!-- Content Area -->
@@ -732,40 +730,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         <!-- Order Containers for Each Status -->
         <?php
-       function renderOrders($orders, $showCompleteButton = false) {
+     function renderOrders($orders, $showCompleteButton = false) {
 		if ($orders->num_rows > 0) {
 			while ($order = $orders->fetch_assoc()) {
-				echo '
-
-                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-					<img src="images/' . $order['product_image'] . '" alt="Product Image">
-					<div>
-						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
-						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-						<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
-						
-				// 如果需要显示 "Complete" 按钮
-				if ($showCompleteButton) {
-					echo '
-						<button type="button" class="complete-btn" 
-								onclick="openPopup(' . $order['order_id'] . ')">
-							Complete
-						</button>';
+				echo '<div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
+						<img src="images/' . $order['image'] . '" alt="Order Image">
+						<div>
+							<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+							<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>';
+	
+				if ($order['products']) {
+					echo '<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>';
 				}
 	
-				echo '
-					</div>
-				</div>';
+				if ($order['packages']) {
+					echo '<p><i class="fa fa-gift"></i> Packages: ' . $order['packages'] . '</p>';
+				}
+	
+				echo '<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
+	
+				if ($showCompleteButton) {
+					echo '<button type="button" class="complete-btn" onclick="openPopup(' . $order['order_id'] . ')">Complete</button>';
+				}
+	
+				echo '</div></div>';
 			}
 		} else {
-			echo '
-			<div class="no-orders">
-				<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-				<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
-			</div>';
+			echo '<div class="no-orders">
+					<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+					<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
+				  </div>';
 		}
 	}
+	
 	
         ?>
 

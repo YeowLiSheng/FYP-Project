@@ -16,7 +16,7 @@ echo "<!DOCTYPE html>
             text: 'You have been logged out successfully.',
             confirmButtonText: 'OK'
         }).then(() => {
-            window.location.href = 'homepage.php';
+            window.location.href = 'dashboard.php';
         });
     </script>
 </body>
