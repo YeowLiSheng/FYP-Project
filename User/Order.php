@@ -706,8 +706,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
             <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <a href="edit_profile.php"></a><li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <a href=""></a><li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+			<li class="profile-item">
+    <a href="edit_profile.php">
+        <i class="fa fa-edit"></i> Edit Profile
+    </a>
+</li>            
+<a href=""></a><li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
             <!-- My Orders -->
             <li><i class="fa fa-box"></i> My Orders</li>
         </ul>
