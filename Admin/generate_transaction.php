@@ -27,11 +27,11 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background for the header
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Transaction#', 20],
-    ['Customer Name', 40],
+    ['Transaction#', 30],
+    ['Customer Name', 50],
     ['Order ID', 35],
-    ['Transaction Amount', 25],
-    ['Date', 25] // Reduced width for more space to the right
+    ['Transaction Amount', 40],
+    ['Date', 40]
 ];
 
 // Adjust left margin
@@ -45,7 +45,6 @@ $pdf->Ln();
 // Fetch Data
 $pdf->SetFont('Arial', '', 10);
 $query = "SELECT *, user.user_name, payment.payment_date AS payment_datetime FROM payment JOIN user ON payment.user_id = user.user_id;";
-
 $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
@@ -57,20 +56,15 @@ if ($result->num_rows > 0) {
         $transaction_amount = 'RM ' . number_format($row['payment_amount'], 2);
         $payment_date = date('d/m/Y H:i:s', strtotime($row['payment_date']));
 
-        // Calculate line count based on the longest cell content
-        $cell_width = 50; // Width for each column
-        $cell_height = 6; // Height of each wrapped line
-        $line_count = ceil($pdf->GetStringWidth($transaction_id) / $cell_width); // Adjust line count for transaction ID
-
         // Set left margin for row data
         $pdf->SetX($left_margin);
 
-        // Output row data
-        $pdf->Cell(20, $cell_height * $line_count, $transaction_id, 1, 0, 'C');
-        $pdf->Cell(40, $cell_height * $line_count, $customer_name, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $order_id, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $transaction_amount, 1, 0, 'C');
-        $pdf->Cell(35, $cell_height * $line_count, $payment_date, 1, 1, 'C');
+        // Output row data (adjusting widths and alignment for each column)
+        $pdf->Cell(30, 6, $transaction_id, 1, 0, 'C');
+        $pdf->Cell(50, 6, $customer_name, 1, 0, 'L');  // Align customer name to the left
+        $pdf->Cell(35, 6, $order_id, 1, 0, 'C');
+        $pdf->Cell(40, 6, $transaction_amount, 1, 0, 'C');
+        $pdf->Cell(40, 6, $payment_date, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
