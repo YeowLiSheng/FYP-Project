@@ -2,58 +2,50 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-$item_id = $_GET['item_id'] ?? 0; // This can be either a product_id or package_id
-$item_type = $_GET['item_type'] ?? 'product'; // Indicates whether it's a product or package
 
-// Query to fetch item details (product or package)
-if ($item_type === 'product') {
-    $item_query = "SELECT product_name AS item_name, product_image AS item_image FROM product WHERE product_id = ?";
-} else {
-    $item_query = "SELECT package_name AS item_name, package_image AS item_image FROM product_package WHERE package_id = ?";
-}
+$product_id = $_GET['product_id'] ?? 0;
 
-$stmt = $connect->prepare($item_query);
-$stmt->bind_param("i", $item_id);
+// 查询产品信息
+$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
+$stmt = $connect->prepare($product_query);
+$stmt->bind_param("i", $product_id);
 $stmt->execute();
-$item = $stmt->get_result()->fetch_assoc();
+$product = $stmt->get_result()->fetch_assoc();
 
-// Query to fetch reviews for the item (product or package)
+// 查询产品评论
 $review_query = "
     SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
            u.user_name, u.user_image, r.admin_reply, r.status
-    FROM reviews r
-    INNER JOIN user u ON r.user_id = u.user_id
+    FROM reviews r 
+    INNER JOIN user u ON r.user_id = u.user_id 
     WHERE r.detail_id IN (
-        SELECT detail_id 
-        FROM order_details 
-        WHERE " . ($item_type === 'product' ? "product_id" : "package_id") . " = ?
+        SELECT detail_id FROM order_details WHERE product_id = ?
     )
     ORDER BY r.created_at DESC
 ";
-
 $stmt = $connect->prepare($review_query);
-$stmt->bind_param("i", $item_id);
+$stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews = $stmt->get_result();
 
-// Handle admin actions
+// 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-    $staff_id = $_SESSION['staff_id']; // Assuming session holds the staff ID
+    $staff_id = $_SESSION['staff_id']; // 使用 login.php 中的键名
+
 
     if (isset($_POST['reply'])) {
-        // Admin reply logic
         $admin_reply = trim($_POST['admin_reply']);
         $query = "UPDATE reviews 
                   SET admin_reply = ?, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = ? 
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("sii", $admin_reply, $staff_id, $review_id);
+        $stmt->execute();
         if (!$stmt->execute()) {
-            die("SQL execution failed: " . $stmt->error);
+            die("SQL 执行失败：" . $stmt->error);
         }
     } elseif (isset($_POST['toggle_status'])) {
-        // Toggle review status logic
         $new_status = $_POST['new_status'];
         $query = "UPDATE reviews 
                   SET status = ?, status_updated_at = CURRENT_TIMESTAMP 
@@ -62,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param("si", $new_status, $review_id);
         $stmt->execute();
     } elseif (isset($_POST['delete_reply'])) {
-        // Delete admin reply logic
         $query = "UPDATE reviews 
                   SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = NULL 
                   WHERE review_id = ?";
@@ -71,12 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
     }
 
-    // Refresh the page
-    echo "<script>window.location.href='adminreviewdetails.php?item_id=$item_id&item_type=$item_type';</script>";
+    echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
     exit();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -232,10 +221,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="main">
-<h1><ion-icon name="chatbubbles-outline"></ion-icon> Item Reviews</h1>
-    <div class="item-info">
-        <img src="../User/images/<?= htmlspecialchars($item['item_image']) ?>" alt="<?= htmlspecialchars($item['item_name']) ?>" class="item-image">
-        <h2><?= htmlspecialchars($item['item_name']) ?></h2>
+    <h1><ion-icon name="chatbubbles-outline"></ion-icon> Product Reviews</h1>
+    <div class="product-info">
+        <img src="../User/images/<?= htmlspecialchars($product['product_image']) ?>" alt="<?= htmlspecialchars($product['product_name']) ?>" class="product-image">
+        <h2><?= htmlspecialchars($product['product_name']) ?></h2>
     </div>
     <div class="card">
         <table class="table">
