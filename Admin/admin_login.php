@@ -9,6 +9,7 @@ if (isset($_POST["admin_login"])) {
     $id = $_POST["id"];
     $pw = $_POST["pw"];
 
+    // Query to find the admin by ID
     $find = "SELECT * FROM admin WHERE admin_id = '$id'";
     $result = mysqli_query($connect, $find);
     
@@ -26,6 +27,14 @@ if (isset($_POST["admin_login"])) {
         header("location: admin_login.php");
         exit();
     } else {
+        // Check if the admin is inactive (admin_status = 0)
+        if ($row['admin_status'] == 0) {
+            $_SESSION['login_text'] = "The admin '$id' is not active";
+            $_SESSION['login_icon'] = "error";
+            header("location: admin_login.php");
+            exit();
+        }
+
         // Check if the password is correct
         if ($pw != $row['admin_password']) {
             $_SESSION['login_text'] = "Incorrect password";
@@ -33,21 +42,13 @@ if (isset($_POST["admin_login"])) {
             header("location: admin_login.php");
             exit();
         } else {
-            // Check if the admin status is inactive
-            if ($row["admin_status"] == 2) {
-                $_SESSION["login_text"] = "The admin $id is inactive";
-                $_SESSION["login_icon"] = "error";
-                header("location: admin_login.php");
-                exit();
-            } else {
-                // Successful login
-                $_SESSION['staff_id'] = $row['staff_id'];
-                $_SESSION['admin_id'] = $id;
-                $_SESSION['login_text'] = "Successful login"; // Success message
-                $_SESSION['login_icon'] = "success"; // For success
-                header("location: admin_dashboard.php");
-                exit();
-            }
+            // Successful login
+            $_SESSION['staff_id'] = $row['staff_id'];
+            $_SESSION['admin_id'] = $id;
+            $_SESSION['login_text'] = "Successful login"; // Success message
+            $_SESSION['login_icon'] = "success"; // For success
+            header("location: admin_dashboard.php");
+            exit();
         }
     }
 }

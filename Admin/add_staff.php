@@ -174,8 +174,6 @@ include 'admin_sidebar.php';
 </body>
 </html>
 
-
-
 <?php
 // Database connection
 include 'dataconnection.php';
@@ -199,130 +197,98 @@ if (isset($_POST["addstaff"])) {
     // Check if adminId already exists
     $verify_id_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_id='$id'");
     if (mysqli_num_rows($verify_id_query) > 0) {
-        echo "<!DOCTYPE html>
-        <html>
-        <head>
-            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-        </head>
-        <body>
-            <script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Admin ID Taken',
-                    text: 'The Admin ID is already taken. Please choose another Admin ID.',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = 'add_staff.php';
-                });
-            </script>
-        </body>
-        </html>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Admin ID Taken',
+                text: 'The Admin ID is already taken. Please choose another Admin ID.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'add_staff.php';
+            });
+        </script>";
     } else {
         // Check if email already exists
         $verify_email_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_email='$email'");
         if (mysqli_num_rows($verify_email_query) > 0) {
-            echo "<!DOCTYPE html>
-            <html>
-            <head>
-                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-            </head>
-            <body>
-                <script>
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Email Already Exists',
-                        text: 'The email has already been used. Please choose another email.',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.href = 'add_staff.php';
-                    });
-                </script>
-            </body>
-            </html>";
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Email Already Exists',
+                    text: 'The email has already been used. Please choose another email.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'add_staff.php';
+                });
+            </script>";
         } else {
             // Check if contact number already exists
             $verify_contact_query = mysqli_query($connect, "SELECT * FROM admin WHERE admin_contact_number='$contact'");
             if (mysqli_num_rows($verify_contact_query) > 0) {
-                echo "<!DOCTYPE html>
-                <html>
-                <head>
-                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-                </head>
-                <body>
-                    <script>
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Contact Number In Use',
-                            text: 'The telephone number is already in use. Please choose another number.',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = 'add_staff.php';
-                        });
-                    </script>
-                </body>
-                </html>";
+                echo "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Contact Number In Use',
+                        text: 'The telephone number is already in use. Please choose another number.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'add_staff.php';
+                    });
+                </script>";
             } else if ($password != $confirmPassword) {
-                echo "<!DOCTYPE html>
-                <html>
-                <head>
-                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-                </head>
-                <body>
-                    <script>
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Password Mismatch',
-                            text: 'The password and confirm password must match.',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = 'add_staff.php';
-                        });
-                    </script>
-                </body>
-                </html>";
+                echo "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Password Mismatch',
+                        text: 'The password and confirm password must match.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'add_staff.php';
+                    });
+                </script>";
             } else {
-                // Insert data into the database without encryption
-                $insert_query = mysqli_query($connect, "INSERT INTO admin (admin_id, admin_name, admin_contact_number, admin_password, admin_email, admin_joined_date) 
-                VALUES ('$id', '$name', '$contact', '$password', '$email', '$currentDateTime')");
+                // Insert data into the database with admin_status set to 0
+                $insert_query = mysqli_query($connect, "INSERT INTO admin (admin_id, admin_name, admin_contact_number, admin_password, admin_email, admin_joined_date, admin_status) 
+                VALUES ('$id', '$name', '$contact', '$password', '$email', '$currentDateTime', 0)");
                 
                 if ($insert_query) {
-                    echo "<!DOCTYPE html>
-                    <html>
-                    <head>
-                        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-                    </head>
-                    <body>
-                        <script>
+                    // Update admin_status to 1
+                    $update_status_query = mysqli_query($connect, "UPDATE admin SET admin_status = 1 WHERE admin_id = '$id'");
+
+                    if ($update_status_query) {
+                        echo "<script>
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Registration Successful',
-                                text: 'The staff member has been successfully added.',
+                                text: 'The staff member has been successfully added and activated.',
                                 confirmButtonText: 'OK'
                             }).then(() => {
                                 window.location.href = 'view_admin.php';
                             });
-                        </script>
-                    </body>
-                    </html>";
-                } else {
-                    echo "<!DOCTYPE html>
-                    <html>
-                    <head>
-                        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-                    </head>
-                    <body>
-                        <script>
+                        </script>";
+                    } else {
+                        echo "<script>
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Registration Failed',
-                                text: 'An error occurred. Please try again.',
+                                title: 'Activation Failed',
+                                text: 'The staff member was added, but activation failed.',
                                 confirmButtonText: 'OK'
                             }).then(() => {
                                 window.location.href = 'add_staff.php';
                             });
-                        </script>
-                    </body>
-                    </html>";
+                        </script>";
+                    }
+                } else {
+                    echo "<script>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Failed',
+                            text: 'An error occurred. Please try again.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = 'add_staff.php';
+                        });
+                    </script>";
                 }
             }
         }
