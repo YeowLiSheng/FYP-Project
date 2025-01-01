@@ -10,87 +10,82 @@ include 'dataconnection.php';
 
 <style>
     .card {
-        padding: 20px;
-        max-width: 1200px;
-        margin: 20px auto;
-        background-color: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        max-width: 1425px;
+        margin: 20px auto; /* Increased margin for better spacing */
+        background-color: #f9f9f9; /* Light background for card */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     }
 
     .input {
-        width: 100%;
-        max-width: 600px;
-        height: 40px;
-        border-radius: 8px;
-        border: 1px solid #dcdde1;
+        width: 800px; /* Keep the search bar smaller */
+        height: 50px;
+        border-radius: 10px;
+        border: 1px solid #ccc; /* Border color for input */
+    }
+
+    input[type=text] {
+        background-color: white;
         padding-left: 40px;
-        font-size: 14px;
-        background-color: #fff;
+        font-size: 14px; /* Slightly smaller font */
+    }
+
+    tbody tr {
+        cursor: pointer;
+        transition: background-color 0.3s; /* Smooth transition for hover */
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1; /* Highlight row on hover */
     }
 
     .top {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 15px;
+        gap: 20px; /* Space between search bar and export button */
     }
 
     .searchbar {
         position: relative;
-        flex: 1;
     }
 
-    .searchbar .magni {
+    .magni {
         position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        left: 10px;
-        font-size: 18px;
-        color: #7f8c8d;
-    }
-
-    tbody tr {
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    tbody tr:hover {
-        background-color: #f9f9f9;
+        top: 17%;
+        font-size: 20px;
+        left: 10px; /* Adjusted the position of the icon */
+        color: #333; /* Slightly darker color */
     }
 
     .table {
-        width: 100%;
-        border-collapse: collapse;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        margin-top: 15px;
+        width: 100%; /* Ensure table takes full width */
+        font-size: 14px; /* Adjusted font size for readability */
+        margin-top: 20px; /* Space between card and table */
     }
 
     .table thead th {
-        background-color: #3498db;
-        color: #fff;
-        padding: 15px;
-        font-size: 14px;
+        background-color: #4CAF50; /* Green background for table headers */
+        color: white;
+        padding: 12px 15px; /* Added more padding for headers */
+        font-size: 16px; /* Larger font for headers */
     }
 
     .table th, .table td {
-        padding: 12px;
-        text-align: center;
-        border: 1px solid #dcdde1;
+        padding: 12px 15px; /* Added padding for cells */
+        vertical-align: middle;
     }
 
     .btn-group {
-        display: flex;
-        gap: 10px;
-    }
+            display: flex;
+            gap: 10px;
+        }
 
+        
     .dropdown-content {
         display: none;
         position: absolute;
-        background-color: #fff;
+        background-color: #f9f9f9;
         min-width: 160px;
         box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
         z-index: 1;
@@ -98,22 +93,20 @@ include 'dataconnection.php';
     }
 
     .dropdown-content a {
-        color: #2c3e50;
+        color: black;
         padding: 12px 16px;
         text-decoration: none;
         display: block;
-        transition: background-color 0.3s ease;
     }
 
     .dropdown-content a:hover {
-        background-color: #ecf0f1;
+        background-color: #f1f1f1;
     }
 
     .show-dropdown .dropdown-content {
         display: block;
     }
 </style>
-
 
 <body>
     <div class="main p-3">
