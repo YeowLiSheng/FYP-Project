@@ -115,14 +115,31 @@ LIMIT 5";
 $recentOrders_result = $connect->query($recentOrders_query);
 $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
-
-// Fetch category-wise sales data
 $categorySales_query = "
-    SELECT c.category_name, SUM(od.quantity) AS total_quantity
-    FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
-    JOIN category c ON p.category_id = c.category_id
-    GROUP BY c.category_id";
+    SELECT 
+        c.category_name,
+        SUM(od.quantity) AS total_quantity
+    FROM 
+        order_details od
+    JOIN 
+        product p ON od.product_id = p.product_id
+    JOIN 
+        category c ON p.category_id = c.category_id
+    GROUP BY 
+        c.category_id
+
+    UNION ALL
+
+    SELECT 
+        'Package' AS category_name,
+        SUM(od.quantity) AS total_quantity
+    FROM 
+        order_details od
+    JOIN 
+        product_package pp ON od.product_id = pp.package_id
+    GROUP BY 
+        pp.package_id";
+
 $categorySales_result = $connect->query($categorySales_query);
 
 // Process data for the pie chart
@@ -584,34 +601,24 @@ $categorySalesJson = json_encode($categorySalesData);
 google.charts.setOnLoadCallback(drawCategoryChart);
 
 function drawCategoryChart() {
-    // Parse PHP data into JavaScript
     var categorySalesData = google.visualization.arrayToDataTable([
         ['Category', 'Quantity', { role: 'annotation' }],
         <?php
-        // Ensure data is correctly formatted for JavaScript
         foreach ($categorySalesData as $category) {
             echo "['" . addslashes($category['category']) . "', " . $category['quantity'] . ", '" . $category['quantity'] . "'],";
         }
         ?>
     ]);
 
-    // Set chart options
     var categoryChartOptions = {
         title: 'Sales by Category',
-        titleTextStyle: {
-            fontSize: 18, // Increase font size
-            bold: true, // Make it bold
-            color: '#333' // Darker title color
-        },
-        pieHole: 0.4, // Donut chart
-        chartArea: { width: '85%', height: '75%' }, // Adjust chart area
-        colors: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d', '#17a2b8', '#343a40', '#ff7f0e', '#2ca02c', '#1f77b4'], // Custom color scheme
-        legend: { position: 'right', textStyle: { fontSize: 14 } }, // Position legend on the right
-        pieSliceTextStyle: { fontSize: 12 }, // Size of text inside slices
-        annotations: { style: 'percentage' } // Display percentages on the chart
+        pieHole: 0.4,
+        chartArea: { width: '85%', height: '75%' },
+        colors: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#6c757d', '#17a2b8', '#343a40', '#ff7f0e', '#2ca02c', '#1f77b4'],
+        legend: { position: 'right', textStyle: { fontSize: 14 } },
+        pieSliceTextStyle: { fontSize: 12 }
     };
 
-    // Create and draw the chart
     var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
     categoryPieChart.draw(categorySalesData, categoryChartOptions);
 }
