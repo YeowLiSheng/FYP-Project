@@ -103,19 +103,14 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$item_id = intval($_POST['item_id']); // 可以是 product_id 或 package_id
-    $item_type = $_POST['item_type']; // 'product' 或 'package'
+    $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
-    // 根据 item_type 查询 detail_id
-    $detail_query = $conn->prepare("
-        SELECT detail_id 
-        FROM order_details 
-        WHERE " . ($item_type === 'product' ? "product_id" : "package_id") . " = ? AND order_id = ?
-    ");
+    // 获取 detail_id
+    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
     $detail_query->bind_param("ii", $product_id, $order_id);
     $detail_query->execute();
     $detail_result = $detail_query->get_result();
@@ -910,16 +905,15 @@ textarea {
             <!-- 产品选择 -->
 			<label for="itemSelect">Select Item:</label>
 <div class="item-select-container">
-    <select id="itemSelect" name="item_id" required>
-        <option value="" disabled selected>Select an item</option>
-        <?php foreach ($order_details as $detail) { ?>
-            <option value="<?= $detail['product_id'] ?: $detail['package_id'] ?>" 
-                    data-type="<?= $detail['product_id'] ? 'product' : 'package' ?>"
-                    data-img="<?= $detail['item_image'] ?>">
-                <?= $detail['item_name'] ?>
-            </option>
-        <?php } ?>
-    </select>
+<select id="productSelect" name="detail_id" required>
+    <option value="" disabled selected>Select a product</option>
+    <?php foreach ($order_details as $detail) { ?>
+        <option value="<?= $detail['detail_id'] ?>" 
+                data-img="images/<?= $detail['item_image'] ?>">
+            <?= $detail['item_name'] ?>
+        </option>
+    <?php } ?>
+</select>
     <input type="hidden" id="itemType" name="item_type" />
     <div class="selected-item-preview" id="itemPreview">
         <img id="itemImage" src="" alt="Item Image" style="display: none;" />
