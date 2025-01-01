@@ -84,8 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="admin_styles.css">
     <style>
         .main { padding: 20px; }
-        .product-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .product-image, .user-image, .review-image {
+        .item-info { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .item-image, .user-image, .review-image {
             width: auto;
             height: 100px;
             max-width: 100px;
