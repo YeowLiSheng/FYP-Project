@@ -314,7 +314,12 @@ $reviewresult = $connect->query($review);
                         <optgroup label="Category">
                             <option value="">No categories available</option>
                         </optgroup>
-                    <?php endif;?>    
+                    <?php endif;?>  
+                    
+                    <!-- Package Options -->
+    <optgroup label="Package">
+        <option value="package">Package</option>
+    </optgroup>
                 </select>
                 <label>Sort by:</label>
                 <select id="sort-order"onchange="sortTable()">
