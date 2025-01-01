@@ -103,28 +103,38 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $product_id = intval($_POST['product_id']);
+    $item_id = intval($_POST['item_id']);
+    $item_type = $_POST['item_type'];
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
     // 获取 detail_id
-    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
-    $detail_query->bind_param("ii", $product_id, $order_id);
-    $detail_query->execute();
-    $detail_result = $detail_query->get_result();
+    $detail_query = null;
+    if ($item_type === 'product') {
+        $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
+    } else if ($item_type === 'package') {
+        $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE package_id = ? AND order_id = ?");
+    }
 
-    if ($detail_result->num_rows === 0) {
+    if ($detail_query) {
+        $detail_query->bind_param("ii", $item_id, $order_id);
+        $detail_query->execute();
+        $detail_result = $detail_query->get_result();
+
+        if ($detail_result->num_rows === 0) {
+            echo "error";
+            exit;
+        }
+
+        $detail = $detail_result->fetch_assoc();
+        $detail_id = $detail['detail_id'];
+    } else {
         echo "error";
         exit;
     }
 
-    $detail = $detail_result->fetch_assoc();
-    $detail_id = $detail['detail_id'];
-
-
-	
     // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
@@ -140,31 +150,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 检查是否存在重复评论
-$check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
-$check_stmt->bind_param("ii", $detail_id, $user_id);
-$check_stmt->execute();
-$check_result = $check_stmt->get_result();
+    $check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
+    $check_stmt->bind_param("ii", $detail_id, $user_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
 
-if ($check_result->num_rows > 0) {
-    echo "duplicate"; // 返回重复状态
+    if ($check_result->num_rows > 0) {
+        echo "duplicate"; // 返回重复状态
+        exit;
+    }
+
+    // 插入评论数据
+    $stmt = $conn->prepare("
+        INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
+
+    if ($stmt->execute()) {
+        echo "success"; // 向前端返回成功状态
+    } else {
+        echo "error"; // 向前端返回错误状态
+    }
     exit;
 }
-
-// 插入评论数据
-$stmt = $conn->prepare("
-    INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
-    VALUES (?, ?, ?, ?, ?)
-");
-$stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
-
-if ($stmt->execute()) {
-    echo "success"; // 向前端返回成功状态
-} else {
-    echo "error"; // 向前端返回错误状态
-}
-    exit;
-}
-
 
 
 ?>
@@ -402,19 +411,19 @@ if ($stmt->execute()) {
     text-align: center;
 }
 
-.product-select-container {
+.item-select-container {
     position: relative;
     margin-bottom: 20px;
 }
 
-.selected-product-preview {
+.selected-item-preview {
     display: flex;
     flex-direction: column; /* 垂直对齐 */
     align-items: center;
     margin-top: 10px;
 }
 
-.selected-product-preview img {
+.selected-item-preview img {
     width: 100px; /* 调整图片大小 */
     height: 100px;
     border-radius: 10px;
@@ -708,11 +717,7 @@ textarea {
 			<ul class="main-menu-m">
 				<li>
 					<a href="dashboard.php">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
+
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
@@ -903,22 +908,24 @@ textarea {
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
             <!-- 产品选择 -->
-            <label for="productSelect">Select Product:</label>
-            <div class="product-select-container">
-                <select id="productSelect" name="product_id" required>
-                    <option value="" disabled selected>Select a product</option>
-                    <?php foreach ($order_details as $detail) { ?>
-                        <option value="<?= $detail['product_id'] ?>" 
-                                data-img="images/<?= $detail['product_image'] ?>">
-                            <?= $detail['product_name'] ?>
-                        </option>
-                    <?php } ?>
-                </select>
-                <div class="selected-product-preview" id="productPreview">
-                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
-                    <span id="productName" style="display: block;"></span>
-                </div>
-            </div>
+			<label for="itemSelect">Select Item:</label>
+<div class="item-select-container">
+    <select id="itemSelect" name="item_id" required>
+        <option value="" disabled selected>Select an item</option>
+        <?php foreach ($order_details as $detail) { ?>
+            <option value="<?= $detail['product_id'] ?? $detail['package_id'] ?>" 
+                    data-type="<?= $detail['product_id'] ? 'product' : 'package' ?>"
+                    data-img="<?= $detail['item_image'] ?>">
+                <?= $detail['item_name'] ?>
+            </option>
+        <?php } ?>
+    </select>
+    <input type="hidden" name="item_type" id="itemType">
+    <div class="selected-item-preview" id="itemPreview">
+        <img id="itemImage" src="" alt="Item Image" style="display: none;" />
+        <span id="itemName" style="display: block;"></span>
+    </div>
+</div>
 
             <!-- 评分 -->
             <label for="rating">Rating:</label>
@@ -1391,11 +1398,11 @@ function openPopup() {
 }
 
 // 关闭弹窗
-function closePopup() {
+function closePopup() { 
     document.getElementById("ratePopup").style.display = "none";
     document.getElementById("rateForm").reset(); // 重置表单
     resetStars();   // 重置评分星星
-    resetProductPreview(); // 重置产品预览
+    resetItemPreview(); // 重置item预览
 }
 
 // 禁用重复提交
@@ -1450,29 +1457,32 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
-// 产品预览逻辑
-const productSelect = document.getElementById("productSelect");
-const productImage = document.getElementById("productImage");
-const productName = document.getElementById("productName");
+const itemSelect = document.getElementById("itemSelect");
+const itemTypeInput = document.getElementById("itemType");
+const itemImage = document.getElementById("itemImage");
+const itemName = document.getElementById("itemName");
 
-productSelect.addEventListener("change", function () {
-    const selectedOption = productSelect.options[productSelect.selectedIndex];
+itemSelect.addEventListener("change", function () {
+    const selectedOption = itemSelect.options[itemSelect.selectedIndex];
     const imgSrc = selectedOption.getAttribute("data-img");
     const name = selectedOption.textContent;
+    const type = selectedOption.getAttribute("data-type");
+
+    itemTypeInput.value = type;
 
     if (imgSrc) {
-        productImage.src = imgSrc;
-        productImage.style.display = "block";
+        itemImage.src = imgSrc;
+        itemImage.style.display = "block";
     } else {
-        productImage.style.display = "none";
+        itemImage.style.display = "none";
     }
 
-    productName.textContent = name;
+    itemName.textContent = name;
 });
 
-function resetProductPreview() {
-    productImage.style.display = "none";
-    productName.textContent = "";
+function resetItemPreview() {
+    itemImage.style.display = "none";
+    itemName.textContent = "";
 }
 
 
