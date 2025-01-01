@@ -103,14 +103,11 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$item_id = intval($_POST['item_id']); // item_id 可以是 product_id 或 package_id
-    $item_type = $_POST['item_type']; // 'product' 或 'package'
+    $product_id = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
-
-	$column = $item_type === 'product' ? 'product_id' : 'package_id';
 
     // 获取 detail_id
     $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
@@ -405,19 +402,19 @@ if ($stmt->execute()) {
     text-align: center;
 }
 
-.item-select-container {
+.product-select-container {
     position: relative;
     margin-bottom: 20px;
 }
 
-.selected-item-preview {
+.selected-product-preview {
     display: flex;
     flex-direction: column; /* 垂直对齐 */
     align-items: center;
     margin-top: 10px;
 }
 
-.selected-item-preview img {
+.selected-product-preview img {
     width: 100px; /* 调整图片大小 */
     height: 100px;
     border-radius: 10px;
@@ -903,24 +900,23 @@ textarea {
 <?php } ?>
 <div id="ratePopup" class="popup-container" style="display: none;">
     <div class="popup-content">
-        <h2>Rate Item</h2>
+        <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <!-- 项目选择 -->
-            <label for="itemSelect">Select Item:</label>
-            <div class="item-select-container">
-                <select id="itemSelect" name="item_id" required>
-                    <option value="" disabled selected>Select an item</option>
+            <!-- 产品选择 -->
+            <label for="productSelect">Select Product:</label>
+            <div class="product-select-container">
+                <select id="productSelect" name="product_id" required>
+                    <option value="" disabled selected>Select a product</option>
                     <?php foreach ($order_details as $detail) { ?>
-                        <option value="<?= isset($detail['product_id']) ? $detail['product_id'] : $detail['package_id'] ?>"
-                                data-type="<?= isset($detail['product_id']) ? 'product' : 'package' ?>"
-                                data-img="images/<?= $detail['item_image'] ?>">
-                            <?= $detail['item_name'] ?>
+                        <option value="<?= $detail['product_id'] ?>" 
+                                data-img="images/<?= $detail['product_image'] ?>">
+                            <?= $detail['product_name'] ?>
                         </option>
                     <?php } ?>
                 </select>
-                <div class="selected-item-preview" id="itemPreview">
-                    <img id="itemImage" src="" alt="Item Image" style="display: none;" />
-                    <span id="itemName" style="display: block;"></span>
+                <div class="selected-product-preview" id="productPreview">
+                    <img id="productImage" src="" alt="Product Image" style="display: none;" />
+                    <span id="productName" style="display: block;"></span>
                 </div>
             </div>
 
@@ -940,9 +936,6 @@ textarea {
             <!-- 上传图片 -->
             <label for="image">Upload Image (optional):</label>
             <input type="file" id="image" name="image" accept="image/*">
-
-            <!-- 项目类型 -->
-            <input type="hidden" id="itemType" name="item_type" value="">
 
             <!-- 按钮 -->
             <button type="submit" class="submit-button">Submit</button>
