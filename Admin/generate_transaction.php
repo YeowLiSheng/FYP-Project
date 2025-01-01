@@ -61,7 +61,7 @@ if ($result->num_rows > 0) {
 
         // Output row data (adjusting widths and alignment for each column)
         $pdf->Cell(30, 6, $transaction_id, 1, 0, 'C');
-        $pdf->Cell(45, 6, $customer_name, 1, 0, 'L');  // Align customer name to the left
+        $pdf->Cell(45, 6, $customer_name, 1, 0, 'C');  // Align customer name to the left
         $pdf->Cell(35, 6, $order_id, 1, 0, 'C');
         $pdf->Cell(45, 6, $transaction_amount, 1, 0, 'C');
         $pdf->Cell(40, 6, $payment_date, 1, 1, 'C');
