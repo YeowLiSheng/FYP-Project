@@ -30,7 +30,7 @@ $header = [
     ['Transaction#', 30],
     ['Customer Name', 50],
     ['Order ID', 35],
-    ['Transaction Amount', 40],
+    ['Transaction Amount', 50],
     ['Date', 40]
 ];
 
@@ -63,7 +63,7 @@ if ($result->num_rows > 0) {
         $pdf->Cell(30, 6, $transaction_id, 1, 0, 'C');
         $pdf->Cell(50, 6, $customer_name, 1, 0, 'L');  // Align customer name to the left
         $pdf->Cell(35, 6, $order_id, 1, 0, 'C');
-        $pdf->Cell(40, 6, $transaction_amount, 1, 0, 'C');
+        $pdf->Cell(50, 6, $transaction_amount, 1, 0, 'C');
         $pdf->Cell(40, 6, $payment_date, 1, 1, 'C');
     }
 } else {
