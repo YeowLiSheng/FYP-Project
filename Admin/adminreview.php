@@ -456,15 +456,28 @@ function filterByDate() {
     });
 }
 
-        function filterTable() { 
-    const selectedCategory = document.getElementById("filter-status").value;
+      
+            function filterTable() {
+    const selectedValue = document.getElementById("filter-status").value;
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const productCategory = row.cells[2].textContent.trim(); // 获取产品类别
-        row.style.display = (productCategory === selectedCategory || selectedCategory === "") ? "" : "none";
+        const productCategory = row.cells[2].textContent.trim(); // 假设类别在第3列
+        const isPackage = row.classList.contains("package"); // 检查行是否属于package
+
+        if (selectedValue === "") {
+            // 显示所有行
+            row.style.display = "";
+        } else if (selectedValue === "package") {
+            // 仅显示package行
+            row.style.display = isPackage ? "" : "none";
+        } else {
+            // 根据类别过滤
+            row.style.display = (productCategory === selectedValue) ? "" : "none";
+        }
     });
 }
+
 
 function sortTable() {
     const rows = Array.from(document.querySelectorAll("#table-body tr"));
