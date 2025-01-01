@@ -8,6 +8,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Handle Add Package
+// Handle Add Package
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package'])) {
     $packageName = mysqli_real_escape_string($connect, $_POST['package_name']);
     $packageDescription = mysqli_real_escape_string($connect, $_POST['package_description']);
@@ -15,9 +16,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_package'])) {
     $product2 = mysqli_real_escape_string($connect, $_POST['product2']);
     $product3 = !empty($_POST['product3']) ? mysqli_real_escape_string($connect, $_POST['product3']) : null;
     $packagePrice = mysqli_real_escape_string($connect, $_POST['package_price']);
+    $packageStock = mysqli_real_escape_string($connect, $_POST['package_stock']);
 
-    $query = "INSERT INTO product_package (package_name, package_description, product1_id, product2_id, product3_id, package_price)
-              VALUES ('$packageName', '$packageDescription', '$product1', '$product2', " . ($product3 ? "'$product3'" : "NULL") . ", '$packagePrice')";
+    // Handle file upload
+    if (isset($_FILES['package_image']) && $_FILES['package_image']['error'] === UPLOAD_ERR_OK) {
+        $imageTmpPath = $_FILES['package_image']['tmp_name'];
+        $imageName = basename($_FILES['package_image']['name']);
+        $uploadDir = '../User/images/';
+        $destination = $uploadDir . $imageName;
+
+        if (move_uploaded_file($imageTmpPath, $destination)) {
+            $query = "INSERT INTO product_package (package_name, package_description, product1_id, product2_id, product3_id, package_price, package_image, package_stock, package_status)
+                      VALUES ('$packageName', '$packageDescription', '$product1', '$product2', " . ($product3 ? "'$product3'" : "NULL") . ", '$packagePrice', '$imageName', '$packageStock', 1)";
+        } else {
+            echo "Error: Could not upload the image.";
+            exit();
+        }
+    } else {
+        echo "Error: No image uploaded or upload failed.";
+        exit();
+    }
+
+    if (!mysqli_query($connect, $query)) {
+        echo "Error: " . mysqli_error($connect);
+    }
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+// Handle Edit Package
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
+    $packageId = mysqli_real_escape_string($connect, $_POST['package_id']);
+    $packageName = mysqli_real_escape_string($connect, $_POST['package_name']);
+    $packageDescription = mysqli_real_escape_string($connect, $_POST['package_description']);
+    $product1 = mysqli_real_escape_string($connect, $_POST['product1']);
+    $product2 = mysqli_real_escape_string($connect, $_POST['product2']);
+    $product3 = !empty($_POST['product3']) ? mysqli_real_escape_string($connect, $_POST['product3']) : null;
+    $packagePrice = mysqli_real_escape_string($connect, $_POST['package_price']);
+    $packageStock = mysqli_real_escape_string($connect, $_POST['package_stock']);
+    $packageImage = '../User/images/' . htmlspecialchars($package['package_image']);
+
+
+    // Handle file upload
+    if (isset($_FILES['new_package_image']) && $_FILES['new_package_image']['error'] === UPLOAD_ERR_OK) {
+        $imageTmpPath = $_FILES['new_package_image']['tmp_name'];
+        $imageName = basename($_FILES['new_package_image']['name']);
+        $uploadDir = '../User/images/';
+        $destination = $uploadDir . $imageName;
+
+        if (move_uploaded_file($imageTmpPath, $destination)) {
+            $packageImage = ", package_image = '$imageName'";
+        } else {
+            echo "Error: Could not upload the image.";
+            exit();
+        }
+    }
+
+    $query = "UPDATE product_package SET 
+              package_name = '$packageName',
+              package_description = '$packageDescription',
+              product1_id = '$product1',
+              product2_id = '$product2',
+              product3_id = " . ($product3 ? "'$product3'" : "NULL") . ",
+              package_price = '$packagePrice',
+              package_stock = '$packageStock'
+              $packageImage
+              WHERE package_id = '$packageId'";
 
     if (!mysqli_query($connect, $query)) {
         echo "Error: " . mysqli_error($connect);
@@ -45,31 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-// Handle Edit Package
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
-    $packageId = mysqli_real_escape_string($connect, $_POST['package_id']);
-    $packageName = mysqli_real_escape_string($connect, $_POST['package_name']);
-    $packageDescription = mysqli_real_escape_string($connect, $_POST['package_description']);
-    $product1 = mysqli_real_escape_string($connect, $_POST['product1']);
-    $product2 = mysqli_real_escape_string($connect, $_POST['product2']);
-    $product3 = !empty($_POST['product3']) ? mysqli_real_escape_string($connect, $_POST['product3']) : null;
-    $packagePrice = mysqli_real_escape_string($connect, $_POST['package_price']);
 
-    $query = "UPDATE product_package SET 
-              package_name = '$packageName',
-              package_description = '$packageDescription',
-              product1_id = '$product1',
-              product2_id = '$product2',
-              product3_id = " . ($product3 ? "'$product3'" : "NULL") . ",
-              package_price = '$packagePrice'
-              WHERE package_id = '$packageId'";
-
-    if (!mysqli_query($connect, $query)) {
-        echo "Error: " . mysqli_error($connect);
-    }
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-}
 ?>
 
 <body>
@@ -175,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
                                 
                                 <label>Package Image</label>
                                 <div>
-                                    <img id="current_package_image" src="" alt="Current Image" style="width: 100px; height: 100px;">
+                                    <img id="current_package_image" src="../User/images/default-placeholder.png" alt="Current Image" style="width: 100px; height: 100px;">
                                     <input type="file" name="new_package_image" class="form-control" accept="image/*">
                                 </div>
                                 
@@ -312,7 +352,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_package'])) {
         document.getElementById("edit_product3").value = product3;
         document.getElementById("edit_package_price").value = packagePrice;
         document.getElementById("edit_package_stock").value = packageStock;
-        document.getElementById("current_package_image").src = packageImage;
+        // Update the image source
+        const imageElement = document.getElementById("current_package_image");
+        const imagePath = "../User/images/" + packageImage; // Adjust path as per your directory structure
+        imageElement.src = imagePath;
+        imageElement.alt = packageName; // Set alt text for accessibility
         new bootstrap.Modal(document.getElementById("editPackageModal")).show();
     }
 </script>
