@@ -57,7 +57,10 @@ if ($result->num_rows > 0) {
         $transaction_amount = 'RM ' . number_format($row['payment_amount'], 2);
         $payment_date = date('d/m/Y H:i:s', strtotime($row['payment_date']));
 
-
+        // Handle word wrapping for the 'Shipped To' column
+        $cell_width = 50; // Width of 'Shipped To'
+        $cell_height = 6; // Height of each wrapped line
+        $line_count = ceil($pdf->GetStringWidth($shipped_to) / $cell_width);
 
         // Set left margin for row data
         $pdf->SetX($left_margin);
