@@ -140,6 +140,7 @@ body {
     margin: 0;
 	background :white;
     padding: 20px;
+	min-height: 100vh; /* Ensure the page height is 100% of the viewport */
 }
 
 .edit-profile-form {

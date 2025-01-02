@@ -342,6 +342,26 @@ body {
         }
 
 
+
+        /*edit address button*/
+        .edit-button {
+            text-decoration: none; /* Remove underline from the link */
+        }
+
+        .edit-button button {
+            background-color: #28a745; /* Bootstrap green color */
+            color: white; /* Text color */
+            border: none; /* No border */
+            padding: 5px 10px; /* Smaller padding for a smaller button */
+            cursor: pointer; /* Pointer cursor */
+            border-radius: 3px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth transition */
+            font-size: 14px; /* Smaller font size */
+        }
+
+        .edit-button button:hover {
+            background-color: #218838; /* Darker shade of green on hover */
+        }
     </style>
 </head>
 <body>
@@ -370,18 +390,8 @@ body {
         </div>
     </div>
 
-    <!-- Password -->
+   
 
-<div class="form-group" style="position: relative;">
-    <label for="admin_password">Password</label>
-    <input type="password" id="admin_password" name="admin_password"
-           value="<?php echo htmlspecialchars($admin_row['admin_password']); ?>"
-           placeholder="Enter new password if you want to change it"
-           style="padding-right: 40px;">
-    <span class="toggle-password" onclick="togglePasswordVisibility()" title="Show/Hide Password">
-        &#128065;
-    </span>
-</div>
 
 
     <!-- Contact Number -->
@@ -398,6 +408,15 @@ body {
             <option value="male" <?php if ($admin_row['admin_gender'] === 'male') echo 'selected'; ?>>Male</option>
             <option value="female" <?php if ($admin_row['admin_gender'] === 'female') echo 'selected'; ?>>Female</option>
         </select>
+    </div>
+
+
+          <!-- Password -->
+  <div class="form-group">
+        <label for="password">Password</label>
+        <a href="verify_password.php" class="edit-button">
+            <button type="button">Change Password</button>
+        </a>
     </div>
 
     <!-- Submit Button -->
