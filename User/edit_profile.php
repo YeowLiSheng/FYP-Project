@@ -644,19 +644,7 @@ input[type="password"]:focus + .eye-icon {
         <small class="error-message" id="emailError" style="display: none; color: red;">Please enter a valid email (must include '@' and '.').</small>
     </div>
 
-    <!-- Password -->
-	<div class="form-group">
-    <label for="password">Password</label>
-    <div class="password-wrapper">
-        <input type="password" id="password" name="password" value="<?php echo htmlspecialchars($row['user_password']); ?>" required oninput="validatePassword()">
-        <span class="eye-icon" onclick="togglePasswordVisibility()">
-            <i class="fas fa-eye"></i> <!-- Default eye icon -->
-        </span>
-        <small class="error-message" id="passwordError" style="display: none; color: red;">
-            Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.
-        </small>
-    </div>
-</div>
+ 
 
     <!-- Contact Number -->
     <div class="form-group">
@@ -678,7 +666,6 @@ input[type="password"]:focus + .eye-icon {
     <!-- Address -->
     <div class="form-group">
         <label for="address">Address</label>
-
         <?php
         $user_id = $_SESSION['id'];
         $address_result = mysqli_query($connect, "SELECT * FROM user_address WHERE user_id ='$user_id'");
@@ -689,16 +676,22 @@ input[type="password"]:focus + .eye-icon {
             $user_address = htmlspecialchars($address_data['address'] . ", " . $address_data['city'] . ", " . $address_data['state'] . ", " . $address_data['postcode']);
         }
         ?>
-        
         <input type="text" id="address" name="address" value="<?php echo $user_address; ?>" readonly>
 
         <!-- Buttons to Add/Edit Address -->
         <a href="add_address.php?id=<?php echo $user_id; ?>" class="edit-button">
             <button type="button">Add Address</button>
         </a>
-
         <a href="change_address.php?id=<?php echo $user_id; ?>" class="edit-button">
             <button type="button">Edit Address</button>
+        </a>
+    </div>
+
+	   <!-- Password -->
+	   <div class="form-group">
+        <label for="password">Password</label>
+        <a href="verify_password.php" class="edit-button">
+            <button type="button">Change Password</button>
         </a>
     </div>
 
