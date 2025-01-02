@@ -2,44 +2,42 @@
 session_start(); // Start the session
 
 // Include the database connection file
-include("dataconnection.php");
+include("dataconnection.php"); 
 
-// Check if the user is logged in
+// Check if the user is logged i
 if (!isset($_SESSION['id'])) {
     header("Location: login.php"); // Redirect to login page if not logged in
     exit;
 }
 
 // Check if the database connection exists
-if (!isset($connect) || !$connect) {
+if (!isset($connect) || !$connect) { // Changed $connect to $conn
     die("Database connection failed.");
 }
 
 // Retrieve the user information
 $user_id = $_SESSION['id'];
-$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'");
+$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
 
 // Check if the query was successful and fetch user data
 if ($result && mysqli_num_rows($result) > 0) {
-    $user_data = mysqli_fetch_assoc($result);
-    $user_name = htmlspecialchars($user_data["user_name"]); // Get the user name
-    $user_email = $user_data['user_email'];
-    $user_contact = $user_data['user_contact_number'];
-    $user_dob = $user_data['user_date_of_birth'];
-    $user_image = $user_data['user_image'];
+	$user_data = mysqli_fetch_assoc($result);
+	$user_name = htmlspecialchars($user_data["user_name"]); // Get the user name
+	 $user_email = $user_data['user_email'];
 } else {
-    echo "User not found.";
-    exit;
+	echo "User not found.";
+	exit;
 }
 
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items with stock information
 $cart_items_query = "
     SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
-           sc.color, sc.size,    
-           SUM(sc.qty) AS total_qty, 
+		   sc.color, sc.size,    
+		   SUM(sc.qty) AS total_qty, 
            SUM(sc.qty * p.product_price) AS total_price, 
            MAX(sc.final_total_price) AS final_total_price, 
            MAX(sc.voucher_applied) AS voucher_applied
@@ -66,17 +64,17 @@ if ($distinct_products_result) {
     $distinct_count = $row['distinct_count'] ?? 0;
 }
 
+
+
 // Handle form submission
 if (isset($_POST['submitbtn'])) {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $contact = $_POST['contact'];
     $dob = $_POST['dob'];
-    $gender = $_POST['gender'];
-    $address = $_POST['address']; // New input for address
 
     // Use the new password if provided; otherwise, keep the old password
-    $password = !empty($_POST['password']) ? $_POST['password'] : $user_data['user_password'];
+    $password = !empty($_POST['password']) ? $_POST['password'] : $row['user_password'];
 
     // Handle profile image upload
     if (!empty($_FILES['profile_image']['name'])) {
@@ -87,59 +85,40 @@ if (isset($_POST['submitbtn'])) {
         if (move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)) {
             $image = $target_file; // Set the new image path
         } else {
-            $image = $user_image; // Keep the old image if upload fails
+            $image = $row['user_image']; // Keep the old image if upload fails
         }
     } else {
-        $image = $user_image; // Keep the old image if no new image is uploaded
+        $image = $row['user_image']; // Keep the old image if no new image is uploaded
     }
 
     // Update the user data in the database (including the new or existing password)
-    $update_query = "UPDATE user SET 
-                        user_name='$name', 
-                        user_email='$email', 
-                        user_password='$password', 
-                        user_contact_number='$contact', 
-                        user_date_of_birth='$dob', 
-                        user_gender='$gender', 
-                        user_image='$image' 
-                    WHERE user_id='$user_id'";
-
-    // Check if update was successful
+    $update_query = "UPDATE user SET user_name='$name', user_email='$email', user_password='$password', user_contact_number='$contact', user_date_of_birth='$dob', user_image='$image' WHERE user_id='$user_id'";
+    
     if (mysqli_query($connect, $update_query)) {
-        // Update address if user has added it
-        $address_query = "INSERT INTO user_address (user_id, address) 
-                          VALUES ('$user_id', '$address') 
-                          ON DUPLICATE KEY UPDATE address = '$address'";
-
-        if (mysqli_query($connect, $address_query)) {
-            echo "<!DOCTYPE html>
-            <html>
-            <head>
-                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-            </head>
-            <body>
-                <script>
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Record Saved',
-                        text: 'Your profile has been saved successfully.',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.href = 'edit_profile.php';
-                    });
-                </script>
-            </body>
-            </html>";
-        } else {
-            echo "Error updating address: " . mysqli_error($connect);
-        }
-    } else {
-        echo "Error updating profile: " . mysqli_error($connect);
-    }
+		echo "<!DOCTYPE html>
+		<html>
+		<head>
+			<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+		</head>
+		<body>
+			<script>
+				Swal.fire({
+					icon: 'success',
+					title: 'Record Saved',
+					text: 'Your profile has been saved successfully.',
+					confirmButtonText: 'OK'
+				}).then(() => {
+					window.location.href = 'edit_profile.php';
+				});
+			</script>
+		</body>
+		</html>";
+	} else {
+		echo "Error updating profile: " . mysqli_error($connect);
+	}
+	
 }
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -484,7 +463,7 @@ if (isset($_POST['submitbtn'])) {
         <input type="text" id="address" name="address" value="<?php echo $user_address; ?>" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f0f0f0; cursor: not-allowed;">
         <!-- Buttons to Add/Edit Address -->
         <a href="add_address.php?id=<?php echo $user_id; ?>" class="edit-button" style="text-decoration: none;">
-            <button type="button" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Add Address</button>
+            <button type="button" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Add Address</button>
         </a>
         <a href="change_address.php?id=<?php echo $user_id; ?>" class="edit-button" style="text-decoration: none;">
             <button type="button" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Edit Address</button>
@@ -495,7 +474,7 @@ if (isset($_POST['submitbtn'])) {
     <div class="form-group" style="margin-bottom: 15px;">
         <label for="password" style="font-weight: bold; color: #333;">Password</label>
         <a href="verify_password.php" class="edit-button" style="text-decoration: none;">
-            <button type="button" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Change Password</button>
+            <button type="button" style="padding: 10px 20px; background-color: #ffc107; color: white; border: none; border-radius: 4px; cursor: pointer;">Change Password</button>
         </a>
     </div>
 
