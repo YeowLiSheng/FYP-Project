@@ -134,3 +134,11 @@ Array
     [color] => Black
     [size] => PM
 )
+Array
+(
+    [delete_item] => 1
+    [id] => 4
+    [type] => product
+    [color] => Black
+    [size] => PM
+)
