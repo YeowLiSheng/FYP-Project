@@ -20,6 +20,7 @@ if (isset($_POST['add_faq'])) {
         $_SESSION['icon'] = "error";
     }
     header("Location: admin_faq.php");
+    
     exit();
 }
 

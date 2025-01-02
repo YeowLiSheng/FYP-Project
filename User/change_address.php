@@ -134,6 +134,7 @@ if (isset($_POST['submitbtn'])) {
             align-items: center;
             height: 100vh;
             margin: 0;
+            min-height: 100vh; /* Ensure the page height is 100% of the viewport */
         }
 
         .edit-address-form {
