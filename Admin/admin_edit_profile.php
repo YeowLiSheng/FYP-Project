@@ -7,7 +7,7 @@ if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit;
 }
-
+d
 // Retrieve the admin information
 $admin_id = $_SESSION['admin_id'];
 $result = mysqli_query($connect, "SELECT * FROM admin WHERE admin_id = '$admin_id'");
