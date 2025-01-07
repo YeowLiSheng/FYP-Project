@@ -1932,7 +1932,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             const productName = $('.js-name-detail').text();
             const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
             const productQuantity = parseInt($('.num-product').val());
-            const productStock = $(this).data('stock') || 0;
 			const selectedColor = $('select[name="color"]').val();
    			const selectedSize = $('select[name="size"]').val();
 
@@ -1946,10 +1945,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 				return;
 			}
 
-            if (productQuantity > productStock) {
-                $('.stock-warning').text(`Cannot add more than ${productStock} items.`).show();
-                return;
-            } else if (productQuantity === 0) {
+            if (productQuantity === 0) {
                 $('.stock-warning').text('Quantity cannot be zero.').show();
                 return;
             }
