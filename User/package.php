@@ -1058,51 +1058,61 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             data: { package_id: packageId },
             dataType: 'json',
             success: function (response) {
-                console.log("AJAX success response received:", response);
-                if (response.success) {
-                    console.log("Response indicates success. Generating form.");
-                    let formHtml = `<h3>Select Options for Your Package</h3>
-                        <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
-                            <input type="hidden" name="package_id" value="${packageId}">`; // Include hidden field for package_id
+    console.log("AJAX success response received:", response);
+    if (response.success) {
+        console.log("Response indicates success. Generating form.");
+        let formHtml = `<h3>Select Options for Your Package</h3>
+            <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
+                <input type="hidden" name="package_id" value="${packageId}">`;
 
-                    // Generate form fields for each product in the package
-                    response.products.forEach((product, index) => {
-                        console.log(`Processing product ${index + 1}:`, product);
-                        formHtml += `
-                            <div class="product">
-                                <h3>${product.name}</h3>
-                                <img src="images/${product.image}" class="p-image">
-                                <label>Color:</label>
-                                <select name="product${index + 1}_color">
-                                    <option value="">Choose an option</option>
-                                    ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}
-                                </select>
-                                <label>Size:</label>
-                                <select name="product${index + 1}_size">
-                                    <option value="">Choose an option</option>
-                                    ${product.sizes.filter(Boolean).map(size => `<option value="${size}">${size}</option>`).join('')}
-                                </select>
-                            </div>`;
-                    });
-                    formHtml += `
-                        <div class="qty-controls">
-                            <button class="qty-btn minus" type="button">-</button>
-                            <input type="number" value="1" min="1" class="qty-input">
-                            <button class="qty-btn plus" type="button">+</button>
-                        </div>
-                        <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>`;
-                    formHtml += `
-                        <button type="submit" class="btn btn-success">Add to Cart</button>
-                    </form>`;
+        // 生成产品选择框
+        response.products.forEach((product, index) => {
+            console.log(`Processing product ${index + 1}:`, product);
 
-                    $('#packageFormContainer').html(formHtml);
-                    console.log("Form HTML generated and added to DOM.");
-                    $('#packageFormPopup').fadeIn();
-                } else {
-                    console.error("Response indicates failure:", response.message || "Unknown error.");
-                    alert(response.message || "Failed to fetch package details.");
-                }
-            },
+            // 获取颜色列表
+            const availableColors = Object.keys(product.stock).filter(color => {
+                return product.stock[color].size1 > 0 || product.stock[color].size2 > 0;
+            });
+
+            formHtml += `
+                <div class="product">
+                    <h3>${product.name}</h3>
+                    <img src="images/${product.image}" class="p-image">
+                    <label>Color:</label>
+                    <select name="product${index + 1}_color" class="color-select" data-product-index="${index}">
+                        <option value="">Choose an option</option>
+                        ${availableColors.map(color => `<option value="${color}">${color}</option>`).join('')}
+                    </select>
+                    <label>Size:</label>
+                    <select name="product${index + 1}_size" class="size-select" data-product-index="${index}" disabled>
+                        <option value="">Choose an option</option>
+                        <option value="size1">Size 1</option>
+                        <option value="size2">Size 2</option>
+                    </select>
+                </div>`;
+        });
+
+        formHtml += `
+            <div class="qty-controls">
+                <button class="qty-btn minus" type="button">-</button>
+                <input type="number" value="1" min="1" class="qty-input">
+                <button class="qty-btn plus" type="button">+</button>
+            </div>
+            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
+            <button type="submit" class="btn btn-success">Add to Cart</button>
+        </form>`;
+
+        $('#packageFormContainer').html(formHtml);
+        console.log("Form HTML generated and added to DOM.");
+        $('#packageFormPopup').fadeIn();
+
+        // 绑定事件
+        bindColorAndSizeEvents(response.products);
+    } else {
+        console.error("Response indicates failure:", response.message || "Unknown error.");
+        alert(response.message || "Failed to fetch package details.");
+    }
+},
             error: function (xhr, status, error) {
                 console.error("AJAX error occurred:", status, error);
                 alert("An error occurred.");
@@ -1123,7 +1133,37 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             $message.show();
         }
     });
+    function bindColorAndSizeEvents(products) {
+    $('.color-select').on('change', function () {
+        const productIndex = $(this).data('product-index');
+        const selectedColor = $(this).val();
+        const sizeSelect = $(`.size-select[data-product-index="${productIndex}"]`);
 
+        if (selectedColor) {
+            const stockInfo = products[productIndex].stock[selectedColor];
+            sizeSelect.prop('disabled', false);
+
+            // 清空之前的选项
+            sizeSelect.html('<option value="">Choose an option</option>');
+
+            // 根据库存动态生成尺寸选项
+            if (stockInfo.size1 > 0) {
+                sizeSelect.append('<option value="size1">Size 1</option>');
+            } else {
+                sizeSelect.append('<option value="size1" disabled>Size 1 (Out of Stock)</option>');
+            }
+
+            if (stockInfo.size2 > 0) {
+                sizeSelect.append('<option value="size2">Size 2</option>');
+            } else {
+                sizeSelect.append('<option value="size2" disabled>Size 2 (Out of Stock)</option>');
+            }
+        } else {
+            // 如果未选择颜色，则禁用尺寸选择框
+            sizeSelect.prop('disabled', true).html('<option value="">Choose an option</option>');
+        }
+    });
+}
     $(document).on('click', '.qty-btn.minus', function () {
         const $form = $(this).closest('#packageForm');
         const $input = $form.find('.qty-input');
