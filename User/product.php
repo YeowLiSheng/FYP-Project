@@ -1752,7 +1752,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
         if ($(this).hasClass('btn-num-product-up')) {
             if (currentVal < productStock) {
-                $input.val(currentVal + 1);
+                $input.val(currentVal ++);
                 $('.stock-warning').hide();
             } else {
                 $('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
