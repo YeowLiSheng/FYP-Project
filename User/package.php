@@ -159,25 +159,25 @@ if (isset($_GET['package_id'])) {
             pkg.package_stock, 
             p1.product_id AS product1_id, 
             p1.product_name AS product1_name,
-            p1.product_image As product1_image, 
-            p1.color1 AS product1_color1, 
-            p1.color2 AS product1_color2, 
-            p1.size1 AS product1_size1, 
-            p1.size2 AS product1_size2, 
+            p1.product_image AS product1_image, 
+            p1.color1_size1_stock AS product1_color1_size1_stock,
+            p1.color1_size2_stock AS product1_color1_size2_stock,
+            p1.color2_size1_stock AS product1_color2_size1_stock,
+            p1.color2_size2_stock AS product1_color2_size2_stock,
             p2.product_id AS product2_id,
-            p2.product_image As product2_image,  
             p2.product_name AS product2_name, 
-            p2.color1 AS product2_color1, 
-            p2.color2 AS product2_color2, 
-            p2.size1 AS product2_size1, 
-            p2.size2 AS product2_size2, 
+            p2.product_image AS product2_image,
+            p2.color1_size1_stock AS product2_color1_size1_stock,
+            p2.color1_size2_stock AS product2_color1_size2_stock,
+            p2.color2_size1_stock AS product2_color2_size1_stock,
+            p2.color2_size2_stock AS product2_color2_size2_stock,
             p3.product_id AS product3_id, 
             p3.product_name AS product3_name,
-            p3.product_image As product3_image, 
-            p3.color1 AS product3_color1, 
-            p3.color2 AS product3_color2, 
-            p3.size1 AS product3_size1, 
-            p3.size2 AS product3_size2
+            p3.product_image AS product3_image,
+            p3.color1_size1_stock AS product3_color1_size1_stock,
+            p3.color1_size2_stock AS product3_color1_size2_stock,
+            p3.color2_size1_stock AS product3_color2_size1_stock,
+            p3.color2_size2_stock AS product3_color2_size2_stock
         FROM product_package pkg
         LEFT JOIN product p1 ON pkg.product1_id = p1.product_id
         LEFT JOIN product p2 ON pkg.product2_id = p2.product_id
@@ -201,12 +201,14 @@ if (isset($_GET['package_id'])) {
                     'name' => $package_data["product{$i}_name"],
                     'image' => $package_data["product{$i}_image"],
                     'colors' => [
-                        $package_data["product{$i}_color1"],
-                        $package_data["product{$i}_color2"]
-                    ],
-                    'sizes' => [
-                        $package_data["product{$i}_size1"],
-                        $package_data["product{$i}_size2"]
+                        'color1' => [
+                            'size1_stock' => $package_data["product{$i}_color1_size1_stock"],
+                            'size2_stock' => $package_data["product{$i}_color1_size2_stock"]
+                        ],
+                        'color2' => [
+                            'size1_stock' => $package_data["product{$i}_color2_size1_stock"],
+                            'size2_stock' => $package_data["product{$i}_color2_size2_stock"]
+                        ]
                     ]
                 ];
             }
@@ -1052,73 +1054,79 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
 
         // Fetch package details via AJAX
-        $.ajax({
-            url: '', // Current PHP file as endpoint
-            type: 'GET',
-            data: { package_id: packageId },
-            dataType: 'json',
-            success: function (response) {
-    console.log("AJAX success response received:", response);
-    if (response.success) {
-        console.log("Response indicates success. Generating form.");
-        let formHtml = `<h3>Select Options for Your Package</h3>
-            <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
-                <input type="hidden" name="package_id" value="${packageId}">`;
+        // Handle AJAX request to fetch package details
+$.ajax({
+    url: '', // Current PHP file as endpoint
+    type: 'GET',
+    data: { package_id: packageId },
+    dataType: 'json',
+    success: function (response) {
+        if (response.success) {
+            let formHtml = `<h3>Select Options for Your Package</h3>
+                <form id="packageForm" data-package-id="${packageId}" data-package-stock="${response.package_stock}">
+                    <input type="hidden" name="package_id" value="${packageId}">`;
 
-        // 生成产品选择框
-        response.products.forEach((product, index) => {
-            console.log(`Processing product ${index + 1}:`, product);
-
-            // 获取颜色列表
-            const availableColors = Object.keys(product.stock).filter(color => {
-                return product.stock[color].size1 > 0 || product.stock[color].size2 > 0;
+            response.products.forEach((product, index) => {
+                formHtml += `
+                    <div class="product">
+                        <h3>${product.name}</h3>
+                        <img src="images/${product.image}" class="p-image">
+                        <label>Color:</label>
+                        <select name="product${index + 1}_color" class="color-select" data-index="${index}">
+                            <option value="">Choose a color</option>
+                            ${Object.keys(product.colors).map(color => `
+                                <option value="${color}">${color}</option>`).join('')}
+                        </select>
+                        <label>Size:</label>
+                        <select name="product${index + 1}_size" class="size-select" data-index="${index}" disabled>
+                            <option value="">Choose a size</option>
+                        </select>
+                    </div>`;
             });
 
             formHtml += `
-                <div class="product">
-                    <h3>${product.name}</h3>
-                    <img src="images/${product.image}" class="p-image">
-                    <label>Color:</label>
-                    <select name="product${index + 1}_color" class="color-select" data-product-index="${index}">
-                        <option value="">Choose an option</option>
-                        ${availableColors.map(color => `<option value="${color}">${color}</option>`).join('')}
-                    </select>
-                    <label>Size:</label>
-                    <select name="product${index + 1}_size" class="size-select" data-product-index="${index}" disabled>
-                        <option value="">Choose an option</option>
-                        <option value="size1">Size 1</option>
-                        <option value="size2">Size 2</option>
-                    </select>
-                </div>`;
-        });
+                <div class="qty-controls">
+                    <button class="qty-btn minus" type="button">-</button>
+                    <input type="number" value="1" min="1" class="qty-input">
+                    <button class="qty-btn plus" type="button">+</button>
+                </div>
+                <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
+                <button type="submit" class="btn btn-success">Add to Cart</button>
+            </form>`;
 
-        formHtml += `
-            <div class="qty-controls">
-                <button class="qty-btn minus" type="button">-</button>
-                <input type="number" value="1" min="1" class="qty-input">
-                <button class="qty-btn plus" type="button">+</button>
-            </div>
-            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
-            <button type="submit" class="btn btn-success">Add to Cart</button>
-        </form>`;
+            $('#packageFormContainer').html(formHtml);
+            $('#packageFormPopup').fadeIn();
 
-        $('#packageFormContainer').html(formHtml);
-        console.log("Form HTML generated and added to DOM.");
-        $('#packageFormPopup').fadeIn();
+            // Handle color selection and update sizes accordingly
+            $('.color-select').change(function () {
+                let index = $(this).data('index');
+                let selectedColor = $(this).val();
+                let sizeSelect = $(`select[name="product${index + 1}_size"]`);
 
-        // 绑定事件
-        bindColorAndSizeEvents(response.products);
-    } else {
-        console.error("Response indicates failure:", response.message || "Unknown error.");
-        alert(response.message || "Failed to fetch package details.");
+                sizeSelect.html('<option value="">Choose a size</option>');
+
+                if (selectedColor) {
+                    let sizes = response.products[index].colors[selectedColor];
+                    if (sizes.size1_stock > 0) {
+                        sizeSelect.append('<option value="size1">Size 1</option>');
+                    }
+                    if (sizes.size2_stock > 0) {
+                        sizeSelect.append('<option value="size2">Size 2</option>');
+                    }
+                    sizeSelect.prop('disabled', false);
+                } else {
+                    sizeSelect.prop('disabled', true);
+                }
+            });
+        } else {
+            alert(response.message || "Failed to fetch package details.");
+        }
+    },
+    error: function (xhr, status, error) {
+        alert("An error occurred.");
     }
-},
-            error: function (xhr, status, error) {
-                console.error("AJAX error occurred:", status, error);
-                alert("An error occurred.");
-            }
-        });
-    });
+});
+
     $(document).on('click', '.qty-btn.plus', function () {
         const $form = $(this).closest('#packageForm');
         const maxStock = parseInt($form.data('package-stock')) || Infinity;
