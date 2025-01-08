@@ -415,8 +415,14 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
     while ($product = $product_result->fetch_assoc()) {
         // Determine product availability and stock status
         $isUnavailable = $product['product_status'] == 2;
-        $isOutOfStock = $product['product_stock'] == 0;
+        // Calculate total stock across all color and size combinations
+        $totalStock = $product['color1_size1_stock'] 
+                    + $product['color1_size2_stock'] 
+                    + $product['color2_size1_stock'] 
+                    + $product['color2_size2_stock'];
 
+        // Check if the total stock is zero
+        $isOutOfStock = $totalStock == 0;
         // Apply light grey color if unavailable or out of stock
         $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
 
@@ -1242,7 +1248,13 @@ body {
 
                     // Determine product availability and stock status
                     $isUnavailable = $product['product_status'] == 2;
-                    $isOutOfStock = $product['product_stock'] == 0;
+                    $totalStock = $product['color1_size1_stock'] 
+                                + $product['color1_size2_stock'] 
+                                + $product['color2_size1_stock'] 
+                                + $product['color2_size2_stock'];
+
+                    // Check if the total stock is zero
+                    $isOutOfStock = $totalStock == 0;
 
                     // Apply light grey color if unavailable or out of stock
                     $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
@@ -1869,7 +1881,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                                     </div>
                                 </div>`;
                         } else {
-                            packageHtml = '<p>No packages found for this product.</p>';
+                            packageHtml = '<p>No packages found for this product!</p>';
                         }
                         packageBox.append(packageHtml);
                     });
