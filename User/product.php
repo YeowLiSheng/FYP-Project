@@ -415,8 +415,14 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
     while ($product = $product_result->fetch_assoc()) {
         // Determine product availability and stock status
         $isUnavailable = $product['product_status'] == 2;
-        $isOutOfStock = $product['product_stock'] == 0;
+        // Calculate total stock across all color and size combinations
+        $totalStock = $product['color1_size1_stock'] 
+                    + $product['color1_size2_stock'] 
+                    + $product['color2_size1_stock'] 
+                    + $product['color2_size2_stock'];
 
+        // Check if the total stock is zero
+        $isOutOfStock = $totalStock == 0;
         // Apply light grey color if unavailable or out of stock
         $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
 
@@ -504,6 +510,41 @@ if (!empty($output)) {
 
 
 <style>
+
+.slick-prev, .slick-next {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%);
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    border-radius: 50%; /* Make them circular */
+    color: white;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.slick-prev {
+    left: -50px; /* Position to the left of the slider */
+}
+
+.slick-next {
+    right: -50px; /* Position to the right of the slider */
+}
+
+/* Hover effects */
+.slick-prev:hover, .slick-next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Optional: Remove default next/prev text */
+.slick-prev:before, .slick-next:before {
+    content: ''; /* Remove default arrows */
+}
+
 .selected {
     color: blue !important;
     font-weight: bold;
@@ -1207,7 +1248,13 @@ body {
 
                     // Determine product availability and stock status
                     $isUnavailable = $product['product_status'] == 2;
-                    $isOutOfStock = $product['product_stock'] == 0;
+                    $totalStock = $product['color1_size1_stock'] 
+                                + $product['color1_size2_stock'] 
+                                + $product['color2_size1_stock'] 
+                                + $product['color2_size2_stock'];
+
+                    // Check if the total stock is zero
+                    $isOutOfStock = $totalStock == 0;
 
                     // Apply light grey color if unavailable or out of stock
                     $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
@@ -1437,32 +1484,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
 
 							<div class="slick3 gallery-lb">
-								<div class="item-slick3" data-thumb="">
-									<div class="wrap-pic-w pos-relative">
-										<img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
-										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View1']; ?>">
-											<i class="fa fa-expand"></i>
-										</a>
-									</div>
-								</div>
-
-								<div class="item-slick3" data-thumb="">
-									<div class="wrap-pic-w pos-relative">
-										<img src="images/<?php echo $product['Quick_View2']; ?>" alt="IMG-PRODUCT">
-										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View2']; ?>">
-											<i class="fa fa-expand"></i>
-										</a>
-									</div>
-								</div>
-
-								<div class="item-slick3" data-thumb="">
-									<div class="wrap-pic-w pos-relative">
-										<img src="images/<?php echo $product['Quick_View3']; ?>" alt="IMG-PRODUCT">
-										<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View3']; ?>">
-											<i class="fa fa-expand"></i>
-										</a>
-									</div>
-								</div>
+								
 							</div>
 						</div>
 					</div>
@@ -1574,6 +1596,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</div>
 </div>
 
+<!-- Retain only one -->
+<script src="vendor/slick/slick.min.js"></script>
+<script src="vendor/slick/slick.min.js"></script>
+<script src="js/slick-custom.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
@@ -1640,7 +1666,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     });
 </script>
 <script>
-    $(document).on('click', '.js-show-modal1', function(event) {
+   $(document).on('click', '.js-show-modal1', function(event) {
         event.preventDefault();
         var productId = $(this).data('id');
         
@@ -1661,30 +1687,36 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                     $('.js-addcart-detail').data('id', productId);
                     $('.js-addcart-detail').data('stock', response.product_stock);
 
-                    // Update Quick View images
-                    $('.gallery-lb .item-slick3').each(function(index) {
-                        var imagePath = 'images/' + response['Quick_View' + (index + 1)];
-                        $(this).find('.wrap-pic-w img').attr('src', imagePath);
-                        $(this).find('.wrap-pic-w a').attr('href', imagePath);
-                        $(this).attr('data-thumb', imagePath);
-                    });
-					// Update size options
-                    // Update size options
-					var sizeSelect = $('select[name="size"]');
-					sizeSelect.empty(); // Clear existing options
-					sizeSelect.append('<option value="">Choose an option</option>'); // Default option
-					if (response.size1) sizeSelect.append('<option value="' + response.size1 + '">' + response.size1 + '</option>');
-					if (response.size2) sizeSelect.append('<option value="' + response.size2 + '">' + response.size2 + '</option>');
+                    window.currentProductResponse = response;
 
-					// Update color options
-					var colorSelect = $('select[name="color"]');
-					colorSelect.empty(); // Clear existing options
-					colorSelect.append('<option value="">Choose an option</option>'); // Default option
-					if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
+                    // Update Quick View images for the default color
+                    updateQuickViewImages(response, response.color1);
+
+                    // Update size options
+                    var sizeSelect = $('select[name="size"]');
+                    sizeSelect.empty(); // Clear existing options
+                    sizeSelect.append('<option value="default">Choose an option</option>'); // Default option
+                    if (response.size1) sizeSelect.append('<option value="' + response.size1 + '">' + response.size1 + '</option>');
+                    if (response.size2) sizeSelect.append('<option value="' + response.size2 + '">' + response.size2 + '</option>');
+
+                    // Update color options
+                    var colorSelect = $('select[name="color"]');
+                    colorSelect.empty(); // Clear existing options
+                    colorSelect.append('<option value="">Choose an option</option>'); // Default option
+                    if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
 					if (response.color2) colorSelect.append('<option value="' + response.color2 + '">' + response.color2 + '</option>');
-					
-					// Fetch packages containing the product ID
-					fetchPackages(productId);
+                    
+                    // Add event listener for color selection
+                    colorSelect.on('change', function() {
+                        var selectedColor = $(this).val();
+                        if (selectedColor) {
+                            updateQuickViewImages(response, selectedColor);
+                        }
+                        
+                    });
+
+                    // Fetch packages containing the product ID
+                    fetchPackages(productId);
 
                     // Show the modal
                     $('.js-modal1').addClass('show-modal1');
@@ -1697,6 +1729,115 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             }
         });
     });
+    function getStockBasedOnSelection(response, selectedColor, selectedSize) {
+        if (!response || !selectedColor || !selectedSize) return 0;
+
+        if (selectedColor === response.color1 && selectedSize === response.size1) {
+            return parseInt(response.color1_size1_stock || 0);
+        }
+        if (selectedColor === response.color1 && selectedSize === response.size2) {
+            return parseInt(response.color1_size2_stock || 0);
+        }
+        if (selectedColor === response.color2 && selectedSize === response.size1) {
+            return parseInt(response.color2_size1_stock || 0);
+        }
+        if (selectedColor === response.color2 && selectedSize === response.size2) {
+            return parseInt(response.color2_size2_stock || 0);
+        }
+        return 0;
+    }
+
+    $(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (e) {
+        e.preventDefault();
+        const $input = $(this).siblings('.num-product');
+        const selectedColor = $('select[name="color"]').val();
+        const selectedSize = $('select[name="size"]').val();
+        const response = window.currentProductResponse;
+
+        if (!selectedColor || !selectedSize) {
+            $('.stock-warning').text('Please choose the color and size!').css('color', 'red').show();
+            return;
+        }
+
+        const productStock = getStockBasedOnSelection(response, selectedColor, selectedSize);
+        let currentVal = parseInt($input.val()) || 0;
+
+        if ($(this).hasClass('btn-num-product-up')) {
+            if (currentVal < productStock) {
+                $input.val(currentVal ++);
+                $('.stock-warning').hide();
+            } else {
+                $('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
+                $input.val(productStock); // Prevent further increment
+            }
+        } else if ($(this).hasClass('btn-num-product-down')) {
+            if (currentVal > 1) {
+                $input.val(currentVal - 1);
+                $('.stock-warning').hide();
+            }
+        }
+    });
+    $(document).on('change', 'select[name="color"], select[name="size"]', function () {
+    $('.stock-warning').hide();
+    const selectedColor = $('select[name="color"]').val();
+    const selectedSize = $('select[name="size"]').val();
+
+    if (!selectedColor || !selectedSize) {
+        $('.stock-warning').text('Please choose the color and size!').css('color', 'red').show();
+        $('.num-product').val('0'); // Reset quantity to 1
+    }
+});
+    // Function to update Quick View images
+    function updateQuickViewImages(response, color) {
+    var galleryContainer = $('.gallery-lb');
+
+    // Destroy existing Slick instance if initialized
+    if (galleryContainer.hasClass('slick-initialized')) {
+        galleryContainer.slick('unslick'); // Destroy the current Slick instance
+    }
+
+    galleryContainer.empty(); // Clear existing images to avoid duplicates
+
+    // Dynamically append new images based on selected color
+    for (var i = 1; i <= 3; i++) {
+        var imageKey = 'Quick_View' + (color === response.color1 ? i : i + 3); // Map to correct images
+        if (response[imageKey]) {
+            var imagePath = 'images/' + response[imageKey];
+            galleryContainer.append(`
+                <div class="item-slick3" data-thumb="${imagePath}">
+                    <div class="wrap-pic-w pos-relative">
+                        <img src="${imagePath}" alt="IMG-PRODUCT">
+                        <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="${imagePath}">
+                            <i class="fa fa-expand"></i>
+                        </a>
+                    </div>
+                </div>
+            `);
+        }
+    }
+
+    // Reinitialize Slick slidertenafter clearing and appending
+    galleryContainer.slick({
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: true,
+        fade: true,
+        dots: true,
+        adaptiveHeight: true,
+        prevArrow: '<button type="button" class="slick-prev"><i class="fa fa-chevron-left"></i></button>',
+        nextArrow: '<button type="button" class="slick-next"><i class="fa fa-chevron-right"></i></button>',
+        customPaging: function (slider, i) {
+            var thumb = $(slider.$slides[i]).data('thumb');
+        },
+    });
+}
+
+
+
+
+
+
+
 	function fetchPackages(productId) {
         $.ajax({
             url: '', // The same PHP file
@@ -1740,7 +1881,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                                     </div>
                                 </div>`;
                         } else {
-                            packageHtml = '<p>No packages found for this product.</p>';
+                            packageHtml = '<p>No packages found for this product!</p>';
                         }
                         packageBox.append(packageHtml);
                     });
@@ -1794,30 +1935,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	});
 
     $(document).ready(function () {
-        // Update product quantity and enforce stock rules
-        $(document).on('click', '.btn-num-product-up', function () {
-			const $input = $(this).siblings('.num-product');
-			const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0; // Ensure `productStock` is an integer
-			let currentVal = parseInt($input.val()) || 0; // Ensure `currentVal` is an integer
-			
-			if (currentVal < productStock) {
-				$input.val(currentVal ++);
-				$('.stock-warning').hide();
-			} else {
-				$('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
-				$input.val(productStock); // Prevent further increment
-			}
-		});
-
-		$(document).on('click', '.btn-num-product-down', function () {
-			const $input = $(this).siblings('.num-product');
-			let currentVal = parseInt($input.val()) || 0; // Ensure `currentVal` is an integer
-			
-			if (currentVal > 1) {
-				$input.val(currentVal - 1);
-				$('.stock-warning').hide();
-			}
-		});
 
         // Add to cart functionality
         $(document).on('click', '.js-addcart-detail', function (event) {
@@ -1827,9 +1944,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             const productName = $('.js-name-detail').text();
             const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
             const productQuantity = parseInt($('.num-product').val());
-            const productStock = $(this).data('stock') || 0;
 			const selectedColor = $('select[name="color"]').val();
    			const selectedSize = $('select[name="size"]').val();
+               const response = window.currentProductResponse;
 
 			if (!selectedColor || !selectedSize) {
 				Swal.fire({
@@ -1840,11 +1957,21 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 });
 				return;
 			}
+            // Get stock for the selected color and size
+            const productStock = getStockBasedOnSelection(response, selectedColor, selectedSize);
 
+            // Validate stock
             if (productQuantity > productStock) {
-                $('.stock-warning').text(`Cannot add more than ${productStock} items.`).show();
+                Swal.fire({
+                    title: 'Stock Limit Exceeded!',
+                    text: `Only ${productStock} items are available for the selected color and size.`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
                 return;
-            } else if (productQuantity === 0) {
+            }
+
+            if (productQuantity === 0) {
                 $('.stock-warning').text('Quantity cannot be zero.').show();
                 return;
             }
