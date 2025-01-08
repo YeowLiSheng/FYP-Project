@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
     echo json_encode($response);
     exit;
 }
-// Query to fetch package data along with product names
+// Query to fetch package data along with product name
 $package_query = "
     SELECT 
         pkg.package_id, 
