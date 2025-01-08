@@ -22,130 +22,131 @@ if (isset($_SESSION['title'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(120deg, #f5f7fa, #e4e9f0);
+    margin: 0;
+    padding: 0;
+}
 
-        .main {
-            padding: 30px;
-        }
+.main {
+    margin-left: 78px;
+    padding: 15px;
+}
 
-        .card {
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+}
 
-        .table-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+.table-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-        .table-container h2 {
-            color: #333;
-            font-weight: bold;
-        }
+.table-container h2 {
+    color: #2c3e50;
+    font-weight: bold;
+}
 
-        .btn-success,
-        .btn-primary {
-            background-color: #28a745;
-            border-radius: 20px;
-            padding: 10px 20px;
-        }
+.btn-success, .btn-primary {
+    background-color: #28a745;
+    border-radius: 20px;
+    padding: 10px 20px;
+    transition: background-color 0.3s;
+}
 
-        .btn-success,
-        .btn-primary:hover {
-            background-color: #218838;
-        }
+.btn-success:hover, .btn-primary:hover {
+    background-color: #218838;
+}
 
-        .btn-success:hover {
-            background-color: #218838;
-        }
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    margin-top: 10px;
+    table-layout: fixed;
+}
 
-        .table {
-            background-color: #ffffff;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+.table th {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-weight: bold;
+    word-wrap: break-word;
+}
 
-        .table th {
-            background-color: #4CAF50; /* Green background */
-            color: #fff;
-            text-align: center;
-        }
+.table td {
+    padding: 15px;
+    text-align: center;
+    border: 1px solid #dcdde1;
+    word-wrap: break-word;
+}
 
-        .table tbody tr:nth-child(odd) {
-            background: #f9f9f9;
-        }
+.table tbody tr:nth-child(odd) {
+    background: #f9f9f9;
+}
 
-        .table tbody tr:nth-child(even) {
-            background: #ffffff;
-        }
+.table tbody tr:nth-child(even) {
+    background: white;
+}
 
-        .table tbody tr:hover {
-            background: #f1f1f1;
-        }
+.table tbody tr:hover {
+    background: #ecf0f1;
+}
 
-        .error-message {
-            color: #ff4d4f;
-            font-size: 0.9rem;
-        }
+.error-message {
+    color: #ff4d4f;
+    font-size: 0.9rem;
+}
 
-        .modal-content {
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        }
+.modal-content {
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
 
-        .modal-header {
-            background-color: #28a745;
-            color: #fff;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-        }
+.modal-header {
+    background-color: #28a745;
+    color: white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
 
-        .modal-footer .btn-primary {
-            background-color: #4CAF50; /* Green background */
-            border: none;
-        }
+.modal-footer .btn-primary, .modal-footer .btn-secondary {
+    background-color: #4CAF50;
+    border: none;
+}
 
-        .modal-footer .btn-secondary {
-            background-color: #4CAF50; /* Green background */
-            border: none;
-        }
+.modal-footer .btn-primary:hover, .modal-footer .btn-secondary:hover {
+    background-color: #218838;
+}
 
-        .modal-footer .btn-primary:hover {
-            background-color: #218838;
-        }
+.btn-danger {
+    border-radius: 20px;
+    padding: 5px 15px;
+}
 
-        .modal-footer .btn-secondary:hover {
-            background-color: #218838;
-        }
+.btn-danger:hover {
+    background: #dc3545;
+}
 
-        .btn-danger {
-            
-            border-radius: 20px;
-            padding: 5px 15px;
-        }
+@media (max-width: 768px) {
+    .table-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-        .btn-danger:hover {
-            background: #dc3545;
-        }
+    .table-container h2 {
+        margin-bottom: 10px;
+    }
+}
 
-        @media (max-width: 768px) {
-            .table-container {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .table-container h2 {
-                margin-bottom: 10px;
-            }
-        }
     </style>
 
     <script>
