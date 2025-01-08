@@ -1067,23 +1067,55 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
                     // Generate form fields for each product in the package
                     response.products.forEach((product, index) => {
-                        console.log(`Processing product ${index + 1}:`, product);
-                        formHtml += `
-                            <div class="product">
-                                <h3>${product.name}</h3>
-                                <img src="images/${product.image}" class="p-image">
-                                <label>Color:</label>
-                                <select name="product${index + 1}_color">
-                                    <option value="">Choose an option</option>
-                                    ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}
-                                </select>
-                                <label>Size:</label>
-                                <select name="product${index + 1}_size">
-                                    <option value="">Choose an option</option>
-                                    ${product.sizes.filter(Boolean).map(size => `<option value="${size}">${size}</option>`).join('')}
-                                </select>
-                            </div>`;
+    console.log(`Processing product ${index + 1}:`, product);
+
+    formHtml += `
+        <div class="product">
+            <h3>${product.name}</h3>
+            <img src="images/${product.image}" class="p-image">
+            <label>Color:</label>
+            <select name="product${index + 1}_color" id="color-select-${index}" data-product-id="${product.id}">
+                <option value="">Choose an option</option>
+                ${product.colors.filter(Boolean).map(color => `<option value="${color}">${color}</option>`).join('')}
+            </select>
+            <label>Size:</label>
+            <select name="product${index + 1}_size" id="size-select-${index}">
+                <option value="">Choose an option</option>
+                ${product.sizes.filter(Boolean).map(size => `<option value="${size}">${size}</option>`).join('')}
+            </select>
+        </div>`;
+
+    // Attach event listener after adding to DOM
+    setTimeout(() => {
+        const colorSelect = document.getElementById(`color-select-${index}`);
+        const sizeSelect = document.getElementById(`size-select-${index}`);
+
+        // Listen for color selection changes
+        colorSelect.addEventListener('change', function () {
+            const selectedColor = this.value;
+            const productId = this.dataset.productId;
+
+            // Fetch available sizes based on selected color
+            fetch('package.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ color: selectedColor, product_id: productId })
+            })
+                .then(response => response.json())
+                .then(sizes => {
+                    // Clear existing size options
+                    sizeSelect.innerHTML = '<option value="">Choose an option</option>';
+                    // Add new size options
+                    sizes.forEach(size => {
+                        sizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
                     });
+                })
+                .catch(error => {
+                    console.error('Error fetching sizes:', error);
+                });
+        });
+    }, 0); // Delay to ensure elements are added to DOM
+});
                     formHtml += `
                         <div class="qty-controls">
                             <button class="qty-btn minus" type="button">-</button>
