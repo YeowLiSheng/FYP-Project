@@ -88,26 +88,7 @@ if (isset($_POST['submitbtn'])) {
             </script>
         </body>
         </html>";
-    } elseif (mysqli_num_rows($contact_check) > 0) {
-        echo "<!DOCTYPE html>
-        <html>
-        <head>
-            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-        </head>
-        <body>
-            <script>
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Contact Number Already Taken',
-                    text: 'The contact number is already taken. Please choose another one.',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = 'admin_edit_profile.php';
-                });
-            </script>
-        </body>
-        </html>";
-    } else {
+    }  else {
         // Update admin data in the database, including gender and image
         $update_query = "UPDATE admin SET admin_name='$name', admin_email='$email', admin_password='$password', admin_contact_number='$contact', admin_gender='$gender', admin_image='$image' WHERE admin_id='$admin_id'";
 
@@ -379,26 +360,30 @@ body {
 
     <!-- Admin Name and Email -->
     <div class="form-group-double">
-        <div class="form-group">
+
+    <div class="form-group">
+    <label for="admin_email">Email</label>
+    <input type="email" id="admin_email" name="admin_email" value="<?php echo htmlspecialchars($admin_row['admin_email']); ?>" required readonly>
+    </div>
+        
+   <!-- Contact Number -->
+    <div class="form-group">
+        <label for="admin_contact">Contact Number</label>
+        <input type="text" id="admin_contact" name="admin_contact" value="<?php echo htmlspecialchars($admin_row['admin_contact_number']); ?>" required readonly>
+    </div>
+        
+
+        
+    </div>
+    <div class="form-group">
             <label for="admin_name">Name</label>
             <input type="text" id="admin_name" name="admin_name" value="<?php echo htmlspecialchars($admin_row['admin_name']); ?>" required>
         </div>
-
-        <div class="form-group">
-            <label for="admin_email">Email</label>
-            <input type="email" id="admin_email" name="admin_email" value="<?php echo htmlspecialchars($admin_row['admin_email']); ?>" required>
-        </div>
-    </div>
-
    
 
 
 
-    <!-- Contact Number -->
-    <div class="form-group">
-        <label for="admin_contact">Contact Number</label>
-        <input type="text" id="admin_contact" name="admin_contact" value="<?php echo htmlspecialchars($admin_row['admin_contact_number']); ?>" required>
-    </div>
+
 
     <!-- Gender -->
     <div class="form-group">
@@ -454,17 +439,7 @@ body {
             return false;
         }
 
-        // Validate email (must contain @gmail.com)
-        if (!email.endsWith("@gmail.com")) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Email',
-                text: 'Email must end with "@gmail.com".',
-                confirmButtonText: 'OK'
-            });
-            return false;
-        }
-
+        
         // Validate password (at least 1 uppercase letter, 1 number, 1 special character, and 8 characters long)
         const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordRegex.test(password)) {
@@ -477,17 +452,7 @@ body {
             return false;
         }
 
-        // Validate contact number (xxx-xxxxxxxx or xxx-xxxxxxx format)
-        const contactPattern = /^\d{3}-\d{7,8}$/;
-        if (!contactPattern.test(contact)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Contact Number',
-                text: 'Contact number must be in the format xxx-xxxxxxxx or xxx-xxxxxxx.',
-                confirmButtonText: 'OK'
-            });
-            return false;
-        }
+        
 
         return true; // If all validations pass
     }
