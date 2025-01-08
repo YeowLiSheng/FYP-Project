@@ -604,8 +604,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 
 
-
 <?php
+
+
 
 // Check if the form is submitted
 if (isset($_POST['submitbtn'])) {
@@ -664,4 +665,6 @@ if (isset($_POST['submitbtn'])) {
     $stmt->close();
 }
 
+// Close the database connection
+mysqli_close($connect);
 ?>
