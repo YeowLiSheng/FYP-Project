@@ -1934,6 +1934,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             const productQuantity = parseInt($('.num-product').val());
 			const selectedColor = $('select[name="color"]').val();
    			const selectedSize = $('select[name="size"]').val();
+               const response = window.currentProductResponse;
 
 			if (!selectedColor || !selectedSize) {
 				Swal.fire({
@@ -1944,6 +1945,19 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 });
 				return;
 			}
+            // Get stock for the selected color and size
+            const productStock = getStockBasedOnSelection(response, selectedColor, selectedSize);
+
+            // Validate stock
+            if (productQuantity > productStock) {
+                Swal.fire({
+                    title: 'Stock Limit Exceeded!',
+                    text: `Only ${productStock} items are available for the selected color and size.`,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
 
             if (productQuantity === 0) {
                 $('.stock-warning').text('Quantity cannot be zero.').show();
