@@ -14,6 +14,69 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     <title>Admin Dashboard</title>
     <style>
         /* Reset and Layout Styles */
+
+        /* 全局样式 */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(120deg, #f5f7fa, #e4e9f0);
+}
+
+/* 布局容器 */
+.container {
+    display: flex;
+    height: 100%;
+}
+
+/* Sidebar 样式 */
+.sidebar {
+    width: 250px; /* Sidebar 固定宽度 */
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+.sidebar li {
+    margin: 15px 0;
+}
+.sidebar a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    display: block;
+    transition: background-color 0.3s;
+}
+.sidebar a:hover {
+    background-color: #34495e;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* 主内容区 */
+.main-content {
+    flex-grow: 1; /* 填充剩余空间 */
+    padding: 20px;
+    overflow: auto; /* 内容溢出时可滚动 */
+}
+
+/* 示例内容 */
+h1 {
+    font-size: 28px;
+    color: #2c3e50;
+}
+.content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+
 * {
     margin: 0;
     padding: 0;
