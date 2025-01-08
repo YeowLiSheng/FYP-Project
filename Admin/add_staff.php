@@ -173,6 +173,7 @@ include 'admin_sidebar.php';
             });
             event.preventDefault();
             return;
+            
         }
 
         // Validate Full Name
