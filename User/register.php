@@ -319,7 +319,7 @@
         <div class="field">
             <label for="email">Email:</label>
             <input type="text" id="email" name="email" required oninput="checkEmail()">
-            <span id="emailError" class="error">Please enter a valid email (must include '@' AND '.')</span>
+            <span id="emailError" class="error">Please enter a valid email (must include '@' AND '.com')</span>
         </div>
 
         <div class="field">
@@ -383,12 +383,13 @@
 
 	<script>
     function checkEmail() {
-        const email = document.getElementById("email").value;
-        const emailError = document.getElementById("emailError");
-        const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = document.getElementById("email").value;
+    const emailError = document.getElementById("emailError");
+    const validEmail = /.*@.*\.com$/;  // 修改为只检查包含 @ 和 .com
 
-        emailError.style.display = validEmail.test(email) ? "none" : "block";
-    }
+    emailError.style.display = validEmail.test(email) ? "none" : "block";
+}
+
 
     function checkName() {
         const name = document.getElementById("name").value;
