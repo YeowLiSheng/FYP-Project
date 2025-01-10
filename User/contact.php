@@ -4,30 +4,6 @@ session_start(); // Start the session
 // Include the database connection file
 include("dataconnection.php"); 
 
-// Check if the user is logged i
-if (!isset($_SESSION['id'])) {
-    header("Location: login.php"); // Redirect to login page if not logged in
-    exit;
-}
-
-// Check if the database connection exists
-if (!isset($connect) || !$connect) { // Changed $connect to $conn
-    die("Database connection failed.");
-}
-
-// Retrieve the user information
-$user_id = $_SESSION['id'];
-$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
-
-// Check if the query was successful and fetch user data
-if ($result && mysqli_num_rows($result) > 0) {
-	$user_data = mysqli_fetch_assoc($result);
-	$user_name = htmlspecialchars($user_data["user_name"]); // Get the user name
-	 $user_email = $user_data['user_email'];
-} else {
-	echo "User not found.";
-	exit;
-}
 
 // Initialize total_price before fetching cart items
 $total_price = 0;

@@ -77,31 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
             WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
         ");
         $stmt->bind_param('issi', $id, $color, $size, $user_id);
-    } elseif ($type === 'package') {
-        $product1_color = $_POST['product1_color'];
-        $product1_size = $_POST['product1_size'];
-        $product2_color = $_POST['product2_color'];
-        $product2_size = $_POST['product2_size'];
-        $product3_color = $_POST['product3_color'];
-        $product3_size = $_POST['product3_size'];
-
-        // Delete the specific package with matching attributes
-        $stmt = $connect->prepare("
-            DELETE FROM shopping_cart 
-            WHERE package_id = ? 
-              AND product1_color = ? AND product1_size = ?
-              AND product2_color = ? AND product2_size = ?
-              AND product3_color = ? AND product3_size = ?
-              AND user_id = ?
-        ");
-        $stmt->bind_param(
-            'ississsi',
-            $id,
-            $product1_color, $product1_size,
-            $product2_color, $product2_size,
-            $product3_color, $product3_size,
-            $user_id
-        );
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid type']);
         exit;
@@ -134,11 +109,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);
-    $query = "SELECT * FROM product WHERE product_id = $product_id";
-    $result = $connect->query($query);
 
-    if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
+    // Query to get all variants of the product
+    $variant_query = "SELECT * FROM product_variant WHERE product_id = $product_id";
+    $variant_result = $connect->query($variant_query);
+
+    if ($variant_result->num_rows > 0) {
+        $variants = [];
+        $total_stock = 0;
+
+        while ($variant = $variant_result->fetch_assoc()) {
+            $variants[] = $variant;
+            $total_stock += intval($variant['stock']);
+        }
+
+        // Fetch product details from the product table
+        $product_query = "SELECT * FROM product WHERE product_id = $product_id";
+        $product_result = $connect->query($product_query);
+        $product = $product_result->fetch_assoc();
+
+        // Combine product and variants data
+        $product['variants'] = $variants;
+        $product['total_stock'] = $total_stock;
+
         echo json_encode($product);
     } else {
         echo json_encode(null);
@@ -146,141 +139,41 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     exit; // Stop further script execution
 }
 
-if (isset($_GET['fetch_packages']) && isset($_GET['product_id'])) {
+if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
+    // Fetch product ID from request
     $product_id = intval($_GET['product_id']);
-    $query = "
-        SELECT 
-            p.package_id, 
-            p.package_name, 
-            p.package_price, 
-            p.package_description, 
-            p.package_image,
-            p.package_stock,
-            p.package_status
-        FROM product_package p
-        LEFT JOIN product prod1 ON p.product1_id = prod1.product_id
-        LEFT JOIN product prod2 ON p.product2_id = prod2.product_id
-        LEFT JOIN product prod3 ON p.product3_id = prod3.product_id
-        WHERE p.product1_id = $product_id 
-           OR p.product2_id = $product_id 
-           OR p.product3_id = $product_id";
+    
+    // Query to fetch product variants
+    $query = "SELECT variant_id, product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3 
+              FROM product_variant 
+              WHERE product_id = $product_id";
 
-    $result = $connect->query($query);
+    $result = mysqli_query($connect, $query);
 
-    $packages = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $packages[] = $row;
-        }
-    }
-
-    echo json_encode($packages);
-    exit;
-}
-
-$packages = [];
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $packages[] = $row;
-    }
-}
-if (isset($_GET['fetch_package_products'])) {
-    $packageId = intval($_GET['package_id']);
-    $query = "SELECT product1_id, product2_id, product3_id FROM product_package WHERE package_id = $packageId";
-    $result = $connect->query($query);
-
-    if ($result && $row = $result->fetch_assoc()) {
-        $productIds = [$row['product1_id'], $row['product2_id'], $row['product3_id']];
-        $productIds = array_filter($productIds); // Remove null values
-
-        $productQuery = "SELECT product_id, product_name, product_image, color1, color2, size1, size2 
-                         FROM product WHERE product_id IN (" . implode(',', $productIds) . ")";
-        $productResult = $connect->query($productQuery);
-
-        $products = [];
-        while ($product = $productResult->fetch_assoc()) {
-            $products[] = $product;
+    if ($result) {
+        $variants = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $variants[] = [
+                'variant_id' => $row['variant_id'],
+                'product_id' => $row['product_id'],
+                'color' => $row['color'],
+                'size' => $row['size'],
+                'stock' => $row['stock'],
+                'Quick_View1' => $row['Quick_View1'],
+                'Quick_View2' => $row['Quick_View2'],
+                'Quick_View3' => $row['Quick_View3'],
+            ];
         }
 
-        echo json_encode(['products' => $products]);
+        // Return the variants as JSON
+        echo json_encode($variants);
     } else {
-        echo json_encode(['error' => 'No products found for the package.']);
+        // If no results or query error, return error message
+        echo json_encode(['error' => 'No variants found.']);
     }
+
     exit;
 }
-if (isset($_POST['add_package_to_cart'])) {
-    header('Content-Type: application/json');
-    $user_id = $_SESSION['id'];
-    $package_id = intval($_POST['package_id']);
-    $package_qty = intval($_POST['qty']);
-
-    $product1_color = htmlspecialchars($_POST['color_1'] ?? '');
-    $product1_size = htmlspecialchars($_POST['size_1'] ?? '');
-    $product2_color = htmlspecialchars($_POST['color_2'] ?? '');
-    $product2_size = htmlspecialchars($_POST['size_2'] ?? '');
-    $product3_color = htmlspecialchars($_POST['color_3'] ?? '');
-    $product3_size = htmlspecialchars($_POST['size_3'] ?? '');
-
-    $stmt = $connect->prepare("SELECT package_price FROM product_package WHERE package_id = ?");
-    if (!$stmt) {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $connect->error]);
-        exit;
-    }
-    $stmt->bind_param('i', $package_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows === 0) {
-        echo json_encode(['success' => false, 'message' => 'Invalid package selected.']);
-        exit;
-    }
-
-    $row = $result->fetch_assoc();
-    $package_price = doubleval($row['package_price']);
-    $stmt->close();
-
-    $total_price = $package_price * $package_qty;
-
-    $stmt = $connect->prepare("
-        INSERT INTO shopping_cart (
-            user_id, total_price, package_id, 
-            product1_color, product1_size, 
-            product2_color, product2_size, 
-            product3_color, product3_size, 
-            qty
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    if (!$stmt) {
-        echo json_encode(['success' => false, 'message' => 'Database error: ' . $connect->error]);
-        exit;
-    }
-    $stmt->bind_param(
-        'idissssssi',
-        $user_id,
-        $total_price,
-        $package_id,
-        $product1_color,
-        $product1_size,
-        $product2_color,
-        $product2_size,
-        $product3_color,
-        $product3_size,
-        $package_qty
-    );
-    if (!$stmt->execute()) {
-        echo json_encode(['success' => false, 'message' => 'Insert failed: ' . $stmt->error]);
-        exit;
-    }
-    $response = [
-        'success' => true,
-        'message' => 'Package added to cart successfully.'
-    ];
-
-    echo json_encode($response); // Only output JSON
-    exit;
-}
-
-
 
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
@@ -289,8 +182,6 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     $total_price = doubleval($_POST['total_price']);
 	$color = $connect->real_escape_string($_POST['color']);
     $size = $connect->real_escape_string($_POST['size']);
-    $user_id = $_SESSION['id']; // Get the logged-in user ID
-
     // Insert data into shopping_cart table, including the user_id
     $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price, color, size) 
                    VALUES ($user_id, $product_id, $qty, $total_price, '$color', '$size')";
@@ -316,20 +207,14 @@ $distinct_items_query = "
             sc.product_id, 
             sc.package_id,
             sc.color, 
-            sc.size,
-            sc.product1_color, sc.product1_size,
-            sc.product2_color, sc.product2_size,
-            sc.product3_color, sc.product3_size
+            sc.size
         FROM shopping_cart sc
         WHERE sc.user_id = $user_id
         GROUP BY 
             sc.product_id, 
             sc.package_id, 
             sc.color, 
-            sc.size,
-            sc.product1_color, sc.product1_size,
-            sc.product2_color, sc.product2_size,
-            sc.product3_color, sc.product3_size
+            sc.size
     ) AS distinct_items";
 
 $distinct_items_result = $connect->query($distinct_items_query);
@@ -340,28 +225,27 @@ if ($distinct_items_result) {
     $distinct_count = $row['distinct_count'] ?? 0;
 }
 
-
-// Fetch products
-$product_query = "SELECT * FROM product WHERE 1";
-
-$product_result = $connect->query($product_query);
 // Fetch products based on filters and search
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
 $price_filter = isset($_GET['price']) ? explode(',', $_GET['price']) : [];
 $color_filter = isset($_GET['color']) ? explode(',', $_GET['color']) : [];
+$size_filter = isset($_GET['size']) ? explode(',', $_GET['size']) : [];
 $tag_filter = isset($_GET['tag']) ? explode(',', $_GET['tag']) : [];
 $category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? intval($_GET['category']) : null;
 
 // Base query to fetch products
-$product_query = "SELECT * FROM product WHERE product_name LIKE '%$search_query%'";
+$product_query = "SELECT DISTINCT p.* FROM product p
+                  JOIN product_variant pv ON p.product_id = pv.product_id
+                  WHERE p.product_name LIKE '%$search_query%'";
+
 
 // Apply category filter if it's not 'all'
 if ($category_filter) {
-    $product_query .= " AND category_id = $category_filter";
+    $product_query .= " AND p.category_id = $category_filter";
 }
 // Apply category filter if a valid category_id is provided
 if ($selected_category !== null) {
-    $product_query .= " AND category_id = $selected_category";
+    $product_query .= " AND p.category_id = $selected_category";
 }
 // Apply price filter if it's not 'all'
 if (!empty($price_filter) && $price_filter[0] !== 'all') {
@@ -369,42 +253,43 @@ if (!empty($price_filter) && $price_filter[0] !== 'all') {
     foreach ($price_filter as $range) {
         switch ($range) {
             case '0-2000':
-                $price_conditions[] = "product_price BETWEEN 0 AND 2000";
+                $price_conditions[] = "p.product_price BETWEEN 0 AND 2000";
                 break;
             case '2000-3000':
-                $price_conditions[] = "product_price BETWEEN 2000 AND 3000";
+                $price_conditions[] = "p.product_price BETWEEN 2000 AND 3000";
                 break;
             case '3000-4000':
-                $price_conditions[] = "product_price BETWEEN 3000 AND 4000";
+                $price_conditions[] = "p.product_price BETWEEN 3000 AND 4000";
                 break;
             case '4000-5000':
-                $price_conditions[] = "product_price BETWEEN 4000 AND 5000";
+                $price_conditions[] = "p.product_price BETWEEN 4000 AND 5000";
                 break;
             case '5000+':
-                $price_conditions[] = "product_price > 5000";
+                $price_conditions[] = "p.product_price > 5000";
                 break;
         }
     }
-    if ($price_conditions) {
-        $product_query .= " AND (" . implode(" OR ", $price_conditions) . ")";
-    }
+    $product_query .= " AND (" . implode(" OR ", $price_conditions) . ")";
 }
 
 // Apply color filter if it's not 'all'
 if (!empty($color_filter) && $color_filter[0] !== 'all') {
     $color_conditions = array_map(function ($color) {
-        return "(color1 = '$color' OR color2 = '$color')";
+        return "pv.color = '$color'";
     }, $color_filter);
     $product_query .= " AND (" . implode(" OR ", $color_conditions) . ")";
 }
 
+
 // Apply tag filter if it's not 'all'
 if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
     $tag_conditions = array_map(function ($tag) {
-        return "tags LIKE '%$tag%'";
+        return "p.tags LIKE '%$tag%'";
     }, $tag_filter);
     $product_query .= " AND (" . implode(" OR ", $tag_conditions) . ")";
 }
+
+$product_query .= " GROUP BY p.product_id";
 
 $product_result = $connect->query($product_query);
 
@@ -412,52 +297,75 @@ $product_result = $connect->query($product_query);
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
     ob_start();
 	if ($product_result->num_rows > 0) {
-    while ($product = $product_result->fetch_assoc()) {
-        // Determine product availability and stock status
-        $isUnavailable = $product['product_status'] == 2;
-        // Calculate total stock across all color and size combinations
-        $totalStock = $product['color1_size1_stock'] 
-                    + $product['color1_size2_stock'] 
-                    + $product['color2_size1_stock'] 
-                    + $product['color2_size2_stock'];
+        while ($product = $product_result->fetch_assoc()) {
+            $product_id = $product['product_id'];
 
-        // Check if the total stock is zero
-        $isOutOfStock = $totalStock == 0;
-        // Apply light grey color if unavailable or out of stock
-        $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+            // Get total stock for the product from product_variant table
+            $variant_query = "SELECT * FROM product_variant WHERE product_id = $product_id";
+            $variant_result = $connect->query($variant_query);
 
-        // Determine the message to show
-        $message = '';
-        if ($isUnavailable) {
-            $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
-        } elseif ($isOutOfStock) {
-            $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+            $total_stock = 0;
+            $isOutOfStock = true;
+            $colors = []; // Store available colors and their corresponding images
+            
+            while ($variant = $variant_result->fetch_assoc()) {
+                $total_stock += intval($variant['stock']);
+                if (intval($variant['stock']) > 0) {
+                    $isOutOfStock = false;
+                }
+                $colors[] = [
+                    'color' => $variant['color'],
+                    'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                ];
+            }
+
+            $isUnavailable = $product['product_status'] == 2;
+            $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+
+            $message = '';
+            if ($isUnavailable) {
+                $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+            } elseif ($isOutOfStock) {
+                $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+            }
+
+            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
+                    <div class="block2 ' . $productStyle . '">
+                        <div class="block2-pic hov-img0" >
+                            <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
+                            <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                                data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
+                        </div>
+                        <div class="block2-txt flex-w flex-t p-t-14">
+                            <div class="block2-txt-child1 flex-col-l ">
+                                <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                . $product['product_name'] . 
+                                '</a>
+                                <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
+                                ' . $message . '
+                            </div>
+                            <div class="block2-txt-child2 flex-r p-t-3">
+                                <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
+                                    <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                    <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="block2-txt-child2 flex-r p-t-3">';
+                    
+        // Display color circles
+        foreach ($colors as $index => $color) {
+            $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+            $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+            echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                    data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
+                    <i class="zmdi ' . $iconClass . '"></i>
+                </span>';
         }
 
-        echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
-                <div class="block2 ' . $productStyle . '">
-                    <div class="block2-pic hov-img0">
-                        <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
-                        <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-                            data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
+        echo '      </div>
                     </div>
-                    <div class="block2-txt flex-w flex-t p-t-14">
-                        <div class="block2-txt-child1 flex-col-l ">
-                            <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
-                            . $product['product_name'] . 
-                            '</a>
-                            <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
-                            ' . $message . '
-                        </div>
-                        <div class="block2-txt-child2 flex-r p-t-3">
-                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
-                                <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                            </a>
-                        </div>
-                    </div>
-                </div>
-              </div>';
+                  </div>';
     }
     echo ob_get_clean();
     exit;
@@ -1245,21 +1153,31 @@ body {
             // Display products dynamically
             if ($product_result->num_rows > 0) {
                 while($product = $product_result->fetch_assoc()) {
+                    $product_id = $product['product_id'];
 
                     // Determine product availability and stock status
+                    // Get total stock for the product from product_variant table
+                    $variant_query = "SELECT * FROM product_variant WHERE product_id = $product_id";
+                    $variant_result = $connect->query($variant_query);
+
+                    $total_stock = 0;
+                    $isOutOfStock = true;
+                    $colors = []; // Store available colors and their corresponding images
+
+                    while ($variant = $variant_result->fetch_assoc()) {
+                        $total_stock += intval($variant['stock']);
+                        if (intval($variant['stock']) > 0) {
+                            $isOutOfStock = false;
+                        }
+                        $colors[] = [
+                            'color' => $variant['color'],
+                            'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                        ];
+                    }
+
                     $isUnavailable = $product['product_status'] == 2;
-                    $totalStock = $product['color1_size1_stock'] 
-                                + $product['color1_size2_stock'] 
-                                + $product['color2_size1_stock'] 
-                                + $product['color2_size2_stock'];
-
-                    // Check if the total stock is zero
-                    $isOutOfStock = $totalStock == 0;
-
-                    // Apply light grey color if unavailable or out of stock
                     $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
 
-                    // Determine the message to show
                     $message = '';
                     if ($isUnavailable) {
                         $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
@@ -1272,7 +1190,7 @@ body {
                     echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
-                                    <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT">
+                                    <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
 									<a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
 										data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
 										Quick View
@@ -1293,6 +1211,17 @@ body {
                                         </a>
                                     </div>
                                 </div>
+                                <div class="block2-txt-child2 flex-r p-t-3">';
+                    
+                                    // Display color circles
+                                    foreach ($colors as $index => $color) {
+                                        echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $color['color'] . '; cursor: pointer;" 
+                                                data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
+                                                <i class="zmdi zmdi-circle"></i>
+                                            </span>';
+                                    }
+
+                echo '      </div>
                             </div>
                           </div>';
                 }
@@ -1506,20 +1435,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						
 						<!--  -->
 						<div class="p-t-33">
-							<div class="flex-w flex-r-m p-b-10">
-								<div class="size-203 flex-c-m respon6">
-									Size
-								</div>
-
-								<div class="size-204 respon6-next">
-									<div class="rs1-select2 bor8 bg0">
-										<select class="js-select2" name="size">
-											<option>Choose an option</option>
-										</select>
-										<div class="dropDownSelect2"></div>
-									</div>
-								</div>
-							</div>
+                            <div class="size-display"></div>
 
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-203 flex-c-m respon6">
@@ -1667,142 +1583,112 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 </script>
 <script>
    $(document).on('click', '.js-show-modal1', function(event) {
-        event.preventDefault();
-        var productId = $(this).data('id');
-        
-        // Make an AJAX call to fetch product details
-        $.ajax({
-            url: '', // The same PHP file
-            type: 'GET',
-            data: { fetch_product: true, id: productId },
-            dataType: 'json',
-            success: function(response) {
-                if (response) {
-                    // Populate the modal with product data
-                    $('.js-name-detail').text(response.product_name);
-                    $('.mtext-106').text('$' + response.product_price);
-                    $('.stext-102').text(response.product_des);
+    event.preventDefault();
+    var productId = $(this).data('id');
 
-                    // Store the product ID and stock for later access
-                    $('.js-addcart-detail').data('id', productId);
-                    $('.js-addcart-detail').data('stock', response.product_stock);
+    // Fetch product and variant details
+    $.ajax({
+        url: '', // The same PHP file
+        type: 'GET',
+        data: { fetch_product: true, id: productId },
+        dataType: 'json',
+        success: function(response) {
+            if (response) {
+                // Populate modal details
+                $('.js-name-detail').data('id', productId);
+                $('.js-name-detail').text(response.product_name);
+                $('.mtext-106').text('$' + response.product_price);
+                $('.stext-102').text(response.product_des);
 
-                    window.currentProductResponse = response;
-
-                    // Update Quick View images for the default color
-                    updateQuickViewImages(response, response.color1);
-
-                    // Update size options
-                    var sizeSelect = $('select[name="size"]');
-                    sizeSelect.empty(); // Clear existing options
-                    sizeSelect.append('<option value="default">Choose an option</option>'); // Default option
-                    if (response.size1) sizeSelect.append('<option value="' + response.size1 + '">' + response.size1 + '</option>');
-                    if (response.size2) sizeSelect.append('<option value="' + response.size2 + '">' + response.size2 + '</option>');
-
-                    // Update color options
-                    var colorSelect = $('select[name="color"]');
-                    colorSelect.empty(); // Clear existing options
-                    colorSelect.append('<option value="">Choose an option</option>'); // Default option
-                    if (response.color1) colorSelect.append('<option value="' + response.color1 + '">' + response.color1 + '</option>');
-					if (response.color2) colorSelect.append('<option value="' + response.color2 + '">' + response.color2 + '</option>');
-                    
-                    // Add event listener for color selection
-                    colorSelect.on('change', function() {
-                        var selectedColor = $(this).val();
-                        if (selectedColor) {
-                            updateQuickViewImages(response, selectedColor);
-                        }
-                        
-                    });
-
-                    // Fetch packages containing the product ID
-                    fetchPackages(productId);
-
-                    // Show the modal
-                    $('.js-modal1').addClass('show-modal1');
-                } else {
-                    alert('Product details not found.');
-                }
-            },
-            error: function() {
-                alert('An error occurred while fetching product details.');
-            }
-        });
-    });
-    function getStockBasedOnSelection(response, selectedColor, selectedSize) {
-        if (!response || !selectedColor || !selectedSize) return 0;
-
-        if (selectedColor === response.color1 && selectedSize === response.size1) {
-            return parseInt(response.color1_size1_stock || 0);
-        }
-        if (selectedColor === response.color1 && selectedSize === response.size2) {
-            return parseInt(response.color1_size2_stock || 0);
-        }
-        if (selectedColor === response.color2 && selectedSize === response.size1) {
-            return parseInt(response.color2_size1_stock || 0);
-        }
-        if (selectedColor === response.color2 && selectedSize === response.size2) {
-            return parseInt(response.color2_size2_stock || 0);
-        }
-        return 0;
-    }
-
-    $(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (e) {
-        e.preventDefault();
-        const $input = $(this).siblings('.num-product');
-        const selectedColor = $('select[name="color"]').val();
-        const selectedSize = $('select[name="size"]').val();
-        const response = window.currentProductResponse;
-
-        if (!selectedColor || !selectedSize) {
-            $('.stock-warning').text('Please choose the color and size!').css('color', 'red').show();
-            return;
-        }
-
-        const productStock = getStockBasedOnSelection(response, selectedColor, selectedSize);
-        let currentVal = parseInt($input.val()) || 0;
-
-        if ($(this).hasClass('btn-num-product-up')) {
-            if (currentVal < productStock) {
-                $input.val(currentVal ++);
-                $('.stock-warning').hide();
+                // Fetch variants for the product
+                fetchVariants(productId, response);
+                
+                // Show modal
+                $('.js-modal1').addClass('show-modal1');
             } else {
-                $('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
-                $input.val(productStock); // Prevent further increment
+                alert('Product details not found.');
             }
-        } else if ($(this).hasClass('btn-num-product-down')) {
-            if (currentVal > 1) {
-                $input.val(currentVal - 1);
-                $('.stock-warning').hide();
-            }
+        },
+        error: function() {
+            alert('An error occurred while fetching product details.');
         }
     });
-    $(document).on('change', 'select[name="color"], select[name="size"]', function () {
-    $('.stock-warning').hide();
-    const selectedColor = $('select[name="color"]').val();
-    const selectedSize = $('select[name="size"]').val();
-
-    if (!selectedColor || !selectedSize) {
-        $('.stock-warning').text('Please choose the color and size!').css('color', 'red').show();
-        $('.num-product').val('0'); // Reset quantity to 1
-    }
 });
-    // Function to update Quick View images
-    function updateQuickViewImages(response, color) {
+
+function fetchVariants(productId, productResponse) {
+    console.log("Fetching variants for product ID:", productId); // Log product ID
+    console.log("Product Response:", productResponse); // Log product data
+    $.ajax({
+        url: '', // Replace with the correct PHP endpoint or file URL
+        type: 'GET',
+        data: { fetch_variants: true, product_id: productId },
+        dataType: 'json',
+        success: function(variants) {
+            console.log("Variants fetched successfully:", variants);
+            window.productVariants = variants;
+            if (variants && variants.length > 0) {
+                // Find the variant with the lowest ID
+                var defaultVariant = variants.reduce((lowest, current) =>
+                    current.variant_id < lowest.variant_id ? current : lowest
+                );
+
+                // Display default Quick View images
+                updateQuickViewImages(defaultVariant);
+
+                // Populate color options
+                var colorSelect = $('select[name="color"]');
+                colorSelect.empty();
+                colorSelect.append('<option value="">Choose an option</option>');
+                var uniqueColors = [...new Set(variants.map(v => v.color))];
+                uniqueColors.forEach(color => {
+                    colorSelect.append('<option value="' + color + '">' + color + '</option>');
+                });
+
+                // Handle color change
+                colorSelect.on('change', function() {
+                    var selectedColor = $(this).val();
+                    if (selectedColor) {
+                        colorSelect.val(selectedColor);
+                        var variant = variants.find(v => v.color === selectedColor);
+                        if (variant) {
+                            updateQuickViewImages(variant);
+                            $('.size-display').text('Size: ' + variant.size);
+                        }
+                    }
+                });
+
+                // Display size for the default variant
+                $('.size-display').text('Size: ' + defaultVariant.size);
+            } else {
+                console.error("No variants found for this product.");
+                alert('No variants found for this product.');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching variants:", xhr.responseText);
+            alert('An error occurred while fetching product variants.');
+        }
+    });
+}
+
+function updateQuickViewImages(variant) {
+    console.log("Updating Quick View Images for variant:", variant);
     var galleryContainer = $('.gallery-lb');
 
     // Destroy existing Slick instance if initialized
     if (galleryContainer.hasClass('slick-initialized')) {
-        galleryContainer.slick('unslick'); // Destroy the current Slick instance
+        galleryContainer.slick('unslick');
+        console.log("Slick carousel destroyed.");
     }
 
-    galleryContainer.empty(); // Clear existing images to avoid duplicates
+    galleryContainer.empty(); // Clear existing images
 
-    // Dynamically append new images based on selected color
+    // Append images
     for (var i = 1; i <= 3; i++) {
-        var imageKey = 'Quick_View' + (color === response.color1 ? i : i + 3); // Map to correct images
-        if (response[imageKey]) {
-            var imagePath = 'images/' + response[imageKey];
+        var imageKey = 'Quick_View' + i;
+        if (variant[imageKey]) {
+            console.log(`Adding image: ${variant[imageKey]}`);
+            var imagePath = 'images/' + variant[imageKey];
             galleryContainer.append(`
                 <div class="item-slick3" data-thumb="${imagePath}">
                     <div class="wrap-pic-w pos-relative">
@@ -1814,205 +1700,217 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 </div>
             `);
         }
+        else {
+            console.warn(`Image key ${imageKey} is missing or empty for this variant.`); // Log missing images
+        }
     }
 
-    // Reinitialize Slick slidertenafter clearing and appending
+    // Reinitialize Slick slider
     galleryContainer.slick({
         slidesToShow: 1,
         slidesToScroll: 1,
         arrows: true,
         fade: true,
         dots: true,
-        adaptiveHeight: true,
         prevArrow: '<button type="button" class="slick-prev"><i class="fa fa-chevron-left"></i></button>',
         nextArrow: '<button type="button" class="slick-next"><i class="fa fa-chevron-right"></i></button>',
         customPaging: function (slider, i) {
-            var thumb = $(slider.$slides[i]).data('thumb');
-        },
+                var thumb = $(slider.$slides[i]).data('thumb');
+        }
     });
 }
+function getStockBasedOnSelection(selectedColor) {
+    if (!window.productVariants || !selectedColor) return 0;
 
+    // Find the variant matching the selected color
+    const matchingVariant = window.productVariants.find(variant => variant.color === selectedColor);
 
-
-
-
-
-
-	function fetchPackages(productId) {
-        $.ajax({
-            url: '', // The same PHP file
-            type: 'GET',
-            data: { fetch_packages: true, product_id: productId },
-            dataType: 'json',
-            success: function(packages) {
-                const packageBox = $('#packageBox');
-                packageBox.empty(); // Clear existing packages
-
-                if (packages.length > 0) {
-                    packageBox.append('<h2>Valuable Packages</h2>');
-                    packages.forEach(pkg => {
-                        let packageHtml = '';
-                        if (pkg.package_status == 2) {
-                            // Unavailable package (light gray, locked, with a message)
-                            packageHtml = `
-                                <div class="package-card unavailable" style="background-color: lightgray; opacity: 0.5;" data-package-id="${pkg.package_id}">
-                                    <img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
-                                    <div class="package-info">
-                                        <h3 class="package-name">${pkg.package_name}</h3>
-                                        <p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
-                                        <p class="unavailable-message" style="color: red;">Package is unavailable.</p>
-                                    </div>
-                                </div>`;
-                        } else if (pkg.package_stock > 0) {
-                            // Available package
-                            packageHtml = `
-                                <div class="package-card" data-package-id="${pkg.package_id}" data-package-stock="${pkg.package_stock}">
-                                    <img src="images/${pkg.package_image}" alt="Package Image" class="p-image">
-                                    <div class="package-info">
-                                        <h3 class="package-name">${pkg.package_name}</h3>
-                                        <p class="package-price">Price: $${parseFloat(pkg.package_price).toFixed(2)}</p>
-                                        <div class="qty-controls">
-                                            <button class="qty-btn minus">-</button>
-                                            <input type="number" value="1" min="1" class="qty-input">
-                                            <button class="qty-btn plus">+</button>
-                                            <p class="stock-message" style="color: red; display: none;">The quantity of this package has reached the maximum.</p>
-                                        </div>
-                                        <button class="selectPackage btn-primary">Select Package</button>
-                                    </div>
-                                </div>`;
-                        } else {
-                            packageHtml = '<p>No packages found for this product!</p>';
-                        }
-                        packageBox.append(packageHtml);
-                    });
-                } else {
-                    packageBox.append('<p>No packages found for this product.</p>');
-                }
-            },
-            error: function() {
-                alert('An error occurred while fetching packages.');
-            }
-        });
+    if (matchingVariant) {
+        return parseInt(matchingVariant.stock || 0); // Return the stock for the matching variant
     }
 
-    $(document).on('click', '.qty-btn.plus', function () {
-        const $packageCard = $(this).closest('.package-card');
-        const maxStock = parseInt($packageCard.data('package-stock'));
-        const $input = $(this).siblings('.qty-input');
-        const $message = $(this).siblings('.stock-message');
-        const currentQty = parseInt($input.val()) || 1;
+    return 0; // Return 0 if no matching variant is found
+}
 
-        if (currentQty < maxStock) {
-            $input.val(currentQty + 1); // Increment the value
-            $message.hide(); // Hide the message if visible
+// Update button up/down logic
+$(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (e) {
+    e.preventDefault();
+
+    const $input = $(this).siblings('.num-product');
+    const selectedColor = $('select[name="color"]').val();
+    const productStock = getStockBasedOnSelection(selectedColor); // Get stock based on selected color
+    let currentVal = parseInt($input.val()) || 0;
+
+    if (!selectedColor) {
+        $('.stock-warning').text('Please choose a color!').css('color', 'red').show();
+        $input.val('0'); // Reset quantity to 0
+        return;
+    }
+
+    if ($(this).hasClass('btn-num-product-up')) {
+        if (currentVal < productStock) {
+            $input.val(currentVal + 1);
+            $('.stock-warning').hide();
         } else {
-            $message.show(); // Show the warning message
+            $('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();
+            $input.val(productStock); // Prevent further increment
         }
-    });
-
-    $(document).on('click', '.qty-btn.minus', function () {
-        const $input = $(this).siblings('.qty-input');
-        const $message = $(this).siblings('.stock-message');
-        const currentQty = parseInt($input.val()) || 1;
-
-        const newQty = Math.max(1, currentQty - 1); // Ensure minimum value is 1
-        $input.val(newQty); // Decrement the value
-        if (newQty < parseInt($input.closest('.package-card').data('package-stock'))) {
-            $message.hide(); // Hide the message if the quantity is below the maximum stock
+    } else if ($(this).hasClass('btn-num-product-down')) {
+        if (currentVal > 1) {
+            $input.val(currentVal - 1);
+            $('.stock-warning').hide();
         }
-    });
+    }
+});
 
-	$(document).on('click change', '.qty-btn, .qty-input', function () {
-		const $input = $(this).closest('.qty-container').find('.qty-input'); // Find the related input
-		const enteredQty = parseInt($input.val()) || 1; // Get the entered quantity (default to 1)
-		
-		// Pass the quantity to the package form
-		const $packageForm = $('#package-form'); // Replace with the actual form ID
-		$packageForm.find('.qty-display').text(enteredQty); // Update the display field
-		
-		// Optional: Add the qty as a hidden input in the form for submission
-		$packageForm.find('input[name="qty"]').val(enteredQty);
-	});
+// Update the color change logic
+$(document).on('change', 'select[name="color"]', function () {
+    $('.stock-warning').hide(); // Hide any previous warnings
+    const selectedColor = $(this).val();
 
-    $(document).ready(function () {
+    if (!selectedColor) {
+        $('.stock-warning').text('Please choose a color!').css('color', 'red').show();
+        $('.num-product').val('0'); // Reset quantity to 0
+        return;
+    }
 
-        // Add to cart functionality
-        $(document).on('click', '.js-addcart-detail', function (event) {
-            event.preventDefault();
+    // Update stock display or other UI elements if needed
+    const productStock = getStockBasedOnSelection(selectedColor);
+    if (productStock > 0) {
+        $('.stock-warning').hide();
+        $('.num-product').val('1'); // Reset to a valid starting quantity
+    } else {
+        $('.stock-warning').text('Selected color is out of stock!').css('color', 'red').show();
+        $('.num-product').val('0'); // Reset quantity to 0 if out of stock
+    }
+});
+    
 
-            const productId = $(this).data('id');
-            const productName = $('.js-name-detail').text();
-            const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
-            const productQuantity = parseInt($('.num-product').val());
-			const selectedColor = $('select[name="color"]').val();
-   			const selectedSize = $('select[name="size"]').val();
-               const response = window.currentProductResponse;
+$(document).ready(function () {
+    // Add to cart functionality
+    $(document).on('click', '.js-addcart-detail', function (event) {
+        event.preventDefault();
 
-			if (!selectedColor || !selectedSize) {
-				Swal.fire({
-                    title: 'Color and Size required!',
-                    text: 'Please select a color or size.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-				return;
-			}
-            // Get stock for the selected color and size
-            const productStock = getStockBasedOnSelection(response, selectedColor, selectedSize);
+        console.log("Add to Cart button clicked."); // Debug
 
-            // Validate stock
-            if (productQuantity > productStock) {
-                Swal.fire({
-                    title: 'Stock Limit Exceeded!',
-                    text: `Only ${productStock} items are available for the selected color and size.`,
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
+        // Retrieve product ID directly from the modal element
+        const productId = $('.js-name-detail').data('id'); // Assuming the product ID is stored in the modal
+        console.log("Product ID retrieved from modal:", productId); // Debug
 
-            if (productQuantity === 0) {
-                $('.stock-warning').text('Quantity cannot be zero.').show();
-                return;
-            }
+        const productName = $('.js-name-detail').text(); // Product Name
+        console.log("Product Name:", productName); // Debug
 
-            const totalPrice = productPrice * productQuantity;
+        const productPrice = parseFloat($('.mtext-106').text().replace('$', '')); // Product Price
+        console.log("Product Price:", productPrice); // Debug
 
-            $.ajax({
-                url: '', // Use the same PHP file
-                type: 'POST',
-                data: {
-                    add_to_cart: true,
-                    product_id: productId,
-                    qty: productQuantity,
-                    total_price: totalPrice,
-					color: selectedColor, 
-            		size: selectedSize
-                },
-                dataType: 'json',
-                success: function (response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Product has been added to your cart!',
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                location.reload();
-                            }
-                        });
-                    } else {
-                        alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
-                    }
-                    updateCart();
-                    $('.js-modal1').removeClass('show-modal1');
-                },
-                error: function () {
-                    alert('An error occurred while adding to the cart.');
-                }
+        const productQuantity = parseInt($('.num-product').val()); // Quantity selected by user
+        console.log("Product Quantity:", productQuantity); // Debug
+
+        const selectedColor = $('select[name="color"]').val(); // Selected Color
+        console.log("Selected Color:", selectedColor); // Debug
+
+        const response = window.productVariants; // All product variants loaded in the modal
+        console.log("Loaded Variants:", response); // Debug
+
+        // Validate color selection
+        if (!selectedColor) {
+            console.warn("Color not selected!"); // Debug
+            Swal.fire({
+                title: 'Color Required!',
+                text: 'Please select a color for the product.',
+                icon: 'error',
+                confirmButtonText: 'OK'
             });
+            return;
+        }
+
+        // Find the matching variant based on the selected color
+        const matchingVariant = response.find(variant => variant.color === selectedColor);
+
+        console.log("Matching Variant for Selected Color:", matchingVariant); // Debug
+
+        if (!matchingVariant) {
+            console.error("No matching variant found for the selected color."); // Debug
+            Swal.fire({
+                title: 'Invalid Variant!',
+                text: 'No size or variant found for the selected color.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Extract the size and stock from the matching variant
+        const selectedSize = matchingVariant.size; // Size based on the selected color
+        console.log("Selected Size:", selectedSize); // Debug
+
+        const productStock = parseInt(matchingVariant.stock || 0); // Stock of the matching variant
+        console.log("Available Stock for Selected Variant:", productStock); // Debug
+
+        // Validate stock
+        if (productQuantity > productStock) {
+            console.warn("Quantity exceeds available stock."); // Debug
+            Swal.fire({
+                title: 'Stock Limit Exceeded!',
+                text: `Only ${productStock} items are available for the selected color.`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        if (productQuantity === 0) {
+            console.warn("Quantity is zero."); // Debug
+            $('.stock-warning').text('Quantity cannot be zero.').show();
+            return;
+        }
+
+        // Calculate total price
+        const totalPrice = productPrice * productQuantity;
+        console.log("Total Price:", totalPrice); // Debug
+
+        // Send Add to Cart request
+        $.ajax({
+            url: '', // Use the same PHP file
+            type: 'POST',
+            data: {
+                add_to_cart: true,
+                product_id: productId, // Product ID
+                qty: productQuantity, // Quantity
+                total_price: totalPrice, // Total Price
+                color: selectedColor, // Selected Color
+                size: selectedSize // Size based on the color
+            },
+            dataType: 'json',
+            success: function (response) {
+                console.log("Add to Cart Response:", response); // Debug
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Product has been added to your cart!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload page to update cart
+                        }
+                    });
+                } else {
+                    console.error("Add to Cart failed:", response.error); // Debug
+                    alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                }
+                updateCart();
+                $('.js-modal1').removeClass('show-modal1');
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", status, error); // Debug
+                console.error("Server Response:", xhr.responseText); // Debug
+                alert('An error occurred while adding to the cart.');
+            }
         });
     });
+});
+
+
 	// Clear input data when the modal is closed
 	$(document).on('click', '.js-hide-modal1', function() {
 		$('.js-modal1').removeClass('show-modal1');
@@ -2157,142 +2055,6 @@ $(document).on('click', '.filter-tope-group button', function(event) {
     updateProducts();
 });
 </script>
-	<script>
-		$(document).on('click', '.selectPackage', function () {
-            const packageId = $(this).closest('.package-card').data('package-id');
-            console.log("Package ID:", packageId);
-
-            if (!packageId) {
-                alert("Error: Package ID is undefined. Ensure .package-card has a valid data-package-id.");
-                return;
-            }
-
-            // Fetch the products in the package
-            $.ajax({
-                url: '', // PHP endpoint to handle this request
-                type: 'GET',
-                data: { fetch_package_products: true, package_id: packageId },
-                dataType: 'json',
-                success: function (response) {
-                    console.log("Response:", response);
-
-                    if (!response.products || response.products.length === 0) {
-                        console.error("Error: response.products is undefined or empty.");
-                        alert("No products found for this package.");
-                        return;
-                    }
-
-                    let formHtml = `<h3>Select Options for Your Package</h3><form id="packageForm">`;
-                    const selectedQty = $('.qty-input').val() || 1;
-                    console.log("Selected Quantity:", selectedQty);
-
-                    if (!selectedQty) {
-                        alert("Error: Quantity is undefined.");
-                        return;
-                    }
-
-                    formHtml += `<p>You selected <span class="qty-display">${selectedQty}</span> package(s).</p>`;
-                    formHtml += `<input type="hidden" name="qty" value="${selectedQty}">`;
-
-                    // Loop through products and generate the form
-                    response.products.forEach((product, index) => {
-                        if (!product) {
-                            console.error(`Error: Product at index ${index} is undefined.`);
-                            return;
-                        }
-
-                        formHtml += `
-                            <div class="product-options" id="product_${index + 1}">
-                                <h3>${product.product_name || `Product ${index + 1}`}</h3>
-                                <img src="images/${product.product_image}" class="p-image">
-                                <label for="color_${index + 1}">Color:</label>
-                                <select name="color_${index + 1}" id="color_${index + 1}">
-                                    <option value="">Choose an option</option>
-                                    <option value="${product.color1 || ''}">${product.color1 || 'N/A'}</option>
-                                    <option value="${product.color2 || ''}">${product.color2 || 'N/A'}</option>
-                                </select>
-                                <label for="size_${index + 1}">Size:</label>
-                                <select name="size_${index + 1}" id="size_${index + 1}">
-                                    <option value="">Choose an option</option>
-                                    <option value="${product.size1 || ''}">${product.size1 || 'N/A'}</option>
-                                    <option value="${product.size2 || ''}">${product.size2 || 'N/A'}</option>
-                                </select>
-                            </div>
-                        `;
-                    });
-
-                    formHtml += `<button type="submit" class="btn-primary">Add Package to Cart</button></form>`;
-
-                    // Inject the form into the popup container
-                    $('#packageFormContainer').html(formHtml);
-                    $('#packageFormPopup').fadeIn();
-
-                    // Handle form submission
-                    $('#packageForm').on('submit', function (e) {
-                        e.preventDefault();
-
-                        // Collect the form data
-                        const packageData = {
-                            add_package_to_cart: true,
-                            package_id: packageId,
-                            qty: selectedQty
-                        };
-
-                        // Loop through inputs and append data
-                        response.products.forEach((product, index) => {
-                            packageData[`color_${index + 1}`] = $(`#color_${index + 1}`).val() || '';
-                            packageData[`size_${index + 1}`] = $(`#size_${index + 1}`).val() || '';
-                        });
-
-                        console.log("Package Data:", packageData);
-
-                        $.ajax({
-                            url: '', // Replace with actual PHP script
-                            type: 'POST',
-                            data: packageData,
-                            success: function (response) {
-                                console.log("Add to Cart Response:", response);
-                                if (response.success) {
-                                    Swal.fire({
-                                        title: 'Package has been added to your cart!',
-                                        icon: 'success',
-                                        confirmButtonText: 'OK'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            location.reload();
-                                        }
-                                    });
-                                } else {
-                                    alert('Error: ' + response.message);
-                                }
-                            },
-                            error: function () {
-                                alert('An error occurred while adding the package to the cart.');
-                            }
-                        });
-                    });
-                },
-                error: function () {
-                    alert('An error occurred while fetching package details.');
-                }
-            });
-        });
-
-
-
-
-
-		// Close popup on clicking the close button or outside the popup
-		$(document).on('click', '.close-popup', function () {
-			$('#packageFormPopup').fadeOut();
-		});
-
-		$(document).on('click', '.popup-overlay', function (e) {
-			if ($(e.target).is('.popup-overlay')) {
-				$('#packageFormPopup').fadeOut();
-			}
-		});
-</script>
 <script>
     // Add click event listener to cart item images
     document.addEventListener('DOMContentLoaded', function () {
@@ -2383,9 +2145,35 @@ $(document).on('click', '.filter-tope-group button', function(event) {
         });
     });
 });
+</script>
+<script>
+// Delegate event to dynamically loaded elements
+document.addEventListener("click", function (event) {
+    // Check if the clicked element or its parent has the class "color-circle"
+    if (event.target.closest(".color-circle")) {
+        var circle = event.target.closest(".color-circle");
 
+        // Retrieve necessary attributes
+        var newImage = circle.getAttribute("data-image");
+        var productId = circle.getAttribute("data-product-id");
 
+        // Log for debugging
+        console.log("Circle clicked!");
+        console.log("Product ID:", productId);
+        console.log("New Image Path:", newImage);
 
+        // Find the product image element
+        var productImageElement = document.getElementById("product-image-" + productId);
+
+        // Check if the product image element exists and update the image
+        if (productImageElement && newImage) {
+            console.log("Updating product image for Product ID:", productId);
+            productImageElement.setAttribute("src", newImage);
+        } else {
+            console.log("Product image element not found or new image path missing.");
+        }
+    }
+});
 </script>
 <script src="js/main.js"></script>
 
