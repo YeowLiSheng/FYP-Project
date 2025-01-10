@@ -604,8 +604,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-order-totals">
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
-							$delivery_charge = 10;
-							$total_payment = $grand_total - $discount_amount + $delivery_charge;
+							
+							$total_payment = $grand_total - $discount_amount;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
