@@ -651,18 +651,20 @@ if ($paymentSuccess) {
     $order_id = $stmt->insert_id;
 
     // 插入 `order_details` 表
-    foreach ($cart_result as $item) {
-        $product_id = $item['product_id'];
-        $product_name = $item['product_name'];
-        $quantity = $item['total_qty'];
-        $unit_price = $item['product_price'];
-        $total_price = $item['item_total_price'];
-
-        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
-        $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
-        $detail_stmt->execute();
-    }
+	mysqli_data_seek($cart_result, 0); 
+	while ($row = mysqli_fetch_assoc($cart_result)) {
+	   $product_id = $row['product_id'];
+		$quantity = $row['total_qty'];
+		$unit_price = $row['item_price'];
+		$total_price = $row['item_total_price'];
+   
+		$order_details_query = "INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price)
+								VALUES (?, ?, ?, ?, ?)";
+		$details_stmt = $conn->prepare($order_details_query);
+		$details_stmt->bind_param("iidii", $order_id, $product_id, $quantity, $unit_price, $total_price);
+		$details_stmt->execute();
+	}
+   
 
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
