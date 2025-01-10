@@ -604,7 +604,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-order-totals">
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
-			
 							$total_payment = $grand_total - $discount_amount;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
@@ -641,7 +640,7 @@ if ($paymentSuccess) {
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
+	$order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
     $stmt->bind_param("iddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
