@@ -189,32 +189,29 @@ include 'dataconnection.php';
 
 </div><!-- end of card -->
 
-
-    <script>
-        // Use AJAX to fetch the filtered results when user types
+<script>
+    $(document).ready(function() {
+        // Trigger AJAX request when user types in the search input
         $("#search").keyup(function() {
-            var searchQuery = $(this).val();
+            var searchQuery = $(this).val(); // Get the current value of the search input
 
             $.ajax({
-                url: "search_customer.php",
+                url: "search_customer.php",  // The file that processes the search
                 type: "POST",
-                data: { search: searchQuery },
+                data: { search: searchQuery },  // Send the search query to the server
                 success: function(data) {
-                    // Replace the table body with the new filtered data
+                    // Update the table body with the filtered data returned from the server
                     $("#table-body").html(data);
                 }
             });
         });
 
-        // Clear the search bar when a customer is clicked
+        // Clear the search input when a row (customer) is clicked
         $("tbody").on("click", "tr", function() {
-            // Clear the search bar
+            // Clear the search input field
             $("#search").val('');
         });
+    });
+</script>
 
-        // Toggle the visibility of the export dropdown menu
-        function toggleDropdown() {
-            document.getElementById("exportDropdown").classList.toggle("show-dropdown");
-        }
-    </script>
 </body>

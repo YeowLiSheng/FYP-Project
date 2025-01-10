@@ -1,47 +1,3 @@
-<?php
-session_start(); // Start the session
-
-// Include the database connection file
-include("dataconnection.php"); 
-
-
-// Initialize total_price before fetching cart items
-$total_price = 0;
-
-// Fetch and combine cart items for the logged-in user where the product_id is the same
-// Fetch and combine cart items with stock information
-$cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
-		   sc.color, sc.size,    
-		   SUM(sc.qty) AS total_qty, 
-           SUM(sc.qty * p.product_price) AS total_price, 
-           MAX(sc.final_total_price) AS final_total_price, 
-           MAX(sc.voucher_applied) AS voucher_applied
-    FROM shopping_cart sc 
-    JOIN product p ON sc.product_id = p.product_id 
-    WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id, sc.color, sc.size";
-$cart_items_result = $connect->query($cart_items_query);
-
-// Calculate total price and final total price
-if ($cart_items_result && $cart_items_result->num_rows > 0) {
-    while ($cart_item = $cart_items_result->fetch_assoc()) {
-        $total_price += $cart_item['total_price'];
-    }
-}
-
-// Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
-$distinct_products_result = $connect->query($distinct_products_query);
-$distinct_count = 0;
-
-if ($distinct_products_result) {
-    $row = $distinct_products_result->fetch_assoc();
-    $distinct_count = $row['distinct_count'] ?? 0;
-}
-
-?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +7,7 @@ if ($distinct_products_result) {
     <title>Contact Us</title>
     <link rel="stylesheet" href="styles.css">
 
-	
+
 <!--===============================================================================================-->	
 <link rel="icon" type="image/png" href="images/icons/favicon.png"/>
 <!--===============================================================================================-->
@@ -77,54 +33,10 @@ if ($distinct_products_result) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 </head>
-<style>
-.rainbow-text {
-    background: linear-gradient(to right, red, orange, yellow, green, indigo, violet);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; /* Ensures the text is transparent on WebKit browsers */
-    color: transparent; /* Ensures the text is transparent on non-WebKit browsers */
-    font-weight: bold;
-    background-size: 200%;
-    animation: fadeRainbow 2s infinite;
-}
 
-@keyframes fadeRainbow {
-    0% { background-position: 0%; }
-    100% { background-position: 100%; }
-}
-.hov-img0 {
-    width: 100%; /* Adjust width as needed */
-    height: 100%; /* Adjust height as needed */
-    overflow: hidden; /* Ensures the video doesn’t exceed the container bounds */
-}
-.responsive-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensures the video covers the container without stretching */
-}
-/* Hide all default controls */
-.no-controls::-webkit-media-controls,
-.no-controls::-webkit-media-controls-enclosure {
-    display: none !important;
-}
+<body class="animsition">	
 
-/* Hide controls for other browsers */
-.no-controls::-moz-media-controls,
-.no-controls::-moz-media-controls-enclosure {
-    display: none !important;
-}
-
-/* Prevent interaction with the video */
-.no-controls {
-    pointer-events: none;
-}
-</style>
-
-
-<body class="animsition">
-	
-	<!-- Header -->
+<!-- Header -->
 	<!-- Header -->
 	<header class="header-v4">
 		<!-- Header desktop -->
@@ -171,16 +83,10 @@ if ($distinct_products_result) {
 
 
 
-                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
-                            <?php
-								echo "HI '" . htmlspecialchars($user_data['user_name']);
-                            ?>
-                        </a>
-
-
-                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
-							LOG OUT
+                        <a href="login.php" class="flex-c-m trans-04 p-lr-25">
+							Account
 						</a>
+                            
 
 
 
@@ -229,102 +135,8 @@ if ($distinct_products_result) {
 						</ul>
 					</div>	
 
-					<!-- Icon header -->
-					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
+					
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
-							<i class="zmdi zmdi-shopping-cart"></i>
-						</div>
-
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
-					</div>
-				</nav>
-			</div>	
-		</div>
-
-		<!-- Modal Search -->
-		<div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
-			<div class="container-search-header">
-				<button class="flex-c-m btn-hide-modal-search trans-04 js-hide-modal-search">
-					<img src="images/icons/icon-close2.png" alt="CLOSE">
-				</button>
-
-				<form class="wrap-search-header flex-w p-l-15">
-					<button class="flex-c-m trans-04">
-						<i class="zmdi zmdi-search"></i>
-					</button>
-					<input class="plh3" type="text" name="search" placeholder="Search...">
-				</form>
-			</div>
-		</div>
-	</header>
-
-<!-- Cart -->
-<div class="wrap-header-cart js-panel-cart">
-    <div class="s-full js-hide-cart"></div>
-
-    <div class="header-cart flex-col-l p-l-65 p-r-25">
-        <div class="header-cart-title flex-w flex-sb-m p-b-8">
-            <span class="mtext-103 cl2">
-                Your Cart
-            </span>
-
-            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-                <i class="zmdi zmdi-close"></i>
-            </div>
-        </div>
-        
-        <div class="header-cart-content flex-w js-pscroll">
-            <ul class="header-cart-wrapitem w-full" id="cart-items">
-                <?php
-                // Display combined cart items
-                $total_price = 0;
-                if ($cart_items_result->num_rows > 0) {
-                    while($cart_item = $cart_items_result->fetch_assoc()) {
-                        $total_price += $cart_item['total_price'];
-                        echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-                            </div>
-                        </li>';
-                    }
-                } else {
-                    echo '<p>Your cart is empty.</p>';
-                }
-                ?>
-            </ul>
-            
-            <div class="w-full">
-                <div class="header-cart-total w-full p-tb-40">
-                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
-                </div>
-
-                <div class="header-cart-buttons flex-w w-full">
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        View Cart
-                    </a>
-
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 
@@ -345,39 +157,26 @@ if ($distinct_products_result) {
     </div>
 
     <!-- Contact Form -->
-    <form action="contact.php" method="POST" style="padding: 20px;">
-        <h1 style="text-align: center; font-size: 28px; margin-bottom: 20px; color: #444;">Contact Us</h1>
-        
-        <?php if (isset($_SESSION['id'])): ?>
-            <!-- Display email if user is logged in -->
-            <label style="font-weight: bold; margin-bottom: 10px; display: block;">Email</label>
-            <input type="text" name="email" value="<?php echo htmlspecialchars($user_email); ?>" readonly
-                style="width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #f9f9f9; color: #666; cursor: not-allowed;">
-        <?php else: ?>
-            <!-- Show email input if user is not logged in -->
-            <label style="font-weight: bold; margin-bottom: 10px; display: block;">Email</label>
-            <input type="email" name="email" required
-                style="width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fefefe; color: #333;">
-        <?php endif; ?>
-
-        <label style="font-weight: bold; margin-bottom: 10px; display: block;">Message</label>
-        <textarea name="message" required
-            style="width: 100%; height: 150px; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fefefe; color: #333; resize: none;"></textarea>
-
-        <button type="submit" name="submitbtn" 
-            style="display: block; width: 100%; padding: 14px; font-size: 18px; font-weight: bold; color: #fff; background: linear-gradient(45deg, #007bff, #0056b3); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            Send Message
-        </button>
-    </form>
-</div>
-
-
-
-
+<form action="contact.php" method="POST" style="padding: 20px;">
+    <h1 style="text-align: center; font-size: 28px; margin-bottom: 20px; color: #444;">Contact Us</h1>
     
+    <!-- Email input -->
+    <label style="font-weight: bold; margin-bottom: 10px; display: block;">Email</label>
+    <input type="email" name="email" required
+        style="width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fefefe; color: #333;">
+   
+    <!-- Message input -->
+    <label style="font-weight: bold; margin-bottom: 10px; display: block;">Message</label>
+    <textarea name="message" required
+        style="width: 100%; height: 150px; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fefefe; color: #333; resize: none;"></textarea>
 
-
-
+    <!-- Submit button -->
+    <button type="submit" name="submitbtn" 
+        style="display: block; width: 100%; padding: 14px; font-size: 18px; font-weight: bold; color: #fff; background: linear-gradient(45deg, #007bff, #0056b3); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        Send Message
+    </button>
+</form>
+</div>
 
 
 	
@@ -576,71 +375,35 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	
 </body>
 </html>
-
-
-
-
 <?php
+// Include database connection
+include('dataconnection.php'); // Ensure your DB connection is included properly
 
+// Error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submitbtn'])) {
+    // Retrieve form data and sanitize inputs
+    $email = mysqli_real_escape_string($connect, $_POST['email']);
+    $message = mysqli_real_escape_string($connect, $_POST['message']);
 
-// Check if the form is submitted
-if (isset($_POST['submitbtn'])) {
-    // Retrieve user input
-    $message = $_POST['message'];
+    // Prepare SQL query to insert data into contact_us table
+    $query = "INSERT INTO contact_us (user_email, message, status) VALUES ('$email', '$message', 0)"; // Set status to 0
 
-    // Check if the user is logged in
-    if (isset($_SESSION['id'])) {
-        // Logged in: retrieve user email and user ID from session
-        $user_id = $_SESSION['id'];
-        $query = "SELECT user_email FROM user WHERE user_id = ?";
-        $stmt = $connect->prepare($query);
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $email = $row['user_email'];
-        }
+    // Execute the query
+    if (mysqli_query($connect, $query)) {
+        // If the query is successful, show a success message or redirect
+        echo "<script>
+                alert('Message sent successfully!');
+                window.location.href = 'contact.php'; // Redirect back to the contact page
+              </script>";
     } else {
-        // Not logged in: retrieve email from the form input
-        $email = $_POST['email'];
-        $user_id = null; // Set user_id as null for non-logged-in users
+        // If there is an error, show the error message
+        echo "Error: " . mysqli_error($connect); // This will show the exact error message
     }
-
-    // Insert into contact_us table with status = 0
-    $status = 0; // Set status to 0
-    $query = "INSERT INTO contact_us (user_email, message, user_id, status) VALUES (?, ?, ?, ?)";
-    $stmt = $connect->prepare($query);
-    $stmt->bind_param("ssii", $email, $message, $user_id, $status);
-
-    if ($stmt->execute()) {
-        echo "<!DOCTYPE html>
-        <html>
-        <head>
-            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-        </head>
-        <body>
-            <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Message Sent!',
-                    text: 'The message has been sent successfully.',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = 'contact.php'; // Redirect to the contact page or any desired page
-                });
-            </script>
-        </body>
-        </html>";
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-
-    $stmt->close();
 }
 
-// Close the database connection
+// Close the connection after the query is executed
 mysqli_close($connect);
 ?>

@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         title: 'Successful password verification!',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        window.location.href = 'change_password.php?edit_admin=$admin_id';
+                        window.location.href = 'admin_change_password.php?edit_admin=$admin_id';
                     });
                 </script>
             </body>
