@@ -643,7 +643,7 @@ if ($paymentSuccess) {
     // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    $stmt->bind_param("iddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
 
     // 获取插入订单的ID
