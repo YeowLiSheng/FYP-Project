@@ -605,12 +605,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
 
-							$total_payment = $grand_total - $discount_amount;
+							$final_amount = $grand_total - $discount_amount;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
-								<span>RM<?php echo number_format($total_payment, 2); ?></span>
+								<span>RM<?php echo number_format($final_amount, 2); ?></span>
 							</p>
 						</div>
 
@@ -642,7 +642,7 @@ if ($paymentSuccess) {
     // Insert into orders table
 $order_query = "INSERT INTO orders (user_id, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($order_query);
-$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $total_payment, $shipping_address, $user_message);
+$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
 $stmt->execute();
 
 if ($stmt->affected_rows > 0) {
