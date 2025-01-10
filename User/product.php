@@ -1732,7 +1732,7 @@ function getStockBasedOnSelection(selectedColor) {
     return 0; // Return 0 if no matching variant is found
 }
 
-// Update button up/down logic
+// Update button up/down
 $(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (e) {
     e.preventDefault();
 
