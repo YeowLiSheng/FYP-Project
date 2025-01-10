@@ -604,11 +604,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-order-totals">
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
-							
-							$total_payment = $grand_total - $discount_amount;
+							$delivery_charge = 10;
+							$total_payment = $grand_total - $discount_amount + $delivery_charge;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
+							<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
 								<span>RM<?php echo number_format($total_payment, 2); ?></span>
 							</p>
@@ -636,35 +637,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<?php
 if ($paymentSuccess) {
     // 获取必要的订单数据
-	$final_amount = $total_payment;
+    $final_amount = $total_payment; // 总支付金额
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
-    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : '';
+    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
-  
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) 
-                    VALUES (?, NOW(), ?, ?, ?, ?, ?)";
+    // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
 
-  
+    // 获取插入订单的ID
     $order_id = $stmt->insert_id;
 
     // 插入 `order_details` 表
-	mysqli_data_seek($cart_result, 0); 
-	while ($row = mysqli_fetch_assoc($cart_result)) {
-	   $product_id = $row['product_id'];
-		$quantity = $row['total_qty'];
-		$unit_price = $row['item_price'];
-		$total_price = $row['item_total_price'];
-   
-		$order_details_query = "INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price)
-								VALUES (?, ?, ?, ?, ?)";
-		$details_stmt = $conn->prepare($order_details_query);
-		$details_stmt->bind_param("iidii", $order_id, $product_id, $quantity, $unit_price, $total_price);
-		$details_stmt->execute();
-	}
-   
+    foreach ($cart_result as $item) {
+        $product_id = $item['product_id'];
+        $product_name = $item['product_name'];
+        $quantity = $item['total_qty'];
+        $unit_price = $item['product_price'];
+        $total_price = $item['item_total_price'];
+
+        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
+        $detail_stmt = $conn->prepare($detail_query);
+        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
+        $detail_stmt->execute();
+    }
 
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
