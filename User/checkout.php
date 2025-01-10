@@ -636,14 +636,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<?php
 if ($paymentSuccess) {
     // 获取必要的订单数据
-    $final_amount = $total_payment; // 总支付金额
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // Insert into orders table
 $order_query = "INSERT INTO orders (user_id, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($order_query);
-$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $total_payment, $shipping_address, $user_message);
 $stmt->execute();
 
 if ($stmt->affected_rows > 0) {
