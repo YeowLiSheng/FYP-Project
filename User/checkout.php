@@ -609,7 +609,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
-							<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
 								<span>RM<?php echo number_format($total_payment, 2); ?></span>
 							</p>
@@ -642,9 +641,9 @@ if ($paymentSuccess) {
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)";
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $shipping_address, $user_message);
+    $stmt->bind_param("iddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
     $stmt->execute();
 
     // 获取插入订单的ID
