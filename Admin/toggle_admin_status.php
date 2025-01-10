@@ -16,8 +16,28 @@ if (isset($_POST['toggle_status'])) {
 
         // Check if the admin is superadmin
         if ($admin_id == 'superadmin') {
-            echo "<script>alert('The superadmin cannot be deactivated.'); window.location.href = 'view_admin.php';</script>";
-            exit();
+            
+             // Error uploading file, show SweetAlert
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error uploading',
+                        text: 'The superadmin cannot be deactivated.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'view_admin.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit;
+            
         }
 
         // Toggle the admin status

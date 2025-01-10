@@ -10,6 +10,29 @@ if (isset($_GET["submitbtn"])) {
     $row = mysqli_fetch_assoc($result);
 
     if ($count == 1) {
+        // Check if the account is deactivated
+        if ($row["user_status"] == 0) {
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            </head>
+            <body>
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Account Deactivated',
+                        text: 'Your account is deactivated, you cannot change the password.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'login.php';
+                    });
+                </script>
+            </body>
+            </html>";
+            exit();
+        }
+
         // Generate OTP
         $otp = rand(100000, 999999);
         $_SESSION['otp'] = $otp;
@@ -81,9 +104,6 @@ if (isset($_GET["submitbtn"])) {
                     window.location.href = 'forget_password.php';
                 });
             </script>
-
-
-         
         </body>
         </html>";
         exit();

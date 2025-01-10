@@ -234,6 +234,10 @@ $cart_items_query = "
         p.product_name, 
         p.product_image, 
         p.product_price,
+		p.color1_size1_stock,
+		p.color1_size2_stock,
+		p.color2_size1_stock,
+		p.color2_size2_stock,
 		p.product_stock,
 		p.product_status,
         sc.color, 
@@ -812,29 +816,6 @@ if ($distinct_products_result) {
 						if (!empty($cart_items)) {
 							foreach ($cart_items as $cart_item) {
 								if (!empty($cart_item['package_id'])) {
-									$package_id = $cart_item['package_id'];
-									$query = "SELECT product1_id, product2_id, product3_id FROM product_package WHERE package_id = ?";
-									$stmt = $connect->prepare($query);
-									$stmt->bind_param("i", $package_id);
-									$stmt->execute();
-									$result = $stmt->get_result();
-									$package_details = $result->fetch_assoc();
-
-									$product1_id = $package_details['product1_id'] ?? 'N/A';
-									$product2_id = $package_details['product2_id'] ?? 'N/A';
-									$product3_id = $package_details['product3_id'] ?? 'N/A';
-
-									// Fetch product details from the product table, including color and size fields
-									$product_query = "SELECT product_id, product_name, product_image, color1, color2, size1, size2 FROM product WHERE product_id IN (?, ?, ?)";
-									$stmt_product = $connect->prepare($product_query);
-									$stmt_product->bind_param("iii", $product1_id, $product2_id, $product3_id);
-									$stmt_product->execute();
-									$result_product = $stmt_product->get_result();
-
-									$products = [];
-									while ($row = $result_product->fetch_assoc()) {
-										$products[$row['product_id']] = $row;
-									}
 									// Generate a unique key based on package ID and product details
 									$unique_key = $cart_item['package_id'] . '_' . $cart_item['product1_size'] . '_' . $cart_item['product1_color'] . '_' . $cart_item['product2_size'] . '_' . $cart_item['product2_color'] . '_' . $cart_item['product3_size'] . '_' . $cart_item['product3_color'];
 									
@@ -856,79 +837,9 @@ if ($distinct_products_result) {
 											<br>
 											<small>Includes:</small>
 											<ul>
-												<li>
-													Product ID ' . $product1_id . ': 
-													<select name="product1_color">
-														<option value="' . $cart_item['product1_color'] . '">' . $cart_item['product1_color'] . '</option>';
-														if (!empty($products[$product1_id])) {
-															$product = $products[$product1_id];
-															foreach (['color1', 'color2'] as $color_field) {
-																if (!empty($product[$color_field]) && $product[$color_field] !== $cart_item['product1_color']) {
-																	echo '<option value="' . $product['color1'] . '">' . $product['color1'] . '</option>
-																		<option value="' . $product['color2'] . '">' . $product['color2'] . '</option>';
-																}
-															}
-														}
-														echo '         </select>, 
-																		<select name="product1_size">
-																			<option value="' . $cart_item['product1_size'] . '">' . $cart_item['product1_size'] . '</option>';
-																			if (!empty($products[$product1_id])) {
-																				foreach (['size1', 'size2'] as $size_field) {
-																					if (!empty($products[$product1_id][$size_field]) && $products[$product1_id][$size_field] !== $cart_item['product1_size']) {
-																						echo '<option value="' . $products[$product1_id][$size_field] . '">' . $products[$product1_id][$size_field] . '</option>';
-																					}
-																				}
-																			}
-														echo '         </select>
-																	</li>
-																	<li>
-																		Product ID ' . $product2_id . ': 
-																		<select name="product2_color">
-																			<option value="' . $cart_item['product2_color'] . '">' . $cart_item['product2_color'] . '</option>';
-																			if (!empty($products[$product2_id])) {
-																				$product = $products[$product2_id];
-																				foreach (['color1', 'color2'] as $color_field) {
-																					if (!empty($product[$color_field]) && $product[$color_field] !== $cart_item['product2_color']) {
-																						echo '<option value="' . $product[$color_field] . '">' . $product[$color_field] . '</option>';
-																					}
-																				}
-																			}
-														echo '         </select>, 
-																		<select name="product2_size">
-																			<option value="' . $cart_item['product2_size'] . '">' . $cart_item['product2_size'] . '</option>';
-																			if (!empty($products[$product2_id])) {
-																				foreach (['size1', 'size2'] as $size_field) {
-																					if (!empty($products[$product2_id][$size_field]) && $products[$product2_id][$size_field] !== $cart_item['product2_size']) {
-																						echo '<option value="' . $products[$product2_id][$size_field] . '">' . $products[$product2_id][$size_field] . '</option>';
-																					}
-																				}
-																			}
-														echo '         </select>
-																	</li>
-																	<li>
-																		Product ID ' . $product3_id . ': 
-																		<select name="product3_color">
-																			<option value="' . $cart_item['product3_color'] . '">' . $cart_item['product3_color'] . '</option>';
-																			if (!empty($products[$product3_id])) {
-																				$product = $products[$product3_id];
-																				foreach (['color1', 'color2'] as $color_field) {
-																					if (!empty($product[$color_field]) && $product[$color_field] !== $cart_item['product3_color']) {
-																						echo '<option value="' . $product[$color_field] . '">' . $product[$color_field] . '</option>';
-																					}
-																				}
-																			}
-														echo '         </select>, 
-																		<select name="product3_size">
-																			<option value="' . $cart_item['product3_size'] . '">' . $cart_item['product3_size'] . '</option>';
-																			if (!empty($products[$product3_id])) {
-																				foreach (['size1', 'size2'] as $size_field) {
-																					if (!empty($products[$product3_id][$size_field]) && $products[$product3_id][$size_field] !== $cart_item['product3_size']) {
-																						echo '<option value="' . $products[$product3_id][$size_field] . '">' . $products[$product3_id][$size_field] . '</option>';
-																					}
-																				}
-																			}
-														echo '         </select>
-												</li>
+												<li>Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '</li>
+												<li>Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '</li>
+												<li>Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '</li>
 											</ul>
 										</td>
 										<td class="column-3">$' . number_format($cart_item['total_price'], 2) . '</td>

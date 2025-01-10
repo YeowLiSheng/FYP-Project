@@ -69,8 +69,6 @@ if ($distinct_products_result) {
 // Handle form submission
 if (isset($_POST['submitbtn'])) {
     $name = $_POST['name'];
-    $email = $_POST['email'];
-    $contact = $_POST['contact'];
     $dob = $_POST['dob'];
     $gender = $_POST['gender'];
     $address = $_POST['address']; // New input for address
@@ -95,10 +93,8 @@ if (isset($_POST['submitbtn'])) {
 
     // Update the user data in the database (including the new or existing password)
     $update_query = "UPDATE user SET 
-                        user_name='$name', 
-                        user_email='$email', 
-                        user_password='$password', 
-                        user_contact_number='$contact', 
+                        user_name='$name',  
+                        user_password='$password',  
                         user_date_of_birth='$dob', 
                         user_gender='$gender', 
                         user_image='$image' 
@@ -143,7 +139,7 @@ if (isset($_POST['submitbtn'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>About</title>
+	<title>Edit Profile</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->	
@@ -438,6 +434,19 @@ if (isset($_POST['submitbtn'])) {
         <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;" onchange="previewImage(event)">
     </div>
 
+      <!-- Email -->
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label for="email" style="font-weight: bold; color: #333;">Email</label>
+        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['user_email']); ?>" required oninput="validateEmail()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" readonly>
+    </div>
+
+
+     <!-- Contact Number -->
+    <div class="form-group" style="margin-bottom: 15px;">
+        <label for="contact" style="font-weight: bold; color: #333;">Contact Number</label>
+        <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($user_data['user_contact_number']); ?>" required oninput="validateContact()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" readonly>
+    </div>
+
     <!-- Name -->
     <div class="form-group" style="margin-bottom: 15px;">
         <label for="name" style="font-weight: bold; color: #333;">Name</label>
@@ -445,19 +454,10 @@ if (isset($_POST['submitbtn'])) {
         <small class="error-message" id="nameError" style="display: none; color: red;">Name must be at least 6 characters long.</small>
     </div>
 
-    <!-- Email -->
-    <div class="form-group" style="margin-bottom: 15px;">
-        <label for="email" style="font-weight: bold; color: #333;">Email</label>
-        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['user_email']); ?>" required oninput="validateEmail()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <small class="error-message" id="emailError" style="display: none; color: red;">Please enter a valid email (must include '@' and '.').</small>
-    </div>
 
-    <!-- Contact Number -->
-    <div class="form-group" style="margin-bottom: 15px;">
-        <label for="contact" style="font-weight: bold; color: #333;">Contact Number</label>
-        <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($user_data['user_contact_number']); ?>" required oninput="validateContact()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-        <small class="error-message" id="contactError" style="display: none; color: red;">Format must be xxx-xxxxxxxx or xxx-xxxxxxx.</small>
-    </div>
+
+   
+
 
     <!-- Gender -->
     <div class="form-group" style="margin-bottom: 15px;">
@@ -465,7 +465,7 @@ if (isset($_POST['submitbtn'])) {
         <select id="gender" name="gender" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
             <option value="male" <?php if ($user_data['user_gender'] === 'male') echo 'selected'; ?>>Male</option>
             <option value="female" <?php if ($user_data['user_gender'] === 'female') echo 'selected'; ?>>Female</option>
-            <option value="other" <?php if ($user_data['user_gender'] === 'other') echo 'selected'; ?>>Other</option>
+         
         </select>
     </div>
 
@@ -545,14 +545,6 @@ if (isset($_POST['submitbtn'])) {
         return isValid;
     }
 
-    function validateEmail() {
-        const emailField = document.getElementById('email');
-        const emailError = document.getElementById('emailError');
-        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailField.value);
-
-        emailError.style.display = isValid ? 'none' : 'block';
-        return isValid;
-    }
 
     function validatePassword() {
         const passwordField = document.getElementById('password');
@@ -569,15 +561,7 @@ if (isset($_POST['submitbtn'])) {
         return isValid;
     }
 
-    function validateContact() {
-        const contactField = document.getElementById('contact');
-        const contactError = document.getElementById('contactError');
-        const contactPattern = /^\d{3}-\d{7,8}$/;
-
-        const isValid = contactPattern.test(contactField.value);
-        contactError.style.display = isValid ? 'none' : 'block';
-        return isValid;
-    }
+   
 
     function validateForm() {
         const isNameValid = validateName();
@@ -589,18 +573,12 @@ if (isset($_POST['submitbtn'])) {
             document.getElementById('name').focus();
             return false;
         }
-        if (!isEmailValid) {
-            document.getElementById('email').focus();
-            return false;
-        }
+        
         if (!isPasswordValid) {
             document.getElementById('password').focus();
             return false;
         }
-        if (!isContactValid) {
-            document.getElementById('contact').focus();
-            return false;
-        }
+        
 
         return true;
     }

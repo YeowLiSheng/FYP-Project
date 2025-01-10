@@ -195,8 +195,9 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             <th>Admin ID</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Status</th>
             <th>Actions</th>
+            <th>Status</th>
+            
         </tr>
     </thead>
     <tbody id="table-body">
