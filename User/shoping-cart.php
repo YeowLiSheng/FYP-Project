@@ -357,6 +357,9 @@ if ($distinct_products_result) {
     $row = $distinct_products_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
+$query = "SELECT product_id, color, Quick_View1 FROM product_variant";
+$result = mysqli_query($connect, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -730,6 +733,22 @@ if ($distinct_products_result) {
 					
 						if (!empty($cart_items)) {
 							foreach ($cart_items as $cart_item) {
+								// Assume $product_variants contains data from the product_variant table.
+								$product_color = htmlspecialchars($cart_item['color']); // Ensure color is safe for use
+								$quick_view_image = ''; // Default to empty
+
+								// Fetch the Quick_View1 image for the specific color
+								foreach ($product_variants as $variant) {
+									if ($variant['product_id'] === $cart_item['product_id'] && $variant['color'] === $product_color) {
+										$quick_view_image = $variant['Quick_View1'];
+										break;
+									}
+								}
+
+								// If no matching Quick_View1 found, set a placeholder image or default
+								if (empty($quick_view_image)) {
+									$quick_view_image = 'default_image.jpg';
+								}
 								
 									$message = '';
 									if ($cart_item['product_status']==2) {
@@ -742,7 +761,7 @@ if ($distinct_products_result) {
 									<tr class="table_row">
 										<td class="column-1">
 											<div class="how-itemcart1">
-												<img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+												<img src="images/' . $quick_view_image . '" alt="IMG">
 											</div>
 										</td>
 										<td class="column-2">' . $cart_item['product_name'] . '</td>
