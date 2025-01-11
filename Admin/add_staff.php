@@ -111,108 +111,66 @@ include 'admin_sidebar.php';
         <h2>Add Staff</h2>
         <a href="view_admin.php" class="close-btn" aria-label="Close">&times;</a>
         <form action="add_staff.php" method="POST" id="addStaffForm">
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="adminId" class="form-label">Admin ID</label>
-            <input type="text" class="form-control" id="adminId" name="adminId">
-            <div id="check_id" class="text-danger">Admin ID is required</div>
-        </div>
-        <div class="col-md-6">
-            <label for="fullName" class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="fullName" name="fullName">
-            <div id="check_full" class="text-danger">Full Name must be at least 5 characters</div>
-        </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="adminId" class="form-label">Admin ID</label>
+                    <input type="text" class="form-control" id="adminId" name="adminId">
+                    <div id="check_id" class="text-danger">Admin ID is required</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="fullName" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="fullName" name="fullName">
+                    <div id="check_full" class="text-danger">Full Name must be at least 5 characters</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6 position-relative">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                    <span id="passwordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('password')"></span>
+                </div>
+                <div class="col-md-6 position-relative">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                    <span id="confirmPasswordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('confirmPassword')"></span>
+                    <div id="check_confirm_pass" class="text-danger">Passwords must match</div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email">
+                <div id="check_e" class="text-danger">Enter a valid email address</div>
+            </div>
+            <div class="mb-3">
+                <label for="contactNumber" class="form-label">Contact Number</label>
+                <input type="text" class="form-control" id="contactNumber" name="contactNumber">
+                <div id="check_num" class="text-danger">Enter a valid contact number</div>
+            </div>
+            <input type="submit" class="btn btn-primary" name="addstaff" value="Add Staff">
+        </form>
     </div>
-    <div class="row mb-3">
-        <div class="col-md-6 position-relative">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password">
-            <span id="passwordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('password')"></span>
-        </div>
-        <div class="col-md-6 position-relative">
-            <label for="confirmPassword" class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
-            <span id="confirmPasswordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('confirmPassword')"></span>
-            <div id="check_confirm_pass" class="text-danger">Passwords must match</div>
-        </div>
-    </div>
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" name="email">
-        <div id="check_e" class="text-danger">Enter a valid email address</div>
-    </div>
-    <div class="mb-3">
-        <label for="contactNumber" class="form-label">Contact Number</label>
-        <input type="text" class="form-control" id="contactNumber" name="contactNumber">
-        <div id="check_num" class="text-danger">Enter a valid contact number</div>
-    </div>
-    <input type="submit" class="btn btn-primary" name="addstaff" value="Add Staff">
-</form>
+    <script>
+        function togglePasswordVisibility(inputId) {
+            const inputField = document.getElementById(inputId);
+            inputField.type = inputField.type === 'password' ? 'text' : 'password';
+        }
 
-<script>
-    function togglePasswordVisibility(inputId) {
-        const inputField = document.getElementById(inputId);
-        inputField.type = inputField.type === 'password' ? 'text' : 'password';
+        document.getElementById('addStaffForm').addEventListener('submit', function (event) {
+    const password = document.getElementById('password');
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+    if (!passwordRegex.test(password.value)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Password',
+            text: 'Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.',
+            confirmButtonText: 'OK'
+        });
+        event.preventDefault();
     }
+});
 
-    document.getElementById('addStaffForm').addEventListener('submit', function (event) {
-        const password = document.getElementById('password');
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        const adminId = document.getElementById('adminId').value;
-        const fullName = document.getElementById('fullName').value;
-        const email = document.getElementById('email').value;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@(hotmail\.com|gmail\.com|yahoo\.com)$/;
-
-        // Validate Admin ID
-        if (adminId.trim() === "") {
-            Swal.fire({
-                icon: 'error',
-                title: 'Admin ID Required',
-                text: 'Admin ID cannot be empty.',
-                confirmButtonText: 'OK'
-            });
-            event.preventDefault();
-            return;
-            
-        }
-
-        // Validate Full Name
-        if (fullName.length < 5) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Full Name',
-                text: 'Full Name must be at least 5 characters.',
-                confirmButtonText: 'OK'
-            });
-            event.preventDefault();
-            return;
-        }
-
-        // Validate Email
-        if (!emailRegex.test(email)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Email',
-                text: 'Email must include "@" and a valid domain (.com).',
-                confirmButtonText: 'OK'
-            });
-            event.preventDefault();
-            return;
-        }
-
-        // Validate Password
-        if (!passwordRegex.test(password.value)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Invalid Password',
-                text: 'Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.',
-                confirmButtonText: 'OK'
-            });
-            event.preventDefault();
-        }
-    });
-</script>
-
+    </script>
 </body>
 </html>
 
