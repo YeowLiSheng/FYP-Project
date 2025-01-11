@@ -638,48 +638,58 @@ if ($paymentSuccess) {
     $final_amount = $total_payment; // 总支付金额
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
+    $order_status = 'Processing';
+    $shipping_method = 'Standard';
 
-    // 插入 `orders` 表
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("iddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    // 插入订单数据到 `orders` 表
+    $order_query = "INSERT INTO orders (user_id, Grand_total, discount_amount, final_amount, order_status, shipping_address, shipping_method, user_message) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $order_stmt = $conn->prepare($order_query);
+    $order_stmt->bind_param("idddssss", $user_id, $grand_total, $discount_amount, $final_amount, $order_status, $shipping_address, $shipping_method, $user_message);
+    
+    if ($order_stmt->execute()) {
+        // 获取插入的订单ID
+        $order_id = $conn->insert_id;
 
-    if ($stmt->execute()) {
-        // 获取插入订单的ID
-        $order_id = $stmt->insert_id;
-
-        // 插入 `order_details` 表
+        // 插入订单详情数据到 `order_details` 表
+        $cart_result = mysqli_query($conn, "SELECT product_id, total_qty, product_price, item_total_price FROM shopping_cart WHERE user_id = $user_id");
         if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-            while ($item = mysqli_fetch_assoc($cart_result)) {
-                $product_id = $item['product_id'];
-                $quantity = $item['total_qty'];
-                $unit_price = $item['product_price'];
-                $total_price = $item['item_total_price'];
+            while ($cart_item = mysqli_fetch_assoc($cart_result)) {
+                $product_id = $cart_item['product_id'];
+                $quantity = $cart_item['total_qty'];
+                $unit_price = $cart_item['product_price'];
+                $total_price = $cart_item['item_total_price'];
 
-                $detail_query = "INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
-                $detail_stmt = $conn->prepare($detail_query);
-                $detail_stmt->bind_param("iiidd", $order_id, $product_id, $quantity, $unit_price, $total_price);
-                $detail_stmt->execute();
+                $details_query = "INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price) 
+                                  VALUES (?, ?, ?, ?, ?)";
+                $details_stmt = $conn->prepare($details_query);
+                $details_stmt->bind_param("iiidd", $order_id, $product_id, $quantity, $unit_price, $total_price);
+                $details_stmt->execute();
+                $details_stmt->close();
             }
         }
 
-        // 清空购物车
-        $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
-        $clear_cart_stmt = $conn->prepare($clear_cart_query);
-        $clear_cart_stmt->bind_param("i", $user_id);
-        $clear_cart_stmt->execute();
-
-        // 插入 `payment` 表
-        $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
-        $payment_status = 'Completed';
-        $payment_stmt = $conn->prepare($payment_query);
-        $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
-        $payment_stmt->execute();
-
-        echo "<script>alert('Payment successful! Order placed successfully.');</script>";
+        echo "<script>alert('Order placed successfully!');</script>";
     } else {
         echo "<script>alert('Failed to place order. Please try again.');</script>";
     }
+
+    $order_stmt->close();
+
+    // 清空购物车
+    $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
+    $clear_cart_stmt = $conn->prepare($clear_cart_query);
+    $clear_cart_stmt->bind_param("i", $user_id);
+    $clear_cart_stmt->execute();
+    $clear_cart_stmt->close();
+
+    // 插入付款记录到 `payment` 表
+    $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
+    $payment_status = 'Completed';
+    $payment_stmt = $conn->prepare($payment_query);
+    $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
+    $payment_stmt->execute();
+    $payment_stmt->close();
 }
 ?>
 	<!-- Footer -->
