@@ -604,7 +604,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-order-totals">
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
-
 							$total_payment = $grand_total - $discount_amount;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
@@ -640,38 +639,27 @@ if ($paymentSuccess) {
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
-    // Insert into orders table
-$order_query = "INSERT INTO orders (user_id, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, ?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($order_query);
-$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
-$stmt->execute();
+    // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($order_query);
+    $stmt->bind_param("iddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    $stmt->execute();
 
-if ($stmt->affected_rows > 0) {
-    $order_id = $stmt->insert_id;  // Retrieve the inserted order_id
-    $stmt->close();
+    // 获取插入订单的ID
+    $order_id = $stmt->insert_id;
 
-    // Insert into order_details table for each product in the cart
-    $detail_query = "INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
-    $stmt_detail = $conn->prepare($detail_query);
-
+    // 插入 `order_details` 表
     foreach ($cart_result as $item) {
         $product_id = $item['product_id'];
         $quantity = $item['total_qty'];
         $unit_price = $item['product_price'];
         $total_price = $item['item_total_price'];
 
-        $stmt_detail->bind_param("iiidd", $order_id, $product_id, $quantity, $unit_price, $total_price);
-        $stmt_detail->execute();
-
-        if ($stmt_detail->affected_rows <= 0) {
-            echo "<script>alert('Failed to insert order details for product ID: $product_id');</script>";
-        }
+        $detail_query = "INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
+        $detail_stmt = $conn->prepare($detail_query);
+        $detail_stmt->bind_param("iiidd", $order_id, $product_id, $quantity, $unit_price, $total_price);
+        $detail_stmt->execute();
     }
-
-    $stmt_detail->close();
-} else {
-    echo "<script>alert('Failed to insert order.');</script>";
-}
 
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
