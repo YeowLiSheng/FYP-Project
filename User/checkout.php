@@ -634,16 +634,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // 获取必要的订单数据
-    $final_amount = $total_payment; // 总支付金额
+    // 计算 Grand Total 和 Final Amount
+    $grand_total = 0;
+    foreach ($cart_result as $item) {
+        $grand_total += $item['item_total_price']; // 累加每个商品的总价
+    }
+
+    // 计算 Final Amount
+    $final_amount = $grand_total - $discount_amount; // 扣除折扣后的最终支付金额
+
+    // 确认变量值
+    if ($grand_total <= 0 || $final_amount <= 0) {
+        die("Error: Invalid grand total or final amount!");
+    }
+
+    // 获取用户的地址信息
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
-    // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
+    // 插入 `orders` 表
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
-    $stmt->execute();
+    $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    if (!$stmt->execute()) {
+        die("Error inserting into orders table: " . $stmt->error);
+    }
 
     // 获取插入订单的ID
     $order_id = $stmt->insert_id;
@@ -659,24 +674,33 @@ if ($paymentSuccess) {
         $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
         $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
-        $detail_stmt->execute();
+        if (!$detail_stmt->execute()) {
+            die("Error inserting into order_details table: " . $detail_stmt->error);
+        }
     }
 
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
-    $clear_cart_stmt->execute();
+    if (!$clear_cart_stmt->execute()) {
+        die("Error clearing shopping cart: " . $clear_cart_stmt->error);
+    }
 
-	$payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
+    // 插入 `payment` 表
+    $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
     $payment_stmt = $conn->prepare($payment_query);
     $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
-    $payment_stmt->execute();
+    if (!$payment_stmt->execute()) {
+        die("Error inserting into payment table: " . $payment_stmt->error);
+    }
 
-	
+    // 确认订单成功
+    echo "Order placed successfully!";
 }
 ?>
+
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
