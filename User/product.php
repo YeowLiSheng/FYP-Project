@@ -37,25 +37,14 @@ $cart_items_query = "
         sc.color, 
         sc.size, 
         SUM(sc.qty) AS total_qty, 
-        SUM(sc.total_price) AS total_price,
-        sc.package_id,
-        sc.product1_color, sc.product1_size,
-        sc.product2_color, sc.product2_size,
-        sc.product3_color, sc.product3_size,
-        pkg.package_name, 
-        pkg.package_image
+        SUM(sc.total_price) AS total_price
     FROM shopping_cart sc
     LEFT JOIN product p ON sc.product_id = p.product_id
-    LEFT JOIN product_package pkg ON sc.package_id = pkg.package_id
     WHERE sc.user_id = $user_id
     GROUP BY 
         sc.product_id, 
         sc.color, 
-        sc.size, 
-        sc.package_id,
-        sc.product1_color, sc.product1_size,
-        sc.product2_color, sc.product2_size,
-        sc.product3_color, sc.product3_size";
+        sc.size";
 $cart_items_result = $connect->query($cart_items_query);
 // Handle AJAX request to delete item
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
@@ -205,14 +194,12 @@ $distinct_items_query = "
     FROM (
         SELECT 
             sc.product_id, 
-            sc.package_id,
             sc.color, 
             sc.size
         FROM shopping_cart sc
         WHERE sc.user_id = $user_id
         GROUP BY 
             sc.product_id, 
-            sc.package_id, 
             sc.color, 
             sc.size
     ) AS distinct_items";

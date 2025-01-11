@@ -30,42 +30,49 @@ if ($result && mysqli_num_rows($result) > 0) {
 // Check if the user is updating the cart
 // Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
-    foreach ($_POST['product_qty'] as $product_id => $new_qty) {
-        $new_qty = intval($new_qty);
-
-        // Get the product price and current quantity
-        $current_query = "
-            SELECT qty, 
-                   (SELECT product_price FROM product WHERE product_id = $product_id) AS product_price 
-            FROM shopping_cart 
-            WHERE user_id = $user_id AND product_id = $product_id LIMIT 1";
-        $current_result = $connect->query($current_query);
-
-        if ($current_result && $current_result->num_rows > 0) {
-            $current_row = $current_result->fetch_assoc();
-            $current_qty = intval($current_row['qty']);
-            $product_price = floatval($current_row['product_price']);
-
-            // Calculate the new total price
-            $new_total_price = $new_qty * $product_price;
-
-            if ($new_qty > 0) {
-                // Update quantity and total price in the database
-                $update_query = "
-                    UPDATE shopping_cart 
-                    SET qty = $new_qty, 
-                        total_price = $new_total_price 
-                    WHERE user_id = $user_id AND product_id = $product_id LIMIT 1";
-                $connect->query($update_query);
-            } else {
-                // Remove the product if quantity is 0
-                $delete_query = "
-                    DELETE FROM shopping_cart 
-                    WHERE user_id = $user_id AND product_id = $product_id LIMIT 1";
-                $connect->query($delete_query);
-            }
-        }
-    }
+    // Update product quantities
+    if (isset($_POST['product_qty']) && isset($_POST['product_color']) && isset($_POST['product_size'])) {
+		foreach ($_POST['product_qty'] as $index => $new_qty) {
+			$new_qty = intval($new_qty);
+	
+			$product_id = intval($_POST['product_id'][$index]);
+			$color = $connect->real_escape_string($_POST['product_color'][$index]);
+			$size = $connect->real_escape_string($_POST['product_size'][$index]);
+	
+			// Get the product price and current quantity
+			$current_query = "
+				SELECT qty, 
+					   (SELECT product_price FROM product WHERE product_id = $product_id) AS product_price 
+				FROM shopping_cart 
+				WHERE user_id = $user_id AND product_id = $product_id AND color = '$color' AND size = '$size' LIMIT 1";
+			$current_result = $connect->query($current_query);
+	
+			if ($current_result && $current_result->num_rows > 0) {
+				$current_row = $current_result->fetch_assoc();
+				$current_qty = intval($current_row['qty']);
+				$product_price = floatval($current_row['product_price']);
+	
+				// Calculate the new total price
+				$new_total_price = $new_qty * $product_price;
+	
+				if ($new_qty > 0) {
+					// Update quantity and total price in the database
+					$update_query = "
+						UPDATE shopping_cart 
+						SET qty = $new_qty, 
+							total_price = $new_total_price 
+						WHERE user_id = $user_id AND product_id = $product_id AND color = '$color' AND size = '$size' LIMIT 1";
+					$connect->query($update_query);
+				} else {
+					// Remove the product if quantity is 0
+					$delete_query = "
+						DELETE FROM shopping_cart 
+						WHERE user_id = $user_id AND product_id = $product_id AND color = '$color' AND size = '$size' LIMIT 1";
+					$connect->query($delete_query);
+				}
+			}
+		}
+	}
 
     // Always recalculate voucher and final total price after cart updates
     recalculateFinalTotalAndVoucher($connect, $user_id);
@@ -75,18 +82,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     exit;
 }
 
+
 // Function to recalculate final total price and voucher
 function recalculateFinalTotalAndVoucher($connect, $user_id) {
-    // Fetch the cart total price
+    // Fetch the grouped total price based on product_id, color, and size
     $recalc_query = "
-        SELECT SUM(sc.qty * p.product_price) AS total_price 
-        FROM shopping_cart sc 
-        JOIN product p ON sc.product_id = p.product_id 
+        SELECT 
+            sc.product_id,
+            sc.color,
+            sc.size,
+            sc.qty,
+            p.product_price,
+            COALESCE((sc.qty * p.product_price), 0) AS product_total_price
+        FROM shopping_cart sc
+        LEFT JOIN product p ON sc.product_id = p.product_id
+        LEFT JOIN product_variant pv ON sc.product_id = pv.product_id AND sc.color = pv.color
         WHERE sc.user_id = $user_id";
     $recalc_result = $connect->query($recalc_query);
-    $total_price = $recalc_result->fetch_assoc()['total_price'] ?? 0;
 
-    // Fetch currently applied voucher
+    $total_price = 0; // Initialize the total price for the entire cart
+
+    // Iterate through each cart item (grouped by product_id + color + size)
+    if ($recalc_result) {
+        while ($row = $recalc_result->fetch_assoc()) {
+            $product_id = intval($row['product_id']);
+            $color = $connect->real_escape_string($row['color']);
+            $size = $connect->real_escape_string($row['size']);
+            $product_total_price = floatval($row['product_total_price']);
+            
+            // Add to total cart price
+            $total_price += $product_total_price;
+
+            // Update the individual cart item with its recalculated total price
+            $update_query = "
+                UPDATE shopping_cart
+                SET total_price = $product_total_price
+                WHERE user_id = $user_id 
+                AND product_id = $product_id 
+                AND color = '$color' 
+                AND size = '$size'";
+            $connect->query($update_query);
+        }
+    }
+
+    // Fetch the currently applied voucher, if any
     $voucher_query = "
         SELECT v.discount_rate, v.minimum_amount, vu.voucher_id 
         FROM voucher_usage vu
@@ -99,20 +138,21 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
         $minimum_amount = $voucher['minimum_amount'];
         $voucher_id = $voucher['voucher_id'];
 
+        // Check if the total price meets the minimum requirement for the voucher
         if ($total_price >= $minimum_amount) {
             $discount_amount = $total_price * ($discount_rate / 100);
             $final_total_price = $total_price - $discount_amount;
 
-            // Update shopping cart
-            $update_query = "
+            // Update the entire shopping cart with the voucher details
+            $update_cart_query = "
                 UPDATE shopping_cart 
                 SET final_total_price = $final_total_price, 
                     discount_amount = $discount_amount, 
                     voucher_applied = $voucher_id
                 WHERE user_id = $user_id";
-            $connect->query($update_query);
+            $connect->query($update_cart_query);
         } else {
-            // Remove voucher if conditions are not met
+            // Remove the voucher if conditions are not met
             $connect->query("
                 UPDATE shopping_cart 
                 SET final_total_price = total_price, 
@@ -121,7 +161,7 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
                 WHERE user_id = $user_id");
         }
     } else {
-        // Reset cart if no voucher is applied
+        // Reset the cart if no voucher is applied
         $connect->query("
             UPDATE shopping_cart 
             SET final_total_price = total_price, 
@@ -133,22 +173,35 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
 
 
 
+
+
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 // Fetch and combine cart items with stock information
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
-		   sc.color, sc.size,    
-		   SUM(sc.qty) AS total_qty, 
-           SUM(sc.qty * p.product_price) AS total_price, 
-           MAX(sc.final_total_price) AS final_total_price, 
-           MAX(sc.voucher_applied) AS voucher_applied
-    FROM shopping_cart sc 
-    JOIN product p ON sc.product_id = p.product_id 
-    WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id, sc.color, sc.size";
+    SELECT 
+        sc.product_id, 
+        p.product_name, 
+        p.product_image, 
+        p.product_price,
+		p.product_status,
+		pv.stock AS product_stock,
+        sc.color, 
+        sc.size, 
+        SUM(sc.qty) AS total_qty, 
+        SUM(sc.total_price) AS total_price,
+		MAX(sc.final_total_price) AS final_total_price, 
+		MAX(sc.voucher_applied) AS voucher_applied
+    FROM shopping_cart sc
+    LEFT JOIN product p ON sc.product_id = p.product_id
+	LEFT JOIN product_variant pv ON sc.product_id = pv.product_id AND sc.color = pv.color
+    WHERE sc.user_id = $user_id
+    GROUP BY 
+        sc.product_id, 
+        sc.color, 
+        sc.size";
 $cart_items_result = $connect->query($cart_items_query);
 
 $checkout_locked = false; // Flag to disable checkout button
@@ -158,16 +211,15 @@ $cart_items = [];
 if ($cart_items_result && $cart_items_result->num_rows > 0) {
     while ($cart_item = $cart_items_result->fetch_assoc()) {
         $cart_items[] = $cart_item;
-		$total_price += $cart_item['total_price'];
+        $total_price += $cart_item['total_price'];
 
-        // Check if product quantity exceeds stock
-        if ($cart_item['total_qty'] > $cart_item['product_stock']) {
-            $checkout_locked = true;
-            $error_messages[$cart_item['product_id']] = "Your {$cart_item['product_name']} is no longer available. Please adjust the quantity.";
-        }
+            // Check product status for unavailability
+            if ($cart_item['product_status'] == 2 || $cart_item['product_stock'] <= 0) {
+                $cart_item['unavailable'] = true;
+                $checkout_locked = true;
+            }
     }
 }
-
 
 // Apply discount after verifying voucher code, if applicable
 $discount_amount = 0; // Initialize discount amount
@@ -490,11 +542,6 @@ if ($distinct_products_result) {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li class="active-menu">
@@ -554,7 +601,7 @@ if ($distinct_products_result) {
 		</div>
 	</header>
 
-	<!-- Cart -->
+<!-- Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
@@ -572,33 +619,61 @@ if ($distinct_products_result) {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-				$cart_items_result = $connect->query($cart_items_query);
-                // Display combined cart items
-                $total_price = 0;
-                if ($cart_items_result->num_rows > 0) {
-                    while($cart_item = $cart_items_result->fetch_assoc()) {
-                        $total_price += $cart_item['total_price'];
-                        echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-								<span class="header-cart-item-info">
-                                    Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                </span>
-                            </div>
-                        </li>';
+					$cart_items_result = $connect->query($cart_items_query);
+                    // Display combined cart items
+                    $total_price = 0;
+
+                    if ($cart_items_result->num_rows > 0) {
+                        while ($cart_item = $cart_items_result->fetch_assoc()) {
+                            $total_price += $cart_item['total_price'];
+                            
+                            if (!empty($cart_item['package_id'])) {
+                                // Render package details
+                                echo '
+                                <li class="header-cart-item flex-w flex-t m-b-12">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
+                                    </div>
+                                    <div class="header-cart-item-txt p-t-8">
+                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                            ' . $cart_item['package_name'] . '
+                                        </a>
+                                        <span class="header-cart-item-info">
+                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
+                                        </span>
+                                        <span class="header-cart-item-info">
+                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
+                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
+                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
+                                        </span>
+                                    </div>
+                                </li>';
+                            } else {
+                                // Render individual product details
+                                echo '
+                                <li class="header-cart-item flex-w flex-t m-b-12">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                    </div>
+                                    <div class="header-cart-item-txt p-t-8">
+                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                            ' . $cart_item['product_name'] . '
+                                        </a>
+                                        <span class="header-cart-item-info">
+                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                        </span>
+                                        <span class="header-cart-item-info">
+                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                        </span>
+                                    </div>
+                                </li>';
+                            }
+                        }
+                    } else {
+                        echo '<p>Your cart is empty.</p>';
                     }
-                } else {
-                    echo '<p>Your cart is empty.</p>';
-                }
+                    
+
                 ?>
             </ul>
             
@@ -620,7 +695,6 @@ if ($distinct_products_result) {
         </div>
     </div>
 </div>
-
 
 	<!-- breadcrumb -->
 	<div class="container">
@@ -653,33 +727,44 @@ if ($distinct_products_result) {
 							<th class="column-5">Total</th>
 						</tr>
 						<?php
+					
 						if (!empty($cart_items)) {
 							foreach ($cart_items as $cart_item) {
-								$stock_exceeded = $cart_item['total_qty'] > $cart_item['product_stock'];
-								echo '
-								<tr class="table_row">
-									<td class="column-1">
-										<div class="how-itemcart1">
-											<img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-										</div>
-									</td>
-									<td class="column-2">' . $cart_item['product_name'] . '</td>
-									<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
-									<td class="column-4">
-										<div class="wrap-num-product flex-w m-l-auto m-r-0">
-											<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
-												<i class="fs-16 zmdi zmdi-minus"></i>
+								
+									$message = '';
+									if ($cart_item['product_status']==2) {
+										$message = '<p class="text-danger">This product is unavailable</p>';
+									} elseif ($cart_item['total_qty'] > $cart_item['product_stock']) {
+										$message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>';
+									}
+
+									echo '
+									<tr class="table_row">
+										<td class="column-1">
+											<div class="how-itemcart1">
+												<img src="images/' . $cart_item['product_image'] . '" alt="IMG">
 											</div>
-											<input type="hidden" name="product_id[]" value="' . $cart_item['product_id'] . '">
-											<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[' . $cart_item['product_id'] . ']" value="' . $cart_item['total_qty'] . '" readonly>
-											<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
-												<i class="fs-16 zmdi zmdi-plus"></i>
+										</td>
+										<td class="column-2">' . $cart_item['product_name'] . '</td>
+										<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
+										<td class="column-4">
+											<div class="wrap-num-product flex-w m-l-auto m-r-0">
+												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
+													<i class="fs-16 zmdi zmdi-minus"></i>
+												</div>
+												<input type="hidden" name="product_id[]" value="' . $cart_item['product_id'] . '">
+												<input type="hidden" name="product_color[]" value="' . htmlspecialchars($cart_item['color']) . '">
+                    							<input type="hidden" name="product_size[]" value="' . htmlspecialchars($cart_item['size']) . '">
+												<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[]" value="' . $cart_item['total_qty'] . '" readonly>
+												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
+													<i class="fs-16 zmdi zmdi-plus"></i>
+												</div>
+												
 											</div>
-										</div>
-										' . ($stock_exceeded ? '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>' : '') . '
-									</td>
-									<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
-								</tr>';
+											' . $message . '
+										</td>
+										<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
+									</tr>';
 							}
 						} else {
 							echo '<tr><td colspan="5">&emsp;&emsp;&emsp;&emsp;&emsp;Your cart is empty.</td></tr>';
@@ -732,12 +817,12 @@ if ($distinct_products_result) {
 						 <!-- Hidden field to pass discount amount to checkout.php -->
     					<input type="hidden" name="discount_amount" value="<?php echo $discount_amount; ?>">
     
-    					<?php if ($checkout_locked): ?>
-							<p class="text-danger">You cannot proceed to checkout. Please adjust the quantities to match available stock.</p>
-						<?php endif; ?>
 						<button type="submit" formaction="checkout.php?discount_amount=<?php echo $discount_amount; ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10" <?php echo $checkout_locked ? 'disabled' : ''; ?>>
 							Check Out
 						</button>
+						<?php if ($checkout_locked): ?>
+							<p class="text-danger">You cannot proceed to checkout. Please adjust the items in your cart.</p>
+						<?php endif; ?>
 					</div>
                 </div>
             </div>
