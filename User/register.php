@@ -200,6 +200,12 @@
 			padding-right: 35px; /* Space for the eye icon */
 		}
 
+
+        .strength-bar {
+        width: 0;
+        height: 5px;
+        margin-top: 5px;
+    }
     </style>
 </head>
 
@@ -300,7 +306,7 @@
 							</li>
 
 							<li>
-								<a href="contact.php">Contact</a>
+								<a href="contact_us.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -353,22 +359,24 @@
         </div>
 
 		<div class="field">
-			<label for="password">Password:</label>
-			<input type="password" id="password" name="password" required oninput="checkPassword()">
-			<span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">
-				<i class="fas fa-eye"></i> <!-- Visible Eye Icon -->
-			</span>
-			<span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</span>
-		</div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required oninput="checkPassword()">
+            <span id="passwordToggle" class="eye-icon" onclick="togglePassword('password', this)">
+                <i class="fas fa-eye"></i> <!-- Visible Eye Icon -->
+            </span>
+            <span id="passwordError" class="error">Password must include 1 uppercase letter, 1 number, 1 special character, and be 8 characters long.</span>
+            <div id="passwordStrength" class="strength-bar"></div> <!-- Password Strength Indicator -->
+        </div>
 
-		<div class="field">
-			<label for="confirmPassword">Confirm Password:</label>
-			<input type="password" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
-			<span id="confirmPasswordToggle" class="eye-icon" onclick="togglePassword('confirmPassword', this)">
-				<i class="fas fa-eye"></i> <!-- Visible Eye Icon -->
-			</span>
-			<span id="confirmPasswordError" class="error">Passwords do not match.</span>
-		</div>
+        <div class="field">
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
+            <span id="confirmPasswordToggle" class="eye-icon" onclick="togglePassword('confirmPassword', this)">
+                <i class="fas fa-eye"></i> <!-- Visible Eye Icon -->
+            </span>
+            <span id="confirmPasswordError" class="error">Passwords do not match.</span>
+            <div id="confirmPasswordStrength" class="strength-bar"></div> <!-- Confirm Password Strength Indicator -->
+        </div>
 
 		<div class="form-group">
        <div class="g-recaptcha" data-sitekey="6Ld-vZAqAAAAADm1iGivIk3mWjuo2ejhIjhMan0w"></div>
@@ -558,6 +566,99 @@
             }
         }
     }
+
+
+
+
+    function checkPassword() {
+        const password = document.getElementById('password').value;
+        const strengthBar = document.getElementById('passwordStrength');
+        const passwordError = document.getElementById('passwordError');
+        const regexUppercase = /[A-Z]/;
+        const regexLowercase = /[a-z]/;
+        const regexNumber = /[0-9]/;
+        const regexSpecial = /[!@#$%^&*(),.?":{}|<>]/;
+        const minLength = 8;
+
+        let strength = 0;
+        if (password.length >= minLength) strength++;
+        if (regexUppercase.test(password)) strength++;
+        if (regexLowercase.test(password)) strength++;
+        if (regexNumber.test(password)) strength++;
+        if (regexSpecial.test(password)) strength++;
+
+        // Display Password Strength
+        if (strength === 0) {
+            strengthBar.style.width = '0%';
+            strengthBar.style.backgroundColor = 'red';
+        } else if (strength === 1) {
+            strengthBar.style.width = '25%';
+            strengthBar.style.backgroundColor = 'orange';
+        } else if (strength === 2) {
+            strengthBar.style.width = '50%';
+            strengthBar.style.backgroundColor = 'yellow';
+        } else if (strength === 3) {
+            strengthBar.style.width = '75%';
+            strengthBar.style.backgroundColor = 'lightgreen';
+        } else if (strength === 4) {
+            strengthBar.style.width = '100%';
+            strengthBar.style.backgroundColor = 'green';
+        }
+
+        // Show or hide the error message based on password validity
+        if (strength < 4) {
+            passwordError.style.display = 'block';
+        } else {
+            passwordError.style.display = 'none';
+        }
+    }
+
+
+    function checkConfirmPassword() {
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const password = document.getElementById('password').value;
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+        const confirmPasswordStrengthBar = document.getElementById('confirmPasswordStrength');
+        
+        let strength = 0;
+        const regexUppercase = /[A-Z]/;
+        const regexLowercase = /[a-z]/;
+        const regexNumber = /[0-9]/;
+        const regexSpecial = /[!@#$%^&*(),.?":{}|<>]/;
+        const minLength = 8;
+
+        if (confirmPassword.length >= minLength) strength++;
+        if (regexUppercase.test(confirmPassword)) strength++;
+        if (regexLowercase.test(confirmPassword)) strength++;
+        if (regexNumber.test(confirmPassword)) strength++;
+        if (regexSpecial.test(confirmPassword)) strength++;
+
+        // Display Confirm Password Strength
+        if (strength === 0) {
+            confirmPasswordStrengthBar.style.width = '0%';
+            confirmPasswordStrengthBar.style.backgroundColor = 'red';
+        } else if (strength === 1) {
+            confirmPasswordStrengthBar.style.width = '25%';
+            confirmPasswordStrengthBar.style.backgroundColor = 'orange';
+        } else if (strength === 2) {
+            confirmPasswordStrengthBar.style.width = '50%';
+            confirmPasswordStrengthBar.style.backgroundColor = 'yellow';
+        } else if (strength === 3) {
+            confirmPasswordStrengthBar.style.width = '75%';
+            confirmPasswordStrengthBar.style.backgroundColor = 'lightgreen';
+        } else if (strength === 4) {
+            confirmPasswordStrengthBar.style.width = '100%';
+            confirmPasswordStrengthBar.style.backgroundColor = 'green';
+        }
+
+        // Show or hide the error message if passwords don't match
+        if (confirmPassword !== password) {
+            confirmPasswordError.style.display = 'block';
+        } else {
+            confirmPasswordError.style.display = 'none';
+        }
+    }
+    
 </script>
 
 

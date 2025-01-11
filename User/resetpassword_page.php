@@ -158,10 +158,12 @@ if (isset($_POST['reset_password'])) {
             color: #333;
             display: block;
             font-weight: 500;
+            margin-top: 20px;
         }
 
         .password-container {
             position: relative;
+            
         }
 
         input[type="password"], input[type="text"] {
@@ -207,6 +209,7 @@ if (isset($_POST['reset_password'])) {
             cursor: pointer;
             font-weight: 600;
             transition: background-color 0.3s ease;
+            margin-top: 25px;
         }
 
         input[type="submit"]:hover {
@@ -248,6 +251,14 @@ if (isset($_POST['reset_password'])) {
             color: #4CAF50;
         }
 
+        .strength-bar {
+    width: 0;
+    height: 6px;
+    margin-top: 5px;
+
+}
+
+        
     </style>
 </head>
 <body>
@@ -257,21 +268,26 @@ if (isset($_POST['reset_password'])) {
         <p>You're about to reset the password for: <strong><?php echo htmlspecialchars($email); ?></strong></p>
 
         <form method="POST" onsubmit="return validatePassword()">
-            <label for="new_password">New Password:</label>
-            <div class="password-container">
-                <input type="password" name="new_password" id="new_password" required>
-                <span class="eye-icon" id="toggleNewPassword" onclick="togglePasswordVisibility('new_password')">
-                    <i class="fas fa-eye"></i>
-                </span>
-            </div>
+        <label for="new_password">New Password:</label>
+        <div class="password-container">
+            <input type="password" name="new_password" id="new_password" required oninput="checkNewPassword()">
+            <span class="eye-icon" id="toggleNewPassword" onclick="togglePasswordVisibility('new_password')">
+                <i class="fas fa-eye"></i>
+            </span>
+        </div>
+        <div id="newPasswordStrength" class="strength-bar"></div>
 
-            <label for="confirm_password">Confirm New Password:</label>
-            <div class="password-container">
-                <input type="password" name="confirm_password" id="confirm_password" required>
-                <span class="eye-icon" id="toggleConfirmPassword" onclick="togglePasswordVisibility('confirm_password')">
-                    <i class="fas fa-eye"></i>
-                </span>
-            </div>
+
+        
+        <label for="confirm_password">Confirm New Password:</label>
+        <div class="password-container">
+            <input type="password" name="confirm_password" id="confirm_password" required oninput="checkConfirmNewPassword()">
+            <span class="eye-icon" id="toggleConfirmPassword" onclick="togglePasswordVisibility('confirm_password')">
+                <i class="fas fa-eye"></i>
+            </span>
+        </div>
+        <div id="confirmNewPasswordStrength" class="strength-bar"></div>
+
 
             <input type="submit" value="Reset Password" name="reset_password">
         </form>
@@ -314,6 +330,96 @@ if (isset($_POST['reset_password'])) {
                 return true;
             }
         }
+
+
+        function checkNewPassword() {
+    const password = document.getElementById('new_password').value;
+    const strengthBar = document.getElementById('newPasswordStrength');
+    const passwordError = document.getElementById('newPasswordError');
+    const regexUppercase = /[A-Z]/;
+    const regexLowercase = /[a-z]/;
+    const regexNumber = /[0-9]/;
+    const regexSpecial = /[!@#$%^&*(),.?":{}|<>]/;
+    const minLength = 8;
+
+    let strength = 0;
+    if (password.length >= minLength) strength++;
+    if (regexUppercase.test(password)) strength++;
+    if (regexLowercase.test(password)) strength++;
+    if (regexNumber.test(password)) strength++;
+    if (regexSpecial.test(password)) strength++;
+
+    // Display Password Strength
+    if (strength === 0) {
+        strengthBar.style.width = '0%';
+        strengthBar.style.backgroundColor = 'red';
+    } else if (strength === 1) {
+        strengthBar.style.width = '25%';
+        strengthBar.style.backgroundColor = 'orange';
+    } else if (strength === 2) {
+        strengthBar.style.width = '50%';
+        strengthBar.style.backgroundColor = 'yellow';
+    } else if (strength === 3) {
+        strengthBar.style.width = '75%';
+        strengthBar.style.backgroundColor = 'lightgreen';
+    } else if (strength === 4) {
+        strengthBar.style.width = '100%';
+        strengthBar.style.backgroundColor = 'green';
+    }
+
+    // Show or hide the error message based on password validity
+    if (strength < 4) {
+        passwordError.style.display = 'block';
+    } else {
+        passwordError.style.display = 'none';
+    }
+}
+
+function checkConfirmNewPassword() {
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const password = document.getElementById('new_password').value;
+    const confirmPasswordError = document.getElementById('confirmNewPasswordError');
+    const confirmPasswordStrengthBar = document.getElementById('confirmNewPasswordStrength');
+
+    let strength = 0;
+    const regexUppercase = /[A-Z]/;
+    const regexLowercase = /[a-z]/;
+    const regexNumber = /[0-9]/;
+    const regexSpecial = /[!@#$%^&*(),.?":{}|<>]/;
+    const minLength = 8;
+
+    if (confirmPassword.length >= minLength) strength++;
+    if (regexUppercase.test(confirmPassword)) strength++;
+    if (regexLowercase.test(confirmPassword)) strength++;
+    if (regexNumber.test(confirmPassword)) strength++;
+    if (regexSpecial.test(confirmPassword)) strength++;
+
+    // Display Confirm Password Strength
+    if (strength === 0) {
+        confirmPasswordStrengthBar.style.width = '0%';
+        confirmPasswordStrengthBar.style.backgroundColor = 'red';
+    } else if (strength === 1) {
+        confirmPasswordStrengthBar.style.width = '25%';
+        confirmPasswordStrengthBar.style.backgroundColor = 'orange';
+    } else if (strength === 2) {
+        confirmPasswordStrengthBar.style.width = '50%';
+        confirmPasswordStrengthBar.style.backgroundColor = 'yellow';
+    } else if (strength === 3) {
+        confirmPasswordStrengthBar.style.width = '75%';
+        confirmPasswordStrengthBar.style.backgroundColor = 'lightgreen';
+    } else if (strength === 4) {
+        confirmPasswordStrengthBar.style.width = '100%';
+        confirmPasswordStrengthBar.style.backgroundColor = 'green';
+    }
+
+    // Show or hide the error message if passwords don't match
+    if (confirmPassword !== password) {
+        confirmPasswordError.style.display = 'block';
+    } else {
+        confirmPasswordError.style.display = 'none';
+    }
+}
+
     </script>
 
 </body>

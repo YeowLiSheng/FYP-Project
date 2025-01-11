@@ -1,3 +1,56 @@
+<?php
+session_start(); // Start the session
+
+// Include the database connection file
+include("dataconnection.php"); 
+
+// Check if the form is submitted
+if (isset($_POST['submitbtn'])) {
+    // Get form data
+    $email = $_POST['email'];
+    $message = $_POST['message'];
+
+    // If user is logged in, retrieve user ID from session (optional)
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+
+    // Insert data into the contact_us table
+    if ($user_id) {
+        // If logged in, store the user_id in the database
+        $sql = "INSERT INTO contact_us (user_email, message, user_id) VALUES ('$email', '$message', '$user_id')";
+    } else {
+        // If not logged in, store the data without user_id
+        $sql = "INSERT INTO contact_us (user_email, message) VALUES ('$email', '$message')";
+    }
+
+    // Execute the query and check for success
+    if ($connect->query($sql) === TRUE) {
+        echo "<!DOCTYPE html>
+        <html>
+        <head>
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        </head>
+        <body>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Message Sent!',
+                    text: 'The message has been sent successfully.',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = 'contact_us.php'; // Redirect to the contact page or any desired page
+                });
+            </script>
+        </body>
+        </html>";
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+}
+
+$connect->close(); // Close the database connection
+?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,38 +60,155 @@
     <title>Contact Us</title>
     <link rel="stylesheet" href="styles.css">
 
+	<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="fonts/linearicons-v1.0.0/icon-font.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+	<!--===============================================================================================-->	
+		<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+	<!--===============================================================================================-->	
+		<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/slick/slick.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/MagnificPopup/magnific-popup.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+	<!--===============================================================================================-->
+		<link rel="stylesheet" type="text/css" href="css/util.css">
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	<!--===============================================================================================-->
 
-<!--===============================================================================================-->	
-<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/linearicons-v1.0.0/icon-font.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/util.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
-<!--===============================================================================================-->
+
+
+<style>
+
+.rainbow-text {
+    background: linear-gradient(to right, red, orange, yellow, green, indigo, violet);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Ensures the text is transparent on WebKit browsers */
+    color: transparent; /* Ensures the text is transparent on non-WebKit browsers */
+    font-weight: bold;
+    background-size: 200%;
+    animation: fadeRainbow 2s infinite;
+}
+
+@keyframes fadeRainbow {
+    0% { background-position: 0%; }
+    100% { background-position: 100%; }
+}
+.hov-img0 {
+    width: 100%; /* Adjust width as needed */
+    height: 100%; /* Adjust height as needed */
+    overflow: hidden; /* Ensures the video doesn’t exceed the container bounds */
+}
+.responsive-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the video covers the container without stretching */
+}
+/* Hide all default controls */
+.no-controls::-webkit-media-controls,
+.no-controls::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+/* Hide controls for other browsers */
+.no-controls::-moz-media-controls,
+.no-controls::-moz-media-controls-enclosure {
+    display: none !important;
+}
+
+/* Prevent interaction with the video */
+.no-controls {
+    pointer-events: none;
+}
+	/* Basic styling for the form */
+	body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		background-color: #f4f4f9;
+	}
+
+	.container {
+		width: 80%;
+		margin: auto;
+		padding: 20px;
+	}
+
+
+	h1 {
+		text-align: center;
+		color: #333;
+	}
+
+	.form-group {
+		margin-bottom: 15px;
+	}
+
+	label {
+		font-weight: bold;
+		padding: auto;
+	}
+
+	input, textarea {
+		width: 100%;
+		padding: 10px;
+		margin-top: 5px;
+		border: 1px solid #ddd;
+		border-radius: 5px;
+	}
+
+	textarea {
+		height: 100px;
+	}
+
+	.submit-btn {
+		display: inline-block;
+		padding: 10px 20px;
+		color: #fff;
+		background-color: #007bff;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		font-size: 16px;
+		margin-top: 10px;
+	}
+
+	.submit-btn:hover {
+		background-color: #0056b3;
+	}
+
+	/* Map styling */
+	#map {
+		width: 100%;
+		height: 300px;
+		margin-bottom: 20px;
+		border: 1px solid #ddd;
+		margin: 50px 45px 2px -5px ;
+	}
+</style>
 </head>
+<body class="animsition">
 
-<body class="animsition">	
 
-<!-- Header -->
+
 	<!-- Header -->
-	<header class="header-v4">
+	<header>
 		<!-- Header desktop -->
 		<div class="container-menu-desktop">
 			<!-- Topbar -->
@@ -86,8 +256,6 @@
                         <a href="login.php" class="flex-c-m trans-04 p-lr-25">
 							Account
 						</a>
-                            
-
 
 
 					</div>
@@ -109,11 +277,11 @@
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
-                            <li>
+							<li>
 								<a href="package.php">Packages</a>
 							</li>
 
@@ -129,58 +297,67 @@
 								<a href="about.php">About</a>
 							</li>
 
-							<li>
-								<a href="contact.php">Contact</a>
+							<li class="active-menu">
+								<a href="contact_us.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
 
 					
-
 </div>
 
 
-<div class="container" style="max-width: 900px; margin: 50px auto; padding: 30px; background: #fff; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 10px;">
-    <!-- Map Section -->
-    <div id="map" style="margin-bottom: 30px;">
-        <!-- Embed Google Maps -->
-        <iframe
-            width="100%"
-            height="350px"
-            frameborder="0"
-            style="border: 0; border-radius: 10px;"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345097074!2d144.95565211531896!3d-37.816279179751566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d43b2c97c4d%3A0x1e9c0f736c0e839b!2sMelbourne%20CBD%2C%20Melbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus"
-            allowfullscreen
-            aria-hidden="false"
-            tabindex="0">
-        </iframe>
-    </div>
-
-    <!-- Contact Form -->
-<form action="contact.php" method="POST" style="padding: 20px;">
-    <h1 style="text-align: center; font-size: 28px; margin-bottom: 20px; color: #444;">Contact Us</h1>
-    
-    <!-- Email input -->
-    <label style="font-weight: bold; margin-bottom: 10px; display: block;">Email</label>
-    <input type="email" name="email" required
-        style="width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fefefe; color: #333;">
-   
-    <!-- Message input -->
-    <label style="font-weight: bold; margin-bottom: 10px; display: block;">Message</label>
-    <textarea name="message" required
-        style="width: 100%; height: 150px; padding: 14px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 8px; background-color: #fefefe; color: #333; resize: none;"></textarea>
-
-    <!-- Submit button -->
-    <button type="submit" name="submitbtn" 
-        style="display: block; width: 100%; padding: 14px; font-size: 18px; font-weight: bold; color: #fff; background: linear-gradient(45deg, #007bff, #0056b3); border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        Send Message
-    </button>
-</form>
-</div>
 
 
+
+
+	<div class="container">
+		
+		
+		<!-- Map Section -->
+		<div id="map">
+			<!-- Embed Google Maps -->
+			<iframe
+				width="100%"
+				height="100%"
+				frameborder="0"
+				style="border:0"
+				src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345097074!2d144.95565211531896!3d-37.816279179751566!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d43b2c97c4d%3A0x1e9c0f736c0e839b!2sMelbourne%20CBD%2C%20Melbourne%20VIC%2C%20Australia!5e0!3m2!1sen!2sus!4v1600000000000!5m2!1sen!2sus"
+				allowfullscreen
+				aria-hidden="false"
+				tabindex="0">
+			</iframe>
+		</div>
 	
+		
+		
+        <!-- Contact Form -->
+        <form action="contact_us.php" method="POST">
+           
+            
+                <!-- Show email input if user is not logged in -->
+                <label>Email:</label>
+                <input type="email" name="email" required>
+           
 
+            <label>Message:</label>
+            <textarea name="message" required></textarea>
+
+            <button type="submit" name="submitbtn" class="submit-btn">Send Message</button>
+        </form>
+	</div>
+
+
+    
+
+
+
+
+
+
+
+
+                 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
@@ -316,12 +493,7 @@
 					</a>
 				</div>
 
-				<p class="stext-107 cl6 txt-center">
-					<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> &amp; distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
-<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-
-				</p>
+				
 			</div>
 		</div>
 	</footer>
@@ -332,6 +504,160 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		<span class="symbol-btn-back-to-top">
 			<i class="zmdi zmdi-chevron-up"></i>
 		</span>
+	</div>
+
+	<!-- Modal1 -->
+	<div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
+		<div class="overlay-modal1 js-hide-modal1"></div>
+
+		<div class="container">
+			<div class="bg0 p-t-60 p-b-30 p-lr-15-lg how-pos3-parent">
+				<button class="how-pos3 hov3 trans-04 js-hide-modal1">
+					<img src="images/icons/icon-close.png" alt="CLOSE">
+				</button>
+
+				<div class="row">
+					<div class="col-md-6 col-lg-7 p-b-30">
+						<div class="p-l-25 p-r-30 p-lr-0-lg">
+							<div class="wrap-slick3 flex-sb flex-w">
+								<div class="wrap-slick3-dots"></div>
+								<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
+
+								<div class="slick3 gallery-lb">
+									<div class="item-slick3" data-thumb="images/product-detail-01.jpg">
+										<div class="wrap-pic-w pos-relative">
+											<img src="images/product-detail-01.jpg" alt="IMG-PRODUCT">
+
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/product-detail-01.jpg">
+												<i class="fa fa-expand"></i>
+											</a>
+										</div>
+									</div>
+
+									<div class="item-slick3" data-thumb="images/product-detail-02.jpg">
+										<div class="wrap-pic-w pos-relative">
+											<img src="images/product-detail-02.jpg" alt="IMG-PRODUCT">
+
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/product-detail-02.jpg">
+												<i class="fa fa-expand"></i>
+											</a>
+										</div>
+									</div>
+
+									<div class="item-slick3" data-thumb="images/product-detail-03.jpg">
+										<div class="wrap-pic-w pos-relative">
+											<img src="images/product-detail-03.jpg" alt="IMG-PRODUCT">
+
+											<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/product-detail-03.jpg">
+												<i class="fa fa-expand"></i>
+											</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-md-6 col-lg-5 p-b-30">
+						<div class="p-r-50 p-t-5 p-lr-0-lg">
+							<h4 class="mtext-105 cl2 js-name-detail p-b-14">
+								Lightweight Jacket
+							</h4>
+
+							<span class="mtext-106 cl2">
+								$58.79
+							</span>
+
+							<p class="stext-102 cl3 p-t-23">
+								Nulla eget sem vitae eros pharetra viverra. Nam vitae luctus ligula. Mauris consequat ornare feugiat.
+							</p>
+							
+							<!--  -->
+							<div class="p-t-33">
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">
+										Size
+									</div>
+
+									<div class="size-204 respon6-next">
+										<div class="rs1-select2 bor8 bg0">
+											<select class="js-select2" name="time">
+												<option>Choose an option</option>
+												<option>Size S</option>
+												<option>Size M</option>
+												<option>Size L</option>
+												<option>Size XL</option>
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+									</div>
+								</div>
+
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">
+										Color
+									</div>
+
+									<div class="size-204 respon6-next">
+										<div class="rs1-select2 bor8 bg0">
+											<select class="js-select2" name="time">
+												<option>Choose an option</option>
+												<option>Red</option>
+												<option>Blue</option>
+												<option>White</option>
+												<option>Grey</option>
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+									</div>
+								</div>
+
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-204 flex-w flex-m respon6-next">
+										<div class="wrap-num-product flex-w m-r-20 m-tb-10">
+											<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+												<i class="fs-16 zmdi zmdi-minus"></i>
+											</div>
+
+											<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+
+											<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+												<i class="fs-16 zmdi zmdi-plus"></i>
+											</div>
+										</div>
+
+										<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+											Add to cart
+										</button>
+									</div>
+								</div>	
+							</div>
+
+							<!--  -->
+							<div class="flex-w flex-m p-l-100 p-t-40 respon7">
+								<div class="flex-m bor9 p-r-10 m-r-11">
+									<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100" data-tooltip="Add to Wishlist">
+										<i class="zmdi zmdi-favorite"></i>
+									</a>
+								</div>
+
+								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Facebook">
+									<i class="fa fa-facebook"></i>
+								</a>
+
+								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Twitter">
+									<i class="fa fa-twitter"></i>
+								</a>
+
+								<a href="#" class="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100" data-tooltip="Google Plus">
+									<i class="fa fa-google-plus"></i>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 <!--===============================================================================================-->	
@@ -352,7 +678,70 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		})
 	</script>
 <!--===============================================================================================-->
+	<script src="vendor/daterangepicker/moment.min.js"></script>
+	<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/slick/slick.min.js"></script>
+	<script src="js/slick-custom.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/parallax100/parallax100.js"></script>
+	<script>
+        $('.parallax100').parallax100();
+	</script>
+<!--===============================================================================================-->
 	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+	<script>
+		$('.gallery-lb').each(function() { // the containers for all your galleries
+			$(this).magnificPopup({
+		        delegate: 'a', // the selector for gallery item
+		        type: 'image',
+		        gallery: {
+		        	enabled:true
+		        },
+		        mainClass: 'mfp-fade'
+		    });
+		});
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/sweetalert/sweetalert.min.js"></script>
+	<script>
+		$('.js-addwish-b2').on('click', function(e){
+			e.preventDefault();
+		});
+
+		$('.js-addwish-b2').each(function(){
+			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
+			$(this).on('click', function(){
+				swal(nameProduct, "is added to wishlist !", "success");
+
+				$(this).addClass('js-addedwish-b2');
+				$(this).off('click');
+			});
+		});
+
+		$('.js-addwish-detail').each(function(){
+			var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
+
+			$(this).on('click', function(){
+				swal(nameProduct, "is added to wishlist !", "success");
+
+				$(this).addClass('js-addedwish-detail');
+				$(this).off('click');
+			});
+		});
+
+		/*---------------------------------------------*/
+
+		$('.js-addcart-detail').each(function(){
+			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
+			$(this).on('click', function(){
+				swal(nameProduct, "is added to cart !", "success");
+			});
+		});
+	
+	</script>
 <!--===============================================================================================-->
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 	<script>
@@ -372,38 +761,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	
 </body>
 </html>
-<?php
-// Include database connection
-include('dataconnection.php'); // Ensure your DB connection is included properly
 
-// Error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submitbtn'])) {
-    // Retrieve form data and sanitize inputs
-    $email = mysqli_real_escape_string($connect, $_POST['email']);
-    $message = mysqli_real_escape_string($connect, $_POST['message']);
 
-    // Prepare SQL query to insert data into contact_us table
-    $query = "INSERT INTO contact_us (user_email, message, status) VALUES ('$email', '$message', 0)"; // Set status to 0
-
-    // Execute the query
-    if (mysqli_query($connect, $query)) {
-        // If the query is successful, show a success message or redirect
-        echo "<script>
-                alert('Message sent successfully!');
-                window.location.href = 'contact.php'; // Redirect back to the contact page
-              </script>";
-    } else {
-        // If there is an error, show the error message
-        echo "Error: " . mysqli_error($connect); // This will show the exact error message
-    }
-}
-
-// Close the connection after the query is executed
-mysqli_close($connect);
-?>
