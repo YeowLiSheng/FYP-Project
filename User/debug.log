@@ -142,3 +142,15 @@ Array
     [color] => Black
     [size] => PM
 )
+Array
+(
+    [delete_item] => 1
+    [id] => 5
+    [type] => package
+    [product1_color] => Brown
+    [product1_size] => PM
+    [product2_color] => Yellow
+    [product2_size] => PM
+    [product3_color] => Brown
+    [product3_size] => PM
+)

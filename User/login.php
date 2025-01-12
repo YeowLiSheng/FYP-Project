@@ -276,6 +276,7 @@ if (isset($_POST["loginbtn"])) {
 </style>
 
 
+
 <body class="animsition">
 	
 	<!-- Header -->
@@ -372,7 +373,7 @@ if (isset($_POST["loginbtn"])) {
 							</li>
 
 							<li>
-								<a href="contact.php">Contact</a>
+								<a href="contact_us.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
