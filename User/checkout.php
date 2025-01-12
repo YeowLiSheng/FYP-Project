@@ -652,16 +652,14 @@ if ($paymentSuccess) {
 
     // 插入 `order_details` 表
     foreach ($cart_result as $item) {
-        $product_id = $item['product_id'];
-        $product_name = $item['product_name'];
+        $variant_id = $item['variant_id'];
         $quantity = $item['total_qty'];
         $unit_price = $item['product_price'];
         $total_price = $item['item_total_price'];
-		$color=$item['color'];
-		$size=$item['size'];
-        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, color, size, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisssidd", $order_id, $product_id, $product_name, $color, $size, $quantity, $unit_price, $total_price);
+        $detail_stmt->bind_param("iiidd", $order_id, $variant_id, $quantity, $unit_price, $total_price);
         if (!$detail_stmt->execute()) {
             die("Error inserting into order_details table: " . $detail_stmt->error);
         }
