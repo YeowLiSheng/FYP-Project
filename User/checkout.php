@@ -119,9 +119,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $current_stock = $stock_row['stock'];
 
                     if ($current_stock <= 0) {
-                        $errorMessages[] = "$product_name is out of stock.";
+                        $errorMessages[] = "$product_name is out of stock. Please select again product in your shopping cart.";
+                        // Remove out-of-stock product from cart
+                        $delete_query = "DELETE FROM shopping_cart WHERE variant_id = ? AND user_id = ?";
+                        $delete_stmt = $conn->prepare($delete_query);
+                        $delete_stmt->bind_param("ii", $variant_id, $user_id);
+                        $delete_stmt->execute();
+                        $delete_stmt->close();
                     } elseif ($total_qty > $current_stock) {
-                        $errorMessages[] = "$product_name only has $current_stock items left, cannot fulfill requested quantity of $total_qty.";
+                        $errorMessages[] = "$product_name only has $current_stock items left, cannot fulfill requested quantity of $total_qty. Please select again product in your shopping cart.";
+                        // Adjust the quantity in the cart to match available stock
+                        $update_query = "UPDATE shopping_cart SET qty = ? WHERE variant_id = ? AND user_id = ?";
+                        $update_stmt = $conn->prepare($update_query);
+                        $update_stmt->bind_param("iii", $current_stock, $variant_id, $user_id);
+                        $update_stmt->execute();
+                        $update_stmt->close();
                     }
                 }
             }
@@ -132,12 +144,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     echo "<script>alert('$message');</script>";
                 }
                 $paymentSuccess = false; // Prevent further processing if there are stock issues
-            } else {
-                // Proceed with payment processing since all stocks are sufficient
-                echo "<script>alert('Payment processed successfully');</script>";
-                // Deduct stock logic can go here
             }
-        } else {
+			
+			else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
