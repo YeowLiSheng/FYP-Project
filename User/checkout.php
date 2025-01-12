@@ -42,6 +42,8 @@ $cart_query = "
         p.product_name, 
         p.product_price, 
         p.product_image,
+		sc.color,
+        sc.size,
         SUM(sc.qty) AS total_qty, 
         (p.product_price * SUM(sc.qty)) AS item_total_price
     FROM 
@@ -652,10 +654,11 @@ if ($paymentSuccess) {
         $quantity = $item['total_qty'];
         $unit_price = $item['product_price'];
         $total_price = $item['item_total_price'];
-
-        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
+		$color=$item['color'];
+		$size=$item['size'];
+        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, color, size, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
+        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $color, $size, $quantity, $unit_price, $total_price);
         if (!$detail_stmt->execute()) {
             die("Error inserting into order_details table: " . $detail_stmt->error);
         }
