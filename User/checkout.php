@@ -686,7 +686,7 @@ if ($paymentSuccess) {
     if (!$clear_cart_stmt->execute()) {
         die("Error clearing shopping cart: " . $clear_cart_stmt->error);
     }
-
+d
     // 插入 `payment` 表
     $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
