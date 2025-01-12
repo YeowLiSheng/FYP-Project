@@ -652,10 +652,10 @@ if ($paymentSuccess) {
 
     // 插入 `order_details` 表
     foreach ($cart_result as $item) {
-        $variant_id = $item['variant_id'];
-        $quantity = $item['total_qty'];
-        $unit_price = $item['product_price'];
-        $total_price = $item['item_total_price'];
+        $variant_id = $item['variant_id']; // 从购物车中获取 variant_id
+        $quantity = $item['total_qty']; // 商品数量
+        $unit_price = $item['product_price']; // 单价
+        $total_price = $item['item_total_price']; // 总价
 
         $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
