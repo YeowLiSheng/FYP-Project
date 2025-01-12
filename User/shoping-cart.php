@@ -26,9 +26,6 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
-
-// Check if the user is updating the cart
-// Check if the user is updating the cart
 // Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     // Update product quantities
