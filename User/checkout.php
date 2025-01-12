@@ -111,25 +111,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <?php if ($paymentSuccess): 
 	
 	if ($paymentSuccess) {
-		// Deduct product stock
-		if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-			while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-				$product_id = $cart_item['product_id'];
-				$quantity_to_deduct = $cart_item['total_qty'];
-	
-				// Update the product stock
-				$update_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-				$stmt = $conn->prepare($update_stock_query);
-				$stmt->bind_param("ii", $quantity_to_deduct, $product_id);
-				$stmt->execute();
-	
-				if ($stmt->affected_rows <= 0) {
-					echo "<script>alert('Failed to update stock for product ID: $product_id');</script>";
-				}
-	
-				$stmt->close();
-			}
-		}
+		
 	}?>
 	<script>
 	window.onload = function() {
