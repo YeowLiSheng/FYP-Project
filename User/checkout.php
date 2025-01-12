@@ -579,8 +579,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
 									alt="<?php echo htmlspecialchars($product_name); ?>">
 								<div>
-									<p><?php echo htmlspecialchars(string: $product_name); ?></p>
-									<span>Color: <?php echo htmlspecialchars($color); ?></span><br>
+								<p><?php echo htmlspecialchars($product_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
 									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
 									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
