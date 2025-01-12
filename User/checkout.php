@@ -41,19 +41,21 @@ $cart_query = "
         p.product_id,
         p.product_name, 
         p.product_price, 
-        p.product_image,
-		sc.color,
-        sc.size,
+        pv.color, 
+        pv.size, 
+        pv.Quick_View1 AS product_image,
         SUM(sc.qty) AS total_qty, 
         (p.product_price * SUM(sc.qty)) AS item_total_price
     FROM 
         shopping_cart AS sc
     JOIN 
-        product AS p ON sc.product_id = p.product_id
+        product_variant AS pv ON sc.variant_id = pv.variant_id
+    JOIN 
+        product AS p ON pv.product_id = p.product_id
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
-        p.product_id
+        pv.variant_id
 ";
 
 $cart_result = mysqli_query($conn, $cart_query);
