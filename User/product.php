@@ -165,15 +165,17 @@ if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
 }
 
 // Handle AJAX request to add product to shopping cart
-if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
-    $product_id = intval($_POST['product_id']);
+if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
+    // Retrieve POST data
+    $variant_id = intval($_POST['variant_id']); // Use variant_id directly from POST
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
-	$color = $connect->real_escape_string($_POST['color']);
-    $size = $connect->real_escape_string($_POST['size']);
-    // Insert data into shopping_cart table, including the user_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price, color, size) 
-                   VALUES ($user_id, $product_id, $qty, $total_price, '$color', '$size')";
+
+    // Insert data into the shopping_cart table, including the user_id and variant_id
+    $cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) 
+                   VALUES ($user_id, $variant_id, $qty, $total_price)";
+
+    // Execute the query and return the response
     if ($connect->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
@@ -181,7 +183,6 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     }
     exit;
 }
-
 
 $selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
 // Fetch categories
@@ -1827,9 +1828,8 @@ $(document).ready(function () {
             return;
         }
 
-        // Extract the size and stock from the matching variant
-        const selectedSize = matchingVariant.size; // Size based on the selected color
-        console.log("Selected Size:", selectedSize); // Debug
+        const variantId = matchingVariant.variant_id; // Variant ID from the product_variant table
+        console.log("Variant ID:", variantId); // Debug
 
         const productStock = parseInt(matchingVariant.stock || 0); // Stock of the matching variant
         console.log("Available Stock for Selected Variant:", productStock); // Debug
@@ -1862,11 +1862,9 @@ $(document).ready(function () {
             type: 'POST',
             data: {
                 add_to_cart: true,
-                product_id: productId, // Product ID
+                variant_id: variantId, // Variant ID from the product_variant table
                 qty: productQuantity, // Quantity
                 total_price: totalPrice, // Total Price
-                color: selectedColor, // Selected Color
-                size: selectedSize // Size based on the color
             },
             dataType: 'json',
             success: function (response) {

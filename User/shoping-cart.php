@@ -29,52 +29,56 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 // Check if the user is updating the cart
 // Check if the user is updating the cart
+// Check if the user is updating the cart
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
     // Update product quantities
-    if (isset($_POST['product_qty']) && isset($_POST['product_color']) && isset($_POST['product_size'])) {
-		foreach ($_POST['product_qty'] as $index => $new_qty) {
-			$new_qty = intval($new_qty);
-	
-			$product_id = intval($_POST['product_id'][$index]);
-			$color = $connect->real_escape_string($_POST['product_color'][$index]);
-			$size = $connect->real_escape_string($_POST['product_size'][$index]);
-	
-			// Get the product price and current quantity
-			$current_query = "
-				SELECT qty, 
-					   (SELECT product_price FROM product WHERE product_id = $product_id) AS product_price 
-				FROM shopping_cart 
-				WHERE user_id = $user_id AND product_id = $product_id AND color = '$color' AND size = '$size' LIMIT 1";
-			$current_result = $connect->query($current_query);
-	
-			if ($current_result && $current_result->num_rows > 0) {
-				$current_row = $current_result->fetch_assoc();
-				$current_qty = intval($current_row['qty']);
-				$product_price = floatval($current_row['product_price']);
-	
-				// Calculate the new total price
-				$new_total_price = $new_qty * $product_price;
-	
-				if ($new_qty > 0) {
-					// Update quantity and total price in the database
-					$update_query = "
-						UPDATE shopping_cart 
-						SET qty = $new_qty, 
-							total_price = $new_total_price 
-						WHERE user_id = $user_id AND product_id = $product_id AND color = '$color' AND size = '$size' LIMIT 1";
-					$connect->query($update_query);
-				} else {
-					// Remove the product if quantity is 0
-					$delete_query = "
-						DELETE FROM shopping_cart 
-						WHERE user_id = $user_id AND product_id = $product_id AND color = '$color' AND size = '$size' LIMIT 1";
-					$connect->query($delete_query);
-				}
-			}
-		}
-	}
+    if (isset($_POST['product_qty']) && isset($_POST['variant_id'])) {
+        foreach ($_POST['product_qty'] as $index => $new_qty) {
+            $new_qty = intval($new_qty);
 
-    // Always recalculate voucher and final total price after cart updates
+            // Fetch variant_id directly
+            $variant_id = intval($_POST['variant_id'][$index]);
+
+            // Get the product price and current quantity based on variant_id
+            $current_query = "
+                SELECT qty, 
+                       total_price, 
+                       (SELECT product_price FROM product p 
+                        INNER JOIN product_variant pv 
+                        ON p.product_id = pv.product_id 
+                        WHERE pv.variant_id = $variant_id) AS product_price
+                FROM shopping_cart 
+                WHERE user_id = $user_id AND variant_id = $variant_id";
+            $current_result = $connect->query($current_query);
+
+            if ($current_result && $current_result->num_rows > 0) {
+                $current_row = $current_result->fetch_assoc();
+                $current_qty = intval($current_row['qty']);
+                $product_price = floatval($current_row['product_price']);
+
+                // Calculate the new total price
+                $new_total_price = $new_qty * $product_price;
+
+                if ($new_qty > 0) {
+                    // Update quantity and total price in the database
+                    $update_query = "
+                        UPDATE shopping_cart 
+                        SET qty = $new_qty, 
+                            total_price = $new_total_price 
+                        WHERE user_id = $user_id AND variant_id = $variant_id";
+                    $connect->query($update_query);
+                } else {
+                    // Remove the product if quantity is 0
+                    $delete_query = "
+                        DELETE FROM shopping_cart 
+                        WHERE user_id = $user_id AND variant_id = $variant_id ";
+                    $connect->query($delete_query);
+                }
+            }
+        }
+    }
+
+    // Recalculate voucher and final total price after cart updates
     recalculateFinalTotalAndVoucher($connect, $user_id);
 
     // Reload the page to reflect changes
@@ -88,15 +92,13 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
     // Fetch the grouped total price based on product_id, color, and size
     $recalc_query = "
         SELECT 
-            sc.product_id,
-            sc.color,
-            sc.size,
+            sc.variant_id,
             sc.qty,
             p.product_price,
             COALESCE((sc.qty * p.product_price), 0) AS product_total_price
         FROM shopping_cart sc
-        LEFT JOIN product p ON sc.product_id = p.product_id
-        LEFT JOIN product_variant pv ON sc.product_id = pv.product_id AND sc.color = pv.color
+        LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+        LEFT JOIN product p ON pv.product_id = p.product_id
         WHERE sc.user_id = $user_id";
     $recalc_result = $connect->query($recalc_query);
 
@@ -105,22 +107,15 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
     // Iterate through each cart item (grouped by product_id + color + size)
     if ($recalc_result) {
         while ($row = $recalc_result->fetch_assoc()) {
-            $product_id = intval($row['product_id']);
-            $color = $connect->real_escape_string($row['color']);
-            $size = $connect->real_escape_string($row['size']);
+            $variant_id = intval($row['variant_id']);
             $product_total_price = floatval($row['product_total_price']);
-            
-            // Add to total cart price
             $total_price += $product_total_price;
 
             // Update the individual cart item with its recalculated total price
             $update_query = "
                 UPDATE shopping_cart
                 SET total_price = $product_total_price
-                WHERE user_id = $user_id 
-                AND product_id = $product_id 
-                AND color = '$color' 
-                AND size = '$size'";
+                WHERE user_id = $user_id AND variant_id = $variant_id";
             $connect->query($update_query);
         }
     }
@@ -182,26 +177,24 @@ $total_price = 0;
 // Fetch and combine cart items with stock information
 $cart_items_query = "
     SELECT 
-        sc.product_id, 
+        sc.variant_id,
+		pv.product_id, 
+        pv.color, 
+        pv.size, 
         p.product_name, 
-        p.product_image, 
         p.product_price,
 		p.product_status,
 		pv.stock AS product_stock,
-        sc.color, 
-        sc.size, 
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price,
 		MAX(sc.final_total_price) AS final_total_price, 
 		MAX(sc.voucher_applied) AS voucher_applied
     FROM shopping_cart sc
-    LEFT JOIN product p ON sc.product_id = p.product_id
-	LEFT JOIN product_variant pv ON sc.product_id = pv.product_id AND sc.color = pv.color
+    LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+	LEFT JOIN product p ON pv.product_id = p.product_id
     WHERE sc.user_id = $user_id
     GROUP BY 
-        sc.product_id, 
-        sc.color, 
-        sc.size";
+        sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
 
 $checkout_locked = false; // Flag to disable checkout button
@@ -771,11 +764,9 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
 													<i class="fs-16 zmdi zmdi-minus"></i>
 												</div>
-												<input type="hidden" name="product_id[]" value="' . $cart_item['product_id'] . '">
-												<input type="hidden" name="product_color[]" value="' . htmlspecialchars($cart_item['color']) . '">
-                    							<input type="hidden" name="product_size[]" value="' . htmlspecialchars($cart_item['size']) . '">
+												<input type="hidden" name="variant_id[]" value="' . $cart_item['variant_id'] . '">
 												<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[]" value="' . $cart_item['total_qty'] . '" readonly>
-												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
+												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-variant-id="' . $cart_item['variant_id'] . '">
 													<i class="fs-16 zmdi zmdi-plus"></i>
 												</div>
 												
