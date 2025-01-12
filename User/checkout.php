@@ -145,8 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
                 $paymentSuccess = false; // Prevent further processing if there are stock issues
             }
-			
-			else {
+		} else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
