@@ -22,7 +22,7 @@ if (!isset($_SESSION['id']) || !isset($_GET['order_id'])) {
 $order_id = intval($_GET['order_id']);
 
 $order_stmt = $conn->prepare("
-    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount, o.delivery_charge,
+    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount,
            o.final_amount, o.order_status, o.shipping_address, o.shipping_method, u.user_name
     FROM orders o
     JOIN user u ON o.user_id = u.user_id
