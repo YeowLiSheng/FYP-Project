@@ -881,7 +881,6 @@ textarea {
         <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
         <div class="pricing-item"><span>Discount:</span><span>- RM <?= number_format($order['discount_amount'], 2) ?></span></div>
-        <div class="pricing-item"><span>Delivery Charge:</span><span>+ RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
         <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
