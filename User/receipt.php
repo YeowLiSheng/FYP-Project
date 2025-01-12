@@ -117,8 +117,6 @@ $pdf->Cell(151, 6, 'Grand Total:', 0, 0, 'R');
 $pdf->Cell(40, 6, 'RM ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
 $pdf->Cell(151, 6, 'Discount:', 0, 0, 'R');
 $pdf->Cell(40, 6, '- RM ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
-$pdf->Cell(151, 6, 'Delivery Charge:', 0, 0, 'R');
-$pdf->Cell(40, 6, '+ RM ' . number_format($order['delivery_charge'], 2), 0, 1, 'R');
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(151, 10, 'Total Amount:', 0, 0, 'R');
 $pdf->Cell(40, 10, 'RM ' . number_format($order['final_amount'], 2), 0, 1, 'R');
