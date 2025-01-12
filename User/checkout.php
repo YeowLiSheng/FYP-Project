@@ -616,9 +616,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</body>
 	<?php
 if ($paymentSuccess) {
-  
+    // 计算 Grand Total 和 Final Amount
+    $grand_total = 0;
+    foreach ($cart_result as $item) {
+        $grand_total += $item['item_total_price']; // 累加每个商品的总价
+    }
 
-
+    // 计算 Final Amount
+    $final_amount = $grand_total - $discount_amount; // 扣除折扣后的最终支付金额
 
     // 确认变量值
     if ($grand_total <= 0 || $final_amount <= 0) {
