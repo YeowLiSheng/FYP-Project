@@ -40,7 +40,8 @@ $cart_query = "
     SELECT 
         p.product_id,
         p.product_name, 
-        p.product_price, 
+        p.product_price,
+		pv.variant_id,
         pv.color, 
         pv.size, 
         pv.Quick_View1 AS product_image,
