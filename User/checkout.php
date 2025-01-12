@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows > 0) {
+		if ($result->num_rows > 0) {
             $paymentSuccess = true;
             
             // Check stock for each product in the cart
@@ -145,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
                 $paymentSuccess = false; // Prevent further processing if there are stock issues
             }
-		} else {
+        } else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
