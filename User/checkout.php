@@ -40,18 +40,23 @@ $cart_query = "
     SELECT 
         p.product_id,
         p.product_name, 
-        p.product_price, 
-        p.product_image,
+        p.product_price,
+		pv.variant_id,
+        pv.color, 
+        pv.size, 
+        pv.Quick_View1 AS product_image,
         SUM(sc.qty) AS total_qty, 
         (p.product_price * SUM(sc.qty)) AS item_total_price
     FROM 
         shopping_cart AS sc
     JOIN 
-        product AS p ON sc.product_id = p.product_id
+        product_variant AS pv ON sc.variant_id = pv.variant_id
+    JOIN 
+        product AS p ON pv.product_id = p.product_id
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
-        p.product_id
+        pv.variant_id
 ";
 
 $cart_result = mysqli_query($conn, $cart_query);
@@ -111,25 +116,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <?php if ($paymentSuccess): 
 	
 	if ($paymentSuccess) {
-		// Deduct product stock
-		if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-			while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-				$product_id = $cart_item['product_id'];
-				$quantity_to_deduct = $cart_item['total_qty'];
+		foreach ($cart_result as $item) {
+			$variant_id = $item['variant_id'];
+			$total_qty = $item['total_qty']; // 要扣除的数量
 	
-				// Update the product stock
-				$update_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-				$stmt = $conn->prepare($update_stock_query);
-				$stmt->bind_param("ii", $quantity_to_deduct, $product_id);
-				$stmt->execute();
+			// 更新库存的查询
+			$update_stock_query = "UPDATE product_variant SET stock = stock - ? WHERE variant_id = ?";
+			$update_stock_stmt = $conn->prepare($update_stock_query);
+			$update_stock_stmt->bind_param("ii", $total_qty, $variant_id);
 	
-				if ($stmt->affected_rows <= 0) {
-					echo "<script>alert('Failed to update stock for product ID: $product_id');</script>";
-				}
-	
-				$stmt->close();
+			if (!$update_stock_stmt->execute()) {
+				die("Error updating stock for variant_id $variant_id: " . $update_stock_stmt->error);
 			}
 		}
+	
+	
 	}?>
 	<script>
 	window.onload = function() {
@@ -580,6 +581,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 							$product_name = $row['product_name'];
 							$product_price = $row['product_price'];
 							$product_image = $row['product_image'];
+							$color=$row['color'];
 							$total_qty = $row['total_qty'];
 							$item_total_price = $row['item_total_price'];
 
@@ -592,7 +594,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
 									alt="<?php echo htmlspecialchars($product_name); ?>">
 								<div>
-									<p><?php echo htmlspecialchars($product_name); ?></p>
+								<p><?php echo htmlspecialchars($product_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
 									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
 									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
@@ -604,12 +606,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-order-totals">
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
-							$delivery_charge = 10;
-							$total_payment = $grand_total - $discount_amount + $delivery_charge;
+							$total_payment = $grand_total - $discount_amount ;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
-							<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
 								<span>RM<?php echo number_format($total_payment, 2); ?></span>
 							</p>
@@ -636,49 +636,72 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // 获取必要的订单数据
-    $final_amount = $total_payment; // 总支付金额
+    // 计算 Grand Total 和 Final Amount
+    $grand_total = 0;
+    foreach ($cart_result as $item) {
+        $grand_total += $item['item_total_price']; // 累加每个商品的总价
+    }
+
+    // 计算 Final Amount
+    $final_amount = $grand_total - $discount_amount; // 扣除折扣后的最终支付金额
+
+    // 确认变量值
+    if ($grand_total <= 0 || $final_amount <= 0) {
+        die("Error: Invalid grand total or final amount!");
+    }
+
+    // 获取用户的地址信息
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
-    // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)";
+    // 插入 `orders` 表
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $shipping_address, $user_message);
-    $stmt->execute();
+    $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    if (!$stmt->execute()) {
+        die("Error inserting into orders table: " . $stmt->error);
+    }
 
     // 获取插入订单的ID
     $order_id = $stmt->insert_id;
 
     // 插入 `order_details` 表
     foreach ($cart_result as $item) {
-        $product_id = $item['product_id'];
-        $product_name = $item['product_name'];
-        $quantity = $item['total_qty'];
-        $unit_price = $item['product_price'];
-        $total_price = $item['item_total_price'];
+        $variant_id = $item['variant_id']; // 从购物车中获取 variant_id
+        $quantity = $item['total_qty']; // 商品数量
+        $unit_price = $item['product_price']; // 单价
+        $total_price = $item['item_total_price']; // 总价
 
-        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
+        $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
-        $detail_stmt->execute();
+        $detail_stmt->bind_param("iiidd", $order_id, $variant_id, $quantity, $unit_price, $total_price);
+        if (!$detail_stmt->execute()) {
+            die("Error inserting into order_details table: " . $detail_stmt->error);
+        }
     }
 
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
-    $clear_cart_stmt->execute();
+    if (!$clear_cart_stmt->execute()) {
+        die("Error clearing shopping cart: " . $clear_cart_stmt->error);
+    }
 
-	$payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
+    // 插入 `payment` 表
+    $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
     $payment_stmt = $conn->prepare($payment_query);
     $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
-    $payment_stmt->execute();
+    if (!$payment_stmt->execute()) {
+        die("Error inserting into payment table: " . $payment_stmt->error);
+    }
 
-	
+    // 确认订单成功
+    echo "Order placed successfully!";
 }
 ?>
+
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
