@@ -658,7 +658,7 @@ if ($paymentSuccess) {
 		$size=$item['size'];
         $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, color, size, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $color, $size, $quantity, $unit_price, $total_price);
+        $detail_stmt->bind_param("iisssidd", $order_id, $product_id, $product_name, $color, $size, $quantity, $unit_price, $total_price);
         if (!$detail_stmt->execute()) {
             die("Error inserting into order_details table: " . $detail_stmt->error);
         }
