@@ -82,34 +82,68 @@ $paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-	$cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
-	$expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $errorMessages = [];
 
-	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-	} else {
+    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+        echo "<script>alert('Please fill in all the card details');</script>";
+    } else {
+        // Validate card details
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-		$stmt = $conn->prepare($query);
-		$stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-		$stmt->execute();
-		$result = $stmt->get_result();
-
-		if ($result->num_rows > 0) {
+        if ($result->num_rows > 0) {
             $paymentSuccess = true;
-        } 
-		else {
+            
+            // Check stock for each product in the cart
+            $cart_result = mysqli_query($conn, $cart_query);
+            while ($row = mysqli_fetch_assoc($cart_result)) {
+                $variant_id = $row['variant_id'];
+                $product_name = $row['product_name'];
+                $total_qty = $row['total_qty'];
+
+                // Get current stock
+                $stock_query = "SELECT stock FROM product_variant WHERE variant_id = ?";
+                $stock_stmt = $conn->prepare($stock_query);
+                $stock_stmt->bind_param("i", $variant_id);
+                $stock_stmt->execute();
+                $stock_result = $stock_stmt->get_result();
+
+                if ($stock_row = $stock_result->fetch_assoc()) {
+                    $current_stock = $stock_row['stock'];
+
+                    if ($current_stock <= 0) {
+                        $errorMessages[] = "$product_name is out of stock.";
+                    } elseif ($total_qty > $current_stock) {
+                        $errorMessages[] = "$product_name only has $current_stock items left, cannot fulfill requested quantity of $total_qty.";
+                    }
+                }
+            }
+
+            // If there are error messages, display them and prevent payment processing
+            if (!empty($errorMessages)) {
+                foreach ($errorMessages as $message) {
+                    echo "<script>alert('$message');</script>";
+                }
+                $paymentSuccess = false; // Prevent further processing if there are stock issues
+            } else {
+                // Proceed with payment processing since all stocks are sufficient
+                echo "<script>alert('Payment processed successfully');</script>";
+                // Deduct stock logic can go here
+            }
+        } else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
-		$stmt->close();
-	}
-	
-	
-	
+        $stmt->close();
+    }
 }
-
 
 ?>
 
