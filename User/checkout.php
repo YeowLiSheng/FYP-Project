@@ -116,7 +116,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <?php if ($paymentSuccess): 
 	
 	if ($paymentSuccess) {
-		
+		foreach ($cart_result as $item) {
+			$variant_id = $item['variant_id'];
+			$total_qty = $item['total_qty']; // 要扣除的数量
+	
+			// 更新库存的查询
+			$update_stock_query = "UPDATE product_variant SET stock = stock - ? WHERE variant_id = ?";
+			$update_stock_stmt = $conn->prepare($update_stock_query);
+			$update_stock_stmt->bind_param("ii", $total_qty, $variant_id);
+	
+			if (!$update_stock_stmt->execute()) {
+				die("Error updating stock for variant_id $variant_id: " . $update_stock_stmt->error);
+			}
+		}
+	
+	
 	}?>
 	<script>
 	window.onload = function() {
