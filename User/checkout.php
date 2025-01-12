@@ -575,37 +575,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<!-- Product List -->
 						<?php
 
-                $grand_total = 0;
-                $stock_insufficient = false;
-                $error_messages = [];
+						$grand_total = 0;
 
-                while ($row = mysqli_fetch_assoc($cart_result)):
-                    $product_name = $row['product_name'];
-                    $product_price = $row['product_price'];
-                    $product_image = $row['product_image'];
-                    $color = $row['color'];
-                    $total_qty = $row['total_qty'];
-                    $item_total_price = $row['item_total_price'];
-                    $variant_id = $row['variant_id'];
+						while ($row = mysqli_fetch_assoc($cart_result)):
+							$product_name = $row['product_name'];
+							$product_price = $row['product_price'];
+							$product_image = $row['product_image'];
+							$color=$row['color'];
+							$total_qty = $row['total_qty'];
+							$item_total_price = $row['item_total_price'];
 
-                    // Accumulate the grand total
-                    $grand_total += $item_total_price;
 
-                    // Check stock
-                    $stock_check_query = "SELECT stock FROM product_variant WHERE variant_id = ?";
-                    $stock_check_stmt = $conn->prepare($stock_check_query);
-                    $stock_check_stmt->bind_param("i", $variant_id);
-                    $stock_check_stmt->execute();
-                    $stock_check_result = $stock_check_stmt->get_result();
-                    $stock_row = $stock_check_result->fetch_assoc();
-                    $stock = $stock_row['stock'];
+							// Accumulate the grand total
+							$grand_total += $item_total_price;
 
-                    if ($stock <= 0 || $total_qty > $stock) {
-                        $stock_insufficient = true;
-                        $error_messages[] = "Stock insufficient for product: " . htmlspecialchars($product_name) . " (Current stock: $stock, Requested: $total_qty)";
-                    }
-
-                    ?>
+							?>
 							<div class="checkout-order-item">
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
 									alt="<?php echo htmlspecialchars($product_name); ?>">
