@@ -61,6 +61,18 @@ $cart_query = "
 
 $cart_result = mysqli_query($conn, $cart_query);
 
+
+if (mysqli_num_rows($cart_result) === 0) {
+
+    echo "<script>
+        alert('您的购物车为空，请先添加商品再结账。');
+        window.location.href = 'cart.php'; // 跳转到购物车页面
+    </script>";
+    exit; 
+}
+
+
+
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
