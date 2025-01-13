@@ -61,6 +61,18 @@ $cart_query = "
 
 $cart_result = mysqli_query($conn, $cart_query);
 
+
+if (mysqli_num_rows($cart_result) === 0) {
+
+    echo "<script>
+        alert('Your Shopping Cart is Empty. Please add product first.');
+        window.location.href = 'product.php'; 
+    </script>";
+    exit; 
+}
+
+
+
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
 
@@ -82,34 +94,76 @@ $paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-	$cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
-	$expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $errorMessages = [];
 
-	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-	} else {
-
-		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-		$stmt = $conn->prepare($query);
-		$stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-		$stmt->execute();
-		$result = $stmt->get_result();
+    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+        echo "<script>alert('Please fill in all the card details');</script>";
+    } else {
+        // Validate card details
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
 		if ($result->num_rows > 0) {
             $paymentSuccess = true;
-        } 
-		else {
+            
+            // Check stock for each product in the cart
+            $cart_result = mysqli_query($conn, $cart_query);
+            while ($row = mysqli_fetch_assoc($cart_result)) {
+                $variant_id = $row['variant_id'];
+                $product_name = $row['product_name'];
+                $total_qty = $row['total_qty'];
+
+                // Get current stock
+                $stock_query = "SELECT stock FROM product_variant WHERE variant_id = ?";
+                $stock_stmt = $conn->prepare($stock_query);
+                $stock_stmt->bind_param("i", $variant_id);
+                $stock_stmt->execute();
+                $stock_result = $stock_stmt->get_result();
+
+                if ($stock_row = $stock_result->fetch_assoc()) {
+                    $current_stock = $stock_row['stock'];
+
+                    if ($current_stock <= 0) {
+                        $errorMessages[] = "$product_name is out of stock. Please select again product in your shopping cart.";
+                        // Remove out-of-stock product from cart
+                        $delete_query = "DELETE FROM shopping_cart WHERE variant_id = ? AND user_id = ?";
+                        $delete_stmt = $conn->prepare($delete_query);
+                        $delete_stmt->bind_param("ii", $variant_id, $user_id);
+                        $delete_stmt->execute();
+                        $delete_stmt->close();
+                    } elseif ($total_qty > $current_stock) {
+                        $errorMessages[] = "$product_name only has $current_stock items left, cannot fulfill requested quantity of $total_qty. Please select again product in your shopping cart.";
+                        // Adjust the quantity in the cart to match available stock
+                        $update_query = "UPDATE shopping_cart SET qty = ? WHERE variant_id = ? AND user_id = ?";
+                        $update_stmt = $conn->prepare($update_query);
+                        $update_stmt->bind_param("iii", $current_stock, $variant_id, $user_id);
+                        $update_stmt->execute();
+                        $update_stmt->close();
+                    }
+                }
+            }
+
+            // If there are error messages, display them and prevent payment processing
+            if (!empty($errorMessages)) {
+                foreach ($errorMessages as $message) {
+                    echo "<script>alert('$message');window.location.href = 'dashboard.php';</script>";
+                }
+                $paymentSuccess = false; // Prevent further processing if there are stock issues
+            }
+        } else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
-		$stmt->close();
-	}
-	
-	
-	
+        $stmt->close();
+    }
 }
-
 
 ?>
 
@@ -118,9 +172,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	if ($paymentSuccess) {
 		foreach ($cart_result as $item) {
 			$variant_id = $item['variant_id'];
-			$total_qty = $item['total_qty']; // 要扣除的数量
+			$total_qty = $item['total_qty']; 
 	
-			// 更新库存的查询
+
 			$update_stock_query = "UPDATE product_variant SET stock = stock - ? WHERE variant_id = ?";
 			$update_stock_stmt = $conn->prepare($update_stock_query);
 			$update_stock_stmt->bind_param("ii", $total_qty, $variant_id);
