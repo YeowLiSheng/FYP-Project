@@ -141,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // If there are error messages, display them and prevent payment processing
             if (!empty($errorMessages)) {
                 foreach ($errorMessages as $message) {
-                    echo "<script>alert('$message');</script>";
+                    echo "<script>alert('$message');window.location.href = 'dashboard.php';</script>";
                 }
                 $paymentSuccess = false; // Prevent further processing if there are stock issues
             }
