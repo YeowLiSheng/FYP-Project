@@ -94,6 +94,17 @@ $paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+
+	$full_name = htmlspecialchars($_POST['full_name']);
+    $email = htmlspecialchars($_POST['email']);
+    $address = htmlspecialchars($_POST['address']);
+    $city = htmlspecialchars($_POST['city']);
+    $state = htmlspecialchars($_POST['state']);
+    $postcode = htmlspecialchars($_POST['postcode']);
+
+    // 拼接完整的 Shipping Address
+    $shipping_address = "$address, $postcode, $city, $state";
+
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
     $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
@@ -548,29 +559,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						<div class="checkout-input-box">
 							<span class="required">Full Name :</span>
-							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
+							<input type="text" name="full_name" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
 
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Email :</span>
-							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
+							<input type="email" name="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Address :</span>
-							<input type="text" id="address" value="" required>
+							<input type="text" name="address" id="address" value="" required>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">City :</span>
-							<input type="text" id="city" value="" required>
+							<input type="text" name="city" id="city" value="" required>
 						</div>
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span class="required">State :</span>
-								<input type="text" id="state" value="" required>
+								<input type="text" namme="state" id="state" value="" required>
 							</div>
 							<div class="checkout-input-box">
 								<span class="required">Postcode :</span>
-								<input type="number" id="postcode" value="" required>
+								<input type="number" name="postcode" id="postcode" value="" required>
 							</div>
 						</div>
 
@@ -704,8 +715,7 @@ if ($paymentSuccess) {
         die("Error: Invalid grand total or final amount!");
     }
 
-    // 获取用户的地址信息
-    $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+ 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表
