@@ -11,7 +11,7 @@ if (!isset($_SESSION['id'])) {
 }
 
 // Check if the database connection exists
-if (!isset($connect) || !$connect) { // Changed $connect to $conn
+if (!isset($connect) || !$connect) {
     die("Database connection failed.");
 }
 
