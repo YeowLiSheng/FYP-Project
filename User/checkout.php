@@ -161,7 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $stmt->close();
-
+	}
 
 
     // 保存状态到会话
@@ -174,18 +174,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 // 页面加载时检查会话信息
-if (isset($_SESSION['paymentSuccess'])) {
-    $paymentSuccess = $_SESSION['paymentSuccess'];
-    $errorMessages = $_SESSION['errorMessages'];
+$paymentSuccess = $_SESSION['paymentSuccess'] ?? null;
+$errorMessages = $_SESSION['errorMessages'] ?? [];
 
-    // 清除会话数据
-    unset($_SESSION['paymentSuccess']);
-    unset($_SESSION['errorMessages']);
-
-    }
-
+// 清除会话数据
+unset($_SESSION['paymentSuccess']);
+unset($_SESSION['errorMessages']);
 	
-}
+
 
 ?>
 
