@@ -636,11 +636,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
 </div>
 						</div>
 
-						<!-- Checkbox in a new row -->
-						<div class="autofill-checkbox">
-						<input type="checkbox" id="autofill-checkbox" name="autofill-checkbox" onclick="toggleAutofill()">
-						<label for="autofill-checkbox">Use saved address information</label>
-						</div>
+						<?php if (!empty($address)): ?>
+<div class="autofill-checkbox">
+    <input type="checkbox" id="autofill-checkbox" name="autofill-checkbox" onclick="toggleAutofill()">
+    <label for="autofill-checkbox">Use saved address information</label>
+</div>
+<?php endif; ?>
 					</div>
 
 					<!-- Payment Section -->
