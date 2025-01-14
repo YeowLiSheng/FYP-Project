@@ -184,7 +184,39 @@
     cursor: pointer;
     transition: background-color 0.3s;
 }
+.checkout-input-box select {
+    width: 100%;              /* 宽度与输入框一致 */
+    padding: 10px;            /* 内边距增加，提高可读性 */
+    border: 1px solid #ccc;   /* 边框颜色与输入框一致 */
+    border-radius: 5px;       /* 圆角边框 */
+    font-size: 16px;          /* 字体大小与输入框一致 */
+    appearance: none;         /* 移除默认下拉箭头样式 */
+    background-color: #fff;   /* 背景颜色 */
+    outline: none;            /* 去掉点击后的边框高亮 */
+    cursor: pointer;          /* 鼠标悬浮时为指针样式 */
+}
 
+/* 为 select 增加一个小箭头图标 */
+.checkout-input-box select:after {
+    content: '▼';             /* 箭头符号 */
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 14px;
+}
+
+/* 悬浮时边框变色 */
+.checkout-input-box select:hover {
+    border-color: #57a957;
+}
+
+/* 聚焦时边框高亮 */
+.checkout-input-box select:focus {
+    border-color: #57a957;
+    box-shadow: 0 0 5px rgba(87, 169, 87, 0.5);
+}
 .checkout-btn:hover, .ok-btn:hover {
     background-color: #45a049;
 }
