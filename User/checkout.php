@@ -1254,27 +1254,36 @@ if ($use_autofill && $address) {
 
 	<script>
 
-		function toggleAutofill() {
-			const autofillCheckbox = document.getElementById('autofill-checkbox');
-			const address = document.getElementById('address');
-			const city = document.getElementById('city');
-			const state = document.getElementById('state');
-			const postcode = document.getElementById('postcode');
+function toggleAutofill() { 
+    const autofillCheckbox = document.getElementById('autofill-checkbox');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
 
-			if (autofillCheckbox.checked) {
-				// Fill with saved data if checkbox is checked
-				address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-				city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-				state.value = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
-				postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
-			} else {
-				// Clear fields for manual input if checkbox is unchecked
-				address.value = "";
-				city.value = "";
-				state.value = "";
-				postcode.value = "";
-			}
-		}
+    if (autofillCheckbox.checked) {
+        // Fill with saved data if checkbox is checked
+        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+
+        // Set the correct state in the dropdown
+        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+        if (savedState) {
+            const options = Array.from(state.options);
+            const matchingOption = options.find(option => option.value === savedState);
+            if (matchingOption) {
+                state.value = savedState;
+            }
+        }
+    } else {
+        // Clear fields for manual input if checkbox is unchecked
+        address.value = "";
+        city.value = "";
+        state.value = "";
+        postcode.value = "";
+    }
+}
 
 
 
