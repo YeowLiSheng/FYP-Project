@@ -57,6 +57,8 @@
 /* Input boxes styling */
 .checkout-input-box {
     margin: 15px 0;
+    position: relative;
+
 }
 
 .checkout-input-box span {
