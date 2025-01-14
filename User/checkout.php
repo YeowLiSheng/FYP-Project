@@ -92,8 +92,9 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 $paymentSuccess = false; 
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_SESSION['form_submitted'])) {
 
+    $_SESSION['form_submitted'] = true; // 设置提交标记
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
     $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
@@ -163,10 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->close();
     }
 
-	if ($paymentSuccess) {
-        header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
-        exit();
-    }
+	
 }
 
 ?>
