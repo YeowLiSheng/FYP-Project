@@ -1350,7 +1350,7 @@ if ($use_autofill && $address) {
 			}
 		}
 
-		function validateForm() {
+		function validateForm(event) {
 			const fullName = document.querySelector('input[name="cardHolderName"]');
 			const cardNum = document.querySelector('input[name="cardNum"]');
 			const expiryDate = document.getElementById('expiry-date');
