@@ -242,7 +242,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <style>
         
 
-		.checkout-input-box select {
+		  /* Styling for select dropdown */
+		  .checkout-input-box select {
             width: 100%;
             padding: 10px 15px;
             border: 1px solid #ccc;
@@ -252,15 +253,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             color: #555;
             background-color: #fff;
             transition: border-color 0.3s, box-shadow 0.3s;
-            appearance: none; /* Hide default arrow for consistent styling */
+            appearance: none; /* Hides default arrow */
             background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
             background-repeat: no-repeat;
             background-position: right 15px center;
             background-size: 12px;
-            -webkit-appearance: none; /* Remove default dropdown arrow for Safari */
+            height: 40px; /* Ensures input box size is uniform */
         }
 
-        /* For the dropdown behavior */
         .checkout-input-box select:focus,
         .checkout-input-box select:hover {
             border-color: #8175d3;
@@ -284,6 +284,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         .checkout-input-box select::-ms-expand {
             display: none; /* Hide default arrow in Internet Explorer */
         }
+
+		.checkout-flex .checkout-input-box input {
+    width: 100%; /* Ensure the input spans the full width */
+}
+		.checkout-flex {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between; /* Ensure space between columns */
+    flex-wrap: wrap;
+}
+
+.checkout-flex .checkout-column {
+    flex: 1 1 45%; /* Adjust the column width */
+    min-width: 280px;
+}
     </style>
 
 <body class="animsition">
