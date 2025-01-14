@@ -714,6 +714,8 @@ unset($_SESSION['errorMessages']);
 						<?php
 
 						$grand_total = 0;
+						$product_index = 0;
+
 
 						while ($row = mysqli_fetch_assoc($cart_result)):
 							$product_name = $row['product_name'];
@@ -740,6 +742,11 @@ unset($_SESSION['errorMessages']);
 							</div>
 						<?php endwhile; ?>
 
+						<!-- Pagination Controls -->
+    <div id="pagination-controls">
+        <button id="prev-btn" onclick="prevPage()">Previous</button>
+        <button id="next-btn" onclick="nextPage()">Next</button>
+    </div>
 						<!-- Order Totals -->
 						<div class="checkout-order-totals">
 							<?php
@@ -1275,6 +1282,44 @@ if ($use_autofill && $address) {
 	<script src="js/main.js"></script>
 
 	<script>
+
+
+// JavaScript Pagination
+const itemsPerPage = 3; // Number of products per page
+    let currentPage = 1;
+
+    const products = document.querySelectorAll(".checkout-order-item");
+    const totalPages = Math.ceil(products.length / itemsPerPage);
+
+    function showPage(page) {
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+
+        products.forEach((product, index) => {
+            product.style.display = index >= start && index < end ? "block" : "none";
+        });
+
+        // Update button visibility
+        document.getElementById("prev-btn").style.display = page === 1 ? "none" : "inline-block";
+        document.getElementById("next-btn").style.display = page === totalPages ? "none" : "inline-block";
+    }
+
+    function nextPage() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            showPage(currentPage);
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            showPage(currentPage);
+        }
+    }
+
+    // Initialize the first page
+    showPage(currentPage);
 
 function toggleAutofill() { 
     const autofillCheckbox = document.getElementById('autofill-checkbox');
