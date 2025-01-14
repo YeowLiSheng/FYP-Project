@@ -275,6 +275,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         overflow-y: auto; /* Enable vertical scrolling */
         max-height: 150px; /* Limit height to show 3 items */
     }
+	/* 调整 state 和 postcode 的 flex 属性 */
+.checkout-flex .checkout-input-box:nth-child(1) {
+    flex: 2; /* 增大 postcode 输入框的大小 */
+}
+
+.checkout-flex .checkout-input-box:nth-child(2) {
+    flex: 1; /* 缩小 state 输入框的大小 */
+}
     </style>
 
 <body class="animsition">
