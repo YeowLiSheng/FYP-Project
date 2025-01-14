@@ -281,6 +281,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 .checkout-flex .checkout-input-box:nth-child(2) {
     flex: 1; /* 缩小 state 输入框的大小 */
 }
+
+.checkout-row {
+    display: flex;
+    flex-wrap: wrap; /* Keep wrap for responsiveness */
+    gap: 20px;
+    align-items: stretch; /* Ensures columns are of equal height */
+}
+
+.checkout-column {
+    flex: 1; /* Makes columns take equal space */
+    min-width: 280px; /* Keeps responsiveness for smaller screens */
+    display: flex;
+    flex-direction: column;
+}
     </style>
 
 <body class="animsition">
