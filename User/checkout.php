@@ -154,9 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
                 }
                 $paymentSuccess = false; // Prevent further processing if there are stock issues
             }
-        } else {
-            echo "<script>alert('Invalid card details');</script>";
-        }
+        } 
 
         $stmt->close();
     }
