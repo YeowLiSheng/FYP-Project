@@ -714,8 +714,6 @@ unset($_SESSION['errorMessages']);
 						<?php
 
 						$grand_total = 0;
-						$product_index = 0;
-
 
 						while ($row = mysqli_fetch_assoc($cart_result)):
 							$product_name = $row['product_name'];
@@ -742,11 +740,12 @@ unset($_SESSION['errorMessages']);
 							</div>
 						<?php endwhile; ?>
 
+
 						<!-- Pagination Controls -->
-    <div id="pagination-controls">
-        <button id="prev-btn" onclick="prevPage()">Previous</button>
-        <button id="next-btn" onclick="nextPage()">Next</button>
-    </div>
+<div id="pagination-controls" style="display: none;">
+    <button id="prev-page" onclick="changePage(-1)" disabled>Previous</button>
+    <button id="next-page" onclick="changePage(1)">Next</button>
+</div>
 						<!-- Order Totals -->
 						<div class="checkout-order-totals">
 							<?php
@@ -1283,43 +1282,35 @@ if ($use_autofill && $address) {
 
 	<script>
 
-
-// JavaScript Pagination
-const itemsPerPage = 3; // Number of products per page
-    let currentPage = 1;
-
-    const products = document.querySelectorAll(".checkout-order-item");
-    const totalPages = Math.ceil(products.length / itemsPerPage);
+// JavaScript for handling pagination
+const products = Array.from(document.querySelectorAll('.checkout-order-item')); // Get all product items
+    const itemsPerPage = 3; // Number of products per page
+    let currentPage = 1; // Track the current page
 
     function showPage(page) {
         const start = (page - 1) * itemsPerPage;
         const end = start + itemsPerPage;
 
+        // Hide all products
         products.forEach((product, index) => {
-            product.style.display = index >= start && index < end ? "block" : "none";
+            product.style.display = index >= start && index < end ? 'block' : 'none';
         });
 
-        // Update button visibility
-        document.getElementById("prev-btn").style.display = page === 1 ? "none" : "inline-block";
-        document.getElementById("next-btn").style.display = page === totalPages ? "none" : "inline-block";
+        // Handle pagination button states
+        document.getElementById('prev-page').disabled = page === 1;
+        document.getElementById('next-page').disabled = end >= products.length;
     }
 
-    function nextPage() {
-        if (currentPage < totalPages) {
-            currentPage++;
-            showPage(currentPage);
-        }
+    function changePage(direction) {
+        currentPage += direction;
+        showPage(currentPage);
     }
 
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            showPage(currentPage);
-        }
+    // Initialize pagination
+    if (products.length > itemsPerPage) {
+        document.getElementById('pagination-controls').style.display = 'block';
+        showPage(currentPage);
     }
-
-    // Initialize the first page
-    showPage(currentPage);
 
 function toggleAutofill() { 
     const autofillCheckbox = document.getElementById('autofill-checkbox');
