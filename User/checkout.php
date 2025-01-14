@@ -243,38 +243,47 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         
 
 		.checkout-input-box select {
-        width: 100%;
-        padding: 10px 15px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-        font-family: 'Poppins', sans-serif;
-        color: #555;
-        background-color: #fff;
-        transition: border-color 0.3s, box-shadow 0.3s;
-        appearance: none; /* Hides default arrow for consistent styling */
-        background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 15px center;
-        background-size: 12px;
-    }
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            color: #555;
+            background-color: #fff;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            appearance: none; /* Hide default arrow for consistent styling */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 12px;
+            -webkit-appearance: none; /* Remove default dropdown arrow for Safari */
+        }
 
-    .checkout-input-box select:focus,
-    .checkout-input-box select:hover {
-        border-color: #8175d3;
-        box-shadow: 0 0 5px rgba(129, 117, 211, 0.5);
-        outline: none;
-    }
+        /* For the dropdown behavior */
+        .checkout-input-box select:focus,
+        .checkout-input-box select:hover {
+            border-color: #8175d3;
+            box-shadow: 0 0 5px rgba(129, 117, 211, 0.5);
+            outline: none;
+        }
 
-    .checkout-input-box select option:disabled {
-        color: #aaa;
-    }
+        /* Disable the option color */
+        .checkout-input-box select option:disabled {
+            color: #aaa;
+        }
 
-    /* Add scrolling and set max visible items */
-    .checkout-input-box select {
-        overflow-y: auto; /* Enable vertical scrolling */
-        max-height: 150px; /* Limit height to show 3 items */
-    }
+        /* Adjust dropdown height */
+        .checkout-input-box select {
+            height: 40px;
+            overflow-y: auto;
+            max-height: 120px; /* Limit height of the dropdown to show 3 options */
+        }
+
+        /* Ensure arrow is not hidden */
+        .checkout-input-box select::-ms-expand {
+            display: none; /* Hide default arrow in Internet Explorer */
+        }
     </style>
 
 <body class="animsition">
@@ -604,8 +613,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 							<span class="required">State :</span>
-							<select name="state" id="state" required size="3">
-							<option value="" disabled selected>Select a state</option>
+							<select name="state" id="state" required>
+    							<option value="" disabled selected>Select a state</option>
     							<option value="Johor">Johor</option>
 								<option value="Kelantan">Kelantan</option>
 								<option value="Kedah">Kedah</option>
