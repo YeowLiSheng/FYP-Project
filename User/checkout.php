@@ -630,9 +630,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
 							</select>
 							</div>
 							<div class="checkout-input-box">
-								<span class="required">Postcode :</span>
-								<input type="number" name="postcode" minlength="5" maxlength="5" title="Please enter exactly 5 digits" autocomplete="off" id="postcode" value="" required>
-							</div>
+    <span class="required">Postcode :</span>
+    <input type="number" name="postcode" title="Please enter exactly 5 digits" autocomplete="off" id="postcode" value="" required 
+           oninput="this.value = this.value.slice(0, 5);" pattern="\d{5}">
+</div>
 						</div>
 
 						<!-- Checkbox in a new row -->
