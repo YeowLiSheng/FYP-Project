@@ -613,40 +613,23 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
 					$cart_items_result = $connect->query($cart_items_query);
-                    // Display combined cart items
-                    $total_price = 0;
 
                     if ($cart_items_result->num_rows > 0) {
                         while ($cart_item = $cart_items_result->fetch_assoc()) {
                             $total_price += $cart_item['total_price'];
+								$quick_view_image = '';
+								foreach ($product_variants as $variant) {
+									if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+										$quick_view_image = $variant['Quick_View1'];
+										break;
+									}
+								}
                             
-                            if (!empty($cart_item['package_id'])) {
-                                // Render package details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
-                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['package_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
-                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
-                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
-                            } else {
                                 // Render individual product details
                                 echo '
                                 <li class="header-cart-item flex-w flex-t m-b-12">
                                     <div class="header-cart-item-img">
-                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                        <img src="images/' . $quick_view_image . '" alt="IMG">
                                     </div>
                                     <div class="header-cart-item-txt p-t-8">
                                         <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
@@ -660,7 +643,6 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                         </span>
                                     </div>
                                 </li>';
-                            }
                         }
                     } else {
                         echo '<p>Your cart is empty.</p>';
