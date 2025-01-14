@@ -591,12 +591,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
 
 						<div class="checkout-input-box">
 							<span class="required">Full Name :</span>
-							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
+							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>"  readonly>
 
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Email :</span>
-							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
+							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" readonly>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Address :</span>
