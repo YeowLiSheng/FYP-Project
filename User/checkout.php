@@ -669,7 +669,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required minlength="5" maxlength="5" pattern="(0[1-9]|1[0-2])\/\d{2}" title="Please enter in MM/YY format" autocomplete="off" oninput="formatExpiryDate(this)">
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
@@ -1277,30 +1277,41 @@ if ($use_autofill && $address) {
 
 
 
-		document.getElementById('expiry-date').addEventListener('input', function () {
-			const input = this.value;
-			const error = document.getElementById('expiry-error');
+		function formatExpiryDate(input) {
+    let value = input.value.replace(/\D/g, ""); // 移除非数字字符
 
-			// Check if the input matches MM/YY format using regex
-			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-			if (!datePattern.test(input)) {
-				error.style.display = 'none';
-				return;
-			}
+    // 插入 '/' 在两位数字之后
+    if (value.length > 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
 
-			// Parse month and year from input
-			const [month, year] = input.split('/').map(Number);
-			const currentYear = new Date().getFullYear() % 100; // last two digits of current year
-			const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+    // 限制输入长度为5个字符（MM/YY）
+    input.value = value.slice(0, 5);
+}
 
-			// Check if the entered date is valid (current month/year or later)
-			if (year > currentYear || (year === currentYear && month >= currentMonth)) {
-				error.style.display = 'none'; // hide error message if valid
-			} else {
-				alert('Please enter a valid expiration date (format: MM/YY).'); // 弹出警告消息
-				this.value = ''; // clear input field
-			}
-		});
+document.getElementById('expiry-date').addEventListener('input', function () {
+    const input = this.value;
+    const error = document.getElementById('expiry-error');
+
+    // 检查输入是否匹配 MM/YY 格式
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(input)) {
+        error.style.display = 'none';
+        return;
+    }
+
+    // 解析输入的月份和年份
+    const [month, year] = input.split('/').map(Number);
+    const currentYear = new Date().getFullYear() % 100; // 取当前年份的后两位数字
+    const currentMonth = new Date().getMonth() + 1; // 月份是从0开始的
+
+    // 检查输入的日期是否有效且未过期
+    if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+        error.style.display = 'none'; // 如果有效则隐藏错误信息
+    } else {
+        error.style.display = 'block'; // 显示错误信息
+    }
+});
 
 		function formatCardNumber(input) {
 			// Remove all spaces and get only digits
@@ -1387,17 +1398,17 @@ if ($use_autofill && $address) {
 
 			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
 			if (!datePattern.test(expiryDate.value)) {
-				alert('Please enter a valid expiration date (format: MM/YY).');
-				return false;
-			} else {
-				const [month, year] = expiryDate.value.split('/').map(Number);
-				const currentYear = new Date().getFullYear() % 100;
-				const currentMonth = new Date().getMonth() + 1;
-				if (year < currentYear || (year === currentYear && month < currentMonth)) {
-					alert('Please enter a valid, non-expired expiration date.');
-					return false;
-				}
-			}
+        alert('Please enter a valid expiration date (format: MM/YY).');
+        return false;
+    } else {
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert('Please enter a valid, non-expired expiration date.');
+            return false;
+        }
+    }
 
 			return true;
 		}
