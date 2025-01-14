@@ -604,8 +604,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 							<span class="required">State :</span>
-							<select name="state" id="state" required>
-    							<option value="" disabled selected>Select a state</option>
+							<select name="state" id="state" required size="3">
+							<option value="" disabled selected>Select a state</option>
     							<option value="Johor">Johor</option>
 								<option value="Kelantan">Kelantan</option>
 								<option value="Kedah">Kedah</option>
