@@ -1297,7 +1297,7 @@ if ($use_autofill && $address) {
 			if (year > currentYear || (year === currentYear && month >= currentMonth)) {
 				error.style.display = 'none'; // hide error message if valid
 			} else {
-				error.style.display = 'block'; // show error message if expired
+				alert('Please enter a valid expiration date (format: MM/YY).'); // 弹出警告消息
 				this.value = ''; // clear input field
 			}
 		});
