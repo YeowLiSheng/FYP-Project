@@ -576,8 +576,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						<!-- Checkbox in a new row -->
 						<div class="autofill-checkbox">
-							<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
-							<label for="autofill-checkbox">Use saved address information</label>
+						<input type="checkbox" id="autofill-checkbox" name="autofill-checkbox" onclick="toggleAutofill()">
+						<label for="autofill-checkbox">Use saved address information</label>
 						</div>
 					</div>
 
@@ -704,8 +704,16 @@ if ($paymentSuccess) {
         die("Error: Invalid grand total or final amount!");
     }
 
-    // 获取用户的地址信息
+   // 判断用户是否使用了自动填充的地址
+$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
+
+if ($use_autofill && $address) {
+    // 如果勾选了自动填充，使用保存的地址
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+} else {
+    // 否则使用用户手动输入的地址
+    $shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
+}
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表
