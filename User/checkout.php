@@ -92,7 +92,7 @@ if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 }
 $paymentSuccess = false; 
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) && !empty($_POST['cardNum']) && !empty($_POST['expiry-date']) && !empty($_POST['cvv'])) {
+if ($_SERVER["REQUEST_METHOD"] === "POST" ) {
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
     $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
