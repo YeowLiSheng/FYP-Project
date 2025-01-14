@@ -242,7 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <style>
         
 
-        .checkout-input-box select {
+		.checkout-input-box select {
         width: 100%;
         padding: 10px 15px;
         border: 1px solid #ccc;
@@ -257,7 +257,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         background-repeat: no-repeat;
         background-position: right 15px center;
         background-size: 12px;
-        height: 50px; /* Ensure consistent height */
     }
 
     .checkout-input-box select:focus,
@@ -271,20 +270,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         color: #aaa;
     }
 
-    /* Dropdown customization */
+    /* Add scrolling and set max visible items */
     .checkout-input-box select {
-        overflow: hidden; /* Prevent default scrollbar */
-    }
-
-    /* Style the dropdown menu to show max 3 options */
-    .checkout-input-box select option {
-        height: 30px; /* Adjust individual option height if needed */
-    }
-
-    /* Limit the dropdown height to display only 3 options */
-    .checkout-input-box select {
-        overflow-y: auto; /* Enables scrolling for additional options */
-        max-height: 150px; /* Adjust dropdown height for 3 options */
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 150px; /* Limit height to show 3 items */
     }
     </style>
 
