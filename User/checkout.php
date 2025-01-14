@@ -162,6 +162,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $stmt->close();
     }
+
+	if ($paymentSuccess) {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
+        exit();
+    }
 }
 
 ?>
