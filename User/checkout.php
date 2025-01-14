@@ -100,9 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
     $errorMessages = [];
 
-    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-        echo "<script>alert('Please fill in all the card details');</script>";
-    } else {
+   
         // Validate card details
         $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
         $stmt = $conn->prepare($query);
@@ -163,7 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $stmt->close();
     }
-}
+
 
 ?>
 
