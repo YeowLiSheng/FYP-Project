@@ -242,57 +242,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <style>
         
 
-		  /* Styling for select dropdown */
-		  .checkout-input-box select {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-            font-family: 'Poppins', sans-serif;
-            color: #555;
-            background-color: #fff;
-            transition: border-color 0.3s, box-shadow 0.3s;
-            appearance: none; /* Hides default arrow */
-            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 12px;
-            height: 40px; /* Ensures input box size is uniform */
-        }
+    .checkout-input-box select {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        color: #555;
+        background-color: #fff;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        appearance: none; /* Hides default arrow for consistent styling */
+        background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 12px;
+    }
 
-        .checkout-input-box select:focus,
-        .checkout-input-box select:hover {
-            border-color: #8175d3;
-            box-shadow: 0 0 5px rgba(129, 117, 211, 0.5);
-            outline: none;
-        }
+    .checkout-input-box select:focus,
+    .checkout-input-box select:hover {
+        border-color: #8175d3;
+        box-shadow: 0 0 5px rgba(129, 117, 211, 0.5);
+        outline: none;
+    }
 
-        /* Disable the option color */
-        .checkout-input-box select option:disabled {
-            color: #aaa;
-        }
+    .checkout-input-box select option:disabled {
+        color: #aaa;
+    }
 
-
-        /* Ensure arrow is not hidden */
-        .checkout-input-box select::-ms-expand {
-            display: none; /* Hide default arrow in Internet Explorer */
-        }
-
-		.checkout-flex .checkout-input-box input {
-    width: 100%; /* Ensure the input spans the full width */
-}
-		.checkout-flex {
-    display: flex;
-    gap: 15px;
-    justify-content: space-between; /* Ensure space between columns */
-    flex-wrap: wrap;
-}
-
-.checkout-flex .checkout-column {
-    flex: 1 1 45%; /* Adjust the column width */
-    min-width: 280px;
-}
+    /* Add scrolling and set max visible items */
+    .checkout-input-box select {
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 150px; /* Limit height to show 3 items */
+    }
     </style>
 
 <body class="animsition">
