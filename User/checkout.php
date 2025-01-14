@@ -99,7 +99,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
     $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
     $errorMessages = [];
 
-   
+	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
+    } else {
         // Validate card details
         $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
         $stmt = $conn->prepare($query);
@@ -154,11 +155,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($_POST['cardHolderName']) &&
                 }
                 $paymentSuccess = false; // Prevent further processing if there are stock issues
             }
-        } 
+        } else {
+            echo "<script>alert('Invalid card details');</script>";
+        }
 
         $stmt->close();
     }
-
+}
 
 ?>
 
