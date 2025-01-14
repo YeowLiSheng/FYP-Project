@@ -273,12 +273,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             color: #aaa;
         }
 
-        /* Adjust dropdown height */
-        .checkout-input-box select {
-            height: 40px;
-            overflow-y: auto;
-            max-height: 120px; /* Limit height of the dropdown to show 3 options */
-        }
 
         /* Ensure arrow is not hidden */
         .checkout-input-box select::-ms-expand {
