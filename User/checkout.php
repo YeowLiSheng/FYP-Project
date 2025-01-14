@@ -740,12 +740,6 @@ unset($_SESSION['errorMessages']);
 							</div>
 						<?php endwhile; ?>
 
-
-						<!-- Pagination Controls -->
-<div id="pagination-controls" style="display: none;">
-    <button id="prev-page" onclick="changePage(-1)" disabled>Previous</button>
-    <button id="next-page" onclick="changePage(1)">Next</button>
-</div>
 						<!-- Order Totals -->
 						<div class="checkout-order-totals">
 							<?php
@@ -1281,36 +1275,6 @@ if ($use_autofill && $address) {
 	<script src="js/main.js"></script>
 
 	<script>
-
-// JavaScript for handling pagination
-const products = Array.from(document.querySelectorAll('.checkout-order-item')); // Get all product items
-    const itemsPerPage = 3; // Number of products per page
-    let currentPage = 1; // Track the current page
-
-    function showPage(page) {
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-
-        // Hide all products
-        products.forEach((product, index) => {
-            product.style.display = index >= start && index < end ? 'block' : 'none';
-        });
-
-        // Handle pagination button states
-        document.getElementById('prev-page').disabled = page === 1;
-        document.getElementById('next-page').disabled = end >= products.length;
-    }
-
-    function changePage(direction) {
-        currentPage += direction;
-        showPage(currentPage);
-    }
-
-    // Initialize pagination
-    if (products.length > itemsPerPage) {
-        document.getElementById('pagination-controls').style.display = 'block';
-        showPage(currentPage);
-    }
 
 function toggleAutofill() { 
     const autofillCheckbox = document.getElementById('autofill-checkbox');
