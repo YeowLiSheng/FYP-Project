@@ -103,10 +103,19 @@
 }
 
 
-/* Flex layout for grouped input fields */
 .checkout-flex {
     display: flex;
     gap: 15px;
+    justify-content: space-between; /* Ensure space between columns */
+    flex-wrap: wrap;
+}
+
+.checkout-flex .checkout-column {
+    flex: 1 1 45%; /* Adjust the column width */
+    min-width: 280px;
+}
+.checkout-flex .checkout-input-box input {
+    width: 100%; /* Ensure the input spans the full width */
 }
 
 /* Order summary and item styling */
