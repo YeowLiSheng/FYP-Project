@@ -557,20 +557,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Address :</span>
-							<input type="text" id="address" value="" required>
+							<input type="text" name="address" id="address" value="" required>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">City :</span>
-							<input type="text" id="city" value="" required>
+							<input type="text" name="city" id="city" value="" required>
 						</div>
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span class="required">State :</span>
-								<input type="text" id="state" value="" required>
+								<input type="text" name="state" id="state" value="" required>
 							</div>
 							<div class="checkout-input-box">
 								<span class="required">Postcode :</span>
-								<input type="number" id="postcode" value="" required>
+								<input type="number" name="postcode" id="postcode" value="" required>
 							</div>
 						</div>
 
