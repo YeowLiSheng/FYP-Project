@@ -308,6 +308,7 @@ unset($_SESSION['errorMessages']);
     display: flex;
     justify-content: center;
     gap: 10px;
+    position: relative; /* Ensures proper alignment */
 }
 
 .pagination-controls .checkout-btn {
@@ -1524,16 +1525,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const paginationContainer = document.createElement('div');
         paginationContainer.classList.add('pagination-controls');
 
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Next Page';
-        nextButton.classList.add('checkout-btn');
-        nextButton.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
-            }
-        });
-
         const prevButton = document.createElement('button');
         prevButton.textContent = 'Previous Page';
         prevButton.classList.add('checkout-btn');
@@ -1545,9 +1536,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next Page';
+        nextButton.classList.add('checkout-btn');
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+
         paginationContainer.appendChild(prevButton);
         paginationContainer.appendChild(nextButton);
 
+        // Insert controls below the product list
         const orderSummary = document.querySelector('.checkout-order-summary');
         orderSummary.appendChild(paginationContainer);
     };
