@@ -302,23 +302,28 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
-/* Pagination container styling */
+/* Pagination container styling: Positioned at the bottom-right */
 .pagination-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 20px 0;
+    gap: 8px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 5px 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure it stays on top */
 }
 
-/* Pagination button styling */
+/* Pagination button styling: Smaller and compact */
 .pagination-button {
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 4px 8px;
+    font-size: 12px;
     color: #333;
     background-color: #fff;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
 }
