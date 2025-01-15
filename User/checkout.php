@@ -258,11 +258,7 @@ unset($_SESSION['errorMessages']);
 </head>
 
 <style>
-        /* Flex layout for grouped input fields */
-.checkout-flex {
-    display: flex;
-    gap: 15px;
-}
+        
 /* Payment button styling */
 .checkout-btn {
     width: 100%;
