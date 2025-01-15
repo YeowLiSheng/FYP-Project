@@ -103,7 +103,11 @@
 }
 
 
-
+/* Flex layout for grouped input fields */
+.checkout-flex {
+    display: flex;
+    gap: 15px;
+}
 
 /* Order summary and item styling */
 .checkout-order-summary {
