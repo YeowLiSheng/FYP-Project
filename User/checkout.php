@@ -30,9 +30,18 @@ if ($user_result && mysqli_num_rows($user_result) > 0) {
 }
 
 // Fetch the address information if available
-$address = array();
+// 获取用户地址信息（如果存在）
+$address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
-	$address = mysqli_fetch_assoc($address_result);
+    $address = mysqli_fetch_assoc($address_result);
+} else {
+    // 如果没有找到地址，可以设置默认空值
+    $address = [
+        'address' => '',
+        'city' => '',
+        'state' => '',
+        'postcode' => ''
+    ];
 }
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
@@ -1145,6 +1154,8 @@ if ($use_autofill && $address) {
     // 否则使用用户手动输入的地址
     $shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
 }
+
+
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表
