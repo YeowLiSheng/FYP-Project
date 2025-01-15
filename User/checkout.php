@@ -301,6 +301,12 @@ unset($_SESSION['errorMessages']);
 .checkout-flex .checkout-input-box:nth-child(2) {
     flex: 1; /* 缩小 state 输入框的大小 */
 }
+
+#pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
     </style>
 
 <body class="animsition">
