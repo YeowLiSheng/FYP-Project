@@ -302,27 +302,23 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
-/* Pagination container styling: Positioned at the bottom-right */
+/* Pagination container styling */
 .pagination-controls {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
     display: flex;
-    gap: 8px;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 5px 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Ensure it stays on top */
+    gap: 5px;
+    justify-content: flex-end; /* Align to the right */
+    align-items: center;
+    margin-top: 15px; /* Spacing from product list */
+    position: relative;
 }
 
-/* Pagination button styling: Smaller and compact */
+/* Pagination button styling */
 .pagination-button {
-    padding: 4px 8px;
-    font-size: 12px;
-    color: #333;
+    padding: 5px 8px; /* Smaller size */
+    font-size: 12px; /* Reduce font size */
+    color: #555;
     background-color: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
     border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
@@ -330,6 +326,7 @@ unset($_SESSION['errorMessages']);
 
 .pagination-button:hover {
     background-color: #f0f0f0;
+    color: #333;
 }
 
 .pagination-button.active {
@@ -340,9 +337,21 @@ unset($_SESSION['errorMessages']);
 }
 
 .pagination-button:disabled {
-    color: #aaa;
-    cursor: not-allowed;
+    color: #bbb;
     background-color: #f9f9f9;
+    border-color: #ddd;
+    cursor: not-allowed;
+}
+
+/* Adjust positioning for right-bottom alignment */
+.checkout-order-summary {
+    position: relative; /* Ensure pagination aligns properly */
+}
+
+.pagination-controls {
+    position: absolute;
+    bottom: -25px; /* Place below the product list */
+    right: 0; /* Align to the right */
 }
     </style>
 
