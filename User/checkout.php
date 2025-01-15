@@ -320,6 +320,19 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
+.checkout-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px; /* 可根据需要调整间距 */
+}
+
+.checkout-input-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Pagination container positioned at the bottom-right */
 .pagination-controls {
     display: flex;
