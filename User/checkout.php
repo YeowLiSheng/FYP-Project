@@ -321,7 +321,6 @@ unset($_SESSION['errorMessages']);
 }
 
 .checkout-flex {
-    display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px; /* 可根据需要调整间距 */
