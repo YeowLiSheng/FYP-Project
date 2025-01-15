@@ -292,7 +292,7 @@ unset($_SESSION['errorMessages']);
     display: flex;
     flex-wrap: wrap; /* Allows responsiveness on smaller screens */
     gap: 20px;
-    align-items: stretch;
+    align-items:  flex-start;
 }
 
 .checkout-column {
@@ -323,7 +323,7 @@ unset($_SESSION['errorMessages']);
 
 .checkout-input-box span {
     display: block;
-    margin-bottom: 1005px;
+    margin-bottom: 8px;
     color: #555;
     font-weight: 500;
 }
