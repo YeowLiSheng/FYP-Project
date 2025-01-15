@@ -339,7 +339,7 @@ $voucher_applied_result = $connect->query($voucher_applied_query);
 $applied_voucher = $voucher_applied_result ? $voucher_applied_result->fetch_assoc() : null;
 
 // Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+$distinct_products_query = "SELECT COUNT(DISTINCT variant_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
 $distinct_products_result = $connect->query($distinct_products_query);
 $distinct_count = 0;
 

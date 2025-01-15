@@ -26,16 +26,17 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "User not found.";
     exit;
 }
-
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT 
-        sc.variant_id, 
+        sc.variant_id,
+		pv.product_id, 
+        pv.color, 
+        pv.size, 
         p.product_name, 
-        p.product_image, 
         p.product_price,
-        sc.color, 
-        sc.size, 
+		p.product_status,
+		pv.stock AS product_stock,
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price
     FROM shopping_cart sc
@@ -43,9 +44,7 @@ $cart_items_query = "
 	LEFT JOIN product p ON pv.product_id = p.product_id
     WHERE sc.user_id = $user_id
     GROUP BY 
-        sc.variant_id, 
-        sc.color, 
-        sc.size";
+        sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
 // Handle AJAX request to delete item
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
@@ -94,14 +93,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
     echo json_encode($response);
     exit;
 }
-
-
 // Handle AJAX request to fetch product details
-if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
-    $product_id = intval($_GET['id']);
+if (isset($_GET['fetch_promotion']) && isset($_GET['id'])) {
+    $promotion_id = intval($_GET['id']);
 
     // Query to get all variants of the product
-    $variant_query = "SELECT * FROM product_variant WHERE product_id = $product_id";
+    $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
     $variant_result = $connect->query($variant_query);
 
     if ($variant_result->num_rows > 0) {
@@ -114,13 +111,13 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
         }
 
         // Fetch product details from the product table
-        $product_query = "SELECT * FROM product WHERE product_id = $product_id";
-        $product_result = $connect->query($product_query);
-        $product = $product_result->fetch_assoc();
+        $promotion_query = "SELECT * FROM promotion_product WHERE promotion_id = $promotion_id";
+        $promotion_result = $connect->query($promotion_query);
+        $promotion = $promotion_result->fetch_assoc();
 
         // Combine product and variants data
-        $product['variants'] = $variants;
-        $product['total_stock'] = $total_stock;
+        $promotion['variants'] = $variants;
+        $promotion['total_stock'] = $total_stock;
 
         echo json_encode($product);
     } else {
@@ -128,15 +125,21 @@ if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     }
     exit; // Stop further script execution
 }
+$search_query = isset($_GET['search']) ? $_GET['search'] : '';
+$promotion_query = "SELECT DISTINCT p.* FROM promotion_product p
+                  JOIN product_variant pv ON p.promotion_id = pv.promotion_id
+                  WHERE p.promotion_name LIKE '%$search_query%'";
+$promotion_query .= " GROUP BY p.promotion_id";
 
+$promotion_result = $connect->query($promotion_query);
 if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
     // Fetch product ID from request
-    $product_id = intval($_GET['product_id']);
+    $promotion_id = intval($_GET['promotion_id']);
     
     // Query to fetch product variants
-    $query = "SELECT variant_id, product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3 
+    $query = "SELECT variant_id, promotion_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3 
               FROM product_variant 
-              WHERE product_id = $product_id";
+              WHERE promotion_id = $promotion_id";
 
     $result = mysqli_query($connect, $query);
 
@@ -145,7 +148,7 @@ if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
         while ($row = mysqli_fetch_assoc($result)) {
             $variants[] = [
                 'variant_id' => $row['variant_id'],
-                'product_id' => $row['product_id'],
+                'promotion_id' => $row['promotion_id'],
                 'color' => $row['color'],
                 'size' => $row['size'],
                 'stock' => $row['stock'],
@@ -164,7 +167,6 @@ if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
 
     exit;
 }
-
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     // Retrieve POST data
@@ -185,12 +187,10 @@ if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST[
     exit;
 }
 
-$selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
 // Fetch categories
 $category_query = "SELECT * FROM category";
 $category_result = $connect->query($category_query);
 
-// Updated query to count distinct items based on product_id, package_id, and associated attributes
 $distinct_items_query = "
     SELECT COUNT(*) AS distinct_count
     FROM (
@@ -213,159 +213,9 @@ if ($distinct_items_result) {
     $row = $distinct_items_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
-
-// Fetch products based on filters and search
-$search_query = isset($_GET['search']) ? $_GET['search'] : '';
-$price_filter = isset($_GET['price']) ? explode(',', $_GET['price']) : [];
-$color_filter = isset($_GET['color']) ? explode(',', $_GET['color']) : [];
-$size_filter = isset($_GET['size']) ? explode(',', $_GET['size']) : [];
-$tag_filter = isset($_GET['tag']) ? explode(',', $_GET['tag']) : [];
-$category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? intval($_GET['category']) : null;
-
-// Base query to fetch products
-$product_query = "SELECT DISTINCT p.* FROM product p
-                  JOIN product_variant pv ON p.product_id = pv.product_id
-                  WHERE p.product_name LIKE '%$search_query%'";
-
-
-// Apply category filter if it's not 'all'
-if ($category_filter) {
-    $product_query .= " AND p.category_id = $category_filter";
-}
-// Apply category filter if a valid category_id is provided
-if ($selected_category !== null) {
-    $product_query .= " AND p.category_id = $selected_category";
-}
-// Apply price filter if it's not 'all'
-if (!empty($price_filter) && $price_filter[0] !== 'all') {
-    $price_conditions = [];
-    foreach ($price_filter as $range) {
-        switch ($range) {
-            case '0-2000':
-                $price_conditions[] = "p.product_price BETWEEN 0 AND 2000";
-                break;
-            case '2000-3000':
-                $price_conditions[] = "p.product_price BETWEEN 2000 AND 3000";
-                break;
-            case '3000-4000':
-                $price_conditions[] = "p.product_price BETWEEN 3000 AND 4000";
-                break;
-            case '4000-5000':
-                $price_conditions[] = "p.product_price BETWEEN 4000 AND 5000";
-                break;
-            case '5000+':
-                $price_conditions[] = "p.product_price > 5000";
-                break;
-        }
-    }
-    $product_query .= " AND (" . implode(" OR ", $price_conditions) . ")";
-}
-
-// Apply color filter if it's not 'all'
-if (!empty($color_filter) && $color_filter[0] !== 'all') {
-    $color_conditions = array_map(function ($color) {
-        return "pv.color = '$color'";
-    }, $color_filter);
-    $product_query .= " AND (" . implode(" OR ", $color_conditions) . ")";
-}
-
-
-// Apply tag filter if it's not 'all'
-if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
-    $tag_conditions = array_map(function ($tag) {
-        return "p.tags LIKE '%$tag%'";
-    }, $tag_filter);
-    $product_query .= " AND (" . implode(" OR ", $tag_conditions) . ")";
-}
-
-$product_query .= " GROUP BY p.product_id";
-
-$product_result = $connect->query($product_query);
-
-// Render filtered products as HTML for AJAX response
-if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
-    ob_start();
-	if ($product_result->num_rows > 0) {
-        while ($product = $product_result->fetch_assoc()) {
-            $product_id = $product['product_id'];
-
-            // Get total stock for the product from product_variant table
-            $variant_query = "SELECT * FROM product_variant WHERE product_id = $product_id";
-            $variant_result = $connect->query($variant_query);
-
-            $total_stock = 0;
-            $isOutOfStock = true;
-            $colors = []; // Store available colors and their corresponding images
-            
-            while ($variant = $variant_result->fetch_assoc()) {
-                $total_stock += intval($variant['stock']);
-                if (intval($variant['stock']) > 0) {
-                    $isOutOfStock = false;
-                }
-                $colors[] = [
-                    'color' => $variant['color'],
-                    'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
-                ];
-            }
-
-            $isUnavailable = $product['product_status'] == 2;
-            $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
-
-            $message = '';
-            if ($isUnavailable) {
-                $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
-            } elseif ($isOutOfStock) {
-                $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
-            }
-
-            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
-                    <div class="block2 ' . $productStyle . '">
-                        <div class="block2-pic hov-img0" >
-                            <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
-                            <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-                                data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
-                        </div>
-                        <div class="block2-txt flex-w flex-t p-t-14">
-                            <div class="block2-txt-child1 flex-col-l ">
-                                <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
-                                . $product['product_name'] . 
-                                '</a>
-                                <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
-                                ' . $message . '
-                            </div>
-                            <div class="block2-txt-child2 flex-r p-t-3">
-                                <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
-                                    <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                    <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="block2-txt-child2 flex-r p-t-3">';
-                    
-        // Display color circles
-        foreach ($colors as $index => $color) {
-            $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
-            $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
-            echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
-                    data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
-                    <i class="zmdi ' . $iconClass . '"></i>
-                </span>';
-        }
-
-        echo '      </div>
-                    </div>
-                  </div>';
-    }
-    echo ob_get_clean();
-    exit;
-} else {
-	echo "<p>No products found.</p>";
-}
-}
-$output = ob_get_clean(); // Get any unexpected output
-if (!empty($output)) {
-    error_log("Unexpected output: $output"); // Log unexpected output for debugging
-}
+$query = "SELECT product_id, color, Quick_View1 FROM product_variant";
+$result = mysqli_query($connect, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -404,322 +254,41 @@ if (!empty($output)) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-
 <style>
-
-.slick-prev, .slick-next {
-    position: absolute;
-    top: 50%; /* Center vertically */
-    transform: translateY(-50%);
-    z-index: 1000;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    border-radius: 50%; /* Make them circular */
-    color: white;
-    font-size: 18px;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    text-align: center;
-    cursor: pointer;
+.block2-btn {
+    font-size: 16px; /* Increase the font size */
+    padding: 20px 20px; /* Adjust padding for a larger button */
+    border-radius: 50px; /* Add rounded corners (optional) */
+    width: auto; /* Ensure it adapts dynamically */
+    height: auto; /* Ensure it adapts dynamically */
+    display: inline-block; /* Make it larger without affecting layout */
 }
-
-.slick-prev {
-    left: -50px; /* Position to the left of the slider */
-}
-
-.slick-next {
-    right: -50px; /* Position to the right of the slider */
-}
-
-/* Hover effects */
-.slick-prev:hover, .slick-next:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-/* Optional: Remove default next/prev text */
-.slick-prev:before, .slick-next:before {
-    content: ''; /* Remove default arrows */
-}
-
-.selected {
-    color: blue !important;
-    font-weight: bold;
-}
-.isotope-grid {
+.block2-txt {
     position: relative;
-    overflow: hidden; /* Prevent overflow issues */
+    padding: 10px 20px 10px 20px; /* Add padding to the left and right */
 }
 
-.footer {
-    position: relative;
-    z-index: 10; /* Ensure footer stays below content */
-    margin-top: 10px; /* Ensure spacing between product container and footer */
-}
-body {
-    overflow-y: auto; /* Allow smooth scrolling on larger content */
-}
-.isotope-grid {
-    min-height: 50vh; /* Ensures content area fills the screen */
-}
-
-/* General Container Styling */
-#packageBox {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    max-width: 800px;
-    margin: 0 auto;
-    height: 300px;
-    overflow-y: auto;
-}
-
-/* Section Title */
-.package-title {
-    text-align: center;
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-/* Package Card Styling */
-.package-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.package-card:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* Image Styling */
-.p-image {
-    max-width: 100px;
-    height: auto;
-    border-radius: 5px;
-    margin-right: 15px;
-}
-
-/* Package Info */
-.package-info {
-    flex-grow: 1;
-    padding-left: 15px;
-}
-
-.package-name {
+.block2-txt-child1 {
     font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.package-price {
-    font-size: 16px;
-    color: #555;
     margin-bottom: 10px;
+    padding-left: 10px; /* Add extra space to the left of the product name */
 }
 
-/* Quantity Controls */
-.qty-controls {
-    display: flex;
-    align-items: center;
-    margin: 15px 0;
-}
-
-.qty-btn {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.qty-btn:hover {
-    background-color: #0056b3;
-}
-
-.qty-input {
-    width: 50px;
-    text-align: center;
-    margin: 0 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-/* Select Button */
-.btn-primary {
-    background-color: #28a745;
-    color: #fff;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #218838;
-}
-
-/* Popup Styles */
-.popup-overlay {
-    display: none; /* Hidden by default */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    z-index: 9999; /* Ensures it appears above other content */
-}
-
-/* Popup content box */
-.popup-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 90%;
-    width: 800px;
-}
-
-/* Close button */
-.close-popup {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-}
-
-.close-popup:hover {
-    color: #000;
-}
-
-/* Form Styling */
-#packageForm {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.product-options {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    background-color: #fefefe;
-}
-
-.product-options img {
-    width: 80px;
-    height: auto;
-    border-radius: 4px;
-}
-
-.product-options h3 {
-    font-size: 16px;
+.block2-txt-child1 a {
     font-weight: bold;
     color: #333;
-    margin: 0;
-    flex: 1;
+    text-decoration: none;
 }
 
-.product-options label {
-    font-size: 14px;
+.block2-txt-child1 span {
+    font-size: 16px;
     color: #555;
-    margin-right: 5px;
-}
-
-.product-options select {
-    padding: 5px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    .product-options {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .product-options img {
-        margin-bottom: 10px;
-    }
-
-    .popup-content {
-        width: 90%;
-    }
-}
-
-
-.package-card.unavailable {
-    pointer-events: none; /* Disable all interactions */
-    cursor: not-allowed;
-}
-
-.package-card.unavailable .qty-btn,
-.package-card.unavailable .selectPackage {
-    display: none; /* Hide interactive buttons */
-}
-.unavailable-product{
-    background-color: lightgrey; /* Soft grey background */
-    border: 1px solid #d9d9d9; /* Light border for separation */
-    border-radius: 8px; /* Rounded corners */
-    padding: 10px;
-    transition: all 0.3s ease; /* Smooth hover effect */
-    opacity: 0.8; /* Slight transparency */
-}
-.unavailable-product:hover {
-    opacity: 1; /* Bring back full opacity on hover */
-}
-.unavailable-product .block2-pic img {
-    filter: grayscale(30%);
-    opacity: 0.7; /* Slightly dim the image */
-    transition: all 0.3s ease; /* Smooth transition for hover */
-}
-.unavailable-product:hover .block2-pic img {
-    filter: grayscale(30%); /* Lessen greyscale on hover */
-    opacity: 1; /* Full visibility on hover */
-}
-
-/* Message Styling */
-.unavailable-message {
-    color: #d9534f; /* Bright red */
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
+    display: block;
     margin-top: 5px;
+    padding-left: 3px; /* Add extra space to the left of the price */
 }
-.swal2-container {
-    z-index: 99999 !important; /* Ensure it appears above all other elements */
-}
-</style>
 
+</style>
 </head>
 <body class="animsition">
 	
@@ -863,6 +432,7 @@ body {
 	</header>
 
 	<!-- Cart -->
+<!-- Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
@@ -880,45 +450,23 @@ body {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                    // Display combined cart items
                     $total_price = 0;
-
                     if ($cart_items_result->num_rows > 0) {
                         while ($cart_item = $cart_items_result->fetch_assoc()) {
                             $total_price += $cart_item['total_price'];
+								$quick_view_image = '';
+								foreach ($product_variants as $variant) {
+									if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+										$quick_view_image = $variant['Quick_View1'];
+										break;
+									}
+								}
                             
-                            if (!empty($cart_item['package_id'])) {
-                                // Render package details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['package_id'] . '" data-type="package"data-product1-color="' . $cart_item['product1_color'] . '" 
-                                    data-product1-size="' . $cart_item['product1_size'] . '" 
-                                    data-product2-color="' . $cart_item['product2_color'] . '" 
-                                    data-product2-size="' . $cart_item['product2_size'] . '" 
-                                    data-product3-color="' . $cart_item['product3_color'] . '" 
-                                    data-product3-size="' . $cart_item['product3_size'] . '">
-                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['package_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
-                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
-                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
-                            } else {
                                 // Render individual product details
                                 echo '
                                 <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['product_id'] . '" data-type="product"  data-color="' . $cart_item['color'] . '" data-size="' . $cart_item['size'] . '">
-                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                                    <div class="header-cart-item-img">
+                                        <img src="images/' . $quick_view_image . '" alt="IMG">
                                     </div>
                                     <div class="header-cart-item-txt p-t-8">
                                         <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
@@ -932,7 +480,6 @@ body {
                                         </span>
                                     </div>
                                 </li>';
-                            }
                         }
                     } else {
                         echo '<p>Your cart is empty.</p>';
@@ -964,271 +511,342 @@ body {
 
 	
 	<!-- Product -->
-	<div class="bg0 m-t-23 p-b-140">
-   		<div class="container">
-        	<div class="flex-w flex-sb-m p-b-52">
-            	<div class="flex-w flex-l-m filter-tope-group m-tb-10">
-					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 <?= $selected_category === null ? 'how-active1' : '' ?>" data-filter="*">
-        				All Products
-    				</button>
-
-                	<?php
-						// Display categories dynamically
-						if ($category_result->num_rows > 0) {
-							while ($row = $category_result->fetch_assoc()) {
-								$isActive = ($selected_category === intval($row['category_id'])) ? 'how-active1' : '';
-								echo '<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ' . $isActive . '" 
-										data-filter=".category-' . $row['category_id'] . '">'
-									. $row['category_name'] .
-									'</button>';
-							}
-						}
-                	?>
-            	</div>
-        	
-
-				<div class="flex-w flex-c-m m-tb-10">
-        			<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
-            			<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
-            			<i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-            		 	 Filter
-        			</div>
-
-        			<div class="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
-            			<i class="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
-            			<i class="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-            			 Search
-        			</div>
-    			</div>
-
-   				<!-- Search product -->
-    			<div class="dis-none panel-search w-full p-t-10 p-b-15">
-        			<form method="GET" action="">
-            			<div class="bor8 dis-flex p-l-15">
-                			<button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
-                    			<i class="zmdi zmdi-search"></i>
-                			</button>
-                			<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search" placeholder="Search product">
-            			</div>  
-        			</form>
-    			</div>
-
-    			<!-- Filter panel -->
-    			<div class="dis-none panel-filter w-full p-t-10">
-					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">	
-						<div class="filter-col2 p-r-15 p-b-27">
-							<div class="mtext-102 cl2 p-b-15">
-								Price
-							</div>
-
-							<ul>
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="all">
-										All
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="0-2000">
-										$0.00 - $2000.00
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="2000-3000">
-										$2000.00 - $3000.00
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="3000-4000">
-										$3000.00 - $4000.00
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="4000-5000">
-										$4000.00 - $5000.00
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="price" data-value="5000+">
-										$5000.00+
-									</a>
-								</li>
-							</ul>
-						</div>
-
-						<div class="filter-col3 p-r-15 p-b-27">
-							<div class="mtext-102 cl2 p-b-15">
-								Color
-							</div>
-
-							<ul>
-								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #222;">
-										<i class="zmdi zmdi-circle"></i>
-									</span>
-
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="black">
-										Black
-									</a>
-								</li>
-
-
-								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #b3b3b3;">
-										<i class="zmdi zmdi-circle"></i>
-									</span>
-
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="grey">
-										Grey
-									</a>
-								</li>
-
-		
-								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #f5deb3;">
-										<i class="zmdi zmdi-circle"></i>
-									</span>
-
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="beige">
-										Beige
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<span class="fs-15 lh-12 m-r-6" style="color: #aaa;">
-										<i class="zmdi zmdi-circle-o"></i>
-									</span>
-
-									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="white">
-										White
-									</a>
-								</li>
-							</ul>
-						</div>
-
-						<div class="filter-col4 p-b-27">
-							<div class="mtext-102 cl2 p-b-15">
-								Tags
-							</div>
-
-							<div class="flex-w p-t-4 m-r--5">
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="fashion">
-									Fashion
-								</a>
-
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="lifestyle">
-									Lifestyle
-								</a>
-
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="streetstyle">
-									Streetstyle
-								</a>
-
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 filter-link stext-106 trans-04" data-filter="tag" data-value="crafts">
-									Crafts
-								</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-	        <div class="row isotope-grid">
-            <?php
-            // Display products dynamically
-            if ($product_result->num_rows > 0) {
-                while($product = $product_result->fetch_assoc()) {
-                    $product_id = $product['product_id'];
-
-                    // Determine product availability and stock status
-                    // Get total stock for the product from product_variant table
-                    $variant_query = "SELECT * FROM product_variant WHERE product_id = $product_id";
-                    $variant_result = $connect->query($variant_query);
-
-                    $total_stock = 0;
-                    $isOutOfStock = true;
-                    $colors = []; // Store available colors and their corresponding images
-
-                    while ($variant = $variant_result->fetch_assoc()) {
-                        $total_stock += intval($variant['stock']);
-                        if (intval($variant['stock']) > 0) {
-                            $isOutOfStock = false;
-                        }
-                        $colors[] = [
-                            'color' => $variant['color'],
-                            'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
-                        ];
-                    }
-
-                    $isUnavailable = $product['product_status'] == 2;
-                    $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
-
-                    $message = '';
-                    if ($isUnavailable) {
-                        $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
-                    } elseif ($isOutOfStock) {
-                        $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
-                    }
-
-
-                    // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
-                            <div class="block2 ' . $productStyle . '">
-                                <div class="block2-pic hov-img0">
-                                    <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
-									<a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-										data-id="' . $product['product_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
-										Quick View
-								 	</a>
-                                </div>
-                                <div class="block2-txt flex-w flex-t p-t-14">
-                                    <div class="block2-txt-child1 flex-col-l ">
-                                        <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
-                                        . $product['product_name'] . 
-                                        '</a>
-                                        <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
-                                        ' . $message . '
+    <div class="bg0 m-t-23 p-b-140">
+            <!-- Women Bag Category -->
+            <div class="category-container">
+                <section class="section-slide">
+                    <div class="wrap-slick1">
+                        <div class="slick1">
+                            <div class="item-slick1" style="background-image: url(images/LV_Women.jpg);">
+                                <div class="container h-full">
+                                    <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
+                                        <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
+                                            <span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+                                                Women Collection 2024
+                                            </span>
+                                        </div>
+                                            
+                                        <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
+                                            <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+                                                NEW SEASON
+                                            </h2>
+                                        </div>
+                                            
+                                        <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
+                                            <a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+                                                Shop Now
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div class="block2-txt-child2 flex-r p-t-3">
-                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>    
+                <div class="row isotope-grid">
+                <?php
+                // Display products dynamically
+                $promotion_result_women = $connect->query("SELECT * FROM promotion_product WHERE category_id = 1");
+                if ($promotion_result_women->num_rows > 0) {
+                    while ($promotion = $promotion_result_women->fetch_assoc()) {
+                        $promotion_id = $promotion['promotion_id'];
+
+                        // Get total stock for the product from product_variant table
+                        $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+                        $variant_result = $connect->query($variant_query);
+
+                        $total_stock = 0;
+                        $isOutOfStock = true;
+                        $colors = []; // Store available colors and their corresponding images
+
+                        while ($variant = $variant_result->fetch_assoc()) {
+                            $total_stock += intval($variant['stock']);
+                            if (intval($variant['stock']) > 0) {
+                                $isOutOfStock = false;
+                            }
+                            $colors[] = [
+                                'color' => $variant['color'],
+                                'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                            ];
+                        }
+
+                        $isUnavailable = $promotion['promotion_status'] == 2;
+                        $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+
+                        $message = '';
+                        if ($isUnavailable) {
+                            $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+                        } elseif ($isOutOfStock) {
+                            $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+                        }
+
+                        echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                <div class="block2 ' . $productStyle . '">
+                                    <div class="block2-pic hov-img0" >
+                                        <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                        <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                                            data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
+                                        <!-- Heart icon moved to top-right of the image -->
+                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
                                             <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
                                             <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
                                         </a>
                                     </div>
-                                </div>
-                                <div class="block2-txt-child2 flex-r p-t-3">';
-                    
-                                    // Display color circles
-                                    foreach ($colors as $index => $color) {
-                                        echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $color['color'] . '; cursor: pointer;" 
-                                                data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
-                                                <i class="zmdi zmdi-circle"></i>
-                                            </span>';
-                                    }
+                                    <div class="block2-txt flex-w flex-t p-t-14">
+                                        <div class="block2-txt-child1 flex-col-l ">
+                                            <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                            . $promotion['promotion_name'] . 
+                                            '</a>
+                                            <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
+                                            ' . $message . '
+                                        </div>
+                                        <!-- Color circles placed here -->
+                                        <div class="block2-txt-child2 flex-r p-t-3">';
+                        
+                        foreach ($colors as $index => $color) {
+                            $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                            $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                            echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                    data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
+                                    <i class="zmdi ' . $iconClass . '"></i>
+                                </span>';
+                        }
 
-                echo '      </div>
+                        echo '</div>
                             </div>
-                          </div>';
+                        </div>';
+                    }
+                } else {
+                    echo "<p>No products found.</p>";
                 }
-            } else {
-                echo "<p>No products found.</p>";
-            }
-            ?>
-        	</div>
+                ?>
+            </div>
 
+            </div>
 
-			<!-- Load more -->
-			<div class="flex-c-m flex-w w-full p-t-45">
-				<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-					Load More
-				</a>
-			</div>
-		</div>
-	</div>
+            <!-- Men Bag Category -->
+            <div class="category-container">
+                <section class="section-slide">
+                    <div class="wrap-slick1">
+                        <div class="slick1">
+                            <div class="item-slick1" style="background-image: url(images/LV_PMen.webp);">
+                                <div class="container h-full">
+                                    <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
+                                        <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
+                                            <span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+                                                Women Collection 2024
+                                            </span>
+                                        </div>
+                                            
+                                        <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
+                                            <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+                                                NEW SEASON
+                                            </h2>
+                                        </div>
+                                            
+                                        <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
+                                            <a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+                                                Shop Now
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>   
+                <div class="row isotope-grid">
+                <?php
+                // Display products dynamically
+                    $promotion_result_men = $connect->query("SELECT * FROM promotion_product WHERE category_id = 2");
+                    if ($promotion_result_men->num_rows > 0) {
+                        while ($promotion = $promotion_result_men->fetch_assoc()) {
+                            $promotion_id = $promotion['promotion_id'];
+                
+                            // Get total stock for the product from product_variant table
+                            $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+                            $variant_result = $connect->query($variant_query);
+                
+                            $total_stock = 0;
+                            $isOutOfStock = true;
+                            $colors = []; // Store available colors and their corresponding images
+                            
+                            while ($variant = $variant_result->fetch_assoc()) {
+                                $total_stock += intval($variant['stock']);
+                                if (intval($variant['stock']) > 0) {
+                                    $isOutOfStock = false;
+                                }
+                                $colors[] = [
+                                    'color' => $variant['color'],
+                                    'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                                ];
+                            }
+                
+                            $isUnavailable = $promotion['promotion_status'] == 2;
+                            $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+                
+                            $message = '';
+                            if ($isUnavailable) {
+                                $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+                            } elseif ($isOutOfStock) {
+                                $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+                            }
+                
+                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                    <div class="block2 ' . $productStyle . '">
+                                        <div class="block2-pic hov-img0" >
+                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                            <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                                                data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
+                                            </a>
+                                            <!-- Heart icon moved to top-right of the image -->
+                                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
+                                                <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                            </a>
+                                        </div>
+                                        <div class="block2-txt flex-w flex-t p-t-14">
+                                            <div class="block2-txt-child1 flex-col-l ">
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                . $promotion['promotion_name'] . 
+                                                '</a>
+                                                <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
+                                                ' . $message . '
+                                            </div>
+                                            <div class="block2-txt-child2 flex-r p-t-3">';
+                                    
+                            // Display color circles
+                            foreach ($colors as $index => $color) {
+                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                        data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
+                                        <i class="zmdi ' . $iconClass . '"></i>
+                                    </span>';
+                            }
+
+                            echo '      </div>
+                                </div>
+                            </div>';
+                    }
+                } else {
+                    echo "<p>No products found.</p>";
+                }
+                ?>
+                </div>
+            </div>
+
+            <!-- Accessories Category -->
+            <div class="category-container">
+                <section class="section-slide">
+                    <div class="wrap-slick1">
+                        <div class="slick1">
+                            <div class="item-slick1" style="background-image: url(images/LV_AC.webp);">
+                                <div class="container h-full">
+                                    <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
+                                        <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
+                                            <span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+                                                Women Collection 2024
+                                            </span>
+                                        </div>
+                                            
+                                        <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
+                                            <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
+                                                NEW SEASON
+                                            </h2>
+                                        </div>
+                                            
+                                        <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
+                                            <a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
+                                                Shop Now
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>   
+                <div class="row isotope-grid">
+                <?php
+                // Display products dynamically
+                    $promotion_result_ac = $connect->query("SELECT * FROM promotion_product WHERE category_id = 3");
+                    if ($promotion_result_ac->num_rows > 0) {
+                        while ($promotion = $promotion_result_ac->fetch_assoc()) {
+                            $promotion_id = $promotion['promotion_id'];
+                
+                            // Get total stock for the product from product_variant table
+                            $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+                            $variant_result = $connect->query($variant_query);
+                
+                            $total_stock = 0;
+                            $isOutOfStock = true;
+                            $colors = []; // Store available colors and their corresponding images
+                            
+                            while ($variant = $variant_result->fetch_assoc()) {
+                                $total_stock += intval($variant['stock']);
+                                if (intval($variant['stock']) > 0) {
+                                    $isOutOfStock = false;
+                                }
+                                $colors[] = [
+                                    'color' => $variant['color'],
+                                    'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                                ];
+                            }
+                
+                            $isUnavailable = $promotion['promotion_status'] == 2;
+                            $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+                
+                            $message = '';
+                            if ($isUnavailable) {
+                                $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+                            } elseif ($isOutOfStock) {
+                                $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+                            }
+                
+                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                    <div class="block2 ' . $productStyle . '">
+                                        <div class="block2-pic hov-img0" >
+                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                            <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                                                data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
+                                            </a>
+                                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
+                                                <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                            </a>
+                                        </div>
+                                        <div class="block2-txt flex-w flex-t p-t-14">
+                                            <div class="block2-txt-child1 flex-col-l ">
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                . $promotion['promotion_name'] . 
+                                                '</a>
+                                                <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
+                                                ' . $message . '
+                                            </div>
+                                            <div class="block2-txt-child2 flex-r p-t-3">';
+                                    
+                            // Display color circles
+                            foreach ($colors as $index => $color) {
+                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                        data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
+                                        <i class="zmdi ' . $iconClass . '"></i>
+                                    </span>';
+                            }
+
+                            echo '</div>
+                                </div>
+                            </div>';
+                    }
+                } else {
+                    echo "<p>No products found.</p>";
+                }
+                ?>
+                </div>
+            </div>
+    </div>
 		
 
 	<!-- Footer -->
