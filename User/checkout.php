@@ -94,6 +94,10 @@ $paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+	$address = isset($_POST['address']) ? trim($_POST['address']) : '';
+    $city = isset($_POST['city']) ? trim($_POST['city']) : '';
+    $state = isset($_POST['state']) ? trim($_POST['state']) : '';
+    $postcode = isset($_POST['postcode']) ? trim($_POST['postcode']) : '';
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
     $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
@@ -1121,7 +1125,8 @@ unset($_SESSION['errorMessages']);
 if ($paymentSuccess) {
     // 计算 Grand Total 和 Final Amount
     $grand_total = 0;
-    foreach ($cart_result as $item) {
+    foreach ($cart_result as $item) 
+	{
         $grand_total += $item['item_total_price']; // 累加每个商品的总价
     }
 
