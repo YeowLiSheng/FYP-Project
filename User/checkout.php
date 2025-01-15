@@ -30,7 +30,7 @@ if ($user_result && mysqli_num_rows($user_result) > 0) {
 }
 
 // Fetch the address information if available
-$address = null;
+$address = array();
 if ($address_result && mysqli_num_rows($address_result) > 0) {
 	$address = mysqli_fetch_assoc($address_result);
 }
@@ -1135,11 +1135,6 @@ if ($paymentSuccess) {
         die("Error: Invalid grand total or final amount!");
     }
 
-	$address = isset($_POST['address']) ? trim($_POST['address']) : '';
-    $city = isset($_POST['city']) ? trim($_POST['city']) : '';
-    $state = isset($_POST['state']) ? trim($_POST['state']) : '';
-    $postcode = isset($_POST['postcode']) ? trim($_POST['postcode']) : '';
-	
    // 判断用户是否使用了自动填充的地址
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
