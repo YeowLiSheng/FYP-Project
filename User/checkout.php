@@ -271,7 +271,7 @@ unset($_SESSION['errorMessages']);
     cursor: pointer;
     text-align: center;
     transition: background 0.3s;
-    margin-top: 50px;
+    margin-top: 52px;
 }
 
 .checkout-btn:hover {
