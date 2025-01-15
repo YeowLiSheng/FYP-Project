@@ -259,6 +259,43 @@ unset($_SESSION['errorMessages']);
 
 <style>
         
+		.checkout-row {
+    display: flex;
+    flex-wrap: wrap; /* 允许换行 */
+    gap: 20px;
+    align-items: flex-start; /* 默认对齐到顶部 */
+}
+
+/* 当页面上有 3 个产品时，修改布局 */
+.checkout-row.three-products {
+    flex-wrap: nowrap; /* 禁止换行，确保所有部分在同一行 */
+    justify-content: space-between; /* 在同一行上均匀分配空间 */
+    align-items: center; /* 垂直居中对齐 */
+}
+
+/* Delivery Address Section */
+.checkout-column {
+    flex: 1 1 30%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Payment Section */
+.checkout-column:nth-of-type(2) {
+    flex: 1 1 30%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Confirm Payment Button (only when 3 products) */
+.checkout-row.three-products .checkout-btn {
+    align-self: center; /* 确保按钮和其他内容水平对齐 */
+    margin-top: 0; /* 移除额外的上边距 */
+}
 
     .checkout-input-box select {
         width: 100%;
@@ -1525,6 +1562,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsPerPage = 3; // Number of items per page
     const items = document.querySelectorAll('.checkout-order-item');
     const totalPages = Math.ceil(items.length / itemsPerPage);
+	document.addEventListener('DOMContentLoaded', () => {
+    const products = document.querySelectorAll('.checkout-order-item'); // 获取所有产品项
+    const checkoutRow = document.querySelector('.checkout-row'); // 获取外部行容器
+    const confirmPaymentButton = document.querySelector('.checkout-btn'); // 获取确认付款按钮
+
+    if (products.length === 3) {
+        checkoutRow.classList.add('three-products'); // 如果有 3 个产品，则添加特定类
+    } else {
+        checkoutRow.classList.remove('three-products'); // 否则移除该类
+    }
+});
 
     let currentPage = 1;
 
