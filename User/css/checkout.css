@@ -149,24 +149,6 @@
     color: #333;
 }
 
-/* Payment button styling */
-.checkout-btn {
-    width: 100%;
-    padding: 15px;
-    background: #8175d3;
-    border: none;
-    border-radius: 6px;
-    font-size: 17px;
-    color: #fff;
-    cursor: pointer;
-    text-align: center;
-    transition: background 0.3s;
-    margin-top: 50px;
-}
-
-.checkout-btn:hover {
-    background: #6a5acd;
-}
 
 /* Styling for accepted card images */
 .checkout-input-box img {

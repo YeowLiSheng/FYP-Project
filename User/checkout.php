@@ -259,6 +259,24 @@ unset($_SESSION['errorMessages']);
 
 <style>
         
+/* Payment button styling */
+.checkout-btn {
+    width: 100%;
+    padding: 15px;
+    background: #8175d3;
+    border: none;
+    border-radius: 6px;
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s;
+    margin-top: 30px;
+}
+
+.checkout-btn:hover {
+    background: #6a5acd;
+}
 
     .checkout-input-box select {
         width: 100%;
