@@ -249,7 +249,7 @@ if (isset($_POST['submitbtn'])) {
             <option value="Johor" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Johor') ? 'selected' : ''; ?>>Johor</option>
             <option value="Kedah" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Kedah') ? 'selected' : ''; ?>>Kedah</option>
             <option value="Kelantan" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Kelantan') ? 'selected' : ''; ?>>Kelantan</option>
-            <option value="Malaca" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Malaca') ? 'selected' : ''; ?>>Malaca</option>
+            <option value="Malacca" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Malaca') ? 'selected' : ''; ?>>Malacca</option>
             <option value="Negeri Sembilan" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Negeri Sembilan') ? 'selected' : ''; ?>>Negeri Sembilan</option>
             <option value="Pahang" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Pahang') ? 'selected' : ''; ?>>Pahang</option>
             <option value="Penang" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Penang') ? 'selected' : ''; ?>>Penang</option>

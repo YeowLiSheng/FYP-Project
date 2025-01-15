@@ -100,9 +100,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
     $errorMessages = [];
 
-    if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-        echo "<script>alert('Please fill in all the card details');</script>";
-    } else {
+	if (!empty($cardHolderName) && !empty($cardNum) && !empty($expiryDate) && !empty($cvv)) {
+
         // Validate card details
         $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
         $stmt = $conn->prepare($query);
@@ -162,8 +161,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $stmt->close();
-    }
+	}
+
+
+    // 保存状态到会话
+    $_SESSION['paymentSuccess'] = $paymentSuccess;
+    $_SESSION['errorMessages'] = $errorMessages;
+
+    // 重定向到当前页面
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
+
+// 页面加载时检查会话信息
+$paymentSuccess = $_SESSION['paymentSuccess'] ?? null;
+$errorMessages = $_SESSION['errorMessages'] ?? [];
+
+// 清除会话数据
+unset($_SESSION['paymentSuccess']);
+unset($_SESSION['errorMessages']);
+	
+
 
 ?>
 
@@ -238,6 +256,112 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 </head>
+
+<style>
+        
+/* Payment button styling */
+.checkout-btn {
+    width: 100%;
+    padding: 10px;
+    background: #8175d3;
+    border: none;
+    border-radius: 6px;
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s;
+    margin-top: 62px;
+}
+
+.checkout-btn:hover {
+    background: #6a5acd;
+}
+
+    .checkout-input-box select {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        color: #555;
+        background-color: #fff;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        appearance: none; /* Hides default arrow for consistent styling */
+        background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 12px;
+    }
+
+    .checkout-input-box select:focus,
+    .checkout-input-box select:hover {
+        border-color: #8175d3;
+        box-shadow: 0 0 5px rgba(129, 117, 211, 0.5);
+        outline: none;
+    }
+
+    .checkout-input-box select option:disabled {
+        color: #aaa;
+    }
+
+    /* Add scrolling and set max visible items */
+    .checkout-input-box select {
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 150px; /* Limit height to show 3 items */
+    }
+	/* 调整 state 和 postcode 的 flex 属性 */
+.checkout-flex .checkout-input-box:nth-child(1) {
+    flex: 2; /* 增大 postcode 输入框的大小 */
+}
+
+.checkout-flex .checkout-input-box:nth-child(2) {
+    flex: 1; /* 缩小 state 输入框的大小 */
+}
+
+/* Pagination container positioned at the bottom-right */
+.pagination-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    margin-right: 10px;
+    position: relative;
+    bottom: 0;
+    right: 0;
+}
+
+/* Smaller pagination buttons */
+.pagination-button {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination-button.active {
+    background-color: #6a5acd;
+    color: #fff;
+    border-color: #6a5acd;
+    font-weight: bold;
+}
+
+.pagination-button:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+    background-color: #f9f9f9;
+}
+    </style>
 
 <body class="animsition">
 
@@ -548,37 +672,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						<div class="checkout-input-box">
 							<span class="required">Full Name :</span>
-							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
+							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>"  readonly>
 
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Email :</span>
-							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
+							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" readonly>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Address :</span>
-							<input type="text" id="address" value="" required>
+							<input type="text" name="address" id="address" value="" required>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">City :</span>
-							<input type="text" id="city" value="" required>
+							<input type="text" name="city" id="city" value="" required>
 						</div>
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
-								<span class="required">State :</span>
-								<input type="text" id="state" value="" required>
+							<span class="required">State :</span>
+							<select name="state" id="state" required>
+    							<option value="" disabled selected>Select a state</option>
+    							<option value="Johor">Johor</option>
+								<option value="Kelantan">Kelantan</option>
+								<option value="Kedah">Kedah</option>
+								<option value="Malacca">Malacca</option>
+            					<option value="Negeri Sembilan" >Negeri Sembilan</option>
+            					<option value="Pahang" >Pahang</option>
+            					<option value="Penang" >Penang</option>
+            					<option value="Perak" >Perak</option>
+            					<option value="Perlis" >Perlis</option>
+            					<option value="Selangor">Selangor</option>
+            					<option value="Terengganu" >Terengganu</option>
+            					<option value="Kuala Lumpur" >Kuala Lumpur</option>
+            					<option value="Labuan" >Labuan</option>
+            					<option value="Putrajaya" >Putrajaya</option>
+            					<option value="Sabah" >Sabah</option>
+            					<option value="Sarawak" >Sarawak</option>
+							</select>
 							</div>
 							<div class="checkout-input-box">
-								<span class="required">Postcode :</span>
-								<input type="number" id="postcode" value="" required>
-							</div>
+    <span class="required">Postcode :</span>
+    <input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
+        pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
+</div>
 						</div>
 
-						<!-- Checkbox in a new row -->
-						<div class="autofill-checkbox">
-							<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
-							<label for="autofill-checkbox">Use saved address information</label>
-						</div>
+						<?php if (!empty($address)): ?>
+<div class="autofill-checkbox">
+    <input type="checkbox" id="autofill-checkbox" name="autofill-checkbox" onclick="toggleAutofill()">
+    <label for="autofill-checkbox">Use saved address information</label>
+</div>
+<?php endif; ?>
 					</div>
 
 					<!-- Payment Section -->
@@ -608,7 +752,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required minlength="5" maxlength="5" pattern="(0[1-9]|1[0-2])\/\d{2}" title="Please enter a valid MM/YY format" autocomplete="off" oninput="formatExpiryDate(this)">
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
@@ -630,7 +774,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<?php
 
 						$grand_total = 0;
-
+							
 						while ($row = mysqli_fetch_assoc($cart_result)):
 							$product_name = $row['product_name'];
 							$product_price = $row['product_price'];
@@ -668,9 +812,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 								<span>RM<?php echo number_format($total_payment, 2); ?></span>
 							</p>
 						</div>
-
+							
 
 						<!-- Confirm Payment Button -->
+						
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 									
@@ -704,8 +849,16 @@ if ($paymentSuccess) {
         die("Error: Invalid grand total or final amount!");
     }
 
-    // 获取用户的地址信息
+   // 判断用户是否使用了自动填充的地址
+$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
+
+if ($use_autofill && $address) {
+    // 如果勾选了自动填充，使用保存的地址
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+} else {
+    // 否则使用用户手动输入的地址
+    $shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
+}
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
     // 插入 `orders` 表
@@ -1184,54 +1337,85 @@ if ($paymentSuccess) {
 
 	<script>
 
-		function toggleAutofill() {
-			const autofillCheckbox = document.getElementById('autofill-checkbox');
-			const address = document.getElementById('address');
-			const city = document.getElementById('city');
-			const state = document.getElementById('state');
-			const postcode = document.getElementById('postcode');
+function toggleAutofill() { 
+    const autofillCheckbox = document.getElementById('autofill-checkbox');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
 
-			if (autofillCheckbox.checked) {
-				// Fill with saved data if checkbox is checked
-				address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-				city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-				state.value = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
-				postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
-			} else {
-				// Clear fields for manual input if checkbox is unchecked
-				address.value = "";
-				city.value = "";
-				state.value = "";
-				postcode.value = "";
-			}
-		}
+    if (autofillCheckbox.checked) {
+        // Fill with saved data if checkbox is checked
+        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+
+        // Set the correct state in the dropdown
+        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+        if (savedState) {
+            const options = Array.from(state.options);
+            const matchingOption = options.find(option => option.value === savedState);
+            if (matchingOption) {
+                state.value = savedState;
+            }
+        }
+		 // Set fields to readonly
+		address.readOnly = true;
+        city.readOnly = true;
+        postcode.readOnly = true;
+        state.disabled = true;
+    } else {
+        // Clear fields for manual input if checkbox is unchecked
+        address.value = "";
+        city.value = "";
+        state.value = "";
+        postcode.value = "";
+
+		 // Remove readonly attribute
+		 address.readOnly = false;
+        city.readOnly = false;
+        postcode.readOnly = false;
+        state.disabled = false;
+    }
+}
 
 
 
-		document.getElementById('expiry-date').addEventListener('input', function () {
-			const input = this.value;
-			const error = document.getElementById('expiry-error');
+		function formatExpiryDate(input) {
+    let value = input.value.replace(/\D/g, ""); // 移除非数字字符
 
-			// Check if the input matches MM/YY format using regex
-			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-			if (!datePattern.test(input)) {
-				error.style.display = 'none';
-				return;
-			}
+    // 插入 '/' 在两位数字之后
+    if (value.length > 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
 
-			// Parse month and year from input
-			const [month, year] = input.split('/').map(Number);
-			const currentYear = new Date().getFullYear() % 100; // last two digits of current year
-			const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+    // 限制输入长度为5个字符（MM/YY）
+    input.value = value.slice(0, 5);
+}
 
-			// Check if the entered date is valid (current month/year or later)
-			if (year > currentYear || (year === currentYear && month >= currentMonth)) {
-				error.style.display = 'none'; // hide error message if valid
-			} else {
-				error.style.display = 'block'; // show error message if expired
-				this.value = ''; // clear input field
-			}
-		});
+document.getElementById('expiry-date').addEventListener('input', function () {
+    const input = this.value;
+    const error = document.getElementById('expiry-error');
+
+    // 检查输入是否匹配 MM/YY 格式
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(input)) {
+        error.style.display = 'none';
+        return;
+    }
+
+    // 解析输入的月份和年份
+    const [month, year] = input.split('/').map(Number);
+    const currentYear = new Date().getFullYear() % 100; // 取当前年份的后两位数字
+    const currentMonth = new Date().getMonth() + 1; // 月份是从0开始的
+
+    // 检查输入的日期是否有效且未过期
+    if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+        error.style.display = 'none'; // 如果有效则隐藏错误信息
+    } else {
+        error.style.display = 'block'; // 显示错误信息
+    }
+});
 
 		function formatCardNumber(input) {
 			// Remove all spaces and get only digits
@@ -1318,17 +1502,17 @@ if ($paymentSuccess) {
 
 			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
 			if (!datePattern.test(expiryDate.value)) {
-				alert('Please enter a valid expiration date (format: MM/YY).');
-				return false;
-			} else {
-				const [month, year] = expiryDate.value.split('/').map(Number);
-				const currentYear = new Date().getFullYear() % 100;
-				const currentMonth = new Date().getMonth() + 1;
-				if (year < currentYear || (year === currentYear && month < currentMonth)) {
-					alert('Please enter a valid, non-expired expiration date.');
-					return false;
-				}
-			}
+        alert('Please enter a valid expiration date (format: MM/YY).');
+        return false;
+    } else {
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert('Please enter a valid, non-expired expiration date.');
+            return false;
+        }
+    }
 
 			return true;
 		}
@@ -1355,7 +1539,90 @@ if ($paymentSuccess) {
 		}
 
 
+// JavaScript for Pagination with Shopee-like design
+document.addEventListener('DOMContentLoaded', () => {
+    const itemsPerPage = 2; // Number of items per page
+    const items = document.querySelectorAll('.checkout-order-item');
+    const totalPages = Math.ceil(items.length / itemsPerPage);
 
+    let currentPage = 1;
+
+    const renderPage = (page) => {
+        items.forEach((item, index) => {
+            if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
+                item.style.display = 'flex'; // Show items for the current page
+            } else {
+                item.style.display = 'none'; // Hide other items
+            }
+        });
+
+        updatePaginationControls(page);
+    };
+
+	const createPaginationControls = () => {
+    const paginationContainer = document.createElement('div');
+    paginationContainer.classList.add('pagination-controls');
+
+    const orderSummary = document.querySelector('.checkout-order-summary');
+    const orderTotals = document.querySelector('.checkout-order-totals');
+    orderSummary.insertBefore(paginationContainer, orderTotals); // Ensure it's before Order Totals
+};
+
+    const renderPaginationControls = (container) => {
+        container.innerHTML = ''; // Clear existing controls
+
+        // Previous button
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.classList.add('pagination-button');
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+        container.appendChild(prevButton);
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('pagination-button');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderPage(currentPage);
+            });
+            container.appendChild(pageButton);
+        }
+
+        // Next button
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.classList.add('pagination-button');
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+        container.appendChild(nextButton);
+    };
+
+    const updatePaginationControls = (page) => {
+        const paginationContainer = document.querySelector('.pagination-controls');
+        renderPaginationControls(paginationContainer);
+    };
+
+    if (items.length > itemsPerPage) {
+        createPaginationControls();
+        renderPage(currentPage);
+    }
+});
 	</script>
 </body>
 
