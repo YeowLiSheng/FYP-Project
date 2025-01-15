@@ -301,6 +301,30 @@ unset($_SESSION['errorMessages']);
 .checkout-flex .checkout-input-box:nth-child(2) {
     flex: 1; /* 缩小 state 输入框的大小 */
 }
+
+/* Pagination button container styling */
+.pagination-controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.pagination-controls .checkout-btn {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #8175d3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.pagination-controls .checkout-btn:hover {
+    background: #6a5acd;
+}
     </style>
 
 <body class="animsition">
@@ -1478,7 +1502,61 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 		}
 
 
+// JavaScript for Pagination
+document.addEventListener('DOMContentLoaded', () => {
+    const itemsPerPage = 3; // Number of items per page
+    const items = document.querySelectorAll('.checkout-order-item');
+    const totalPages = Math.ceil(items.length / itemsPerPage);
 
+    let currentPage = 1;
+
+    const renderPage = (page) => {
+        items.forEach((item, index) => {
+            if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
+                item.style.display = 'flex'; // Show items for the current page
+            } else {
+                item.style.display = 'none'; // Hide other items
+            }
+        });
+    };
+
+    const createPaginationControls = () => {
+        const paginationContainer = document.createElement('div');
+        paginationContainer.classList.add('pagination-controls');
+
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next Page';
+        nextButton.classList.add('checkout-btn');
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous Page';
+        prevButton.classList.add('checkout-btn');
+        prevButton.style.marginRight = '10px';
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+
+        paginationContainer.appendChild(prevButton);
+        paginationContainer.appendChild(nextButton);
+
+        const orderSummary = document.querySelector('.checkout-order-summary');
+        orderSummary.appendChild(paginationContainer);
+    };
+
+    if (items.length > itemsPerPage) {
+        renderPage(currentPage);
+        createPaginationControls();
+    }
+});
 	</script>
 </body>
 
