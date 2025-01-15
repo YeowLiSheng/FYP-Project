@@ -739,7 +739,11 @@ unset($_SESSION['errorMessages']);
 								</div>
 							</div>
 						<?php endwhile; ?>
-
+ <!-- Next/Previous Page Buttons -->
+ <div id="pagination-controls" style="display: none;">
+        <button id="prev-btn" class="checkout-btn" disabled>Previous Page</button>
+        <button id="next-btn" class="checkout-btn">Next Page</button>
+    </div>
 						<!-- Order Totals -->
 						<div class="checkout-order-totals">
 							<?php
@@ -1318,7 +1322,55 @@ function toggleAutofill() {
     }
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+        const itemsPerPage = 3; // 每页显示的产品数量
+        const productContainer = document.getElementById("product-container");
+        const products = Array.from(productContainer.getElementsByClassName("checkout-order-item"));
+        const totalPages = Math.ceil(products.length / itemsPerPage);
+        let currentPage = 1;
 
+        // 控制分页按钮的显示
+        const prevBtn = document.getElementById("prev-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const paginationControls = document.getElementById("pagination-controls");
+
+        if (products.length > itemsPerPage) {
+            paginationControls.style.display = "block";
+        }
+
+        function showPage(page) {
+            const startIdx = (page - 1) * itemsPerPage;
+            const endIdx = page * itemsPerPage;
+
+            // 隐藏所有产品，显示当前页的产品
+            products.forEach((product, index) => {
+                product.style.display = index >= startIdx && index < endIdx ? "flex" : "none";
+            });
+
+            // 更新按钮状态
+            prevBtn.disabled = page === 1;
+            nextBtn.disabled = page === totalPages;
+        }
+
+        // 点击上一页
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        });
+
+        // 点击下一页
+        nextBtn.addEventListener("click", () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+
+        // 初始化显示第一页
+        showPage(currentPage);
+    });
 
 		function formatExpiryDate(input) {
     let value = input.value.replace(/\D/g, ""); // 移除非数字字符
