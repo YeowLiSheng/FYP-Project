@@ -259,6 +259,57 @@ unset($_SESSION['errorMessages']);
 
 <style>
         
+/* Layout for the form rows and columns */
+.checkout-row {
+    display: flex;
+    flex-wrap: wrap; /* 默认情况下允许换行 */
+    gap: 20px;
+    align-items: flex-start; /* 默认对齐到顶部 */
+}
+
+/* 当页面上有 3 个产品时，修改布局 */
+.checkout-row.three-products {
+    flex-wrap: nowrap; /* 禁止换行，确保所有部分在同一行 */
+    align-items: stretch; /* 将所有部分的高度调整为一致 */
+}
+
+/* Delivery Address Section */
+.checkout-column {
+    flex: 1 1 30%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Payment Section */
+.checkout-column:nth-of-type(2) {
+    flex: 1 1 30%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Order Summary Section */
+.checkout-order-summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+    flex: 1 1 30%;
+}
+
+/* 确保在 3 个产品的情况下，Confirm Payment 按钮与其他元素对齐 */
+.checkout-row.three-products .checkout-btn {
+    align-self: flex-end; /* 使确认付款按钮与其他部分对齐 */
+    margin-top: 0; /* 移除额外的上边距 */
+}
+
+/* Order Totals should stay at the bottom of the checkout container */
+.checkout-order-totals {
+    margin-top: auto;
+}
 
     .checkout-input-box select {
         width: 100%;
@@ -1519,7 +1570,17 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 			window.location.href = 'dashboard.php';
 		}
 
+		document.addEventListener('DOMContentLoaded', () => {
+    const products = document.querySelectorAll('.checkout-order-item'); // 获取所有产品项
+    const checkoutRow = document.querySelector('.checkout-row'); // 获取外部行容器
+    const confirmPaymentButton = document.querySelector('.checkout-btn'); // 获取确认付款按钮
 
+    if (products.length === 3) {
+        checkoutRow.classList.add('three-products'); // 如果有 3 个产品，则添加特定类
+    } else {
+        checkoutRow.classList.remove('three-products'); // 否则移除该类
+    }
+});
 // JavaScript for Pagination with Shopee-like design
 document.addEventListener('DOMContentLoaded', () => {
     const itemsPerPage = 3; // Number of items per page
