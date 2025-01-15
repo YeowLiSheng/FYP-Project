@@ -711,13 +711,10 @@ unset($_SESSION['errorMessages']);
 					<div class="checkout-column checkout-order-summary">
 						<h3 class="checkout-title">Your Order</h3>
 						<!-- Product List -->
-						<div id="product-container">
-
 						<?php
 
 						$grand_total = 0;
-						$products = [];
-
+							
 						while ($row = mysqli_fetch_assoc($cart_result)):
 							$product_name = $row['product_name'];
 							$product_price = $row['product_price'];
@@ -726,13 +723,11 @@ unset($_SESSION['errorMessages']);
 							$total_qty = $row['total_qty'];
 							$item_total_price = $row['item_total_price'];
 
-							$products[] = $row;
 
 							// Accumulate the grand total
 							$grand_total += $item_total_price;
 
 							?>
-
 							<div class="checkout-order-item">
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
 									alt="<?php echo htmlspecialchars($product_name); ?>">
@@ -744,69 +739,6 @@ unset($_SESSION['errorMessages']);
 								</div>
 							</div>
 						<?php endwhile; ?>
-						<script>
-            // 模拟 PHP 数据为 JS 数组
-            const products = <?php echo json_encode($products); ?>;
-            const productsPerPage = 3;
-            let currentPage = 1;
-
-            // 渲染产品函数
-            function renderProducts(page) {
-                const container = document.getElementById('product-container');
-                container.innerHTML = ''; // 清空之前的内容
-
-                // 计算当前页的起始和结束索引
-                const startIndex = (page - 1) * productsPerPage;
-                const endIndex = Math.min(startIndex + productsPerPage, products.length);
-
-                // 生成当前页的产品 HTML
-                for (let i = startIndex; i < endIndex; i++) {
-                    const product = products[i];
-                    container.innerHTML += `
-                        <div class="checkout-order-item">
-                            <img src="images/${product.product_image}" alt="${product.product_name}">
-                            <div>
-                                <p>${product.product_name} (${product.color})</p>
-                                <span>Price: RM${product.product_price}</span><br>
-                                <span>Quantity: ${product.total_qty}</span><br>
-                                <span>Subtotal: RM${product.item_total_price}</span>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // 显示分页按钮
-                renderPagination();
-            }
-
-            // 渲染分页按钮函数
-            function renderPagination() {
-                const paginationContainer = document.getElementById('pagination-container');
-                paginationContainer.innerHTML = '';
-
-                if (products.length > productsPerPage) {
-                    if (currentPage > 1) {
-                        paginationContainer.innerHTML += `<button onclick="changePage(currentPage - 1)">Previous Page</button>`;
-                    }
-                    if (currentPage < Math.ceil(products.length / productsPerPage)) {
-                        paginationContainer.innerHTML += `<button onclick="changePage(currentPage + 1)">Next Page</button>`;
-                    }
-                }
-            }
-
-            // 切换页面函数
-            function changePage(page) {
-                currentPage = page;
-                renderProducts(currentPage);
-            }
-
-            // 初始化渲染
-            renderProducts(currentPage);
-        </script>
-    </div>
-
-    <!-- 分页按钮容器 -->
-    <div id="pagination-container" style="margin-top: 20px; text-align: center;"></div>
 
 						<!-- Order Totals -->
 						<div class="checkout-order-totals">
