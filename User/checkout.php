@@ -374,6 +374,42 @@ unset($_SESSION['errorMessages']);
     cursor: not-allowed;
     background-color: #f9f9f9;
 }
+
+
+.checkout-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* 调整间距以适应布局 */
+}
+
+.checkout-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.checkout-column {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.checkout-input-box {
+    margin-bottom: 15px;
+}
+
+.checkout-flex {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* 调整间距以保持一致 */
+}
+
+.checkout-input-box input,
+.checkout-input-box select {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
     </style>
 
 <body class="animsition">
