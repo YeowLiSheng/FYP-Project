@@ -323,7 +323,7 @@ unset($_SESSION['errorMessages']);
 
 .checkout-input-box span {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 1005px;
     color: #555;
     font-weight: 500;
 }
