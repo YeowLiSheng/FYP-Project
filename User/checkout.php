@@ -302,38 +302,42 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
-/* Pagination controls container */
+/* Pagination container styling */
 .pagination-controls {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 10px;
-    margin-top: 20px;
-    padding: 10px 0;
+    margin: 20px 0;
 }
 
-/* Pagination buttons */
-.pagination-btn {
-    padding: 10px 20px;
-    font-size: 16px;
+/* Pagination button styling */
+.pagination-button {
+    padding: 8px 12px;
+    font-size: 14px;
     color: #333;
-    background: #f8f8f8;
+    background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-.pagination-btn:hover {
-    background: #ff5722;
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination-button.active {
+    background-color: #6a5acd;
     color: #fff;
-    border-color: #ff5722;
+    border-color: #6a5acd;
+    font-weight: bold;
 }
 
-.pagination-btn:disabled {
-    background: #eee;
+.pagination-button:disabled {
     color: #aaa;
     cursor: not-allowed;
-    border-color: #ddd;
+    background-color: #f9f9f9;
 }
     </style>
 
@@ -1512,7 +1516,7 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 		}
 
 
-// JavaScript for Pagination
+// JavaScript for Pagination with Shopee-like design
 document.addEventListener('DOMContentLoaded', () => {
     const itemsPerPage = 3; // Number of items per page
     const items = document.querySelectorAll('.checkout-order-item');
@@ -1528,53 +1532,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.style.display = 'none'; // Hide other items
             }
         });
-        updatePaginationState(page);
+
+        updatePaginationControls(page);
     };
 
     const createPaginationControls = () => {
         const paginationContainer = document.createElement('div');
         paginationContainer.classList.add('pagination-controls');
 
+        const orderSummary = document.querySelector('.checkout-order-summary');
+        const orderTotals = document.querySelector('.checkout-order-totals');
+        orderSummary.insertBefore(paginationContainer, orderTotals);
+
+        renderPaginationControls(paginationContainer);
+    };
+
+    const renderPaginationControls = (container) => {
+        container.innerHTML = ''; // Clear existing controls
+
+        // Previous button
         const prevButton = document.createElement('button');
         prevButton.textContent = 'Previous';
-        prevButton.classList.add('pagination-btn');
+        prevButton.classList.add('pagination-button');
+        prevButton.disabled = currentPage === 1;
         prevButton.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
                 renderPage(currentPage);
             }
         });
+        container.appendChild(prevButton);
 
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('pagination-button');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderPage(currentPage);
+            });
+            container.appendChild(pageButton);
+        }
+
+        // Next button
         const nextButton = document.createElement('button');
         nextButton.textContent = 'Next';
-        nextButton.classList.add('pagination-btn');
+        nextButton.classList.add('pagination-button');
+        nextButton.disabled = currentPage === totalPages;
         nextButton.addEventListener('click', () => {
             if (currentPage < totalPages) {
                 currentPage++;
                 renderPage(currentPage);
             }
         });
-
-        paginationContainer.appendChild(prevButton);
-        paginationContainer.appendChild(nextButton);
-
-        // Insert pagination controls before the Order Totals section
-        const orderSummary = document.querySelector('.checkout-order-summary');
-        const orderTotals = document.querySelector('.checkout-order-totals');
-        orderSummary.insertBefore(paginationContainer, orderTotals);
-
-        updatePaginationState(currentPage);
+        container.appendChild(nextButton);
     };
 
-    const updatePaginationState = (page) => {
-        const paginationButtons = document.querySelectorAll('.pagination-btn');
-        paginationButtons[0].disabled = page === 1; // Disable Previous if on first page
-        paginationButtons[1].disabled = page === totalPages; // Disable Next if on last page
+    const updatePaginationControls = (page) => {
+        const paginationContainer = document.querySelector('.pagination-controls');
+        renderPaginationControls(paginationContainer);
     };
 
     if (items.length > itemsPerPage) {
-        renderPage(currentPage);
         createPaginationControls();
+        renderPage(currentPage);
     }
 });
 	</script>
