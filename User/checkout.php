@@ -287,51 +287,23 @@ unset($_SESSION['errorMessages']);
     padding: 40px; /* Internal padding for comfortable spacing */
 }
 
+/* Layout for the form rows and columns */
 .checkout-row {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* Allows responsiveness on smaller screens */
     gap: 20px;
-    align-items: stretch; /* 确保列高度一致 */
+    align-items: stretch;
 }
 
 .checkout-column {
-    flex: 1 1 45%; /* 控制列宽度，使两列各占一半 */
+    flex: 1 1 30%;
     min-width: 280px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    justify-content: flex-start; 
+    
 }
 
-/* 确保 input box 的高度一致 */
-.checkout-input-box {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* 确保按钮和输入框在底部对齐 */
-.checkout-btn {
-    margin-top: auto;
-    width: 100%;
-    padding: 10px;
-    background: #8175d3;
-    border: none;
-    border-radius: 6px;
-    font-size: 17px;
-    color: #fff;
-    cursor: pointer;
-    text-align: center;
-    transition: background 0.3s;
-}
-
-.checkout-btn:hover {
-    background: #6a5acd;
-}
 
 /* Section titles */
 .checkout-title {
@@ -342,7 +314,12 @@ unset($_SESSION['errorMessages']);
     font-weight: 600;
 }
 
+/* Input boxes styling */
+.checkout-input-box {
+    margin: 15px 0;
+    position: relative;
 
+}
 
 .checkout-input-box span {
     display: block;
