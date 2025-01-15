@@ -522,20 +522,14 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
                                         <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
                                             <span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-                                                Women Collection 2024
+                                                Women Collection 2025
                                             </span>
                                         </div>
                                             
                                         <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
                                             <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-                                                NEW SEASON
+                                                NEW SEASON SALES
                                             </h2>
-                                        </div>
-                                            
-                                        <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
-                                            <a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
-                                                Shop Now
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -634,20 +628,14 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
                                         <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
                                             <span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-                                                Women Collection 2024
+                                                Men Fashion Bags 2025
                                             </span>
                                         </div>
                                             
                                         <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
                                             <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-                                                NEW SEASON
+                                                New HANDBAGS
                                             </h2>
-                                        </div>
-                                            
-                                        <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
-                                            <a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
-                                                Shop Now
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -746,20 +734,14 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     <div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
                                         <div class="layer-slick1 animated visible-false" data-appear="fadeInDown" data-delay="0">
                                             <span class="ltext-101 cl2 respon2" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-                                                Women Collection 2024
+                                                Accessories Collection 2025
                                             </span>
                                         </div>
                                             
                                         <div class="layer-slick1 animated visible-false" data-appear="fadeInUp" data-delay="800">
                                             <h2 class="ltext-201 cl2 p-t-19 p-b-43 respon1" style="color: white; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);">
-                                                NEW SEASON
+                                                NEW Offers!!
                                             </h2>
-                                        </div>
-                                            
-                                        <div class="layer-slick1 animated visible-false" data-appear="zoomIn" data-delay="1600">
-                                            <a href="product.php" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
-                                                Shop Now
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
