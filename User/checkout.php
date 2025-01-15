@@ -794,10 +794,10 @@ unset($_SESSION['errorMessages']);
 								<span>RM<?php echo number_format($total_payment, 2); ?></span>
 							</p>
 						</div>
-
+							
 
 						<!-- Confirm Payment Button -->
-						 <br></div>
+						
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 									
