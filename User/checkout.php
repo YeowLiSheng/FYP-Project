@@ -261,7 +261,7 @@ unset($_SESSION['errorMessages']);
         
 /* Payment button styling */
 .checkout-btn {
-    width: 100%;
+    width: 100%; /* 使按钮宽度与 column 保持一致 */
     padding: 15px;
     background: #8175d3;
     border: none;
@@ -271,7 +271,7 @@ unset($_SESSION['errorMessages']);
     cursor: pointer;
     text-align: center;
     transition: background 0.3s;
-    margin-top: 52px;
+    margin: 15px 0; /* 调整为与 input box 的间距一致 */
 }
 
 .checkout-btn:hover {
