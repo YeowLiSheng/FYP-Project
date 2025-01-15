@@ -308,7 +308,6 @@ unset($_SESSION['errorMessages']);
     display: flex;
     justify-content: center;
     gap: 10px;
-    position: relative; /* Ensures proper alignment */
 }
 
 .pagination-controls .checkout-btn {
@@ -1549,9 +1548,10 @@ document.addEventListener('DOMContentLoaded', () => {
         paginationContainer.appendChild(prevButton);
         paginationContainer.appendChild(nextButton);
 
-        // Insert controls below the product list
+        // Insert pagination controls before the Order Totals section
         const orderSummary = document.querySelector('.checkout-order-summary');
-        orderSummary.appendChild(paginationContainer);
+        const orderTotals = document.querySelector('.checkout-order-totals');
+        orderSummary.insertBefore(paginationContainer, orderTotals);
     };
 
     if (items.length > itemsPerPage) {
