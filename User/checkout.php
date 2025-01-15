@@ -262,7 +262,7 @@ unset($_SESSION['errorMessages']);
 /* Payment button styling */
 .checkout-btn {
     width: 100%;
-    padding: 15px;
+    padding: 10px;
     background: #8175d3;
     border: none;
     border-radius: 6px;
