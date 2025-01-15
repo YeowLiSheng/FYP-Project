@@ -1520,23 +1520,45 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 	
 
 		
-		function confirmPayment() {
-			const overlay = document.getElementById('paymentOverlay');
-			const popupContent = document.getElementById('popupContent');
-			overlay.classList.add('show');
+		let savedOrderDetails = '';
 
-			setTimeout(() => {
-				popupContent.innerHTML = `
-			<div class="success-icon">✓</div>
-			<h2 class="success-title">Payment Successful</h2>
-			<button class="ok-btn" onclick="goToDashboard()">OK</button>
-		`;
-			}, 2000);
-		}
+function savePageState() {
+    const orderDetails = document.querySelector('.checkout-order-summary').innerHTML;
+    savedOrderDetails = orderDetails; // 保存到全局变量
+}
 
-		function goToDashboard() {
-			window.location.href = 'dashboard.php';
-		}
+function restorePageState() {
+    const orderSummary = document.querySelector('.checkout-order-summary');
+    orderSummary.innerHTML = savedOrderDetails; // 恢复页面状态
+}
+
+document.querySelector('form').addEventListener('submit', function (event) {
+    event.preventDefault(); // 防止表单提交导致页面刷新
+    savePageState(); // 保存页面状态
+    showPaymentProcessing(); // 显示支付处理中
+    setTimeout(() => {
+        showPaymentSuccess(); // 显示支付成功特效
+        restorePageState(); // 恢复页面状态
+    }, 2000); // 模拟支付处理延迟
+});
+
+function showPaymentProcessing() {
+    const overlay = document.getElementById('paymentOverlay');
+    overlay.classList.add('show');
+}
+
+function showPaymentSuccess() {
+    const popupContent = document.getElementById('popupContent');
+    popupContent.innerHTML = `
+        <div class="success-icon">✓</div>
+        <h2 class="success-title">Payment Successful</h2>
+        <button class="ok-btn" onclick="goToDashboard()">OK</button>
+    `;
+}
+
+function goToDashboard() {
+    window.location.href = 'dashboard.php';
+}
 
 
 // JavaScript for Pagination with Shopee-like design
