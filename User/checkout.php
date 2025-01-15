@@ -711,10 +711,10 @@ unset($_SESSION['errorMessages']);
 							</select>
 							</div>
 							<div class="checkout-input-box">
-    <span class="required">Postcode :</span>
-    <input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
-        pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
-</div>
+    						<span class="required">Postcode :</span>
+    							<input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
+        						pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
+							</div>
 						</div>
 
 						<?php if (!empty($address)): ?>
