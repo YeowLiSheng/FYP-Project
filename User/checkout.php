@@ -302,28 +302,38 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
-/* Pagination button container styling */
+/* Pagination controls container */
 .pagination-controls {
-    margin-top: 20px;
     display: flex;
     justify-content: center;
     gap: 10px;
+    margin-top: 20px;
+    padding: 10px 0;
 }
 
-.pagination-controls .checkout-btn {
-    width: auto;
+/* Pagination buttons */
+.pagination-btn {
     padding: 10px 20px;
     font-size: 16px;
-    background: #8175d3;
-    color: white;
-    border: none;
-    border-radius: 6px;
+    color: #333;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s;
 }
 
-.pagination-controls .checkout-btn:hover {
-    background: #6a5acd;
+.pagination-btn:hover {
+    background: #ff5722;
+    color: #fff;
+    border-color: #ff5722;
+}
+
+.pagination-btn:disabled {
+    background: #eee;
+    color: #aaa;
+    cursor: not-allowed;
+    border-color: #ddd;
 }
     </style>
 
@@ -1518,6 +1528,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.style.display = 'none'; // Hide other items
             }
         });
+        updatePaginationState(page);
     };
 
     const createPaginationControls = () => {
@@ -1525,9 +1536,8 @@ document.addEventListener('DOMContentLoaded', () => {
         paginationContainer.classList.add('pagination-controls');
 
         const prevButton = document.createElement('button');
-        prevButton.textContent = 'Previous Page';
-        prevButton.classList.add('checkout-btn');
-        prevButton.style.marginRight = '10px';
+        prevButton.textContent = 'Previous';
+        prevButton.classList.add('pagination-btn');
         prevButton.addEventListener('click', () => {
             if (currentPage > 1) {
                 currentPage--;
@@ -1536,8 +1546,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const nextButton = document.createElement('button');
-        nextButton.textContent = 'Next Page';
-        nextButton.classList.add('checkout-btn');
+        nextButton.textContent = 'Next';
+        nextButton.classList.add('pagination-btn');
         nextButton.addEventListener('click', () => {
             if (currentPage < totalPages) {
                 currentPage++;
@@ -1552,6 +1562,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const orderSummary = document.querySelector('.checkout-order-summary');
         const orderTotals = document.querySelector('.checkout-order-totals');
         orderSummary.insertBefore(paginationContainer, orderTotals);
+
+        updatePaginationState(currentPage);
+    };
+
+    const updatePaginationState = (page) => {
+        const paginationButtons = document.querySelectorAll('.pagination-btn');
+        paginationButtons[0].disabled = page === 1; // Disable Previous if on first page
+        paginationButtons[1].disabled = page === totalPages; // Disable Next if on last page
     };
 
     if (items.length > itemsPerPage) {
