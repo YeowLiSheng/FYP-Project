@@ -750,7 +750,7 @@ unset($_SESSION['errorMessages']);
 					</div>
 
 					<!-- Order Summary Section -->
-					<div class="checkout-column checkout-order-summary">
+					< class="checkout-column checkout-order-summary">
 						<h3 class="checkout-title">Your Order</h3>
 						<!-- Product List -->
 						<?php
@@ -797,6 +797,8 @@ unset($_SESSION['errorMessages']);
 
 
 						<!-- Confirm Payment Button -->
+						 <br>
+						 <br>
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 									
