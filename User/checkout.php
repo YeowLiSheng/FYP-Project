@@ -302,23 +302,26 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
-/* Pagination container styling */
+/* Pagination container positioned at the bottom-right */
 .pagination-controls {
     display: flex;
-    gap: 5px;
-    justify-content: flex-end; /* Align to the right */
+    justify-content: flex-end;
     align-items: center;
-    margin-top: 15px; /* Spacing from product list */
+    gap: 5px;
+    margin-top: 10px;
+    margin-right: 10px;
     position: relative;
+    bottom: 0;
+    right: 0;
 }
 
-/* Pagination button styling */
+/* Smaller pagination buttons */
 .pagination-button {
-    padding: 5px 8px; /* Smaller size */
-    font-size: 12px; /* Reduce font size */
-    color: #555;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #333;
     background-color: #fff;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
@@ -326,7 +329,6 @@ unset($_SESSION['errorMessages']);
 
 .pagination-button:hover {
     background-color: #f0f0f0;
-    color: #333;
 }
 
 .pagination-button.active {
@@ -337,21 +339,9 @@ unset($_SESSION['errorMessages']);
 }
 
 .pagination-button:disabled {
-    color: #bbb;
-    background-color: #f9f9f9;
-    border-color: #ddd;
+    color: #aaa;
     cursor: not-allowed;
-}
-
-/* Adjust positioning for right-bottom alignment */
-.checkout-order-summary {
-    position: relative; /* Ensure pagination aligns properly */
-}
-
-.pagination-controls {
-    position: absolute;
-    bottom: -25px; /* Place below the product list */
-    right: 0; /* Align to the right */
+    background-color: #f9f9f9;
 }
     </style>
 
@@ -1550,16 +1540,14 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePaginationControls(page);
     };
 
-    const createPaginationControls = () => {
-        const paginationContainer = document.createElement('div');
-        paginationContainer.classList.add('pagination-controls');
+	const createPaginationControls = () => {
+    const paginationContainer = document.createElement('div');
+    paginationContainer.classList.add('pagination-controls');
 
-        const orderSummary = document.querySelector('.checkout-order-summary');
-        const orderTotals = document.querySelector('.checkout-order-totals');
-        orderSummary.insertBefore(paginationContainer, orderTotals);
-
-        renderPaginationControls(paginationContainer);
-    };
+    const orderSummary = document.querySelector('.checkout-order-summary');
+    const orderTotals = document.querySelector('.checkout-order-totals');
+    orderSummary.insertBefore(paginationContainer, orderTotals); // Ensure it's before Order Totals
+};
 
     const renderPaginationControls = (container) => {
         container.innerHTML = ''; // Clear existing controls
