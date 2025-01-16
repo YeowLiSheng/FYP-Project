@@ -1657,11 +1657,11 @@ function toggleAutofill() {
                 state.value = savedState;
             }
         }
-		 // Set fields to readonly
-		address.readOnly = true;
-        city.readOnly = true;
-        postcode.readOnly = true;
-        state.disabled = true;
+		address.disabled = true;
+            city.disabled = true;
+            postcode.disabled = true;
+            state.disabled = true;
+
     } else {
         // Clear fields for manual input if checkbox is unchecked
         address.value = "";
@@ -1669,11 +1669,10 @@ function toggleAutofill() {
         state.value = "";
         postcode.value = "";
 
-		 // Remove readonly attribute
-		 address.readOnly = false;
-        city.readOnly = false;
-        postcode.readOnly = false;
-        state.disabled = false;
+		 address.disabled = false;
+            city.disabled = false;
+            postcode.disabled = false;
+            state.disabled = false;
     }
 }
 
