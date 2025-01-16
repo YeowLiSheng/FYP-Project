@@ -1152,13 +1152,8 @@ if ($use_autofill && $address) {
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
 } else {
     // 否则使用用户手动输入的地址
-	$address_input =  $_POST['address'] ;
-	$city_input =  $_POST['city'] ;
-	$state_input =  $_POST['state'] ;
-	$postcode_input = $_POST['postcode'] ;
+	$shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
 
-	// Construct the shipping address
-	$shipping_address = $address_input . ', ' . $postcode_input . ', ' . $city_input . ', ' . $state_input;
 }
 
 
