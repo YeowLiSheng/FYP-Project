@@ -30,18 +30,23 @@ if ($result && mysqli_num_rows($result) > 0) {
 $cart_items_query = "
     SELECT 
         sc.variant_id,
-		pv.product_id, 
+		pv.product_id,
+        pv.promotion_id, 
         pv.color, 
         pv.size, 
         p.product_name, 
         p.product_price,
 		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
 		pv.stock AS product_stock,
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price
     FROM shopping_cart sc
     LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
 	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
     WHERE sc.user_id = $user_id
     GROUP BY 
         sc.variant_id";
@@ -97,34 +102,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
 if (isset($_GET['fetch_promotion']) && isset($_GET['id'])) {
     $promotion_id = intval($_GET['id']);
 
-    // Query to get all variants of the product
-    $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
-    $variant_result = $connect->query($variant_query);
+    // Fetch promotion details
+    $promotion_query = "SELECT * FROM promotion_product WHERE promotion_id = $promotion_id";
+    $promotion_result = $connect->query($promotion_query);
 
-    if ($variant_result->num_rows > 0) {
-        $variants = [];
-        $total_stock = 0;
-
-        while ($variant = $variant_result->fetch_assoc()) {
-            $variants[] = $variant;
-            $total_stock += intval($variant['stock']);
-        }
-
-        // Fetch product details from the product table
-        $promotion_query = "SELECT * FROM promotion_product WHERE promotion_id = $promotion_id";
-        $promotion_result = $connect->query($promotion_query);
+    if ($promotion_result && $promotion_result->num_rows > 0) {
         $promotion = $promotion_result->fetch_assoc();
 
-        // Combine product and variants data
-        $promotion['variants'] = $variants;
-        $promotion['total_stock'] = $total_stock;
+        // Fetch variants
+        $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+        $variant_result = $connect->query($variant_query);
+        $variants = [];
+        if ($variant_result) {
+            while ($variant = $variant_result->fetch_assoc()) {
+                $variants[] = $variant;
+            }
+        }
 
-        echo json_encode($product);
+        $promotion['variants'] = $variants;
+        echo json_encode($promotion);
     } else {
-        echo json_encode(null);
+        echo json_encode(['error' => 'Promotion not found.']);
     }
-    exit; // Stop further script execution
+    exit;
 }
+
+if (isset($_GET['fetch_variants']) && isset($_GET['promotion_id'])) {
+    $promotion_id = intval($_GET['promotion_id']);
+
+    $query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+    $result = $connect->query($query);
+
+    $variants = [];
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $variants[] = $row;
+        }
+    }
+
+    echo json_encode($variants);
+    exit;
+}
+
 $search_query = isset($_GET['search']) ? $_GET['search'] : '';
 $promotion_query = "SELECT DISTINCT p.* FROM promotion_product p
                   JOIN product_variant pv ON p.promotion_id = pv.promotion_id
@@ -213,7 +232,7 @@ if ($distinct_items_result) {
     $row = $distinct_items_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
-$query = "SELECT product_id, color, Quick_View1 FROM product_variant";
+$query = "SELECT * FROM product_variant";
 $result = mysqli_query($connect, $query);
 $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
@@ -255,6 +274,39 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 <!--===============================================================================================-->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
+
+    .slick-prev, .slick-next {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%);
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    border-radius: 50%; /* Make them circular */
+    color: white;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+.slick-prev {
+    left: -50px; /* Position to the left of the slider */
+}
+
+.slick-next {
+    right: -50px; /* Position to the right of the slider */
+}
+
+/* Hover effects */
+.slick-prev:hover, .slick-next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Optional: Remove default next/prev text */
+.slick-prev:before, .slick-next:before {
+    content: ''; /* Remove default arrows */
+}
 .block2-btn {
     font-size: 16px; /* Increase the font size */
     padding: 20px 20px; /* Adjust padding for a larger button */
@@ -450,43 +502,76 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                    $total_price = 0;
-                    if ($cart_items_result->num_rows > 0) {
-                        while ($cart_item = $cart_items_result->fetch_assoc()) {
-                            $total_price += $cart_item['total_price'];
-								$quick_view_image = '';
-								foreach ($product_variants as $variant) {
-									if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
-										$quick_view_image = $variant['Quick_View1'];
-										break;
-									}
-								}
-                            
-                                // Render individual product details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
-                                        <img src="images/' . $quick_view_image . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['product_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
-                        }
-                    } else {
-                        echo '<p>Your cart is empty.</p>';
-                    }
-                    
+                $total_price = 0;
 
+                if ($cart_items_result->num_rows > 0) {
+                    while ($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        $quick_view_image = '';
+                        
+                        // Find the appropriate image based on the product or promotion
+                        foreach ($product_variants as $variant) {
+                            // Check if the item is a promotion
+                            if (!empty($cart_item['promotion_id'])) {
+                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            } else {
+                                // Check if the item is a regular product
+                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            }
+                        }                        
+
+                        // Check if the item is a promotion
+                        if (!empty($cart_item['promotion_id'])) {
+                            // Render promotion details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['promotion_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        } else {
+                            // Render product details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['product_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        }
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
                 ?>
+
             </ul>
             
             <div class="w-full">
@@ -507,13 +592,9 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
         </div>
     </div>
 </div>
-
-
-	
-	<!-- Product -->
-    <div class="bg0 m-t-23 p-b-140">
+	        <!-- Product -->
             <!-- Women Bag Category -->
-            <div class="category-container">
+            <div class="category-container" data-category="1">
                 <section class="section-slide">
                     <div class="wrap-slick1">
                         <div class="slick1">
@@ -538,88 +619,87 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                     </div>
                 </section>    
                 <div class="row isotope-grid">
-                <?php
-                // Display products dynamically
-                $promotion_result_women = $connect->query("SELECT * FROM promotion_product WHERE category_id = 1");
-                if ($promotion_result_women->num_rows > 0) {
-                    while ($promotion = $promotion_result_women->fetch_assoc()) {
-                        $promotion_id = $promotion['promotion_id'];
+                    <?php
+                    // Display products dynamically
+                    $promotion_result_women = $connect->query("SELECT * FROM promotion_product WHERE category_id = 1");
+                    if ($promotion_result_women->num_rows > 0) {
+                        while ($promotion = $promotion_result_women->fetch_assoc()) {
+                            $promotion_id = $promotion['promotion_id'];
 
-                        // Get total stock for the product from product_variant table
-                        $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
-                        $variant_result = $connect->query($variant_query);
+                            // Get total stock for the product from product_variant table
+                            $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+                            $variant_result = $connect->query($variant_query);
 
-                        $total_stock = 0;
-                        $isOutOfStock = true;
-                        $colors = []; // Store available colors and their corresponding images
+                            $total_stock = 0;
+                            $isOutOfStock = true;
+                            $colors = []; // Store available colors and their corresponding images
 
-                        while ($variant = $variant_result->fetch_assoc()) {
-                            $total_stock += intval($variant['stock']);
-                            if (intval($variant['stock']) > 0) {
-                                $isOutOfStock = false;
+                            while ($variant = $variant_result->fetch_assoc()) {
+                                $total_stock += intval($variant['stock']);
+                                if (intval($variant['stock']) > 0) {
+                                    $isOutOfStock = false;
+                                }
+                                $colors[] = [
+                                    'color' => $variant['color'],
+                                    'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                                ];
                             }
-                            $colors[] = [
-                                'color' => $variant['color'],
-                                'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
-                            ];
-                        }
 
-                        $isUnavailable = $promotion['promotion_status'] == 2;
-                        $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+                            $isUnavailable = $promotion['promotion_status'] == 2;
+                            $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
 
-                        $message = '';
-                        if ($isUnavailable) {
-                            $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
-                        } elseif ($isOutOfStock) {
-                            $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
-                        }
+                            $message = '';
+                            if ($isUnavailable) {
+                                $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+                            } elseif ($isOutOfStock) {
+                                $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+                            }
 
-                        echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
-                                <div class="block2 ' . $productStyle . '">
-                                    <div class="block2-pic hov-img0" >
-                                        <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
-                                        <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-                                            data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
-                                        <!-- Heart icon moved to top-right of the image -->
-                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
-                                            <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                            <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                                        </a>
-                                    </div>
-                                    <div class="block2-txt flex-w flex-t p-t-14">
-                                        <div class="block2-txt-child1 flex-col-l ">
-                                            <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
-                                            . $promotion['promotion_name'] . 
-                                            '</a>
-                                            <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
-                                            ' . $message . '
+                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                    <div class="block2 ' . $productStyle . '">
+                                        <div class="block2-pic hov-img0" >
+                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                            <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                                                data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View</a>
+                                            <!-- Heart icon moved to top-right of the image -->
+                                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
+                                                <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                            </a>
                                         </div>
-                                        <!-- Color circles placed here -->
-                                        <div class="block2-txt-child2 flex-r p-t-3">';
-                        
-                        foreach ($colors as $index => $color) {
-                            $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
-                            $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
-                            echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
-                                    data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
-                                    <i class="zmdi ' . $iconClass . '"></i>
-                                </span>';
+                                        <div class="block2-txt flex-w flex-t p-t-14">
+                                            <div class="block2-txt-child1 flex-col-l ">
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                . $promotion['promotion_name'] . 
+                                                '</a>
+                                                <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
+                                                ' . $message . '
+                                            </div>
+                                            <!-- Color circles placed here -->
+                                            <div class="block2-txt-child2 flex-r p-t-3">';
+                            
+                            foreach ($colors as $index => $color) {
+                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                        data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
+                                        <i class="zmdi ' . $iconClass . '"></i>
+                                    </span>';
+                            }
+
+                            echo '</div>
+                                </div>
+                            </div>';
                         }
-
-                        echo '</div>
-                            </div>
-                        </div>';
+                    } else {
+                        echo "<p>No products found.</p>";
                     }
-                } else {
-                    echo "<p>No products found.</p>";
-                }
-                ?>
-            </div>
-
+                    ?>
+                </div>    
             </div>
 
             <!-- Men Bag Category -->
-            <div class="category-container">
+            <div class="category-container" data-category="2">
                 <section class="section-slide">
                     <div class="wrap-slick1">
                         <div class="slick1">
@@ -725,7 +805,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
             </div>
 
             <!-- Accessories Category -->
-            <div class="category-container">
+            <div class="category-container" data-category="3">
                 <section class="section-slide">
                     <div class="wrap-slick1">
                         <div class="slick1">
@@ -750,85 +830,84 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                     </div>
                 </section>   
                 <div class="row isotope-grid">
-                <?php
-                // Display products dynamically
-                    $promotion_result_ac = $connect->query("SELECT * FROM promotion_product WHERE category_id = 3");
-                    if ($promotion_result_ac->num_rows > 0) {
-                        while ($promotion = $promotion_result_ac->fetch_assoc()) {
-                            $promotion_id = $promotion['promotion_id'];
-                
-                            // Get total stock for the product from product_variant table
-                            $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
-                            $variant_result = $connect->query($variant_query);
-                
-                            $total_stock = 0;
-                            $isOutOfStock = true;
-                            $colors = []; // Store available colors and their corresponding images
-                            
-                            while ($variant = $variant_result->fetch_assoc()) {
-                                $total_stock += intval($variant['stock']);
-                                if (intval($variant['stock']) > 0) {
-                                    $isOutOfStock = false;
+                    <?php
+                    // Display products dynamically
+                        $promotion_result_ac = $connect->query("SELECT * FROM promotion_product WHERE category_id = 3");
+                        if ($promotion_result_ac->num_rows > 0) {
+                            while ($promotion = $promotion_result_ac->fetch_assoc()) {
+                                $promotion_id = $promotion['promotion_id'];
+                    
+                                // Get total stock for the product from product_variant table
+                                $variant_query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id";
+                                $variant_result = $connect->query($variant_query);
+                    
+                                $total_stock = 0;
+                                $isOutOfStock = true;
+                                $colors = []; // Store available colors and their corresponding images
+                                
+                                while ($variant = $variant_result->fetch_assoc()) {
+                                    $total_stock += intval($variant['stock']);
+                                    if (intval($variant['stock']) > 0) {
+                                        $isOutOfStock = false;
+                                    }
+                                    $colors[] = [
+                                        'color' => $variant['color'],
+                                        'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
+                                    ];
                                 }
-                                $colors[] = [
-                                    'color' => $variant['color'],
-                                    'image' => $variant['Quick_View1'], // Assuming there's a column 'variant_image' for each color
-                                ];
-                            }
-                
-                            $isUnavailable = $promotion['promotion_status'] == 2;
-                            $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
-                
-                            $message = '';
-                            if ($isUnavailable) {
-                                $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
-                            } elseif ($isOutOfStock) {
-                                $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
-                            }
-                
-                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
-                                    <div class="block2 ' . $productStyle . '">
-                                        <div class="block2-pic hov-img0" >
-                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
-                                            <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
-                                                data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
-                                            </a>
-                                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
-                                                <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                                            </a>
-                                        </div>
-                                        <div class="block2-txt flex-w flex-t p-t-14">
-                                            <div class="block2-txt-child1 flex-col-l ">
-                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
-                                                . $promotion['promotion_name'] . 
-                                                '</a>
-                                                <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
-                                                ' . $message . '
+                    
+                                $isUnavailable = $promotion['promotion_status'] == 2;
+                                $productStyle = $isUnavailable || $isOutOfStock ? 'unavailable-product' : '';
+                    
+                                $message = '';
+                                if ($isUnavailable) {
+                                    $message = '<p style="color: red; font-weight: bold;">Product is unavailable</p>';
+                                } elseif ($isOutOfStock) {
+                                    $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
+                                }
+                    
+                                echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                        <div class="block2 ' . $productStyle . '">
+                                            <div class="block2-pic hov-img0" >
+                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                                <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                                                    data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
+                                                </a>
+                                                <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2" style="position: absolute; top: 10px; right: 10px;">
+                                                    <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                                    <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                                </a>
                                             </div>
-                                            <div class="block2-txt-child2 flex-r p-t-3">';
-                                    
-                            // Display color circles
-                            foreach ($colors as $index => $color) {
-                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
-                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
-                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
-                                        data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
-                                        <i class="zmdi ' . $iconClass . '"></i>
-                                    </span>';
-                            }
+                                            <div class="block2-txt flex-w flex-t p-t-14">
+                                                <div class="block2-txt-child1 flex-col-l ">
+                                                    <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                    . $promotion['promotion_name'] . 
+                                                    '</a>
+                                                    <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
+                                                    ' . $message . '
+                                                </div>
+                                                <div class="block2-txt-child2 flex-r p-t-3">';
+                                        
+                                // Display color circles
+                                foreach ($colors as $index => $color) {
+                                    $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                    $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                    echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                            data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
+                                            <i class="zmdi ' . $iconClass . '"></i>
+                                        </span>';
+                                }
 
-                            echo '</div>
-                                </div>
-                            </div>';
+                                echo '</div>
+                                    </div>
+                                </div>';
+                        }
+                    } else {
+                        echo "<p>No products found.</p>";
                     }
-                } else {
-                    echo "<p>No products found.</p>";
-                }
-                ?>
+                    ?>
                 </div>
             </div>
-    </div>
 		
 
 	<!-- Footer -->
@@ -1011,15 +1090,15 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 				<div class="col-md-6 col-lg-5 p-b-30">
 					<div class="p-r-50 p-t-5 p-lr-0-lg">
 						<h4 class="mtext-105 cl2 js-name-detail p-b-14">
-							<?php echo $product['product_name']; ?>
+							<?php echo $promotion['promotion_name']; ?>
 						</h4>
 
 						<span class="mtext-106 cl2">
-							$<?php echo $product['product_price']; ?>
+							<?php echo $promotion['promotion_price']; ?>
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
-							<?php echo $product['product_des']; ?>
+							<?php echo $promotion['promotion_des']; ?>
 						</p>
 						
 						<!--  -->
@@ -1173,24 +1252,24 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <script>
    $(document).on('click', '.js-show-modal1', function(event) {
     event.preventDefault();
-    var productId = $(this).data('id');
+    var promotionID = $(this).data('id'); // Correct variable name
 
     // Fetch product and variant details
     $.ajax({
-        url: '', // The same PHP file
+        url: '', // Specify the correct PHP file
         type: 'GET',
-        data: { fetch_product: true, id: productId },
+        data: { fetch_promotion: true, id: promotionID }, // Correct variable name
         dataType: 'json',
         success: function(response) {
             if (response) {
                 // Populate modal details
-                $('.js-name-detail').data('id', productId);
-                $('.js-name-detail').text(response.product_name);
-                $('.mtext-106').text('$' + response.product_price);
-                $('.stext-102').text(response.product_des);
+                $('.js-name-detail').data('id', promotionID);
+                $('.js-name-detail').text(response.promotion_name);
+                $('.mtext-106').text('$' + response.promotion_price);
+                $('.stext-102').text(response.promotion_des);
 
                 // Fetch variants for the product
-                fetchVariants(productId, response);
+                fetchVariants(promotionID, response);
                 
                 // Show modal
                 $('.js-modal1').addClass('show-modal1');
@@ -1198,33 +1277,30 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 alert('Product details not found.');
             }
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('Error fetching product details:', xhr.responseText);
             alert('An error occurred while fetching product details.');
         }
     });
 });
 
-function fetchVariants(productId, productResponse) {
-    console.log("Fetching variants for product ID:", productId); // Log product ID
-    console.log("Product Response:", productResponse); // Log product data
+function fetchVariants(promotionId, promotionResponse) {
+    console.log("Fetching variants for promotion ID:", promotionId);
+    console.log("Product Response:", promotionResponse);
     $.ajax({
-        url: '', // Replace with the correct PHP endpoint or file URL
+        url: '', // Correct PHP file
         type: 'GET',
-        data: { fetch_variants: true, product_id: productId },
+        data: { fetch_variants: true, promotion_id: promotionId },
         dataType: 'json',
         success: function(variants) {
-            console.log("Variants fetched successfully:", variants);
-            window.productVariants = variants;
+            window.promotionVariants = variants;
             if (variants && variants.length > 0) {
-                // Find the variant with the lowest ID
                 var defaultVariant = variants.reduce((lowest, current) =>
                     current.variant_id < lowest.variant_id ? current : lowest
                 );
 
-                // Display default Quick View images
                 updateQuickViewImages(defaultVariant);
 
-                // Populate color options
                 var colorSelect = $('select[name="color"]');
                 colorSelect.empty();
                 colorSelect.append('<option value="">Choose an option</option>');
@@ -1233,11 +1309,9 @@ function fetchVariants(productId, productResponse) {
                     colorSelect.append('<option value="' + color + '">' + color + '</option>');
                 });
 
-                // Handle color change
                 colorSelect.on('change', function() {
                     var selectedColor = $(this).val();
                     if (selectedColor) {
-                        colorSelect.val(selectedColor);
                         var variant = variants.find(v => v.color === selectedColor);
                         if (variant) {
                             updateQuickViewImages(variant);
@@ -1246,19 +1320,18 @@ function fetchVariants(productId, productResponse) {
                     }
                 });
 
-                // Display size for the default variant
                 $('.size-display').text('Size: ' + defaultVariant.size);
             } else {
-                console.error("No variants found for this product.");
                 alert('No variants found for this product.');
             }
         },
-        error: function(xhr, status, error) {
-            console.error("Error fetching variants:", xhr.responseText);
+        error: function(xhr) {
+            console.error('Error fetching variants:', xhr.responseText);
             alert('An error occurred while fetching product variants.');
         }
     });
 }
+
 
 function updateQuickViewImages(variant) {
     console.log("Updating Quick View Images for variant:", variant);
@@ -1309,10 +1382,10 @@ function updateQuickViewImages(variant) {
     });
 }
 function getStockBasedOnSelection(selectedColor) {
-    if (!window.productVariants || !selectedColor) return 0;
+    if (!window.promotionVariants || !selectedColor) return 0;
 
     // Find the variant matching the selected color
-    const matchingVariant = window.productVariants.find(variant => variant.color === selectedColor);
+    const matchingVariant = window.promotionVariants.find(variant => variant.color === selectedColor);
 
     if (matchingVariant) {
         return parseInt(matchingVariant.stock || 0); // Return the stock for the matching variant
@@ -1373,128 +1446,101 @@ $(document).on('change', 'select[name="color"]', function () {
         $('.num-product').val('0'); // Reset quantity to 0 if out of stock
     }
 });
-    
 
-$(document).ready(function () {
-    // Add to cart functionality
-    $(document).on('click', '.js-addcart-detail', function (event) {
-        event.preventDefault();
+// Add to cart functionality
+$(document).on('click', '.js-addcart-detail', function (event) {
+    event.preventDefault();
 
-        console.log("Add to Cart button clicked."); // Debug
+    const productId = $('.js-name-detail').data('id'); // Product ID
+    const productName = $('.js-name-detail').text(); // Product Name
+    const productPrice = parseFloat($('.mtext-106').text().replace('$', '')); // Product Price
+    const productQuantity = parseInt($('.num-product').val()); // Quantity
+    const selectedColor = $('select[name="color"]').val(); // Selected Color
 
-        // Retrieve product ID directly from the modal element
-        const productId = $('.js-name-detail').data('id'); // Assuming the product ID is stored in the modal
-        console.log("Product ID retrieved from modal:", productId); // Debug
-
-        const productName = $('.js-name-detail').text(); // Product Name
-        console.log("Product Name:", productName); // Debug
-
-        const productPrice = parseFloat($('.mtext-106').text().replace('$', '')); // Product Price
-        console.log("Product Price:", productPrice); // Debug
-
-        const productQuantity = parseInt($('.num-product').val()); // Quantity selected by user
-        console.log("Product Quantity:", productQuantity); // Debug
-
-        const selectedColor = $('select[name="color"]').val(); // Selected Color
-        console.log("Selected Color:", selectedColor); // Debug
-
-        const response = window.productVariants; // All product variants loaded in the modal
-        console.log("Loaded Variants:", response); // Debug
-
-        // Validate color selection
-        if (!selectedColor) {
-            console.warn("Color not selected!"); // Debug
-            Swal.fire({
-                title: 'Color Required!',
-                text: 'Please select a color for the product.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Find the matching variant based on the selected color
-        const matchingVariant = response.find(variant => variant.color === selectedColor);
-
-        console.log("Matching Variant for Selected Color:", matchingVariant); // Debug
-
-        if (!matchingVariant) {
-            console.error("No matching variant found for the selected color."); // Debug
-            Swal.fire({
-                title: 'Invalid Variant!',
-                text: 'No size or variant found for the selected color.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        const variantId = matchingVariant.variant_id; // Variant ID from the product_variant table
-        console.log("Variant ID:", variantId); // Debug
-
-        const productStock = parseInt(matchingVariant.stock || 0); // Stock of the matching variant
-        console.log("Available Stock for Selected Variant:", productStock); // Debug
-
-        // Validate stock
-        if (productQuantity > productStock) {
-            console.warn("Quantity exceeds available stock."); // Debug
-            Swal.fire({
-                title: 'Stock Limit Exceeded!',
-                text: `Only ${productStock} items are available for the selected color.`,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (productQuantity === 0) {
-            console.warn("Quantity is zero."); // Debug
-            $('.stock-warning').text('Quantity cannot be zero.').show();
-            return;
-        }
-
-        // Calculate total price
-        const totalPrice = productPrice * productQuantity;
-        console.log("Total Price:", totalPrice); // Debug
-
-        // Send Add to Cart request
-        $.ajax({
-            url: '', // Use the same PHP file
-            type: 'POST',
-            data: {
-                add_to_cart: true,
-                variant_id: variantId, // Variant ID from the product_variant table
-                qty: productQuantity, // Quantity
-                total_price: totalPrice, // Total Price
-            },
-            dataType: 'json',
-            success: function (response) {
-                console.log("Add to Cart Response:", response); // Debug
-                if (response.success) {
-                    Swal.fire({
-                        title: 'Product has been added to your cart!',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            location.reload(); // Reload page to update cart
-                        }
-                    });
-                } else {
-                    console.error("Add to Cart failed:", response.error); // Debug
-                    alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
-                }
-                updateCart();
-                $('.js-modal1').removeClass('show-modal1');
-            },
-            error: function (xhr, status, error) {
-                console.error("AJAX Error:", status, error); // Debug
-                console.error("Server Response:", xhr.responseText); // Debug
-                alert('An error occurred while adding to the cart.');
-            }
+    // Validate color selection
+    if (!selectedColor) {
+        Swal.fire({
+            title: 'Color Required!',
+            text: 'Please select a color for the product.',
+            icon: 'error',
+            confirmButtonText: 'OK'
         });
+        return;
+    }
+
+    // Find the matching variant
+    const matchingVariant = window.promotionVariants.find(variant => variant.color === selectedColor);
+
+    if (!matchingVariant) {
+        Swal.fire({
+            title: 'Invalid Variant!',
+            text: 'No size or variant found for the selected color.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    const variantId = matchingVariant.variant_id;
+    const productStock = parseInt(matchingVariant.stock || 0);
+
+    // Validate stock
+    if (productQuantity > productStock) {
+        Swal.fire({
+            title: 'Stock Limit Exceeded!',
+            text: `Only ${productStock} items are available for the selected color.`,
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    if (productQuantity === 0) {
+        $('.stock-warning').text('Quantity cannot be zero.').show();
+        return;
+    }
+
+    // Calculate total price
+    const totalPrice = productPrice * productQuantity;
+
+    // Add to cart AJAX request
+    $.ajax({
+        url: '', // PHP endpoint
+        type: 'POST',
+        data: {
+            add_to_cart: true,
+            variant_id: variantId,
+            qty: productQuantity,
+            total_price: totalPrice,
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.success) {
+                // Ensure Swal is shown only once
+                Swal.fire({
+                    title: 'Product added to cart!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Reload the page after the Swal dialog is closed
+                    location.reload();
+                });
+            } else {
+                alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+            }
+
+            // Reset modal state
+            $('.js-modal1').removeClass('show-modal1');
+            updateCart(); // Ensure cart is updated
+        },
+        error: function (xhr, status, error) {
+            console.error("Add to Cart Error:", xhr.responseText);
+            alert('An error occurred while adding to the cart.');
+        }
     });
 });
+
+
 
 
 	// Clear input data when the modal is closed

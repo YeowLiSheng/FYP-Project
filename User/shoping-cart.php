@@ -27,37 +27,35 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit;
 }
 // Check if the user is updating the cart
+// Update product quantities and handle promotions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
-    // Update product quantities
     if (isset($_POST['product_qty']) && isset($_POST['variant_id'])) {
         foreach ($_POST['product_qty'] as $index => $new_qty) {
             $new_qty = intval($new_qty);
-
-            // Fetch variant_id directly
             $variant_id = intval($_POST['variant_id'][$index]);
 
-            // Get the product price and current quantity based on variant_id
+            // Fetch current details including promotion
             $current_query = "
-                SELECT qty, 
-                       total_price, 
-                       (SELECT product_price FROM product p 
-                        INNER JOIN product_variant pv 
-                        ON p.product_id = pv.product_id 
-                        WHERE pv.variant_id = $variant_id) AS product_price
-                FROM shopping_cart 
-                WHERE user_id = $user_id AND variant_id = $variant_id";
+                SELECT sc.qty, 
+                       sc.total_price, 
+                       pv.promotion_id, 
+                       COALESCE(pm.promotion_price, p.product_price) AS applicable_price
+                FROM shopping_cart sc
+                LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+                LEFT JOIN product p ON pv.product_id = p.product_id
+                LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
+                WHERE sc.user_id = $user_id AND sc.variant_id = $variant_id";
             $current_result = $connect->query($current_query);
 
             if ($current_result && $current_result->num_rows > 0) {
                 $current_row = $current_result->fetch_assoc();
-                $current_qty = intval($current_row['qty']);
-                $product_price = floatval($current_row['product_price']);
+                $applicable_price = floatval($current_row['applicable_price']);
 
-                // Calculate the new total price
-                $new_total_price = $new_qty * $product_price;
+                // Calculate new total price
+                $new_total_price = $new_qty * $applicable_price;
 
                 if ($new_qty > 0) {
-                    // Update quantity and total price in the database
+                    // Update cart item
                     $update_query = "
                         UPDATE shopping_cart 
                         SET qty = $new_qty, 
@@ -65,50 +63,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_cart'])) {
                         WHERE user_id = $user_id AND variant_id = $variant_id";
                     $connect->query($update_query);
                 } else {
-                    // Remove the product if quantity is 0
+                    // Remove item if quantity is zero
                     $delete_query = "
                         DELETE FROM shopping_cart 
-                        WHERE user_id = $user_id AND variant_id = $variant_id ";
+                        WHERE user_id = $user_id AND variant_id = $variant_id";
                     $connect->query($delete_query);
                 }
             }
         }
     }
 
-    // Recalculate voucher and final total price after cart updates
     recalculateFinalTotalAndVoucher($connect, $user_id);
-
-    // Reload the page to reflect changes
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 
-
-// Function to recalculate final total price and voucher
+// Recalculate total prices and apply vouchers considering promotions
 function recalculateFinalTotalAndVoucher($connect, $user_id) {
-    // Fetch the grouped total price based on product_id, color, and size
     $recalc_query = "
         SELECT 
             sc.variant_id,
             sc.qty,
-            p.product_price,
-            COALESCE((sc.qty * p.product_price), 0) AS product_total_price
+            pv.promotion_id,
+            COALESCE(pm.promotion_price, p.product_price) AS applicable_price,
+            sc.qty * COALESCE(pm.promotion_price, p.product_price) AS product_total_price
         FROM shopping_cart sc
         LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
         LEFT JOIN product p ON pv.product_id = p.product_id
+        LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
         WHERE sc.user_id = $user_id";
     $recalc_result = $connect->query($recalc_query);
 
-    $total_price = 0; // Initialize the total price for the entire cart
+    $total_price = 0;
 
-    // Iterate through each cart item (grouped by product_id + color + size)
     if ($recalc_result) {
         while ($row = $recalc_result->fetch_assoc()) {
             $variant_id = intval($row['variant_id']);
             $product_total_price = floatval($row['product_total_price']);
             $total_price += $product_total_price;
 
-            // Update the individual cart item with its recalculated total price
+            // Update individual cart items
             $update_query = "
                 UPDATE shopping_cart
                 SET total_price = $product_total_price
@@ -117,7 +111,7 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
         }
     }
 
-    // Fetch the currently applied voucher, if any
+    // Handle voucher logic as before
     $voucher_query = "
         SELECT v.discount_rate, v.minimum_amount, vu.voucher_id 
         FROM voucher_usage vu
@@ -130,12 +124,10 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
         $minimum_amount = $voucher['minimum_amount'];
         $voucher_id = $voucher['voucher_id'];
 
-        // Check if the total price meets the minimum requirement for the voucher
         if ($total_price >= $minimum_amount) {
             $discount_amount = $total_price * ($discount_rate / 100);
             $final_total_price = $total_price - $discount_amount;
 
-            // Update the entire shopping cart with the voucher details
             $update_cart_query = "
                 UPDATE shopping_cart 
                 SET final_total_price = $final_total_price, 
@@ -144,7 +136,6 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
                 WHERE user_id = $user_id";
             $connect->query($update_cart_query);
         } else {
-            // Remove the voucher if conditions are not met
             $connect->query("
                 UPDATE shopping_cart 
                 SET final_total_price = total_price, 
@@ -153,7 +144,6 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
                 WHERE user_id = $user_id");
         }
     } else {
-        // Reset the cart if no voucher is applied
         $connect->query("
             UPDATE shopping_cart 
             SET final_total_price = total_price, 
@@ -167,6 +157,7 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
 
 
 
+
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
@@ -175,12 +166,16 @@ $total_price = 0;
 $cart_items_query = "
     SELECT 
         sc.variant_id,
-		pv.product_id, 
+		pv.product_id,
+        pv.promotion_id, 
         pv.color, 
         pv.size, 
         p.product_name, 
         p.product_price,
 		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
 		pv.stock AS product_stock,
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price,
@@ -189,6 +184,7 @@ $cart_items_query = "
     FROM shopping_cart sc
     LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
 	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
     WHERE sc.user_id = $user_id
     GROUP BY 
         sc.variant_id";
@@ -205,6 +201,9 @@ if ($cart_items_result && $cart_items_result->num_rows > 0) {
 
             // Check product status for unavailability
             if ($cart_item['product_status'] == 2 || $cart_item['product_stock'] <= 0) {
+                $cart_item['unavailable'] = true;
+                $checkout_locked = true;
+            }else if($cart_item['promotion_status'] == 2 || $cart_item['product_stock'] <= 0) {
                 $cart_item['unavailable'] = true;
                 $checkout_locked = true;
             }
@@ -347,7 +346,7 @@ if ($distinct_products_result) {
     $row = $distinct_products_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
-$query = "SELECT product_id, color, Quick_View1 FROM product_variant";
+$query = "SELECT * FROM product_variant";
 $result = mysqli_query($connect, $query);
 $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 ?>
@@ -612,44 +611,76 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-					$cart_items_result = $connect->query($cart_items_query);
+                $total_price = 0;
+				$cart_items_result = $connect->query($cart_items_query);
+                if ($cart_items_result->num_rows > 0) {
+                    while ($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        $quick_view_image = '';
+                        
+                        // Find the appropriate image based on the product or promotion
+                        foreach ($product_variants as $variant) {
+                            // Check if the item is a promotion
+                            if (!empty($cart_item['promotion_id'])) {
+                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            } else {
+                                // Check if the item is a regular product
+                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            }
+                        }                        
 
-                    if ($cart_items_result->num_rows > 0) {
-                        while ($cart_item = $cart_items_result->fetch_assoc()) {
-                            $total_price += $cart_item['total_price'];
-								$quick_view_image = '';
-								foreach ($product_variants as $variant) {
-									if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
-										$quick_view_image = $variant['Quick_View1'];
-										break;
-									}
-								}
-                            
-                                // Render individual product details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img">
-                                        <img src="images/' . $quick_view_image . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['product_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
+                        // Check if the item is a promotion
+                        if (!empty($cart_item['promotion_id'])) {
+                            // Render promotion details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['promotion_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        } else {
+                            // Render product details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['product_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
                         }
-                    } else {
-                        echo '<p>Your cart is empty.</p>';
                     }
-                    
-
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
                 ?>
+
             </ul>
             
             <div class="w-full">
@@ -711,49 +742,79 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 								// Fetch the Quick_View1 image for the specific color
 								foreach ($product_variants as $variant) {
-									if ($variant['product_id'] === $cart_item['product_id'] && $variant['color'] === $product_color) {
-										$quick_view_image = $variant['Quick_View1'];
-										break;
+									// Check if the item is a promotion
+									if (!empty($cart_item['promotion_id'])) {
+										if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+											$quick_view_image = $variant['Quick_View1'];
+											break;
+										}
+									} else {
+										// Check if the item is a regular product
+										if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+											$quick_view_image = $variant['Quick_View1'];
+											break;
+										}
 									}
 								}
-
-								// If no matching Quick_View1 found, set a placeholder image or default
-								if (empty($quick_view_image)) {
-									$quick_view_image = 'default_image.jpg';
-								}
-								
 									$message = '';
-									if ($cart_item['product_status']==2) {
-										$message = '<p class="text-danger">This product is unavailable</p>';
+									if ($cart_item['product_status']==2 || $cart_item['promotion_status']==2 ) {
+										$message = '<p class="text-danger">This product is currently unavailable</p>';
 									} elseif ($cart_item['total_qty'] > $cart_item['product_stock']) {
 										$message = '<p class="text-danger">Stock exceeded! Max: ' . $cart_item['product_stock'] . '</p>';
 									}
-
-									echo '
-									<tr class="table_row">
-										<td class="column-1">
-											<div class="how-itemcart1">
-												<img src="images/' . $quick_view_image . '" alt="IMG">
-											</div>
-										</td>
-										<td class="column-2">' . $cart_item['product_name'] . '</td>
-										<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
-										<td class="column-4">
-											<div class="wrap-num-product flex-w m-l-auto m-r-0">
-												<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
-													<i class="fs-16 zmdi zmdi-minus"></i>
+									if (!empty($cart_item['promotion_id'])) {
+										echo '
+										<tr class="table_row">
+											<td class="column-1">
+												<div class="how-itemcart1">
+													<img src="images/' . $quick_view_image . '" alt="IMG">
 												</div>
-												<input type="hidden" name="variant_id[]" value="' . $cart_item['variant_id'] . '">
-												<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[]" value="' . $cart_item['total_qty'] . '" readonly>
-												<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-variant-id="' . $cart_item['variant_id'] . '">
-													<i class="fs-16 zmdi zmdi-plus"></i>
+											</td>
+											<td class="column-2">' . $cart_item['promotion_name'] . '</td>
+											<td class="column-3">$' . number_format($cart_item['promotion_price'], 2) . '</td>
+											<td class="column-4">
+												<div class="wrap-num-product flex-w m-l-auto m-r-0">
+													<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['promotion_id'] . '">
+														<i class="fs-16 zmdi zmdi-minus"></i>
+													</div>
+													<input type="hidden" name="variant_id[]" value="' . $cart_item['variant_id'] . '">
+													<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[]" value="' . $cart_item['total_qty'] . '" readonly>
+													<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-variant-id="' . $cart_item['variant_id'] . '">
+														<i class="fs-16 zmdi zmdi-plus"></i>
+													</div>
+													
 												</div>
-												
-											</div>
-											' . $message . '
-										</td>
-										<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
-									</tr>';
+												' . $message . '
+											</td>
+											<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
+										</tr>';
+									} else {
+										echo '
+										<tr class="table_row">
+											<td class="column-1">
+												<div class="how-itemcart1">
+													<img src="images/' . $quick_view_image . '" alt="IMG">
+												</div>
+											</td>
+											<td class="column-2">' . $cart_item['product_name'] . '</td>
+											<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
+											<td class="column-4">
+												<div class="wrap-num-product flex-w m-l-auto m-r-0">
+													<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-product-id="' . $cart_item['product_id'] . '">
+														<i class="fs-16 zmdi zmdi-minus"></i>
+													</div>
+													<input type="hidden" name="variant_id[]" value="' . $cart_item['variant_id'] . '">
+													<input class="mtext-104 cl3 txt-center num-product" type="number" name="product_qty[]" value="' . $cart_item['total_qty'] . '" readonly>
+													<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m" data-stock="' . $cart_item['product_stock'] . '" data-variant-id="' . $cart_item['variant_id'] . '">
+														<i class="fs-16 zmdi zmdi-plus"></i>
+													</div>
+													
+												</div>
+												' . $message . '
+											</td>
+											<td class="column-5">$' . number_format($cart_item['total_price'], 2) . '</td>
+										</tr>';
+									}
 							}
 						} else {
 							echo '<tr><td colspan="5">&emsp;&emsp;&emsp;&emsp;&emsp;Your cart is empty.</td></tr>';
