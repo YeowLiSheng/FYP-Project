@@ -164,6 +164,70 @@ if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
 
     exit;
 }
+if (isset($_GET['fetch_promotions']) && isset($_GET['category_id'])) {
+    $categoryId = intval($_GET['category_id']);
+    error_log("Fetching promotions for category ID: $categoryId"); // Log category ID
+
+    // Fetch promotions from the promotion_product table
+    $query = $connect->prepare("SELECT * FROM promotion_product WHERE category_id = ? AND promotion_status = 1");
+    $query->bind_param('i', $categoryId);
+    $query->execute();
+    $result = $query->get_result();
+
+    $promotions = [];
+    while ($row = $result->fetch_assoc()) {
+        $promotions[] = $row;
+    }
+
+    error_log("Promotions fetched: " . json_encode($promotions)); // Log fetched promotions
+    echo json_encode($promotions);
+    exit();
+}
+// Fetch promotion details
+if (isset($_GET['fetch_promotion_details']) && isset($_GET['promotion_id'])) {
+    $promotionId = intval($_GET['promotion_id']);
+
+    $sql = "SELECT promotion_name, promotion_price, promotion_des 
+            FROM promotion_product 
+            WHERE promotion_id = ?";
+    $stmt = $connect->prepare($sql);
+    $stmt->bind_param("i", $promotionId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $promotion = $result->fetch_assoc();
+        echo json_encode($promotion);
+    } else {
+        echo json_encode(null);
+    }
+
+    $stmt->close();
+    exit;
+}
+
+// Fetch promotion variants
+if (isset($_GET['fetch_promotion_variants']) && isset($_GET['promotion_id'])) {
+    $promotionId = intval($_GET['promotion_id']);
+
+    $sql = "SELECT variant_id, color, size, Quick_View1, Quick_View2, Quick_View3, stock 
+            FROM product_variant 
+            WHERE promotion_id = ?";
+    $stmt = $connect->prepare($sql);
+    $stmt->bind_param("i", $promotionId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $variants = [];
+    while ($row = $result->fetch_assoc()) {
+        $variants[] = $row;
+    }
+
+    echo json_encode($variants);
+    $stmt->close();
+    exit;
+}
+
 
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
@@ -184,6 +248,26 @@ if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST[
     }
     exit;
 }
+
+if (isset($_POST['add_promo_to_cart']) && isset($_POST['promotion_variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
+    // Retrieve POST data
+    $variant_id = intval($_POST['promotion_variant_id']); // Use variant_id directly from POST
+    $qty = intval($_POST['qty']);
+    $total_price = doubleval($_POST['total_price']);
+
+    // Insert data into the shopping_cart table, including the user_id and variant_id
+    $cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) 
+                   VALUES ($user_id, $variant_id, $qty, $total_price)";
+
+    // Execute the query and return the response
+    if ($connect->query($cart_query) === TRUE) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'error' => $connect->error]);
+    }
+    exit;
+}
+
 
 $selected_category = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
 // Fetch categories
@@ -318,7 +402,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
             }
 
-            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
+            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: 30px;">
                     <div class="block2 ' . $productStyle . '">
                         <div class="block2-pic hov-img0" >
                             <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -407,6 +491,129 @@ if (!empty($output)) {
 
 
 <style>
+/* Overlay */
+.wrap-promo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: none;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.wrap-promo-modal.show {
+    display: block;
+}
+
+.overlay-promo-modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Modal Content */
+.bg-promo-modal {
+    position: relative;
+    margin: 5% auto;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Close Button */
+.close-promo-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Title and Text */
+.promo-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.promo-price {
+    font-size: 20px;
+    color: #e74c3c;
+}
+
+.promo-description {
+    margin-top: 15px;
+    font-size: 16px;
+    color: #555;
+}
+
+/* Color Selection */
+.promo-color-selection {
+    margin-top: 15px;
+}
+
+.promo-select {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+}
+
+/* Gallery */
+.promo-gallery {
+    margin-top: 20px;
+}
+
+.promo-gallery img {
+    width: 200px;
+    height: 200px;
+    margin: 5px;
+    border-radius: 5px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.promo-gallery img:hover {
+    border-color: #007bff;
+}
+.slick-prev-p, .slick-next-p {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%);
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    border-radius: 50%; /* Make them circular */
+    color: white;
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.slick-prev-p {
+    left: -10px; /* Position to the left of the slider */
+}
+
+.slick-next-p {
+    right: 340px; /* Position to the right of the slider */
+}
+
+/* Hover effects */
+.slick-prev-p:hover, .slick-next-p:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
 
 .slick-prev, .slick-next {
     position: absolute;
@@ -463,229 +670,71 @@ body {
     min-height: 50vh; /* Ensures content area fills the screen */
 }
 
-/* General Container Styling */
-#packageBox {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    max-width: 800px;
-    margin: 0 auto;
-    height: 300px;
-    overflow-y: auto;
+.promotion-box {
+    margin-top: 20px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
 }
 
-/* Section Title */
-.package-title {
-    text-align: center;
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-    font-weight: bold;
+.promotion-item {
+    margin-bottom: 15px;
 }
 
-/* Package Card Styling */
-.package-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.package-card:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* Image Styling */
-.p-image {
-    max-width: 100px;
+.promotion-item img {
+    width: 100px;
     height: auto;
-    border-radius: 5px;
-    margin-right: 15px;
+    margin-right: 10px;
 }
 
-/* Package Info */
-.package-info {
-    flex-grow: 1;
-    padding-left: 15px;
-}
-
-.package-name {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #333;
-}
-
-.package-price {
+.promotion-item h5 {
     font-size: 16px;
-    color: #555;
-    margin-bottom: 10px;
+    margin: 5px 0;
 }
 
-/* Quantity Controls */
-.qty-controls {
-    display: flex;
-    align-items: center;
-    margin: 15px 0;
-}
-
-.qty-btn {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 16px;
+.promo-price {
+    color: #ff5722;
     font-weight: bold;
 }
-
-.qty-btn:hover {
-    background-color: #0056b3;
-}
-
-.qty-input {
-    width: 50px;
-    text-align: center;
-    margin: 0 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-/* Select Button */
-.btn-primary {
-    background-color: #28a745;
-    color: #fff;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #218838;
-}
-
-/* Popup Styles */
-.popup-overlay {
-    display: none; /* Hidden by default */
+.promotion-modal {
+    display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    z-index: 9999; /* Ensures it appears above other content */
-}
-
-/* Popup content box */
-.popup-content {
-    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: #fff;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 90%;
-    width: 800px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
 }
 
-/* Close button */
-.close-popup {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    font-weight: bold;
-    color: #aaa;
+.promotion-modal-content {
+    max-width: 500px;
+    margin: auto;
+}
+
+.close-promotion-modal {
+    float: right;
     cursor: pointer;
 }
 
-.close-popup:hover {
-    color: #000;
+.view-product-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.3s;
 }
 
-/* Form Styling */
-#packageForm {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.view-product-btn:hover {
+    background: #0056b3;
 }
 
-.product-options {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 15px;
-    background-color: #fefefe;
+.quick-view-images img {
+    width: 100%;
+    margin: 10px 0;
 }
 
-.product-options img {
-    width: 80px;
-    height: auto;
-    border-radius: 4px;
-}
-
-.product-options h3 {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
-    margin: 0;
-    flex: 1;
-}
-
-.product-options label {
-    font-size: 14px;
-    color: #555;
-    margin-right: 5px;
-}
-
-.product-options select {
-    padding: 5px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    .product-options {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .product-options img {
-        margin-bottom: 10px;
-    }
-
-    .popup-content {
-        width: 90%;
-    }
-}
-
-
-.package-card.unavailable {
-    pointer-events: none; /* Disable all interactions */
-    cursor: not-allowed;
-}
-
-.package-card.unavailable .qty-btn,
-.package-card.unavailable .selectPackage {
-    display: none; /* Hide interactive buttons */
-}
 .unavailable-product{
     background-color: lightgrey; /* Soft grey background */
     border: 1px solid #d9d9d9; /* Light border for separation */
@@ -1204,11 +1253,14 @@ body {
                     
                                     // Display color circles
                                     foreach ($colors as $index => $color) {
-                                        echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $color['color'] . '; cursor: pointer;" 
+                                        $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                        $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                        echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
                                                 data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
-                                                <i class="zmdi zmdi-circle"></i>
+                                                <i class="zmdi ' . $iconClass . '"></i>
                                             </span>';
                                     }
+                            
 
                 echo '      </div>
                             </div>
@@ -1441,9 +1493,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 								</div>
 							</div>
 
-							<div id="packageBox" style="margin-top: 20px;">
-								
-							</div>
+							<div id="promotionBox" class="promotion-box">
+                                <!-- Promotional products will be dynamically injected here -->
+                            </div>
 
 							<div id="packageFormPopup" class="popup-overlay">
 								<div class="popup-content">
@@ -1500,6 +1552,43 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 		</div>
 	</div>
 </div>
+<div id="promotionModal" class="wrap-promo-modal p-t-60 p-b-20">
+    <div class="overlay-promo-modal js-hide-promo-modal"></div>
+
+    <div class="container">
+        <button class="close-promo-modal how-pos3 hov3 trans-04 js-hide-promo-modal">
+            <img src="images/icons/icon-close.png" alt="CLOSE">
+        </button>
+        <div class="bg-promo-modal p-t-40 p-b-30 p-lr-20-lg how-pos3-parent">
+
+            <div class="promo-gallery flex-w flex-sb p-t-30"></div>
+
+            <h2 class="promo-title mtext-105 cl2 p-b-10"></h2>
+            <span class="promo-price mtext-106 cl2"></span>
+            <p class="promo-description cl3 p-t-20"></p>
+
+            <div class="promo-size-display cl3 p-t-10"></div>
+
+            <div class="promo-color-selection p-t-20">
+                <label for="promo-color" class="cl3 p-r-10">Color:</label>
+                <select id="promo-color" class="promo-select"></select>
+            </div>
+
+            <div class="promotion-details">
+                <div class="quantity">
+                    <button class="btn-num-promo-up">+</button>
+                    <input type="number" class="num-promo" value="1" min="1" />
+                    <button class="btn-num-promo-down">-</button>
+                </div>
+                <div class="promo-stock-warning" style="display:none;"></div>
+            </div>
+
+            <button class="js-add-promo-cart">Add to Cart</button>
+        </div>
+    </div>
+</div>
+
+
 
 <!-- Retain only one -->
 <script src="vendor/slick/slick.min.js"></script>
@@ -1605,6 +1694,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 });
 
 function fetchVariants(productId, productResponse) {
+    var categoryId = productResponse.category_id;
+    console.log("Product category ID:", categoryId); // Ensure the category ID is included in the response
+    fetchPromotions(categoryId);
+    console.log("Fetching variants for product ID:", productId); // Log product ID
+    console.log("Product Response:", productResponse);
     console.log("Fetching variants for product ID:", productId); // Log product ID
     console.log("Product Response:", productResponse); // Log product data
     $.ajax({
@@ -1659,6 +1753,185 @@ function fetchVariants(productId, productResponse) {
         }
     });
 }
+function fetchPromotions(categoryId) {
+    console.log("Fetching promotions for category ID:", categoryId); // Log the category ID
+    $.ajax({
+        url: '', // PHP endpoint URL
+        type: 'GET',
+        data: { fetch_promotions: true, category_id: categoryId },
+        dataType: 'json',
+        success: function(promotions) {
+            console.log("Promotions fetched successfully:", promotions); // Log the fetched promotions
+            var promotionBox = $('#promotionBox');
+            promotionBox.empty(); // Clear previous promotions
+            
+            if (promotions && promotions.length > 0) {
+                promotions.forEach(promotion => {
+                    console.log("Adding promotion to the box:", promotion); // Log each promotion being added
+                    var promoHTML = `
+                        <div class="promotion-item">
+                            <img src="images/${promotion.promotion_image}" alt="${promotion.promotion_name}" class="promo-image">
+                            <h5>${promotion.promotion_name}</h5>
+                            <span class="promo-price">$${promotion.promotion_price}</span>
+                            <button class="view-product-btn" data-promotion-id="${promotion.promotion_id}">
+                                View Product
+                            </button>
+                        </div>
+                    `;
+
+                    promotionBox.append(promoHTML);
+                });
+            } else {
+                console.warn("No promotions found for this category."); // Warn if no promotions are found
+                promotionBox.append('<p>No promotions available for this category.</p>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching promotions:", xhr.responseText); // Log error details
+            alert('An error occurred while fetching promotional products.');
+        }
+    });
+}
+$(document).on('click', '.view-product-btn', function () {
+    var promotionId = $(this).data('promotion-id');
+    console.log("View Product button clicked. Promotion ID:", promotionId);
+
+    // Fetch promotion details
+    $.ajax({
+        url: '', // Replace with your PHP file path
+        type: 'GET',
+        data: { fetch_promotion_details: true, promotion_id: promotionId },
+        dataType: 'json',
+        success: function (promotion) {
+            console.log("Promotion details fetched:", promotion);
+            if (promotion) {
+                // Populate modal with promotion details
+                $('#promotionModal .promo-title').text(promotion.promotion_name).data('promotion-id', promotionId);
+                $('#promotionModal .promo-price').text('$' + promotion.promotion_price);
+                $('#promotionModal .promo-description').text(promotion.promotion_des);
+                
+                // Fetch variants for the promotion
+                fetchPromotionVariants(promotionId);
+
+                $('#promotionModal').addClass('show');
+            } else {
+                console.error("Promotion details not found for ID:", promotionId);
+                alert('Promotion details not found.');
+            }
+        },
+        error: function (xhr, status, error) {
+        if (xhr && xhr.responseText) {
+            console.error("Error fetching promotion details:", xhr.responseText);
+        } else {
+            console.error("An error occurred while making the AJAX request:", error);
+        }
+        alert('An error occurred while fetching promotion details.');
+    }
+    });
+});
+
+function fetchPromotionVariants(promotionId) {
+    console.log("Fetching variants for Promotion ID:", promotionId);
+    $.ajax({
+        url: '', // Replace with your PHP file path
+        type: 'GET',
+        data: { fetch_promotion_variants: true, promotion_id: promotionId },
+        dataType: 'json',
+        success: function (variants) {
+            console.log("Variants fetched successfully:", variants);
+            window.promotionVariants = variants;
+            if (variants && variants.length > 0) {
+                // Populate color options
+                var colorSelect = $('#promo-color');
+                colorSelect.empty();
+                colorSelect.append('<option value="">Select a color</option>');
+
+                var uniqueColors = [...new Set(variants.map(v => v.color))];
+                uniqueColors.forEach(color => {
+                    colorSelect.append('<option value="' + color + '">' + color + '</option>');
+                });
+
+                // Handle color selection
+                colorSelect.off('change').on('change', function () {
+                    var selectedColor = $(this).val();
+                    if (selectedColor) {
+                        colorSelect.val(selectedColor);
+                        var variant = variants.find(v => v.color === selectedColor);
+                        if (variant) {
+                            updatePromotionImages(variant);
+                            $('.promo-size-display').text('Size: ' + variant.size);
+                        }
+                    }
+                });
+
+                // Default: Display first variant
+                var defaultVariant = variants[0];
+                updatePromotionImages(defaultVariant);
+                $('#promotionModal .promo-size-display').text('Size: ' + defaultVariant.size);
+            } else {
+                alert('No variants found for this promotion.');
+            }
+        },
+        error: function (xhr, status, error) {
+        if (xhr && xhr.responseText) {
+            console.error("Error fetching promotion variants:", xhr.responseText);
+        } else {
+            console.error("An error occurred while making the AJAX request:", error);
+        }
+        alert('An error occurred while fetching promotion variants.');
+    }
+    });
+}
+
+function updatePromotionImages(variant) {
+    var galleryContainer = $('#promotionModal .promo-gallery');
+    
+    // Destroy existing Slick instance if initialized
+    if (galleryContainer.hasClass('slick-initialized')) {
+        galleryContainer.slick('unslick');
+        console.log("Slick carousel destroyed.");
+    }
+
+    galleryContainer.empty();
+
+    for (var i = 1; i <= 3; i++) {
+        var imageKey = 'Quick_View' + i;
+        if (variant[imageKey]) {
+            console.log(`Adding image: ${variant[imageKey]}`);
+            var imagePath = 'images/' + variant[imageKey];
+            galleryContainer.append(`
+                <div class="quick_view" data-thumb="${imagePath}">
+                    <div class="wrap-pic-w pos-relative">
+                        <img src="${imagePath}" alt="IMG-PRODUCT">
+                    </div>
+                </div>
+            `);
+        }
+    }
+
+    // Reinitialize Slick slider if necessary
+    galleryContainer.slick({
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        arrows: true,
+        fade: true,
+        dots: true,
+        prevArrow: '<button type="button" class="slick-prev-p"><i class="fa fa-chevron-left"></i></button>',
+        nextArrow: '<button type="button" class="slick-next-p"><i class="fa fa-chevron-right"></i></button>',
+        customPaging: function (slider, i) {
+                var thumb = $(slider.$slides[i]).data('thumb');
+        }
+    });
+
+    console.log("Slick carousel reinitialized with new images.");
+}
+
+
+// Close the modal
+$(document).on('click', '.js-hide-promo-modal', function () {
+    $('#promotionModal').removeClass('show');
+});
+
 
 function updateQuickViewImages(variant) {
     console.log("Updating Quick View Images for variant:", variant);
@@ -1891,6 +2164,192 @@ $(document).ready(function () {
                 console.error("AJAX Error:", status, error); // Debug
                 console.error("Server Response:", xhr.responseText); // Debug
                 alert('An error occurred while adding to the cart.');
+            }
+        });
+    });
+});
+function getPromotionStockBasedOnSelection(selectedColor) {
+    if (!window.promotionVariants || !selectedColor) return 0;
+
+    // Find the variant matching the selected color for the promotion
+    const matchingVariant = window.promotionVariants.find(variant => variant.color === selectedColor);
+
+    if (matchingVariant) {
+        return parseInt(matchingVariant.stock || 0); // Return the stock for the matching variant
+    }
+
+    return 0; // Return 0 if no matching variant is found
+}
+
+// Update button up/down for promotion
+$(document).on('click', '.btn-num-promo-up, .btn-num-promo-down', function (e) {
+    e.preventDefault();
+
+    const $input = $(this).siblings('.num-promo');
+    const selectedColor = $('#promo-color').val(); // Promotion color select input
+    const promotionStock = getPromotionStockBasedOnSelection(selectedColor); // Get stock for the selected color
+    let currentVal = parseInt($input.val()) || 0;
+
+    if (!selectedColor) {
+        $('.promo-stock-warning').text('Please choose a color!').css('color', 'red').show();
+        $input.val('0'); // Reset quantity to 0
+        return;
+    }
+
+    if ($(this).hasClass('btn-num-promo-up')) {
+        if (currentVal < promotionStock) {
+            $input.val(currentVal + 1);
+            $('.promo-stock-warning').hide();
+        } else {
+            $('.promo-stock-warning').text(`Only ${promotionStock} items are available in stock.`).show();
+            $input.val(promotionStock); // Prevent further increment
+        }
+    } else if ($(this).hasClass('btn-num-promo-down')) {
+        if (currentVal > 1) {
+            $input.val(currentVal - 1);
+            $('.promo-stock-warning').hide();
+        }
+    }
+});
+
+// Update the color change logic for promotion
+$(document).on('change', '#promo-color', function () {
+    $('.promo-stock-warning').hide(); // Hide any previous warnings
+    const selectedColor = $(this).val();
+
+    if (!selectedColor) {
+        $('.promo-stock-warning').text('Please choose a color!').css('color', 'red').show();
+        $('.num-promo').val('0'); // Reset quantity to 0
+        return;
+    }
+
+    // Update stock display or other UI elements if needed
+    const promotionStock = getPromotionStockBasedOnSelection(selectedColor);
+    if (promotionStock > 0) {
+        $('.promo-stock-warning').hide();
+        $('.num-promo').val('1'); // Reset to a valid starting quantity
+    } else {
+        $('.promo-stock-warning').text('Selected color is out of stock!').css('color', 'red').show();
+        $('.num-promo').val('0'); // Reset quantity to 0 if out of stock
+    }
+});
+
+// Add promotion to cart functionality
+$(document).ready(function () {
+    $(document).on('click', '.js-add-promo-cart', function (event) {
+        event.preventDefault();
+
+        console.log("Add to Cart button clicked for promotion.");
+
+        // Retrieve promotion ID directly from the modal element
+        const promotionId = $('#promotionModal .promo-title').data('promotion-id'); // Assuming the promotion ID is stored in the modal
+        console.log("Promotion ID retrieved from modal:", promotionId);
+
+        const promotionName = $('#promotionModal .promo-title').text(); // Promotion Name
+        console.log("Promotion Name:", promotionName);
+
+        const promotionPrice = parseFloat($('#promotionModal .promo-price').text().replace('$', '')); // Promotion Price
+        console.log("Promotion Price:", promotionPrice);
+
+        const promotionQuantity = parseInt($('.num-promo').val()); // Quantity selected by user
+        console.log("Promotion Quantity:", promotionQuantity);
+
+        const selectedColor = $('#promo-color').val(); // Selected Color for promotion
+        console.log("Selected Color for Promotion:", selectedColor);
+
+        const response = window.promotionVariants; // All promotion variants loaded in the modal
+        console.log("Loaded Promotion Variants:", response);
+
+        // Validate color selection
+        if (!selectedColor) {
+            console.warn("Color not selected for promotion!");
+            Swal.fire({
+                title: 'Color Required!',
+                text: 'Please select a color for the promotion product.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Find the matching variant based on the selected color
+        const matchingVariant = response.find(variant => variant.color === selectedColor);
+
+        console.log("Matching Variant for Selected Color:", matchingVariant);
+
+        if (!matchingVariant) {
+            console.error("No matching variant found for the selected color.");
+            Swal.fire({
+                title: 'Invalid Variant!',
+                text: 'No variant found for the selected color.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        const variantId = matchingVariant.variant_id; // Variant ID from the promotion_variant table
+        console.log("Promotion Variant ID:", variantId);
+
+        const promotionStock = parseInt(matchingVariant.stock || 0); // Stock of the matching variant
+        console.log("Available Stock for Selected Variant:", promotionStock);
+
+        // Validate stock
+        if (promotionQuantity > promotionStock) {
+            console.warn("Quantity exceeds available stock for promotion.");
+            Swal.fire({
+                title: 'Stock Limit Exceeded!',
+                text: `Only ${promotionStock} items are available for the selected color.`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        if (promotionQuantity === 0) {
+            console.warn("Quantity is zero.");
+            $('.promo-stock-warning').text('Quantity cannot be zero.').show();
+            return;
+        }
+
+        // Calculate total price for promotion
+        const totalPrice = promotionPrice * promotionQuantity;
+        console.log("Total Price for Promotion:", totalPrice);
+
+        // Send Add to Cart request for promotion
+        $.ajax({
+            url: '', // Use the same PHP file for promotions
+            type: 'POST',
+            data: {
+                add_promo_to_cart: true,
+                promotion_variant_id: variantId, // Variant ID from the promotion_variant table
+                qty: promotionQuantity, // Quantity for promotion
+                total_price: totalPrice, // Total Price for promotion
+            },
+            dataType: 'json',
+            success: function (response) {
+                console.log("Add to Cart Response for Promotion:", response);
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Promotion product has been added to your cart!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload page to update cart
+                        }
+                    });
+                } else {
+                    console.error("Add to Cart failed for promotion:", response.error);
+                    alert('Failed to add promotion product to cart: ' + (response.error || 'unknown error'));
+                }
+                updateCart();
+                $('#promotionModal').removeClass('show');
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error for promotion:", status, error);
+                console.error("Server Response for promotion:", xhr.responseText);
+                alert('An error occurred while adding the promotion product to the cart.');
             }
         });
     });
