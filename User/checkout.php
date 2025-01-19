@@ -40,21 +40,38 @@ $cart_query = "
     SELECT 
         p.product_id,
         p.product_name, 
-        p.product_price, 
-        p.product_image,
+        p.product_price,
+		pv.variant_id,
+        pv.color, 
+        pv.size, 
+        pv.Quick_View1 AS product_image,
         SUM(sc.qty) AS total_qty, 
         (p.product_price * SUM(sc.qty)) AS item_total_price
     FROM 
         shopping_cart AS sc
     JOIN 
-        product AS p ON sc.product_id = p.product_id
+        product_variant AS pv ON sc.variant_id = pv.variant_id
+    JOIN 
+        product AS p ON pv.product_id = p.product_id
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
-        p.product_id
+        pv.variant_id
 ";
 
 $cart_result = mysqli_query($conn, $cart_query);
+
+
+if (mysqli_num_rows($cart_result) === 0) {
+
+    echo "<script>
+        alert('Your Shopping Cart is Empty. Please add product first.');
+        window.location.href = 'product.php'; 
+    </script>";
+    exit; 
+}
+
+
 
 if ($cart_result && mysqli_num_rows($cart_result) > 0) {
 
@@ -77,33 +94,93 @@ $paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-	$cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
-	$cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
-	$expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
-	$cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
+    $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
+    $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
+    $cvv = isset($_POST['cvv']) ? $_POST['cvv'] : '';
+    $errorMessages = [];
 
-	if (!$cardHolderName || !$cardNum || !$expiryDate || !$cvv) {
-	} else {
+	if (!empty($cardHolderName) && !empty($cardNum) && !empty($expiryDate) && !empty($cvv)) {
 
-		$query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
-		$stmt = $conn->prepare($query);
-		$stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
-		$stmt->execute();
-		$result = $stmt->get_result();
+        // Validate card details
+        $query = "SELECT * FROM bank_card WHERE card_holder_name = ? AND card_number = ? AND valid_thru = ? AND cvv = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("ssss", $cardHolderName, $cardNum, $expiryDate, $cvv);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
 		if ($result->num_rows > 0) {
             $paymentSuccess = true;
-        } 
-		else {
+            
+            // Check stock for each product in the cart
+            $cart_result = mysqli_query($conn, $cart_query);
+            while ($row = mysqli_fetch_assoc($cart_result)) {
+                $variant_id = $row['variant_id'];
+                $product_name = $row['product_name'];
+                $total_qty = $row['total_qty'];
+
+                // Get current stock
+                $stock_query = "SELECT stock FROM product_variant WHERE variant_id = ?";
+                $stock_stmt = $conn->prepare($stock_query);
+                $stock_stmt->bind_param("i", $variant_id);
+                $stock_stmt->execute();
+                $stock_result = $stock_stmt->get_result();
+
+                if ($stock_row = $stock_result->fetch_assoc()) {
+                    $current_stock = $stock_row['stock'];
+
+                    if ($current_stock <= 0) {
+                        $errorMessages[] = "$product_name is out of stock. Please select again product in your shopping cart.";
+                        // Remove out-of-stock product from cart
+                        $delete_query = "DELETE FROM shopping_cart WHERE variant_id = ? AND user_id = ?";
+                        $delete_stmt = $conn->prepare($delete_query);
+                        $delete_stmt->bind_param("ii", $variant_id, $user_id);
+                        $delete_stmt->execute();
+                        $delete_stmt->close();
+                    } elseif ($total_qty > $current_stock) {
+                        $errorMessages[] = "$product_name only has $current_stock items left, cannot fulfill requested quantity of $total_qty. Please select again product in your shopping cart.";
+                        // Adjust the quantity in the cart to match available stock
+                        $update_query = "UPDATE shopping_cart SET qty = ? WHERE variant_id = ? AND user_id = ?";
+                        $update_stmt = $conn->prepare($update_query);
+                        $update_stmt->bind_param("iii", $current_stock, $variant_id, $user_id);
+                        $update_stmt->execute();
+                        $update_stmt->close();
+                    }
+                }
+            }
+
+            // If there are error messages, display them and prevent payment processing
+            if (!empty($errorMessages)) {
+                foreach ($errorMessages as $message) {
+                    echo "<script>alert('$message');window.location.href = 'dashboard.php';</script>";
+                }
+                $paymentSuccess = false; // Prevent further processing if there are stock issues
+            }
+        } else {
             echo "<script>alert('Invalid card details');</script>";
         }
 
-		$stmt->close();
+        $stmt->close();
 	}
-	
-	
-	
+
+
+    // 保存状态到会话
+    $_SESSION['paymentSuccess'] = $paymentSuccess;
+    $_SESSION['errorMessages'] = $errorMessages;
+
+    // 重定向到当前页面
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
+
+// 页面加载时检查会话信息
+$paymentSuccess = $_SESSION['paymentSuccess'] ?? null;
+$errorMessages = $_SESSION['errorMessages'] ?? [];
+
+// 清除会话数据
+unset($_SESSION['paymentSuccess']);
+unset($_SESSION['errorMessages']);
+	
 
 
 ?>
@@ -111,25 +188,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <?php if ($paymentSuccess): 
 	
 	if ($paymentSuccess) {
-		// Deduct product stock
-		if ($cart_result && mysqli_num_rows($cart_result) > 0) {
-			while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-				$product_id = $cart_item['product_id'];
-				$quantity_to_deduct = $cart_item['total_qty'];
+		foreach ($cart_result as $item) {
+			$variant_id = $item['variant_id'];
+			$total_qty = $item['total_qty']; 
 	
-				// Update the product stock
-				$update_stock_query = "UPDATE product SET product_stock = product_stock - ? WHERE product_id = ?";
-				$stmt = $conn->prepare($update_stock_query);
-				$stmt->bind_param("ii", $quantity_to_deduct, $product_id);
-				$stmt->execute();
+
+			$update_stock_query = "UPDATE product_variant SET stock = stock - ? WHERE variant_id = ?";
+			$update_stock_stmt = $conn->prepare($update_stock_query);
+			$update_stock_stmt->bind_param("ii", $total_qty, $variant_id);
 	
-				if ($stmt->affected_rows <= 0) {
-					echo "<script>alert('Failed to update stock for product ID: $product_id');</script>";
-				}
-	
-				$stmt->close();
+			if (!$update_stock_stmt->execute()) {
+				die("Error updating stock for variant_id $variant_id: " . $update_stock_stmt->error);
 			}
 		}
+	
+	
 	}?>
 	<script>
 	window.onload = function() {
@@ -183,6 +256,112 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 </head>
+
+<style>
+        
+/* Payment button styling */
+.checkout-btn {
+    width: 100%;
+    padding: 10px;
+    background: #8175d3;
+    border: none;
+    border-radius: 6px;
+    font-size: 17px;
+    color: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s;
+    margin-top: 62px;
+}
+
+.checkout-btn:hover {
+    background: #6a5acd;
+}
+
+    .checkout-input-box select {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        font-family: 'Poppins', sans-serif;
+        color: #555;
+        background-color: #fff;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        appearance: none; /* Hides default arrow for consistent styling */
+        background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="5" viewBox="0 0 10 5"><path fill="%23555" d="M0 0l5 5 5-5z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        background-size: 12px;
+    }
+
+    .checkout-input-box select:focus,
+    .checkout-input-box select:hover {
+        border-color: #8175d3;
+        box-shadow: 0 0 5px rgba(129, 117, 211, 0.5);
+        outline: none;
+    }
+
+    .checkout-input-box select option:disabled {
+        color: #aaa;
+    }
+
+    /* Add scrolling and set max visible items */
+    .checkout-input-box select {
+        overflow-y: auto; /* Enable vertical scrolling */
+        max-height: 150px; /* Limit height to show 3 items */
+    }
+	/* 调整 state 和 postcode 的 flex 属性 */
+.checkout-flex .checkout-input-box:nth-child(1) {
+    flex: 2; /* 增大 postcode 输入框的大小 */
+}
+
+.checkout-flex .checkout-input-box:nth-child(2) {
+    flex: 1; /* 缩小 state 输入框的大小 */
+}
+
+/* Pagination container positioned at the bottom-right */
+.pagination-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    margin-right: 10px;
+    position: relative;
+    bottom: 0;
+    right: 0;
+}
+
+/* Smaller pagination buttons */
+.pagination-button {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination-button.active {
+    background-color: #6a5acd;
+    color: #fff;
+    border-color: #6a5acd;
+    font-weight: bold;
+}
+
+.pagination-button:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+    background-color: #f9f9f9;
+}
+    </style>
 
 <body class="animsition">
 
@@ -493,37 +672,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						<div class="checkout-input-box">
 							<span class="required">Full Name :</span>
-							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>" required>
+							<input type="text" value="<?php echo htmlspecialchars($user['user_name']); ?>"  readonly>
 
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Email :</span>
-							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" required>
+							<input type="email" value="<?php echo htmlspecialchars($user['user_email']); ?>" readonly>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">Address :</span>
-							<input type="text" id="address" value="" required>
+							<input type="text" name="address" id="address" value="" required>
 						</div>
 						<div class="checkout-input-box">
 							<span class="required">City :</span>
-							<input type="text" id="city" value="" required>
+							<input type="text" name="city" id="city" value="" required>
 						</div>
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
-								<span class="required">State :</span>
-								<input type="text" id="state" value="" required>
+							<span class="required">State :</span>
+							<select name="state" id="state" required>
+    							<option value="" disabled selected>Select a state</option>
+    							<option value="Johor">Johor</option>
+								<option value="Kelantan">Kelantan</option>
+								<option value="Kedah">Kedah</option>
+								<option value="Malacca">Malacca</option>
+            					<option value="Negeri Sembilan" >Negeri Sembilan</option>
+            					<option value="Pahang" >Pahang</option>
+            					<option value="Penang" >Penang</option>
+            					<option value="Perak" >Perak</option>
+            					<option value="Perlis" >Perlis</option>
+            					<option value="Selangor">Selangor</option>
+            					<option value="Terengganu" >Terengganu</option>
+            					<option value="Kuala Lumpur" >Kuala Lumpur</option>
+            					<option value="Labuan" >Labuan</option>
+            					<option value="Putrajaya" >Putrajaya</option>
+            					<option value="Sabah" >Sabah</option>
+            					<option value="Sarawak" >Sarawak</option>
+							</select>
 							</div>
 							<div class="checkout-input-box">
-								<span class="required">Postcode :</span>
-								<input type="number" id="postcode" value="" required>
-							</div>
+    <span class="required">Postcode :</span>
+    <input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
+        pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
+</div>
 						</div>
 
-						<!-- Checkbox in a new row -->
-						<div class="autofill-checkbox">
-							<input type="checkbox" id="autofill-checkbox" onclick="toggleAutofill()">
-							<label for="autofill-checkbox">Use saved address information</label>
-						</div>
+						<?php if (!empty($address)): ?>
+<div class="autofill-checkbox">
+    <input type="checkbox" id="autofill-checkbox" name="autofill-checkbox" onclick="toggleAutofill()">
+    <label for="autofill-checkbox">Use saved address information</label>
+</div>
+<?php endif; ?>
 					</div>
 
 					<!-- Payment Section -->
@@ -553,7 +752,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-flex">
 							<div class="checkout-input-box">
 								<span>Valid Thru (MM/YY) :</span>
-								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required>
+								<input type="text" name="expiry-date" id="expiry-date" placeholder="MM/YY" required minlength="5" maxlength="5" pattern="(0[1-9]|1[0-2])\/\d{2}" title="Please enter a valid MM/YY format" autocomplete="off" oninput="formatExpiryDate(this)">
 								<small id="expiry-error" style="color: red; display: none;">Please enter a valid,
 									non-expired date.</small>
 							</div>
@@ -575,11 +774,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<?php
 
 						$grand_total = 0;
-
+							
 						while ($row = mysqli_fetch_assoc($cart_result)):
 							$product_name = $row['product_name'];
 							$product_price = $row['product_price'];
 							$product_image = $row['product_image'];
+							$color=$row['color'];
 							$total_qty = $row['total_qty'];
 							$item_total_price = $row['item_total_price'];
 
@@ -592,7 +792,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
 									alt="<?php echo htmlspecialchars($product_name); ?>">
 								<div>
-									<p><?php echo htmlspecialchars($product_name); ?></p>
+								<p><?php echo htmlspecialchars($product_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
 									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
 									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
@@ -604,19 +804,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<div class="checkout-order-totals">
 							<?php
 							// Assuming $discount is calculated elsewhere or based on some logic
-							$delivery_charge = 10;
-							$total_payment = $grand_total - $discount_amount + $delivery_charge;
+							$total_payment = $grand_total - $discount_amount ;
 							?>
 							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
 							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
-							<p>Delivery Charge: <span>RM<?php echo number_format($delivery_charge, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
 								<span>RM<?php echo number_format($total_payment, 2); ?></span>
 							</p>
 						</div>
-
+							
 
 						<!-- Confirm Payment Button -->
+						
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 									
@@ -636,49 +835,80 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // 获取必要的订单数据
-    $final_amount = $total_payment; // 总支付金额
+    // 计算 Grand Total 和 Final Amount
+    $grand_total = 0;
+    foreach ($cart_result as $item) {
+        $grand_total += $item['item_total_price']; // 累加每个商品的总价
+    }
+
+    // 计算 Final Amount
+    $final_amount = $grand_total - $discount_amount; // 扣除折扣后的最终支付金额
+
+    // 确认变量值
+    if ($grand_total <= 0 || $final_amount <= 0) {
+        die("Error: Invalid grand total or final amount!");
+    }
+
+   // 判断用户是否使用了自动填充的地址
+$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
+
+if ($use_autofill && $address) {
+    // 如果勾选了自动填充，使用保存的地址
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+} else {
+    // 否则使用用户手动输入的地址
+    $shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
+}
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
 
-    // 插入 `orders` 表，不指定 `order_status` 字段，让数据库使用默认值
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, delivery_charge, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)";
+    // 插入 `orders` 表
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddsss", $user_id, $grand_total, $discount_amount, $delivery_charge, $final_amount, $shipping_address, $user_message);
-    $stmt->execute();
+    $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    if (!$stmt->execute()) {
+        die("Error inserting into orders table: " . $stmt->error);
+    }
 
     // 获取插入订单的ID
     $order_id = $stmt->insert_id;
 
     // 插入 `order_details` 表
     foreach ($cart_result as $item) {
-        $product_id = $item['product_id'];
-        $product_name = $item['product_name'];
-        $quantity = $item['total_qty'];
-        $unit_price = $item['product_price'];
-        $total_price = $item['item_total_price'];
+        $variant_id = $item['variant_id']; // 从购物车中获取 variant_id
+        $quantity = $item['total_qty']; // 商品数量
+        $unit_price = $item['product_price']; // 单价
+        $total_price = $item['item_total_price']; // 总价
 
-        $detail_query = "INSERT INTO order_details (order_id, product_id, product_name, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?, ?)";
+        $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
-        $detail_stmt->bind_param("iisidd", $order_id, $product_id, $product_name, $quantity, $unit_price, $total_price);
-        $detail_stmt->execute();
+        $detail_stmt->bind_param("iiidd", $order_id, $variant_id, $quantity, $unit_price, $total_price);
+        if (!$detail_stmt->execute()) {
+            die("Error inserting into order_details table: " . $detail_stmt->error);
+        }
     }
 
     // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
-    $clear_cart_stmt->execute();
+    if (!$clear_cart_stmt->execute()) {
+        die("Error clearing shopping cart: " . $clear_cart_stmt->error);
+    }
 
-	$payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
+    // 插入 `payment` 表
+    $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
     $payment_stmt = $conn->prepare($payment_query);
     $payment_stmt->bind_param("iids", $user_id, $order_id, $final_amount, $payment_status);
-    $payment_stmt->execute();
+    if (!$payment_stmt->execute()) {
+        die("Error inserting into payment table: " . $payment_stmt->error);
+    }
 
-	
+    // 确认订单成功
+    echo "Order placed successfully!";
 }
 ?>
+
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
@@ -1107,54 +1337,85 @@ if ($paymentSuccess) {
 
 	<script>
 
-		function toggleAutofill() {
-			const autofillCheckbox = document.getElementById('autofill-checkbox');
-			const address = document.getElementById('address');
-			const city = document.getElementById('city');
-			const state = document.getElementById('state');
-			const postcode = document.getElementById('postcode');
+function toggleAutofill() { 
+    const autofillCheckbox = document.getElementById('autofill-checkbox');
+    const address = document.getElementById('address');
+    const city = document.getElementById('city');
+    const state = document.getElementById('state');
+    const postcode = document.getElementById('postcode');
 
-			if (autofillCheckbox.checked) {
-				// Fill with saved data if checkbox is checked
-				address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-				city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-				state.value = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
-				postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
-			} else {
-				// Clear fields for manual input if checkbox is unchecked
-				address.value = "";
-				city.value = "";
-				state.value = "";
-				postcode.value = "";
-			}
-		}
+    if (autofillCheckbox.checked) {
+        // Fill with saved data if checkbox is checked
+        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+
+        // Set the correct state in the dropdown
+        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+        if (savedState) {
+            const options = Array.from(state.options);
+            const matchingOption = options.find(option => option.value === savedState);
+            if (matchingOption) {
+                state.value = savedState;
+            }
+        }
+		 // Set fields to readonly
+		address.readOnly = true;
+        city.readOnly = true;
+        postcode.readOnly = true;
+        state.disabled = true;
+    } else {
+        // Clear fields for manual input if checkbox is unchecked
+        address.value = "";
+        city.value = "";
+        state.value = "";
+        postcode.value = "";
+
+		 // Remove readonly attribute
+		 address.readOnly = false;
+        city.readOnly = false;
+        postcode.readOnly = false;
+        state.disabled = false;
+    }
+}
 
 
 
-		document.getElementById('expiry-date').addEventListener('input', function () {
-			const input = this.value;
-			const error = document.getElementById('expiry-error');
+		function formatExpiryDate(input) {
+    let value = input.value.replace(/\D/g, ""); // 移除非数字字符
 
-			// Check if the input matches MM/YY format using regex
-			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-			if (!datePattern.test(input)) {
-				error.style.display = 'none';
-				return;
-			}
+    // 插入 '/' 在两位数字之后
+    if (value.length > 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
 
-			// Parse month and year from input
-			const [month, year] = input.split('/').map(Number);
-			const currentYear = new Date().getFullYear() % 100; // last two digits of current year
-			const currentMonth = new Date().getMonth() + 1; // months are zero-indexed
+    // 限制输入长度为5个字符（MM/YY）
+    input.value = value.slice(0, 5);
+}
 
-			// Check if the entered date is valid (current month/year or later)
-			if (year > currentYear || (year === currentYear && month >= currentMonth)) {
-				error.style.display = 'none'; // hide error message if valid
-			} else {
-				error.style.display = 'block'; // show error message if expired
-				this.value = ''; // clear input field
-			}
-		});
+document.getElementById('expiry-date').addEventListener('input', function () {
+    const input = this.value;
+    const error = document.getElementById('expiry-error');
+
+    // 检查输入是否匹配 MM/YY 格式
+    const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+    if (!datePattern.test(input)) {
+        error.style.display = 'none';
+        return;
+    }
+
+    // 解析输入的月份和年份
+    const [month, year] = input.split('/').map(Number);
+    const currentYear = new Date().getFullYear() % 100; // 取当前年份的后两位数字
+    const currentMonth = new Date().getMonth() + 1; // 月份是从0开始的
+
+    // 检查输入的日期是否有效且未过期
+    if (year > currentYear || (year === currentYear && month >= currentMonth)) {
+        error.style.display = 'none'; // 如果有效则隐藏错误信息
+    } else {
+        error.style.display = 'block'; // 显示错误信息
+    }
+});
 
 		function formatCardNumber(input) {
 			// Remove all spaces and get only digits
@@ -1241,17 +1502,17 @@ if ($paymentSuccess) {
 
 			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
 			if (!datePattern.test(expiryDate.value)) {
-				alert('Please enter a valid expiration date (format: MM/YY).');
-				return false;
-			} else {
-				const [month, year] = expiryDate.value.split('/').map(Number);
-				const currentYear = new Date().getFullYear() % 100;
-				const currentMonth = new Date().getMonth() + 1;
-				if (year < currentYear || (year === currentYear && month < currentMonth)) {
-					alert('Please enter a valid, non-expired expiration date.');
-					return false;
-				}
-			}
+        alert('Please enter a valid expiration date (format: MM/YY).');
+        return false;
+    } else {
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            alert('Please enter a valid, non-expired expiration date.');
+            return false;
+        }
+    }
 
 			return true;
 		}
@@ -1278,7 +1539,90 @@ if ($paymentSuccess) {
 		}
 
 
+// JavaScript for Pagination with Shopee-like design
+document.addEventListener('DOMContentLoaded', () => {
+    const itemsPerPage = 2; // Number of items per page
+    const items = document.querySelectorAll('.checkout-order-item');
+    const totalPages = Math.ceil(items.length / itemsPerPage);
 
+    let currentPage = 1;
+
+    const renderPage = (page) => {
+        items.forEach((item, index) => {
+            if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
+                item.style.display = 'flex'; // Show items for the current page
+            } else {
+                item.style.display = 'none'; // Hide other items
+            }
+        });
+
+        updatePaginationControls(page);
+    };
+
+	const createPaginationControls = () => {
+    const paginationContainer = document.createElement('div');
+    paginationContainer.classList.add('pagination-controls');
+
+    const orderSummary = document.querySelector('.checkout-order-summary');
+    const orderTotals = document.querySelector('.checkout-order-totals');
+    orderSummary.insertBefore(paginationContainer, orderTotals); // Ensure it's before Order Totals
+};
+
+    const renderPaginationControls = (container) => {
+        container.innerHTML = ''; // Clear existing controls
+
+        // Previous button
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.classList.add('pagination-button');
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+        container.appendChild(prevButton);
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('pagination-button');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderPage(currentPage);
+            });
+            container.appendChild(pageButton);
+        }
+
+        // Next button
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.classList.add('pagination-button');
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+        container.appendChild(nextButton);
+    };
+
+    const updatePaginationControls = (page) => {
+        const paginationContainer = document.querySelector('.pagination-controls');
+        renderPaginationControls(paginationContainer);
+    };
+
+    if (items.length > itemsPerPage) {
+        createPaginationControls();
+        renderPage(currentPage);
+    }
+});
 	</script>
 </body>
 

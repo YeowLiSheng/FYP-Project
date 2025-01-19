@@ -59,7 +59,7 @@ $order_id = intval($_GET['order_id']); // 或使用适当的获取方式
 
 // 使用预处理语句获取订单信息
 $order_stmt = $conn->prepare("
-    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount, o.delivery_charge,
+    SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount,
            o.final_amount, o.order_status, o.shipping_address, o.shipping_method, o.user_message,
            u.user_name
     FROM orders o
@@ -881,7 +881,6 @@ textarea {
         <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
         <div class="pricing-item"><span>Discount:</span><span>- RM <?= number_format($order['discount_amount'], 2) ?></span></div>
-        <div class="pricing-item"><span>Delivery Charge:</span><span>+ RM <?= number_format($order['delivery_charge'], 2) ?></span></div>
         <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
