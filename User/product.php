@@ -670,31 +670,113 @@ body {
     min-height: 50vh; /* Ensures content area fills the screen */
 }
 
+
+/* Promotion Box with Fixed Dimensions and Scrolling */
+/* Promotion Head with Glowing Effect */
+.promotion-head {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff3b3b;
+    text-align: center;
+    background: transparent;
+    width: 200px;
+    padding: 10px;
+    animation: softGlow 1s infinite alternate;
+    border-radius: 5px;
+    transition: transform 0.4s ease-in-out; /* Smooth scaling effect */
+    margin: 0 auto;
+}
+
+@keyframes softGlow {
+    from {
+        text-shadow: 0 0 5px #ff6b6b, 0 0 8px #ff9999;
+        transform: scale(1); /* Normal size */
+    }
+    to {
+ 
+        text-shadow: 0 0 3px #ff3b3b, 0 0 5px #ff6b6b;
+        transform: scale(1.1); /* Slightly larger size */
+    }
+}
+
+/* Promotion Box with Fixed Dimensions and Scrolling */
 .promotion-box {
     margin-top: 20px;
     padding: 10px;
     border-top: 1px solid #ddd;
+    width: 400px;
+    height: 500px;
+    overflow-y: auto;
+    background: #f9f9f9;
 }
 
+#promotionContent {
+    margin-top: 10px;
+}
+
+/* Individual Promotion Items with Fixed Dimensions */
 .promotion-item {
-    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    height: 100px; /* Set height */
+    width: 100%;  /* Ensure full width of the box */
 }
 
+/* Product Image Styling */
 .promotion-item img {
-    width: 100px;
-    height: auto;
-    margin-right: 10px;
+    width: 60px;
+    height: 60px; /* Fixed height for uniformity */
+    border-radius: 5px;
+}
+
+/* Product Details Section */
+.promo-details {
+    flex-grow: 1;
+    margin-left: 10px;
 }
 
 .promotion-item h5 {
     font-size: 16px;
-    margin: 5px 0;
+    margin: 0 0 5px;
 }
 
 .promo-price {
     color: #ff5722;
     font-weight: bold;
+    font-size: 16px; /* Increase font size */
 }
+
+/* Separator Line Between Products */
+.promotion-divider {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+/* View Product Button with Fixed Dimensions */
+.view-product-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s;
+    height: 40px; /* Set fixed height */
+    width: 100px; /* Set fixed width */
+    text-align: center; /* Ensure button text is centered */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
 .promotion-modal {
     display: none;
     position: fixed;
@@ -715,15 +797,6 @@ body {
 .close-promotion-modal {
     float: right;
     cursor: pointer;
-}
-
-.view-product-btn {
-    background: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background 0.3s;
 }
 
 .view-product-btn:hover {
@@ -1494,17 +1567,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 							</div>
 
 							<div id="promotionBox" class="promotion-box">
-                                <!-- Promotional products will be dynamically injected here -->
+                                <div class="promotion-head"> New Promotion!!!</div>
+                                <div id="promotionContent">
+                                    <!-- Promotional products will be dynamically injected here -->
+                                </div>
                             </div>
 
-							<div id="packageFormPopup" class="popup-overlay">
-								<div class="popup-content">
-									<span class="close-popup">&times;</span>
-									<div id="packageFormContainer">
-										<!-- Dynamic form content will be injected here -->
-									</div>
-								</div>
-							</div>
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-204 flex-w flex-m respon6-next">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
@@ -1554,6 +1622,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 </div>
 <div id="promotionModal" class="wrap-promo-modal p-t-60 p-b-20">
     <div class="overlay-promo-modal js-hide-promo-modal"></div>
+
+    <div class="promotion-head"> New Promotion!!!</div>
 
     <div class="container">
         <button class="close-promo-modal how-pos3 hov3 trans-04 js-hide-promo-modal">
@@ -1762,8 +1832,8 @@ function fetchPromotions(categoryId) {
         dataType: 'json',
         success: function(promotions) {
             console.log("Promotions fetched successfully:", promotions); // Log the fetched promotions
-            var promotionBox = $('#promotionBox');
-            promotionBox.empty(); // Clear previous promotions
+            var promotionContent = $('#promotionContent');
+            promotionContent.empty(); // Clear previous promotions
             
             if (promotions && promotions.length > 0) {
                 promotions.forEach(promotion => {
@@ -1777,13 +1847,14 @@ function fetchPromotions(categoryId) {
                                 View Product
                             </button>
                         </div>
+                        <hr class="promotion-divider">
                     `;
 
-                    promotionBox.append(promoHTML);
+                    promotionContent.append(promoHTML);
                 });
             } else {
                 console.warn("No promotions found for this category."); // Warn if no promotions are found
-                promotionBox.append('<p>No promotions available for this category.</p>');
+                promotionContent.append('<p>No promotions available for this category.</p>');
             }
         },
         error: function(xhr, status, error) {
