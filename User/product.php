@@ -1623,8 +1623,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 <div id="promotionModal" class="wrap-promo-modal p-t-60 p-b-20">
     <div class="overlay-promo-modal js-hide-promo-modal"></div>
 
-    <div class="promotion-head"> New Promotion!!!</div>
-
     <div class="container">
         <button class="close-promo-modal how-pos3 hov3 trans-04 js-hide-promo-modal">
             <img src="images/icons/icon-close.png" alt="CLOSE">
