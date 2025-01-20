@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     
     $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE variant_id = ? AND order_id = ?");
-    $detail_query->bind_param("ii", $product_id, $order_id);
+    $detail_query->bind_param("ii", $variant_id, $order_id);
     $detail_query->execute();
     $detail_result = $detail_query->get_result();
 
