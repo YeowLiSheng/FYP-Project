@@ -1646,8 +1646,24 @@ function toggleAutofill() {
                 state.value = savedState;
             }
         }
-
+		address.disabled = true;
+        city.disabled = true;
+        state.disabled = true;
+        postcode.disabled = true;
     } 
+	else {
+        // Enable fields
+        address.disabled = false;
+        city.disabled = false;
+        state.disabled = false;
+        postcode.disabled = false;
+
+        // Clear autofilled values
+        address.value = '';
+        city.value = '';
+        postcode.value = '';
+        state.value = '';
+    }
 }
 
 // Enable disabled fields before form submission
