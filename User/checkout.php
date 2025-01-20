@@ -198,9 +198,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	
 	}?>
 	<script>
-	//window.onload = function() {
-	//confirmPayment();
-	//}
+	window.onload = function() {
+	confirmPayment();
+	}
 	</script>
 	<?php endif; ?>			
 
@@ -1130,8 +1130,7 @@ if ($paymentSuccess) {
 
 // Check if the autofill checkbox is selected
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
-var_dump($_POST);
-var_dump($use_autofill, $address);
+
 if ($use_autofill && $address) {
     // Use saved address
     $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
@@ -1814,9 +1813,9 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 			}, 2000);
 		}
 
-		//function goToDashboard() {
-		//	window.location.href = 'dashboard.php';
-		//}
+		function goToDashboard() {
+			window.location.href = 'dashboard.php';
+		}
 
 
 // JavaScript for Pagination with Shopee-like design
