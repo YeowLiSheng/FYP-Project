@@ -1666,24 +1666,7 @@ function toggleAutofill() {
     }
 }
 
-// Enable all disabled fields before form submission
-document.querySelector("form").addEventListener("submit", function () {
-    const fields = ['address', 'city', 'state', 'postcode'];
-    fields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field.disabled) {
-            field.disabled = false;
-        }
-    });
-});
 
-// Enable disabled fields before form submission
-document.querySelector("form").addEventListener("submit", function () {
-    document.getElementById('address').disabled = false;
-    document.getElementById('city').disabled = false;
-    document.getElementById('state').disabled = false;
-    document.getElementById('postcode').disabled = false;
-});
 
 
 		function formatExpiryDate(input) {
@@ -1818,7 +1801,13 @@ document.getElementById('expiry-date').addEventListener('input', function () {
             return false;
         }
     }
+	address.disabled = false;
+    city.disabled = false;
+    state.disabled = false;
+    postcode.disabled = false;
 
+    // 表单验证成功后提交表单
+    form.submit();
 			return true;
 		}
 
