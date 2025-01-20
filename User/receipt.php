@@ -53,10 +53,7 @@ $details_stmt->bind_param("i", $order_id);
 $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
-$order_details = [];
-while ($detail = $details_result->fetch_assoc()) {
-    $order_details[] = $detail;
-}
+
 
 
 $pdf = new FPDF();
