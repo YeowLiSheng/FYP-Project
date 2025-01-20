@@ -1140,12 +1140,12 @@ if ($paymentSuccess) {
         die("Error: Invalid grand total or final amount!");
     }
 
-	var_dump($_POST);
-	var_dump($use_autofill, $address);
+
 
 // Check if the autofill checkbox is selected
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
-
+var_dump($_POST);
+var_dump($use_autofill, $address);
 if ($use_autofill && $address) {
     // Use saved address
     $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
