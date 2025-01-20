@@ -1006,7 +1006,7 @@ unset($_SESSION['errorMessages']);
 							<div class="checkout-input-box">
     						<span class="required">Postcode :</span>
     							<input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
-        						pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
+        						pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" value="" required>
 							</div>
 						</div>
 
@@ -1146,16 +1146,13 @@ if ($paymentSuccess) {
 
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
-if ($use_autofill) 
-{
-
-    $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+if ($use_autofill && $address) {
+	// Use saved address
+	$shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
 } else {
-   
+	// Use user input address
 	$shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
-
 }
-
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
 
