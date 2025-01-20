@@ -1144,16 +1144,12 @@ if ($paymentSuccess) {
     }
 
 
-$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
-
-if ($use_autofill && $address) {
-
-    $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
-} else {
-   
-	$shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
-
-}
+	$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
+	if ($use_autofill && $address) {
+		$shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
+	} else {
+		$shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
+	}
 
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
