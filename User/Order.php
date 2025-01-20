@@ -1,5 +1,5 @@
 <?php
-session_start();  // 启动会话
+session_start(); 
 
 // Connect to the database
 $servername = "localhost";
@@ -9,10 +9,10 @@ $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// 设置字符集
+
 $conn->set_charset("utf8mb4");
 
-// 检查连接
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -26,13 +26,13 @@ if (!isset($_SESSION['id'])) {
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 
-// 使用预处理语句来防止 SQL 注入
+
 $stmt = $conn->prepare("SELECT * FROM user WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user_result = $stmt->get_result();
 
-// 获取用户信息
+
 if ($user_result && $user_result->num_rows > 0) {
     $user = $user_result->fetch_assoc();
 } else {
@@ -40,24 +40,40 @@ if ($user_result && $user_result->num_rows > 0) {
     exit;
 }
 
-// 获取当前用户的详细信息（动态获取用户ID）
+
 $current_user_id = $_SESSION['id']; 
 $current_user_query = $conn->prepare("SELECT user_name, user_image FROM user WHERE user_id = ?");
 $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
-// Fetch orders with all products for each order
 function fetchOrdersWithProducts($conn, $status = null) {
     $sql = "
-        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
+        SELECT 
+            o.order_id, 
+            o.order_date, 
+            o.final_amount, 
+            o.order_status, 
+            GROUP_CONCAT(
+                CASE 
+                    WHEN pv.product_id IS NOT NULL THEN p.product_name
+                    WHEN pv.promotion_id IS NOT NULL THEN pp.promotion_name
+                END
+                SEPARATOR ', '
+            ) AS products, 
+            MIN(
+                CASE 
+                    WHEN pv.product_id IS NOT NULL THEN p.product_image
+                    WHEN pv.promotion_id IS NOT NULL THEN pp.promotion_image
+                END
+            ) AS product_image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id";
-        
-    // Add a condition to filter by status if provided
+        JOIN product_variant pv ON od.variant_id = pv.variant_id
+        LEFT JOIN product p ON pv.product_id = p.product_id
+        LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id";
+    
+    // Add condition to filter by status if provided
     if ($status) {
         $sql .= " WHERE o.order_status = ?";
     }
@@ -67,7 +83,7 @@ function fetchOrdersWithProducts($conn, $status = null) {
     
     $stmt = $conn->prepare($sql);
     if ($status) {
-        $stmt->bind_param("s", $status);  // Bind the status parameter
+        $stmt->bind_param("s", $status); // Bind the status parameter
     }
     $stmt->execute();
     return $stmt->get_result();
