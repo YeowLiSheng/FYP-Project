@@ -1064,13 +1064,12 @@ unset($_SESSION['errorMessages']);
 						$grand_total = 0;
 							
 						while ($row = mysqli_fetch_assoc($cart_result)):
-							$product_name = $row['product_name'];
-							$product_price = $row['product_price'];
-							$product_image = $row['product_image'];
-							$color=$row['color'];
-							$total_qty = $row['total_qty'];
-							$item_total_price = $row['item_total_price'];
-
+							$item_name = $row['item_name']; 
+							$item_price = $row['item_price'];
+							$product_image = $row['product_image']; 
+							$color = $row['color']; 
+							$total_qty = $row['total_qty']; 
+							$item_total_price = $row['item_total_price']; 
 
 							// Accumulate the grand total
 							$grand_total += $item_total_price;
@@ -1078,10 +1077,10 @@ unset($_SESSION['errorMessages']);
 							?>
 							<div class="checkout-order-item">
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
-									alt="<?php echo htmlspecialchars($product_name); ?>">
+									alt="<?php echo htmlspecialchars($item_name); ?>">
 								<div>
-								<p><?php echo htmlspecialchars($product_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
-									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
+								<p><?php echo htmlspecialchars($item_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
+									<span>Price: RM<?php echo number_format($item_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
 									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
 								</div>
