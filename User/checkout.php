@@ -33,15 +33,7 @@ if ($user_result && mysqli_num_rows($user_result) > 0) {
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
-} else {
-
-    $address = [
-        'address' => '',
-        'city' => '',
-        'state' => '',
-        'postcode' => ''
-    ];
-}
+} 
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
 $cart_query = "
@@ -1145,22 +1137,23 @@ if ($paymentSuccess) {
 
 
 	$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
+	if ($use_autofill && $address) {
+		$shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
+	} else {
+		$shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
+	}
 
-if ($use_autofill && $address) {
-    // 如果启用了自动填充，使用保存的地址
-    $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
-} else {
-    // 否则，使用用户手动输入的地址
-    $shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
-}
 
-// 插入订单到数据库
-$order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($order_query);
-$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
-if (!$stmt->execute()) {
-    die("Error inserting into orders table: " . $stmt->error);
-}
+    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
+
+    
+    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($order_query);
+    $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+    if (!$stmt->execute()) {
+        die("Error inserting into orders table: " . $stmt->error);
+    }
+
     $order_id = $stmt->insert_id;
 
     foreach ($cart_result as $item) {
@@ -1624,7 +1617,7 @@ if (!$stmt->execute()) {
 
 	<script>
 
-function toggleAutofill() {
+function toggleAutofill() { 
     const autofillCheckbox = document.getElementById('autofill-checkbox');
     const address = document.getElementById('address');
     const city = document.getElementById('city');
@@ -1632,29 +1625,34 @@ function toggleAutofill() {
     const postcode = document.getElementById('postcode');
 
     if (autofillCheckbox.checked) {
-        // 填充保存的数据
-        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+        // Fill with saved data if checkbox is checked
+		address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+		city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+		postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
 
-        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+        // Set the correct state in the dropdown
+		const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
         if (savedState) {
-            state.value = savedState;
+            const options = Array.from(state.options);
+            const matchingOption = options.find(option => option.value === savedState);
+            if (matchingOption) {
+                state.value = savedState;
+            }
         }
 
-        // 禁用字段
+        // Disable fields
         address.disabled = true;
         city.disabled = true;
         postcode.disabled = true;
         state.disabled = true;
     } else {
-        // 清空字段以便用户手动输入
+        // Clear fields for manual input if checkbox is unchecked
         address.value = "";
         city.value = "";
         state.value = "";
         postcode.value = "";
 
-        // 启用字段
+        // Enable fields
         address.disabled = false;
         city.disabled = false;
         postcode.disabled = false;
@@ -1662,19 +1660,14 @@ function toggleAutofill() {
     }
 }
 
-// 提交前启用禁用字段
+// Enable disabled fields before form submission
 document.querySelector("form").addEventListener("submit", function () {
-    const autofillCheckbox = document.getElementById('autofill-checkbox');
-    const addressFields = ['address', 'city', 'state', 'postcode'];
-    if (!autofillCheckbox.checked) {
-        addressFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field.disabled) {
-                field.disabled = false;
-            }
-        });
-    }
+    document.getElementById('address').disabled = false;
+    document.getElementById('city').disabled = false;
+    document.getElementById('state').disabled = false;
+    document.getElementById('postcode').disabled = false;
 });
+
 
 		function formatExpiryDate(input) {
     let value = input.value.replace(/\D/g, ""); // 移除非数字字符
