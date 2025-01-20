@@ -33,7 +33,10 @@ if ($user_result && mysqli_num_rows($user_result) > 0) {
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
-} 
+} else {
+
+    $address = null;
+}
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
 $cart_query = "
@@ -1137,33 +1140,18 @@ if ($paymentSuccess) {
         die("Error: Invalid grand total or final amount!");
     }
 
+	var_dump($_POST);
+	var_dump($use_autofill, $address);
 
 // Check if the autofill checkbox is selected
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
 if ($use_autofill && $address) {
     // Use saved address
-    $address_parts = array_filter([
-        $address['address'] ?? '',
-        $address['postcode'] ?? '',
-        $address['city'] ?? '',
-        $address['state'] ?? ''
-    ]);
-    $shipping_address = implode(', ', $address_parts);
+    $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
 } else {
     // Use user input
-    $address_parts = array_filter([
-        trim($_POST['address'] ?? ''),
-        trim($_POST['postcode'] ?? ''),
-        trim($_POST['city'] ?? ''),
-        trim($_POST['state'] ?? '')
-    ]);
-    $shipping_address = implode(', ', $address_parts);
-}
-
-// Ensure the shipping address is not empty
-if (empty($shipping_address)) {
-    die("Error: Shipping address cannot be empty!");
+    $shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
 }
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
@@ -1639,7 +1627,7 @@ if (empty($shipping_address)) {
 
 	<script>
 
-function toggleAutofill() {
+function toggleAutofill() { 
     const autofillCheckbox = document.getElementById('autofill-checkbox');
     const address = document.getElementById('address');
     const city = document.getElementById('city');
@@ -1687,7 +1675,15 @@ document.querySelector("form").addEventListener("submit", function () {
             field.disabled = false;
         }
     });
-})
+});
+
+// Enable disabled fields before form submission
+document.querySelector("form").addEventListener("submit", function () {
+    document.getElementById('address').disabled = false;
+    document.getElementById('city').disabled = false;
+    document.getElementById('state').disabled = false;
+    document.getElementById('postcode').disabled = false;
+});
 
 
 		function formatExpiryDate(input) {
