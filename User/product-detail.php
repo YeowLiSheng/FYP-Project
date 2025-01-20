@@ -123,22 +123,38 @@ $review_query = "
         user u ON r.user_id = u.user_id
     JOIN 
         order_details od ON r.detail_id = od.detail_id
+    JOIN 
+        product_variant pv ON od.variant_id = pv.variant_id
     LEFT JOIN 
         admin a ON r.staff_id = a.staff_id
     WHERE 
-        od.variant_id = ? AND r.status = 'active'";
-        
+        pv.product_id = ? AND r.status = 'active'";
+
 $stmt = $connect->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $connect->error); 
 }
-$stmt->bind_param("i", var: $variant_id);
+$stmt->bind_param("i", $product_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
 
 
-$review_count_query = "SELECT COUNT(*) as review_count FROM reviews r JOIN order_details od ON r.detail_id = od.detail_id WHERE od.variant_id = ? AND r.status = 'active'";
+$review_count_query = "
+    SELECT 
+        COUNT(*) as review_count 
+    FROM 
+        reviews r
+    JOIN 
+        order_details od ON r.detail_id = od.detail_id
+    JOIN 
+        product_variant pv ON od.variant_id = pv.variant_id
+    WHERE 
+        pv.product_id = ? AND r.status = 'active'";
+
 $stmt = $connect->prepare($review_count_query);
+if (!$stmt) {
+    die("SQL prepare failed: " . $connect->error); 
+}
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $review_count_result = $stmt->get_result();
