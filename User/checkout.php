@@ -1164,7 +1164,7 @@ if ($use_autofill && $address) {
     foreach ($cart_result as $item) {
         $variant_id = $item['variant_id'];
         $quantity = $item['total_qty'];
-        $unit_price = $item['product_price'];
+        $unit_price = $item['item_price'];
         $total_price = $item['item_total_price']; 
 
         $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
