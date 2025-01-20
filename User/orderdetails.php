@@ -871,12 +871,12 @@ textarea {
             <tbody>
 			<?php foreach ($order_details as $detail) { ?>
                 <tr>
-                    <td><img src="images/<?= $detail['product_image'] ?>" alt="<?= $detail['product_name'] ?>" class="product-image"></td>
-                    <td><?= $detail['product_name'] ?></td>
-                    <td><?= $detail['quantity'] ?></td>
-                    <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
-                    <td>RM <?= number_format($detail['total_price'], 2) ?></td>
-                </tr>
+    <td><img src="images/<?= $detail['image'] ?>" alt="<?= $detail['name'] ?>" class="product-image"></td>
+    <td><?= $detail['name'] ?></td>
+    <td><?= $detail['quantity'] ?></td>
+    <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
+    <td>RM <?= number_format($detail['total_price'], 2) ?></td>
+</tr>
                 <?php } ?>
             </tbody>
         </table>
