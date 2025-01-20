@@ -675,9 +675,9 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                                 <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
                                                 ' . $message . '
                                             </div>
+                                        </div>    
                                             <!-- Color circles placed here -->
                                             <div class="block2-txt-child2 flex-r p-t-3">';
-                            
                             foreach ($colors as $index => $color) {
                                 $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
                                 $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
