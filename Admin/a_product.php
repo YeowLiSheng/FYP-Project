@@ -18,8 +18,8 @@ if (isset($_POST["save_product"])) {
     $tags = $_POST["tags"];
 
     $status = "1";
-    $insert_product = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, product_price, product_stock, tags) 
-                VALUES ('$c', '$status', '$pd', '$d', '$img', '$price', '$qty', '$color1', '$size1', '$tags')";
+    $insert_product = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, product_price, tags) 
+                VALUES ('$c', '$status', '$pd', '$d', '$img', '$price', '$tags')";
     $run_product = mysqli_query($connect, $insert_product);
 
     if ($run_product) {
@@ -29,6 +29,18 @@ if (isset($_POST["save_product"])) {
         $insert_variant = "INSERT INTO product_variant (product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
                            VALUES ('$product_id', '$color1', '$size1', '$qty', '$quick_view1', '$quick_view2', '$quick_view3')";
         $run_variant = mysqli_query($connect, $insert_variant);
+
+        if (isset($_POST["color2"])) {
+            $color2 = $_POST["color2"];
+            $stock2 = $_POST["stock2"];
+            $quick_view4 = $_POST["quick_view4"];
+            $quick_view5 = $_POST["quick_view5"];
+            $quick_view6 = $_POST["quick_view6"];
+
+            $insert_variant2 = "INSERT INTO product_variant (product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
+                                VALUES ('$product_id', '$color2', '$size1', '$stock2', '$quick_view4', '$quick_view5', '$quick_view6')";
+            $run_variant2 = mysqli_query($connect, $insert_variant2);
+        }
 
         $_SESSION['img'] = "$img";
         $_SESSION['title'] = "$pd";
@@ -78,43 +90,68 @@ if (isset($_GET["product_id"])) {
 
 
 //edit product
-if (isset($_POST["edit_product"])) {
+if (isset($_POST["edit_variant"])) {
     $id = $_POST["product_id"];
+    $variant_id = $_POST["variant_id"];
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
     $d = $_POST["desc"];
-    $img = empty($_POST["img"]) ? $_POST["old-img"] : $_POST["img"];
-    $quick_view1 = empty($_POST["quick_view1"]) ? $_POST["old-quick_view1"] : $_POST["quick_view1"];
-    $quick_view2 = empty($_POST["quick_view2"]) ? $_POST["old-quick_view2"] : $_POST["quick_view2"];
-    $quick_view3 = empty($_POST["quick_view3"]) ? $_POST["old-quick_view3"] : $_POST["quick_view3"];
     $price = $_POST["price"];
     $qty = $_POST["qty"];
     $color1 = $_POST["color1"];
-    $color2 = $_POST["color2"];
     $size1 = $_POST["size1"];
-    $size2 = $_POST["size2"];
     $tags = $_POST["tags"];
 
+    // Handle product image
+    if (!empty($_FILES["img"]["name"])) {
+        $img = $_FILES["img"]["name"];
+        $img_tmp = $_FILES["img"]["tmp_name"];
+        move_uploaded_file($img_tmp, "../User/images/" . $img); // Adjust the "uploads/" path as per your project
+    } else {
+        $img = $_POST["old-img"];
+    }
+
+    // Handle quick view images
+    $quick_view1 = !empty($_FILES["quick_view1"]["name"]) ? $_FILES["quick_view1"]["name"] : $_POST["old-quick_view1"];
+    if (!empty($_FILES["quick_view1"]["tmp_name"])) {
+        move_uploaded_file($_FILES["quick_view1"]["tmp_name"], "../User/images/" . $quick_view1);
+    }
+
+    $quick_view2 = !empty($_FILES["quick_view2"]["name"]) ? $_FILES["quick_view2"]["name"] : $_POST["old-quick_view2"];
+    if (!empty($_FILES["quick_view2"]["tmp_name"])) {
+        move_uploaded_file($_FILES["quick_view2"]["tmp_name"], "../User/images/" . $quick_view2);
+    }
+
+    $quick_view3 = !empty($_FILES["quick_view3"]["name"]) ? $_FILES["quick_view3"]["name"] : $_POST["old-quick_view3"];
+    if (!empty($_FILES["quick_view3"]["tmp_name"])) {
+        move_uploaded_file($_FILES["quick_view3"]["tmp_name"], "../User/images/" . $quick_view3);
+    }
+
+    // Update the product table
     $update = "UPDATE product SET 
                 category_id='$c',
                 product_name='$pd',
                 product_des='$d',
                 product_image='$img',
-                Quick_View1='$quick_view1',
-                Quick_View2='$quick_view2',
-                Quick_View3='$quick_view3',
                 product_price='$price',
-                product_stock='$qty',
-                color1='$color1',
-                color2='$color2',
-                size1='$size1',
-                size2='$size2',
                 tags='$tags'
                 WHERE product_id = '$id'";
 
     $update_run = mysqli_query($connect, $update);
 
     if ($update_run) {
+        // Update the product_variant table
+        $update_variant = "UPDATE product_variant SET 
+                           color='$color1',
+                           size='$size1',
+                           stock='$qty',
+                           Quick_View1='$quick_view1',
+                           Quick_View2='$quick_view2',
+                           Quick_View3='$quick_view3'
+                           WHERE variant_id='$variant_id'";
+
+        $update_variant_run = mysqli_query($connect, $update_variant);
+
         $_SESSION['title'] = "Congrats!";
         $_SESSION['text'] = "Successfully edited.";
         $_SESSION['icon'] = "success";
@@ -126,5 +163,6 @@ if (isset($_POST["edit_product"])) {
         header("location:admin_product.php");
     }
 }
+
 
 ?>
