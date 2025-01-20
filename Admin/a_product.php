@@ -14,17 +14,22 @@ if (isset($_POST["save_product"])) {
     $price = $_POST["price"];
     $qty = $_POST["qty"];
     $color1 = $_POST["color1"];
-    $color2 = $_POST["color2"];
     $size1 = $_POST["size1"];
-    $size2 = $_POST["size2"];
     $tags = $_POST["tags"];
 
     $status = "1";
-    $insert = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, Quick_View1, Quick_View2, Quick_View3, product_price, product_stock, color1, color2, size1, size2, tags) 
-                VALUES ('$c', '$status', '$pd', '$d', '$img', '$quick_view1', '$quick_view2', '$quick_view3', '$price', '$qty', '$color1', '$color2', '$size1', '$size2', '$tags')";
-    $run = mysqli_query($connect, $insert);
+    $insert_product = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, product_price, product_stock, tags) 
+                VALUES ('$c', '$status', '$pd', '$d', '$img', '$price', '$qty', '$color1', '$size1', '$tags')";
+    $run_product = mysqli_query($connect, $insert_product);
 
-    if ($run) {
+    if ($run_product) {
+
+        $product_id = mysqli_insert_id($connect);
+
+        $insert_variant = "INSERT INTO product_variant (product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
+                           VALUES ('$product_id', '$color1', '$size1', '$qty', '$quick_view1', '$quick_view2', '$quick_view3')";
+        $run_variant = mysqli_query($connect, $insert_variant);
+
         $_SESSION['img'] = "$img";
         $_SESSION['title'] = "$pd";
         $_SESSION['text'] = "successfully added!";

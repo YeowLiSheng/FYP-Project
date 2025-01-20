@@ -315,27 +315,13 @@ function add_check() {
     } else {
         document.getElementById("check_color1").innerHTML = "";
     }
-
-    if (color2 == "") {
-        document.getElementById("check_color2").innerHTML = "Color 2 is required";
-        no_error = false;
-    } else {
-        document.getElementById("check_color2").innerHTML = "";
-    }
-
+    
     // Validate Sizes
     if (size1 == "") {
         document.getElementById("check_size1").innerHTML = "Size 1 is required";
         no_error = false;
     } else {
         document.getElementById("check_size1").innerHTML = "";
-    }
-
-    if (size2 == "") {
-        document.getElementById("check_size2").innerHTML = "Size 2 is required";
-        no_error = false;
-    } else {
-        document.getElementById("check_size2").innerHTML = "";
     }
 
     // Validate Quick View Fields
@@ -533,27 +519,12 @@ function add_check() {
                                         <span id="check_color1"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-4">
-                                        <label for="color2">Color 2:</label>
-                                    <input type="text" class="form-control" id="color2" name="color2" placeholder="Secondary color">
-                                    <span id="check_color2"></span>
-                                </div>
-                                </div>
-
                                 <!-- Sizes -->
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
                                         <label for="size1">Size 1:</label>
                                         <input type="text" class="form-control" id="size1" name="size1" placeholder="Primary size">
                                         <span id="check_size1"></span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-4">
-                                        <label for="size2">Size 2:</label>
-                                        <input type="text" class="form-control" id="size2" name="size2" placeholder="Secondary size">
-                                        <span id="check_size2"></span>
                                     </div>
                                 </div>
 
