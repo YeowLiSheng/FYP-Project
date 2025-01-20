@@ -79,9 +79,20 @@ $order = $order_result->fetch_assoc();
 
 // 获取订单详情
 $details_stmt = $conn->prepare("
-    SELECT od.product_id, od.product_name, od.quantity, od.unit_price, od.total_price, p.product_image
+    SELECT 
+        od.detail_id,
+        od.order_id,
+        pv.variant_id,
+        COALESCE(p.product_id, pp.promotion_id) AS product_or_promotion_id,
+        COALESCE(p.product_name, pp.promotion_name) AS name,
+        od.quantity,
+        od.unit_price,
+        od.total_price,
+        COALESCE(p.product_image, pp.promotion_image) AS image
     FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
+    JOIN product_variant pv ON od.variant_id = pv.variant_id
+    LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
     WHERE od.order_id = ?
 ");
 $details_stmt->bind_param("i", $order_id);
@@ -89,8 +100,7 @@ $details_stmt->execute();
 $details_result = $details_stmt->get_result();
 
 $order_details = [];
-while ($detail = $details_result->fetch_assoc()) 
-{
+while ($detail = $details_result->fetch_assoc()) {
     $order_details[] = $detail;
 }
 
