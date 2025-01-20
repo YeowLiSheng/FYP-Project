@@ -810,7 +810,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
-            <?php renderOrders($completed_orders); ?>
+            <?php renderOrders($complete_orders); ?>
         </div>
     </div>
 
