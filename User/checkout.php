@@ -1638,9 +1638,9 @@ function toggleAutofill() {
 
     if (autofillCheckbox.checked) {
         // Fill with saved data if checkbox is checked
-        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+		address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+		city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+		postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
 
         // Set the correct state in the dropdown
         const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
