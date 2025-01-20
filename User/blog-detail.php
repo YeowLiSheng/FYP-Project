@@ -41,6 +41,58 @@ if ($result && mysqli_num_rows($result) > 0) {
     echo "Blog not found.";
     exit();
 }
+
+
+
+	// Retrieve the user information
+	$user_id = $_SESSION['id'];
+	$result = mysqli_query($connect, "SELECT * FROM user WHERE user_id ='$user_id'"); // Changed $connect to $conn
+
+	// Check if the query was successful and fetch user data
+	if ($result && mysqli_num_rows($result) > 0) {
+		$user_data = mysqli_fetch_assoc($result);
+		$user_name = htmlspecialchars($user_data["user_name"]); // Get the user name
+		$user_email = $user_data['user_email'];
+	} else {
+		echo "User not found.";
+		exit;
+	}
+
+	// Initialize total_price before fetching cart items
+	$total_price = 0;
+
+	// Fetch and combine cart items for the logged-in user where the product_id is the same
+	// Fetch and combine cart items with stock information
+	$cart_items_query = "
+		SELECT sc.product_id, p.product_name, p.product_image, p.product_price, p.product_stock, 
+			sc.color, sc.size,    
+			SUM(sc.qty) AS total_qty, 
+			SUM(sc.qty * p.product_price) AS total_price, 
+			MAX(sc.final_total_price) AS final_total_price, 
+			MAX(sc.voucher_applied) AS voucher_applied
+		FROM shopping_cart sc 
+		JOIN product p ON sc.product_id = p.product_id 
+		WHERE sc.user_id = $user_id 
+		GROUP BY sc.product_id, sc.color, sc.size";
+	$cart_items_result = $connect->query($cart_items_query);
+
+	// Calculate total price and final total price
+	if ($cart_items_result && $cart_items_result->num_rows > 0) {
+		while ($cart_item = $cart_items_result->fetch_assoc()) {
+			$total_price += $cart_item['total_price'];
+		}
+	}
+
+	// Count distinct product IDs in the shopping cart for the logged-in user
+	$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
+	$distinct_products_result = $connect->query($distinct_products_query);
+	$distinct_count = 0;
+
+	if ($distinct_products_result) {
+		$row = $distinct_products_result->fetch_assoc();
+		$distinct_count = $row['distinct_count'] ?? 0;
+	}
+
 ?>
 
 
@@ -198,8 +250,10 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 </style>
 
+
 <body class="animsition">
 	
+	<!-- Header -->
 	<!-- Header -->
 	<header class="header-v4">
 		<!-- Header desktop -->
@@ -207,30 +261,33 @@ if ($result && mysqli_num_rows($result) > 0) {
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 300px;"></span> 
+							New user will get 10% discount!!!<span style="padding-left: 300px;"></span>
+							Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+							<span style="padding-left: 300px;"></span> Free shipping for standard order over $10000 
+							<span style="padding-left: 300px;"></span> New user will get 10% discount!!! 
+							<span style="padding-left: 300px;"></span> Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+							@keyframes marquee {
+								0% {
+									transform: translateX(0);
+								}
+								100% {
+									transform: translateX(-55%);
+								}
+							}
+						</style>
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
+						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
 							Help & FAQs
 						</a>
 
-                        <?php if (isset($_SESSION['id'])): ?>
-						<!-- If logged in, show "Hi [username]" and "Log Out" links -->
-						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
-							Hi <?php echo $user_name; ?>
-						</a>
-
-						<a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
-							LOG OUT
-						</a>
-					<?php else: ?>
-						<!-- If not logged in, show "My Account" link -->
-						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
-					<?php endif; ?>
-
-                    
+						
 
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
@@ -239,52 +296,64 @@ if ($result && mysqli_num_rows($result) > 0) {
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							USD
 						</a>
+
+
+
+
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+								echo "HI '" . htmlspecialchars($user_data['user_name']);
+                            ?>
+                        </a>
+
+
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+							LOG OUT
+						</a>
+
+
+
 					</div>
 				</div>
 			</div>
-
-
-
-           
 
 			<div class="wrap-menu-desktop how-shadow1">
 				<nav class="limiter-menu-desktop container">
 					
 					<!-- Logo desktop -->		
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
 							<li>
-								<a href="index.html">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
-							</li>
-
-							<li>
-								<a href="product.html">Shop</a>
-							</li>
-
-							<li class="label1" data-label1="hot">
-								<a href="shoping-cart.html">Features</a>
+								<a href="dashboard.php">Home</a>
 							</li>
 
 							<li class="active-menu">
-								<a href="blog.html">Blog</a>
+								<a href="product.php">Shop</a>
+							</li>
+
+                            <li>
+								<a href="package.php">Packages</a>
+							</li>
+
+							<li class="label1" data-label1="hot">
+								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="about.php">About</a>
+							</li>
+
+							<li>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
 					</div>	
@@ -295,125 +364,16 @@ if ($result && mysqli_num_rows($result) > 0) {
 							<i class="zmdi zmdi-search"></i>
 						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="2">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0">
+						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
 							<i class="zmdi zmdi-favorite-outline"></i>
 						</a>
 					</div>
 				</nav>
 			</div>	
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->		
-			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="2">
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-
-                        <?php if (isset($_SESSION['id'])): ?>
-						<!-- If logged in, show "Hi [username]" and "Log Out" links -->
-						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
-							Hi <?php echo $user_name; ?>
-						</a>
-
-						<a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
-							LOG OUT
-						</a>
-					<?php else: ?>
-						<!-- If not logged in, show "My Account" link -->
-						<a href="login.php" class="flex-c-m trans-04 p-lr-25" id="myAccount">My Account</a>
-					<?php endif; ?>
-
-
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="index.html">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.html">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.html" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
-				</li>
-			</ul>
 		</div>
 
 		<!-- Modal Search -->
@@ -433,90 +393,71 @@ if ($result && mysqli_num_rows($result) > 0) {
 		</div>
 	</header>
 
-	<!-- Cart -->
-	<div class="wrap-header-cart js-panel-cart">
-		<div class="s-full js-hide-cart"></div>
+<!-- Cart -->
+<div class="wrap-header-cart js-panel-cart">
+    <div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+    <div class="header-cart flex-col-l p-l-65 p-r-25">
+        <div class="header-cart-title flex-w flex-sb-m p-b-8">
+            <span class="mtext-103 cl2">
+                Your Cart
+            </span>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-					<i class="zmdi zmdi-close"></i>
-				</div>
-			</div>
-			
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full">
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-01.jpg" alt="IMG">
-						</div>
+            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                <i class="zmdi zmdi-close"></i>
+            </div>
+        </div>
+        
+        <div class="header-cart-content flex-w js-pscroll">
+            <ul class="header-cart-wrapitem w-full" id="cart-items">
+                <?php
+                // Display combined cart items
+                $total_price = 0;
+                if ($cart_items_result->num_rows > 0) {
+                    while($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $cart_item['product_name'] . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                </span>
+                            </div>
+                        </li>';
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
+            </ul>
+            
+            <div class="w-full">
+                <div class="header-cart-total w-full p-tb-40">
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                </div>
 
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								White Shirt Pleat
-							</a>
+                <div class="header-cart-buttons flex-w w-full">
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        View Cart
+                    </a>
 
-							<span class="header-cart-item-info">
-								1 x $19.00
-							</span>
-						</div>
-					</li>
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                        Check Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-02.jpg" alt="IMG">
-						</div>
 
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Converse All Star
-							</a>
 
-							<span class="header-cart-item-info">
-								1 x $39.00
-							</span>
-						</div>
-					</li>
-
-					<li class="header-cart-item flex-w flex-t m-b-12">
-						<div class="header-cart-item-img">
-							<img src="images/item-cart-03.jpg" alt="IMG">
-						</div>
-
-						<div class="header-cart-item-txt p-t-8">
-							<a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-								Nixon Porter Leather
-							</a>
-
-							<span class="header-cart-item-info">
-								1 x $17.00
-							</span>
-						</div>
-					</li>
-				</ul>
-				
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
-					</div>
-
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
-
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
 <!-- Content page -->
 <section class="bg0 p-t-52 p-b-20">
     <div class="container">
@@ -588,6 +529,8 @@ if ($result && mysqli_num_rows($result) > 0) {
         </div>
     </div>
 </section>
+
+	
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
@@ -780,46 +723,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
-
+	
 </body>
 </html>
-
-
-
-<?php
-// Process form submission for comments
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = mysqli_real_escape_string($connect, $_POST['email']);
-    $name = mysqli_real_escape_string($connect, $_POST['name']);
-    $comment = mysqli_real_escape_string($connect, $_POST['comment']);
-    
-    // Assuming $blog_id is dynamically set or passed as a parameter (e.g., via GET)
-    $blog_id = $_GET['id'];  // Get the blog_id from the URL or set it based on the context
-
-    $insert_sql = "INSERT INTO blog_comment (blog_id, user_email, user_name, comment) 
-                   VALUES ('$blog_id', '$email', '$name', '$comment')";
-    if (mysqli_query($connect, $insert_sql)) {
-        echo "<!DOCTYPE html>
-        <html>
-        <head>
-            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-        </head>
-        <body>
-            <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Comment submitted successfully!',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = 'blog-detail.php?id=" . $blog_id . "'; // Redirect to dynamic blog-detail.php based on blog_id
-                });
-            </script>
-        </body>
-        </html>";
-    } else {
-        echo "Error: " . mysqli_error($connect);
-    }
-}
-?>
-
