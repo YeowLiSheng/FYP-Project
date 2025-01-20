@@ -132,7 +132,7 @@ $stmt = $connect->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $connect->error); 
 }
-$stmt->bind_param("i", var: $product_id);
+$stmt->bind_param("i", var: $variant_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
 
