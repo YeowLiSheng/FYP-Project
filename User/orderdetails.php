@@ -1,5 +1,5 @@
 <?php
-session_start();  // 启动会话
+session_start();  
 
 // Connect to the database
 $servername = "localhost";
@@ -9,10 +9,10 @@ $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// 设置字符集
+
 $conn->set_charset("utf8mb4");
 
-// 检查连接
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -26,13 +26,13 @@ if (!isset($_SESSION['id'])) {
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 
-// 使用预处理语句来防止 SQL 注入
+
 $stmt = $conn->prepare("SELECT * FROM user WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user_result = $stmt->get_result();
 
-// 获取用户信息
+
 if ($user_result && $user_result->num_rows > 0) {
     $user = $user_result->fetch_assoc();
 } else {
@@ -40,14 +40,14 @@ if ($user_result && $user_result->num_rows > 0) {
     exit;
 }
 
-// 获取当前用户的详细信息（动态获取用户ID）
+
 $current_user_id = $_SESSION['id']; 
 $current_user_query = $conn->prepare("SELECT user_name, user_image FROM user WHERE user_id = ?");
 $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
-// 获取订单 ID
+
 if (!isset($_GET['order_id'])) {
     echo "Invalid order ID.";
     exit;
@@ -55,9 +55,9 @@ if (!isset($_GET['order_id'])) {
 
 
 
-$order_id = intval($_GET['order_id']); // 或使用适当的获取方式
+$order_id = intval($_GET['order_id']); 
 
-// 使用预处理语句获取订单信息
+
 $order_stmt = $conn->prepare("
     SELECT o.order_id, o.order_date, o.Grand_total, o.discount_amount,
            o.final_amount, o.order_status, o.shipping_address, o.shipping_method, o.user_message,
@@ -77,7 +77,7 @@ if ($order_result->num_rows === 0) {
 
 $order = $order_result->fetch_assoc();
 
-// 获取订单详情
+
 $details_stmt = $conn->prepare("
     SELECT 
         od.detail_id,
@@ -105,14 +105,14 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $product_id = intval($_POST['product_id']);
+    $product_id = intval($_POST['product_or_promotion_id']);
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
-    // 获取 detail_id
-    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_id = ? AND order_id = ?");
+    
+    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_or_promotion_id = ? AND order_id = ?");
     $detail_query->bind_param("ii", $product_id, $order_id);
     $detail_query->execute();
     $detail_result = $detail_query->get_result();
@@ -906,9 +906,9 @@ textarea {
                 <select id="productSelect" name="product_id" required>
                     <option value="" disabled selected>Select a product</option>
                     <?php foreach ($order_details as $detail) { ?>
-                        <option value="<?= $detail['product_id'] ?>" 
-                                data-img="images/<?= $detail['product_image'] ?>">
-                            <?= $detail['product_name'] ?>
+                        <option value="<?= $detail['product_or_promotion_id'] ?>" 
+                                data-img="images/<?= $detail['image'] ?>">
+                            <?= $detail['name'] ?>
                         </option>
                     <?php } ?>
                 </select>
