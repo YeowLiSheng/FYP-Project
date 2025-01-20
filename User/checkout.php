@@ -1144,23 +1144,23 @@ if ($paymentSuccess) {
     }
 
 
-	$address = $autofillChecked ? $address['address'] : $_POST['address'];
-    $city = $autofillChecked ? $address['city'] : $_POST['city'];
-    $state = $autofillChecked ? $address['state'] : $_POST['state'];
-    $postcode = $autofillChecked ? $address['postcode'] : $_POST['postcode'];
-	$shippingAddress = "{$address}, {$postcode}, {$city}, {$state}";
+	$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
+if ($use_autofill && $address) {
+    // 如果启用了自动填充，使用保存的地址
+    $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
+} else {
+    // 否则，使用用户手动输入的地址
+    $shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
+}
 
-    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
-
-    
-    $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($order_query);
-    $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
-    if (!$stmt->execute()) {
-        die("Error inserting into orders table: " . $stmt->error);
-    }
-
+// 插入订单到数据库
+$order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
+$stmt = $conn->prepare($order_query);
+$stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
+if (!$stmt->execute()) {
+    die("Error inserting into orders table: " . $stmt->error);
+}
     $order_id = $stmt->insert_id;
 
     foreach ($cart_result as $item) {
@@ -1624,7 +1624,7 @@ if ($paymentSuccess) {
 
 	<script>
 
-function toggleAutofill() { 
+function toggleAutofill() {
     const autofillCheckbox = document.getElementById('autofill-checkbox');
     const address = document.getElementById('address');
     const city = document.getElementById('city');
@@ -1632,27 +1632,49 @@ function toggleAutofill() {
     const postcode = document.getElementById('postcode');
 
     if (autofillCheckbox.checked) {
-        // Fill with saved data if checkbox is checked
-		address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-		city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-		postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+        // 填充保存的数据
+        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
 
-        // Set the correct state in the dropdown
-		const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
         if (savedState) {
-            const options = Array.from(state.options);
-            const matchingOption = options.find(option => option.value === savedState);
-            if (matchingOption) {
-                state.value = savedState;
-            }
+            state.value = savedState;
         }
-		
-    } 
-	
+
+        // 禁用字段
+        address.disabled = true;
+        city.disabled = true;
+        postcode.disabled = true;
+        state.disabled = true;
+    } else {
+        // 清空字段以便用户手动输入
+        address.value = "";
+        city.value = "";
+        state.value = "";
+        postcode.value = "";
+
+        // 启用字段
+        address.disabled = false;
+        city.disabled = false;
+        postcode.disabled = false;
+        state.disabled = false;
+    }
 }
 
-
-
+// 提交前启用禁用字段
+document.querySelector("form").addEventListener("submit", function () {
+    const autofillCheckbox = document.getElementById('autofill-checkbox');
+    const addressFields = ['address', 'city', 'state', 'postcode'];
+    if (!autofillCheckbox.checked) {
+        addressFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field.disabled) {
+                field.disabled = false;
+            }
+        });
+    }
+});
 
 		function formatExpiryDate(input) {
     let value = input.value.replace(/\D/g, ""); // 移除非数字字符
