@@ -486,11 +486,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li class="active-menu">
@@ -601,11 +596,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			<ul class="main-menu-m">
 				<li>
 					<a href="dashboard.php">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
+				
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
@@ -749,7 +740,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         <div class="tabs">
             <button id="All-tab" onclick="showTab('All')" class="active">All</button>
             <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
-            <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
+            <button id="Shipping-tab" onclick="showTab('Shipping')">Shipping</button>
             <button id="Complete-tab" onclick="showTab('Complete')">Complete</button>
         </div>
 
