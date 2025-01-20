@@ -1835,9 +1835,9 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 			}, 2000);
 		}
 
-		function goToDashboard() {
-			window.location.href = 'dashboard.php';
-		}
+		//function goToDashboard() {
+		//	window.location.href = 'dashboard.php';
+		//}
 
 
 // JavaScript for Pagination with Shopee-like design
