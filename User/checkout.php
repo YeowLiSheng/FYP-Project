@@ -214,9 +214,9 @@ unset($_SESSION['errorMessages']);
 	
 	}?>
 	<script>
-	window.onload = function() {
-	confirmPayment();
-	}
+	//window.onload = function() {
+	//confirmPayment();
+	//}
 	</script>
 	<?php endif; ?>			
 
