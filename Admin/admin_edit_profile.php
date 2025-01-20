@@ -306,7 +306,7 @@ body {
             cursor: pointer;
             position: absolute; /* Allows precise positioning */
             margin-top: -55px; /* Adjust top distance */
-            right: 480px; /* Align to the right */
+            right: 580px; /* Align to the right */
         }
 
         /* Hover effect */

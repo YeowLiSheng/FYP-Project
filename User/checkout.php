@@ -29,10 +29,18 @@ if ($user_result && mysqli_num_rows($user_result) > 0) {
 	exit;
 }
 
-// Fetch the address information if available
+
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
-	$address = mysqli_fetch_assoc($address_result);
+    $address = mysqli_fetch_assoc($address_result);
+} else {
+
+    $address = [
+        'address' => '',
+        'city' => '',
+        'state' => '',
+        'postcode' => ''
+    ];
 }
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
@@ -94,6 +102,7 @@ $paymentSuccess = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+	
     $cardHolderName = isset($_POST['cardHolderName']) ? $_POST['cardHolderName'] : '';
     $cardNum = isset($_POST['cardNum']) ? $_POST['cardNum'] : '';
     $expiryDate = isset($_POST['expiry-date']) ? $_POST['expiry-date'] : '';
@@ -247,7 +256,6 @@ unset($_SESSION['errorMessages']);
 	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
 	<!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
-	<link rel="stylesheet" href="css/checkout.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<!--===============================================================================================-->
 
@@ -258,7 +266,276 @@ unset($_SESSION['errorMessages']);
 </head>
 
 <style>
-        
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Reset styles */
+.checkout-reset * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Root container for centering the layout */
+.checkout-root {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background: #f5f5f5; /* Light background for the entire page */
+    padding: 20px 0; /* Space around the main content */
+}
+
+/* Main content container, aligning with the header width */
+.checkout-container {
+    width: 100%;
+    max-width: 1200px; /* Adjust to match header width */
+    background: #fff; /* White background for content */
+    border-radius: 8px; /* Soft rounding for a cleaner look */
+    margin-left: 135px;
+    padding: 40px; /* Internal padding for comfortable spacing */
+}
+
+/* Layout for the form rows and columns */
+.checkout-row {
+    display: flex;
+    flex-wrap: wrap; /* Allows responsiveness on smaller screens */
+    gap: 20px;
+    align-items:  flex-start;
+}
+
+.checkout-column {
+    flex: 1 1 30%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    
+}
+
+
+/* Section titles */
+.checkout-title {
+    font-size: 20px;
+    color: #333;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Input boxes styling */
+.checkout-input-box {
+    margin: 15px 0;
+    position: relative;
+
+}
+
+.checkout-input-box span {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+.checkout-input-box input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.checkout-input-box input:focus {
+    border-color: #8175d3; /* Highlighted border on focus */
+    outline: none;
+}
+
+/* Style the autofill checkbox */
+.autofill-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between checkbox and label */
+    margin-top: 15px;
+    margin-left: 5px; /* Align with State field */
+}
+
+.autofill-checkbox input[type="checkbox"] {
+    transform: scale(1.2); /* Slightly enlarge checkbox */
+}
+
+.autofill-checkbox label {
+    font-size: 15px;
+    color: #555;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+
+
+
+/* Order summary and item styling */
+.checkout-order-summary {
+    font-size: 16px;
+    color: #333;
+    margin-left: 20px;
+}
+
+.checkout-order-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.checkout-order-item img {
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    object-fit: cover;
+}
+
+/* Total summary section */
+.checkout-order-totals {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    margin-top: 20px;
+}
+
+.checkout-order-totals p {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.checkout-order-totals .checkout-total {
+    font-weight: bold;
+    color: #333;
+}
+
+
+/* Styling for accepted card images */
+.checkout-input-box img {
+    width: 100px;
+    height: auto;
+    margin-top: 5px;
+    filter: drop-shadow(0 0 1px #000);
+}
+
+.checkout-btn, .ok-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.checkout-btn:hover, .ok-btn:hover {
+    background-color: #45a049;
+}
+
+/* Overlay background covering the entire screen */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* Popup content */
+.popup {
+    text-align: center;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading spinner */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 0.8s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Show overlay when active */
+.overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Payment success animation */
+.success-icon {
+    font-size: 50px;
+    color: #4CAF50;
+    animation: pop-in 0.4s ease;
+}
+
+.success-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4CAF50;
+    margin-top: 10px;
+    animation: fade-in 0.5s ease;
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.ok-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    transition: background 0.3s;
+}
+
+.ok-btn:hover {
+    background: linear-gradient(45deg, #45a049, #4CAF50);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .checkout-row {
+        flex-direction: column;
+    }
+}
+    
 /* Payment button styling */
 .checkout-btn {
     width: 100%;
@@ -320,6 +597,19 @@ unset($_SESSION['errorMessages']);
     flex: 1; /* 缩小 state 输入框的大小 */
 }
 
+.checkout-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px; /* 可根据需要调整间距 */
+}
+
+.checkout-input-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Pagination container positioned at the bottom-right */
 .pagination-controls {
     display: flex;
@@ -361,6 +651,9 @@ unset($_SESSION['errorMessages']);
     cursor: not-allowed;
     background-color: #f9f9f9;
 }
+
+
+
     </style>
 
 <body class="animsition">
@@ -711,10 +1004,10 @@ unset($_SESSION['errorMessages']);
 							</select>
 							</div>
 							<div class="checkout-input-box">
-    <span class="required">Postcode :</span>
-    <input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
-        pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
-</div>
+    						<span class="required">Postcode :</span>
+    							<input type="text" name="postcode" id="postcode" placeholder="12345" minlength="5" maxlength="5" 
+        						pattern="\d{5}" title="Please enter exactly 5 digits number" autocomplete="off" required>
+							</div>
 						</div>
 
 						<?php if (!empty($address)): ?>
@@ -835,33 +1128,37 @@ unset($_SESSION['errorMessages']);
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // 计算 Grand Total 和 Final Amount
+
     $grand_total = 0;
-    foreach ($cart_result as $item) {
-        $grand_total += $item['item_total_price']; // 累加每个商品的总价
+    foreach ($cart_result as $item) 
+	{
+        $grand_total += $item['item_total_price']; 
     }
 
-    // 计算 Final Amount
-    $final_amount = $grand_total - $discount_amount; // 扣除折扣后的最终支付金额
+    
+    $final_amount = $grand_total - $discount_amount; 
 
-    // 确认变量值
+
     if ($grand_total <= 0 || $final_amount <= 0) {
         die("Error: Invalid grand total or final amount!");
     }
 
-   // 判断用户是否使用了自动填充的地址
+
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
 if ($use_autofill && $address) {
-    // 如果勾选了自动填充，使用保存的地址
+
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
 } else {
-    // 否则使用用户手动输入的地址
-    $shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
-}
-    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
+   
+	$shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
 
-    // 插入 `orders` 表
+}
+
+
+    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
+
+    
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
     $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
@@ -869,15 +1166,13 @@ if ($use_autofill && $address) {
         die("Error inserting into orders table: " . $stmt->error);
     }
 
-    // 获取插入订单的ID
     $order_id = $stmt->insert_id;
 
-    // 插入 `order_details` 表
     foreach ($cart_result as $item) {
-        $variant_id = $item['variant_id']; // 从购物车中获取 variant_id
-        $quantity = $item['total_qty']; // 商品数量
-        $unit_price = $item['product_price']; // 单价
-        $total_price = $item['item_total_price']; // 总价
+        $variant_id = $item['variant_id'];
+        $quantity = $item['total_qty'];
+        $unit_price = $item['product_price'];
+        $total_price = $item['item_total_price']; 
 
         $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
@@ -887,7 +1182,6 @@ if ($use_autofill && $address) {
         }
     }
 
-    // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
@@ -895,7 +1189,6 @@ if ($use_autofill && $address) {
         die("Error clearing shopping cart: " . $clear_cart_stmt->error);
     }
 
-    // 插入 `payment` 表
     $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
     $payment_stmt = $conn->prepare($payment_query);
@@ -904,7 +1197,6 @@ if ($use_autofill && $address) {
         die("Error inserting into payment table: " . $payment_stmt->error);
     }
 
-    // 确认订单成功
     echo "Order placed successfully!";
 }
 ?>
@@ -1359,10 +1651,11 @@ function toggleAutofill() {
                 state.value = savedState;
             }
         }
-		 // Set fields to readonly
-		address.readOnly = true;
-        city.readOnly = true;
-        postcode.readOnly = true;
+
+        // Disable fields
+        address.disabled = true;
+        city.disabled = true;
+        postcode.disabled = true;
         state.disabled = true;
     } else {
         // Clear fields for manual input if checkbox is unchecked
@@ -1371,25 +1664,33 @@ function toggleAutofill() {
         state.value = "";
         postcode.value = "";
 
-		 // Remove readonly attribute
-		 address.readOnly = false;
-        city.readOnly = false;
-        postcode.readOnly = false;
+        // Enable fields
+        address.disabled = false;
+        city.disabled = false;
+        postcode.disabled = false;
         state.disabled = false;
     }
 }
+
+// Enable disabled fields before form submission
+document.querySelector("form").addEventListener("submit", function () {
+    document.getElementById('address').disabled = false;
+    document.getElementById('city').disabled = false;
+    document.getElementById('state').disabled = false;
+    document.getElementById('postcode').disabled = false;
+});
 
 
 
 		function formatExpiryDate(input) {
     let value = input.value.replace(/\D/g, ""); // 移除非数字字符
 
-    // 插入 '/' 在两位数字之后
+
     if (value.length > 2) {
         value = value.slice(0, 2) + '/' + value.slice(2, 4);
     }
 
-    // 限制输入长度为5个字符（MM/YY）
+
     input.value = value.slice(0, 5);
 }
 
@@ -1397,23 +1698,23 @@ document.getElementById('expiry-date').addEventListener('input', function () {
     const input = this.value;
     const error = document.getElementById('expiry-error');
 
-    // 检查输入是否匹配 MM/YY 格式
+
     const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!datePattern.test(input)) {
         error.style.display = 'none';
         return;
     }
 
-    // 解析输入的月份和年份
+    
     const [month, year] = input.split('/').map(Number);
-    const currentYear = new Date().getFullYear() % 100; // 取当前年份的后两位数字
-    const currentMonth = new Date().getMonth() + 1; // 月份是从0开始的
+    const currentYear = new Date().getFullYear() % 100; 
+    const currentMonth = new Date().getMonth() + 1; 
 
-    // 检查输入的日期是否有效且未过期
+   
     if (year > currentYear || (year === currentYear && month >= currentMonth)) {
-        error.style.display = 'none'; // 如果有效则隐藏错误信息
+        error.style.display = 'none'; 
     } else {
-        error.style.display = 'block'; // 显示错误信息
+        error.style.display = 'block'; 
     }
 });
 
