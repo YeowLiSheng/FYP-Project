@@ -1143,10 +1143,27 @@ $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'
 
 if ($use_autofill && $address) {
     // Use saved address
-    $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
+    $address_parts = array_filter([
+        $address['address'] ?? '',
+        $address['postcode'] ?? '',
+        $address['city'] ?? '',
+        $address['state'] ?? ''
+    ]);
+    $shipping_address = implode(', ', $address_parts);
 } else {
     // Use user input
-    $shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
+    $address_parts = array_filter([
+        trim($_POST['address'] ?? ''),
+        trim($_POST['postcode'] ?? ''),
+        trim($_POST['city'] ?? ''),
+        trim($_POST['state'] ?? '')
+    ]);
+    $shipping_address = implode(', ', $address_parts);
+}
+
+// Ensure the shipping address is not empty
+if (empty($shipping_address)) {
+    die("Error: Shipping address cannot be empty!");
 }
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
@@ -1622,7 +1639,7 @@ if ($use_autofill && $address) {
 
 	<script>
 
-function toggleAutofill() { 
+function toggleAutofill() {
     const autofillCheckbox = document.getElementById('autofill-checkbox');
     const address = document.getElementById('address');
     const city = document.getElementById('city');
@@ -1670,15 +1687,7 @@ document.querySelector("form").addEventListener("submit", function () {
             field.disabled = false;
         }
     });
-});
-
-// Enable disabled fields before form submission
-document.querySelector("form").addEventListener("submit", function () {
-    document.getElementById('address').disabled = false;
-    document.getElementById('city').disabled = false;
-    document.getElementById('state').disabled = false;
-    document.getElementById('postcode').disabled = false;
-});
+})
 
 
 		function formatExpiryDate(input) {
