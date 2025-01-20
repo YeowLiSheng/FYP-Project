@@ -114,6 +114,7 @@ if (isset($_GET["submitbtn"])) {
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
     <title>Forget Password</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>

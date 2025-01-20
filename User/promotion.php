@@ -674,22 +674,21 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                                 '</a>
                                                 <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
                                                 ' . $message . '
-                                            </div>
-                                        </div>    
+                                            </div>  
                                             <!-- Color circles placed here -->
                                             <div class="block2-txt-child2 flex-r p-t-3">';
-                            foreach ($colors as $index => $color) {
-                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
-                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
-                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
-                                        data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
-                                        <i class="zmdi ' . $iconClass . '"></i>
-                                    </span>';
-                            }
-
-                            echo '</div>
+                                            foreach ($colors as $index => $color) {
+                                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                                        data-image="images/' . $color['image'] . '" data-product-id="' . $promotion_id . '">
+                                                        <i class="zmdi ' . $iconClass . '"></i>
+                                                    </span>';
+                                            }
+                                echo '</div>
                                 </div>
-                            </div>';
+                            </div>
+                        </div>';
                         }
                     } else {
                         echo "<p>No products found.</p>";
@@ -793,7 +792,8 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     </span>';
                             }
 
-                            echo '      </div>
+                            echo '</div>
+                                </div>
                                 </div>
                             </div>';
                     }
@@ -899,6 +899,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                 }
 
                                 echo '</div>
+                                    </div>
                                     </div>
                                 </div>';
                         }
