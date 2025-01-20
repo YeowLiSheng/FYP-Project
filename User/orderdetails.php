@@ -903,7 +903,7 @@ textarea {
             <!-- 产品选择 -->
             <label for="productSelect">Select Product:</label>
             <div class="product-select-container">
-                <select id="productSelect" name="product_id" required>
+                <select id="productSelect" name="variant_id" required>
                     <option value="" disabled selected>Select a product</option>
                     <?php foreach ($order_details as $detail) { ?>
                         <option value="<?= $detail['product_or_promotion_id'] ?>" 
