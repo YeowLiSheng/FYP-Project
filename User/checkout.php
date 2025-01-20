@@ -41,23 +41,22 @@ $cart_query = "
         p.product_id,
         p.product_name, 
         p.product_price,
-        pv.variant_id,
+		pv.variant_id,
         pv.color, 
         pv.size, 
         pv.Quick_View1 AS product_image,
         SUM(sc.qty) AS total_qty, 
-        (p.product_price * SUM(sc.qty)) AS item_total_price,
-        pv.promotion_id,   -- Added to get promotion info
-        pp.promotion_name, -- Join with promotion_product table to get promotion details
-        pp.promotion_price AS promotion_price -- Promotion price if applicable
+    	(IF(pv.promotion_id IS NOT NULL, pp.promotion_price, p.product_price) * SUM(sc.qty)) AS item_total_price
+		
     FROM 
         shopping_cart AS sc
     JOIN 
         product_variant AS pv ON sc.variant_id = pv.variant_id
+	LEFT JOIN 
+    	promotion_product AS pp ON pv.promotion_id = pp.promotion_id
+
     JOIN 
         product AS p ON pv.product_id = p.product_id
-    LEFT JOIN 
-        promotion_product AS pp ON pv.promotion_id = pp.promotion_id  -- LEFT JOIN to include promotion if it exists
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
