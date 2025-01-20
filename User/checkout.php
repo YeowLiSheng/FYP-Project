@@ -1681,7 +1681,6 @@ document.querySelector("form").addEventListener("submit", function () {
 });
 
 
-
 		function formatExpiryDate(input) {
     let value = input.value.replace(/\D/g, ""); // 移除非数字字符
 
