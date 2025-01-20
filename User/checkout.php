@@ -1136,13 +1136,16 @@ if ($paymentSuccess) {
     }
 
 
-	$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
-	if ($use_autofill && $address) {
-		$shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
-	} else {
-		$shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
-	}
+// Check if the autofill checkbox is selected
+$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
+if ($use_autofill && $address) {
+    // Use saved address
+    $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
+} else {
+    // Use user input
+    $shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
+}
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
 
@@ -1625,40 +1628,47 @@ function toggleAutofill() {
     const postcode = document.getElementById('postcode');
 
     if (autofillCheckbox.checked) {
-        // Fill with saved data if checkbox is checked
-		address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
-		city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
-		postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
+        // Autofill fields with saved address data
+        address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
+        city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
+        postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
 
         // Set the correct state in the dropdown
-		const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
         if (savedState) {
-            const options = Array.from(state.options);
-            const matchingOption = options.find(option => option.value === savedState);
-            if (matchingOption) {
-                state.value = savedState;
-            }
+            state.value = savedState;
         }
 
-        // Disable fields
+        // Disable fields to prevent modification
         address.disabled = true;
         city.disabled = true;
-        postcode.disabled = true;
         state.disabled = true;
+        postcode.disabled = true;
     } else {
-        // Clear fields for manual input if checkbox is unchecked
+        // Enable fields for manual input
+        address.disabled = false;
+        city.disabled = false;
+        state.disabled = false;
+        postcode.disabled = false;
+
+        // Clear input fields
         address.value = "";
         city.value = "";
         state.value = "";
         postcode.value = "";
-
-        // Enable fields
-        address.disabled = false;
-        city.disabled = false;
-        postcode.disabled = false;
-        state.disabled = false;
     }
 }
+
+// Enable all disabled fields before form submission
+document.querySelector("form").addEventListener("submit", function () {
+    const fields = ['address', 'city', 'state', 'postcode'];
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field.disabled) {
+            field.disabled = false;
+        }
+    });
+});
 
 // Enable disabled fields before form submission
 document.querySelector("form").addEventListener("submit", function () {
