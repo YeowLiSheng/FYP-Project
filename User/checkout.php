@@ -29,13 +29,12 @@ if ($user_result && mysqli_num_rows($user_result) > 0) {
 	exit;
 }
 
-// Fetch the address information if available
-// 获取用户地址信息（如果存在）
+
 $address = null;
 if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
 } else {
-    // 如果没有找到地址，可以设置默认空值
+
     $address = [
         'address' => '',
         'city' => '',
@@ -1129,37 +1128,37 @@ unset($_SESSION['errorMessages']);
 	</body>
 	<?php
 if ($paymentSuccess) {
-    // 计算 Grand Total 和 Final Amount
+
     $grand_total = 0;
     foreach ($cart_result as $item) 
 	{
-        $grand_total += $item['item_total_price']; // 累加每个商品的总价
+        $grand_total += $item['item_total_price']; 
     }
 
-    // 计算 Final Amount
-    $final_amount = $grand_total - $discount_amount; // 扣除折扣后的最终支付金额
+    
+    $final_amount = $grand_total - $discount_amount; 
 
-    // 确认变量值
+
     if ($grand_total <= 0 || $final_amount <= 0) {
         die("Error: Invalid grand total or final amount!");
     }
 
-   // 判断用户是否使用了自动填充的地址
+
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
 if ($use_autofill && $address) {
-    // 如果勾选了自动填充，使用保存的地址
+
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
 } else {
-    // 否则使用用户手动输入的地址
+   
 	$shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
 
 }
 
 
-    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; // 用户留言
+    $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
 
-    // 插入 `orders` 表
+    
     $order_query = "INSERT INTO orders (user_id, order_date, Grand_total, discount_amount, final_amount, shipping_address, user_message) VALUES (?, NOW(), ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($order_query);
     $stmt->bind_param("idddss", $user_id, $grand_total, $discount_amount, $final_amount, $shipping_address, $user_message);
@@ -1167,15 +1166,13 @@ if ($use_autofill && $address) {
         die("Error inserting into orders table: " . $stmt->error);
     }
 
-    // 获取插入订单的ID
     $order_id = $stmt->insert_id;
 
-    // 插入 `order_details` 表
     foreach ($cart_result as $item) {
-        $variant_id = $item['variant_id']; // 从购物车中获取 variant_id
-        $quantity = $item['total_qty']; // 商品数量
-        $unit_price = $item['product_price']; // 单价
-        $total_price = $item['item_total_price']; // 总价
+        $variant_id = $item['variant_id'];
+        $quantity = $item['total_qty'];
+        $unit_price = $item['product_price'];
+        $total_price = $item['item_total_price']; 
 
         $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
         $detail_stmt = $conn->prepare($detail_query);
@@ -1185,7 +1182,6 @@ if ($use_autofill && $address) {
         }
     }
 
-    // 清空购物车
     $clear_cart_query = "DELETE FROM shopping_cart WHERE user_id = ?";
     $clear_cart_stmt = $conn->prepare($clear_cart_query);
     $clear_cart_stmt->bind_param("i", $user_id);
@@ -1193,7 +1189,6 @@ if ($use_autofill && $address) {
         die("Error clearing shopping cart: " . $clear_cart_stmt->error);
     }
 
-    // 插入 `payment` 表
     $payment_query = "INSERT INTO payment (user_id, order_id, payment_amount, payment_status) VALUES (?, ?, ?, ?)";
     $payment_status = 'Completed'; 
     $payment_stmt = $conn->prepare($payment_query);
@@ -1202,7 +1197,6 @@ if ($use_autofill && $address) {
         die("Error inserting into payment table: " . $payment_stmt->error);
     }
 
-    // 确认订单成功
     echo "Order placed successfully!";
 }
 ?>
@@ -1658,11 +1652,7 @@ function toggleAutofill() {
             }
         }
 
-        // Disable fields
-        address.disabled = true;
-        city.disabled = true;
-        postcode.disabled = true;
-        state.disabled = true;
+   
     } else {
         // Clear fields for manual input if checkbox is unchecked
         address.value = "";
@@ -1670,33 +1660,23 @@ function toggleAutofill() {
         state.value = "";
         postcode.value = "";
 
-        // Enable fields
-        address.disabled = false;
-        city.disabled = false;
-        postcode.disabled = false;
-        state.disabled = false;
+      
     }
 }
 
-// Enable disabled fields before form submission
-document.querySelector("form").addEventListener("submit", function () {
-    document.getElementById('address').disabled = false;
-    document.getElementById('city').disabled = false;
-    document.getElementById('state').disabled = false;
-    document.getElementById('postcode').disabled = false;
-});
+
 
 
 
 		function formatExpiryDate(input) {
     let value = input.value.replace(/\D/g, ""); // 移除非数字字符
 
-    // 插入 '/' 在两位数字之后
+
     if (value.length > 2) {
         value = value.slice(0, 2) + '/' + value.slice(2, 4);
     }
 
-    // 限制输入长度为5个字符（MM/YY）
+
     input.value = value.slice(0, 5);
 }
 
@@ -1704,23 +1684,23 @@ document.getElementById('expiry-date').addEventListener('input', function () {
     const input = this.value;
     const error = document.getElementById('expiry-error');
 
-    // 检查输入是否匹配 MM/YY 格式
+
     const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
     if (!datePattern.test(input)) {
         error.style.display = 'none';
         return;
     }
 
-    // 解析输入的月份和年份
+    
     const [month, year] = input.split('/').map(Number);
-    const currentYear = new Date().getFullYear() % 100; // 取当前年份的后两位数字
-    const currentMonth = new Date().getMonth() + 1; // 月份是从0开始的
+    const currentYear = new Date().getFullYear() % 100; 
+    const currentMonth = new Date().getMonth() + 1; 
 
-    // 检查输入的日期是否有效且未过期
+   
     if (year > currentYear || (year === currentYear && month >= currentMonth)) {
-        error.style.display = 'none'; // 如果有效则隐藏错误信息
+        error.style.display = 'none'; 
     } else {
-        error.style.display = 'block'; // 显示错误信息
+        error.style.display = 'block'; 
     }
 });
 
