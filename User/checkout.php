@@ -1146,7 +1146,8 @@ if ($paymentSuccess) {
 
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
-if ($use_autofill && $address) {
+if ($use_autofill) 
+{
 
     $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
 } else {
@@ -1652,7 +1653,11 @@ function toggleAutofill() {
             }
         }
 
-   
+        // Disable fields
+        address.disabled = true;
+        city.disabled = true;
+        postcode.disabled = true;
+        state.disabled = true;
     } else {
         // Clear fields for manual input if checkbox is unchecked
         address.value = "";
@@ -1660,11 +1665,21 @@ function toggleAutofill() {
         state.value = "";
         postcode.value = "";
 
-      
+        // Enable fields
+        address.disabled = false;
+        city.disabled = false;
+        postcode.disabled = false;
+        state.disabled = false;
     }
 }
 
-
+// Enable disabled fields before form submission
+document.querySelector("form").addEventListener("submit", function () {
+    document.getElementById('address').disabled = false;
+    document.getElementById('city').disabled = false;
+    document.getElementById('state').disabled = false;
+    document.getElementById('postcode').disabled = false;
+});
 
 
 
