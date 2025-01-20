@@ -1646,36 +1646,12 @@ function toggleAutofill() {
                 state.value = savedState;
             }
         }
-		address.disabled = true;
-        city.disabled = true;
-        state.disabled = true;
-        postcode.disabled = true;
+		
     } 
-	else {
-        // Enable fields
-        address.disabled = false;
-        city.disabled = false;
-        state.disabled = false;
-        postcode.disabled = false;
-
-        // Clear autofilled values
-        address.value = '';
-        city.value = '';
-        postcode.value = '';
-        state.value = '';
-    }
+	
 }
 
-// Enable disabled fields before form submission
-document.querySelector("form").addEventListener("submit", function () {
-    const addressFields = ['address', 'city', 'state', 'postcode'];
-    addressFields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field.disabled) {
-            field.disabled = false; // Re-enable the field
-        }
-    });
-});
+
 
 
 		function formatExpiryDate(input) {
