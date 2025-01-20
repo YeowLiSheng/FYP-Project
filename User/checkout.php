@@ -35,37 +35,35 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = mysqli_fetch_assoc($address_result);
 } else {
 
-    $address = [
-        'address' => '',
-        'city' => '',
-        'state' => '',
-        'postcode' => ''
-    ];
+    $address = null;
 }
 
 // Retrieve unique products with total quantity and price in the cart for the logged-in user
 $cart_query = "
     SELECT 
-        p.product_id,
-        p.product_name, 
-        p.product_price,
-		pv.variant_id,
+        COALESCE(p.product_id, pp.promotion_id) AS item_id,
+        COALESCE(p.product_name, pp.promotion_name) AS item_name,
+        COALESCE(p.product_price, pp.promotion_price) AS item_price,
+        pv.variant_id,
         pv.color, 
         pv.size, 
         pv.Quick_View1 AS product_image,
         SUM(sc.qty) AS total_qty, 
-        (p.product_price * SUM(sc.qty)) AS item_total_price
+        (COALESCE(p.product_price, pp.promotion_price) * SUM(sc.qty)) AS item_total_price
     FROM 
         shopping_cart AS sc
     JOIN 
         product_variant AS pv ON sc.variant_id = pv.variant_id
-    JOIN 
+    LEFT JOIN 
         product AS p ON pv.product_id = p.product_id
+    LEFT JOIN 
+        promotion_product AS pp ON pv.promotion_id = pp.promotion_id
     WHERE 
         sc.user_id = '$user_id'
     GROUP BY 
         pv.variant_id
 ";
+
 
 $cart_result = mysqli_query($conn, $cart_query);
 
@@ -125,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $cart_result = mysqli_query($conn, $cart_query);
             while ($row = mysqli_fetch_assoc($cart_result)) {
                 $variant_id = $row['variant_id'];
-                $product_name = $row['product_name'];
+                $product_name = $row['item_name'];
                 $total_qty = $row['total_qty'];
 
                 // Get current stock
@@ -173,23 +171,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	}
 
 
-    // 保存状态到会话
-    $_SESSION['paymentSuccess'] = $paymentSuccess;
-    $_SESSION['errorMessages'] = $errorMessages;
 
-    // 重定向到当前页面
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
 }
 
-// 页面加载时检查会话信息
-$paymentSuccess = $_SESSION['paymentSuccess'] ?? null;
-$errorMessages = $_SESSION['errorMessages'] ?? [];
-
-// 清除会话数据
-unset($_SESSION['paymentSuccess']);
-unset($_SESSION['errorMessages']);
-	
 
 
 ?>
@@ -1069,13 +1053,12 @@ unset($_SESSION['errorMessages']);
 						$grand_total = 0;
 							
 						while ($row = mysqli_fetch_assoc($cart_result)):
-							$product_name = $row['product_name'];
-							$product_price = $row['product_price'];
-							$product_image = $row['product_image'];
-							$color=$row['color'];
-							$total_qty = $row['total_qty'];
-							$item_total_price = $row['item_total_price'];
-
+							$item_name = $row['item_name']; 
+							$item_price = $row['item_price'];
+							$product_image = $row['product_image']; 
+							$color = $row['color']; 
+							$total_qty = $row['total_qty']; 
+							$item_total_price = $row['item_total_price']; 
 
 							// Accumulate the grand total
 							$grand_total += $item_total_price;
@@ -1083,10 +1066,10 @@ unset($_SESSION['errorMessages']);
 							?>
 							<div class="checkout-order-item">
 								<img src="images/<?php echo htmlspecialchars($product_image); ?>"
-									alt="<?php echo htmlspecialchars($product_name); ?>">
+									alt="<?php echo htmlspecialchars($item_name); ?>">
 								<div>
-								<p><?php echo htmlspecialchars($product_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
-									<span>Price: RM<?php echo number_format($product_price, 2); ?></span><br>
+								<p><?php echo htmlspecialchars($item_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
+									<span>Price: RM<?php echo number_format($item_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
 									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
 								</div>
@@ -1144,17 +1127,17 @@ if ($paymentSuccess) {
     }
 
 
+
+// Check if the autofill checkbox is selected
 $use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
 
 if ($use_autofill && $address) {
-
-    $shipping_address = $address['address'] . ', ' . $address['postcode'] . ', ' . $address['city'] . ', ' . $address['state'];
+    // Use saved address
+    $shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
 } else {
-   
-	$shipping_address = $_POST['address'] . ', ' . $_POST['postcode'] . ', ' . $_POST['city'] . ', ' . $_POST['state'];
-
+    // Use user input
+    $shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
 }
-
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
 
@@ -1171,7 +1154,7 @@ if ($use_autofill && $address) {
     foreach ($cart_result as $item) {
         $variant_id = $item['variant_id'];
         $quantity = $item['total_qty'];
-        $unit_price = $item['product_price'];
+        $unit_price = $item['item_price'];
         $total_price = $item['item_total_price']; 
 
         $detail_query = "INSERT INTO order_details (order_id, variant_id, quantity, unit_price, total_price) VALUES (?, ?, ?, ?, ?)";
@@ -1637,7 +1620,7 @@ function toggleAutofill() {
     const postcode = document.getElementById('postcode');
 
     if (autofillCheckbox.checked) {
-        // Fill with saved data if checkbox is checked
+        // Autofill fields with saved address data
         address.value = "<?php echo htmlspecialchars($address['address'] ?? ''); ?>";
         city.value = "<?php echo htmlspecialchars($address['city'] ?? ''); ?>";
         postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
@@ -1645,40 +1628,29 @@ function toggleAutofill() {
         // Set the correct state in the dropdown
         const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
         if (savedState) {
-            const options = Array.from(state.options);
-            const matchingOption = options.find(option => option.value === savedState);
-            if (matchingOption) {
-                state.value = savedState;
-            }
+            state.value = savedState;
         }
 
-        // Disable fields
+        // Disable fields to prevent modification
         address.disabled = true;
         city.disabled = true;
-        postcode.disabled = true;
         state.disabled = true;
+        postcode.disabled = true;
     } else {
-        // Clear fields for manual input if checkbox is unchecked
+        // Enable fields for manual input
+        address.disabled = false;
+        city.disabled = false;
+        state.disabled = false;
+        postcode.disabled = false;
+
+        // Clear input fields
         address.value = "";
         city.value = "";
         state.value = "";
         postcode.value = "";
-
-        // Enable fields
-        address.disabled = false;
-        city.disabled = false;
-        postcode.disabled = false;
-        state.disabled = false;
     }
 }
 
-// Enable disabled fields before form submission
-document.querySelector("form").addEventListener("submit", function () {
-    document.getElementById('address').disabled = false;
-    document.getElementById('city').disabled = false;
-    document.getElementById('state').disabled = false;
-    document.getElementById('postcode').disabled = false;
-});
 
 
 
@@ -1814,7 +1786,13 @@ document.getElementById('expiry-date').addEventListener('input', function () {
             return false;
         }
     }
+	address.disabled = false;
+    city.disabled = false;
+    state.disabled = false;
+    postcode.disabled = false;
 
+    // 表单验证成功后提交表单
+    form.submit();
 			return true;
 		}
 

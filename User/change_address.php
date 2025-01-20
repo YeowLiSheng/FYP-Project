@@ -121,6 +121,7 @@ if (isset($_POST['submitbtn'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
     <meta charset="UTF-8">
     <title>Edit Address</title>
     <link rel="stylesheet" href="styles.css"> <!-- Link to the CSS file -->

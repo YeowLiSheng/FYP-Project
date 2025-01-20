@@ -76,6 +76,7 @@ if (isset($_POST['submitbtn'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="images/icons/favicon.png"/>
     <meta charset="UTF-8">
     <title>Add Address</title>
     <link rel="stylesheet" href="styles.css"> <!-- Add your CSS file -->
@@ -192,6 +193,24 @@ if (isset($_POST['submitbtn'])) {
                 font-size: 14px;
             }
         }
+
+     
+
+   
+
+    .form-group input[type="text"], .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #333;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+    }
+
+   
+   
     </style>
     <script>
         function validateForm() {
@@ -300,8 +319,26 @@ if (isset($_POST['submitbtn'])) {
 
     <div class="form-group">
         <label for="state">State</label>
-        <input type="text" id="state" name="state" >
-        <div class="error-message" id="state-error">Please enter your state.</div>
+        <select id="state" name="state">
+            <option value="">Select your state</option>
+            <option value="Johor" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Johor') ? 'selected' : ''; ?>>Johor</option>
+            <option value="Kedah" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Kedah') ? 'selected' : ''; ?>>Kedah</option>
+            <option value="Kelantan" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Kelantan') ? 'selected' : ''; ?>>Kelantan</option>
+            <option value="Malacca" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Malaca') ? 'selected' : ''; ?>>Malacca</option>
+            <option value="Negeri Sembilan" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Negeri Sembilan') ? 'selected' : ''; ?>>Negeri Sembilan</option>
+            <option value="Pahang" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Pahang') ? 'selected' : ''; ?>>Pahang</option>
+            <option value="Penang" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Penang') ? 'selected' : ''; ?>>Penang</option>
+            <option value="Perak" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Perak') ? 'selected' : ''; ?>>Perak</option>
+            <option value="Perlis" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Perlis') ? 'selected' : ''; ?>>Perlis</option>
+            <option value="Selangor" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Selangor') ? 'selected' : ''; ?>>Selangor</option>
+            <option value="Terengganu" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Terengganu') ? 'selected' : ''; ?>>Terengganu</option>
+            <option value="Kuala Lumpur" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Kuala Lumpur') ? 'selected' : ''; ?>>Kuala Lumpur</option>
+            <option value="Labuan" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Labuan') ? 'selected' : ''; ?>>Labuan</option>
+            <option value="Putrajaya" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Putrajaya') ? 'selected' : ''; ?>>Putrajaya</option>
+            <option value="Sabah" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Sabah') ? 'selected' : ''; ?>>Sabah</option>
+            <option value="Sarawak" <?php echo (isset($address_row['state']) && $address_row['state'] == 'Sarawak') ? 'selected' : ''; ?>>Sarawak</option>
+        </select>
+        <div class="error-message" id="state-error">Please select your state.</div>
     </div>
 
     <div class="form-group">
