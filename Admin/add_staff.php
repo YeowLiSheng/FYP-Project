@@ -99,7 +99,7 @@ include 'admin_sidebar.php';
             line-height: 40px;
             position: absolute;
             margin-top: -50px;
-            right: 490px;
+            right: 580px;
         }
         .close-btn:hover {
             background-color: #ff1a1a;
@@ -120,12 +120,12 @@ include 'admin_sidebar.php';
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="adminId" class="form-label">Admin ID</label>
-                    <input type="text" class="form-control" id="adminId" name="adminId">
+                    <input type="text" class="form-control" id="adminId" name="adminId" required >
                     <div id="check_id" class="text-danger">Admin ID is required</div>
                 </div>
                 <div class="col-md-6">
                     <label for="fullName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="fullName" name="fullName">
+                    <input type="text" class="form-control" id="fullName" name="fullName" required >
                     <div id="check_full" class="text-danger">Full Name must be at least 5 characters</div>
                 </div>
             </div>
