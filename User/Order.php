@@ -47,7 +47,7 @@ $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
-function fetchOrdersWithProducts($conn, $status = null) {
+function fetchOrdersWithProducts($conn, $user_id, $status = null) {
     $sql = "
         SELECT 
             o.order_id, 
@@ -71,29 +71,32 @@ function fetchOrdersWithProducts($conn, $status = null) {
         JOIN order_details od ON o.order_id = od.order_id
         JOIN product_variant pv ON od.variant_id = pv.variant_id
         LEFT JOIN product p ON pv.product_id = p.product_id
-        LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id";
-    
-    // Add condition to filter by status if provided
+        LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+        WHERE o.user_id = ?"; // 只显示当前用户的订单
+
+    // 如果提供了状态参数，添加状态过滤
     if ($status) {
-        $sql .= " WHERE o.order_status = ?";
+        $sql .= " AND o.order_status = ?";
     }
 
     $sql .= " GROUP BY o.order_id 
               ORDER BY o.order_date DESC";
-    
+
     $stmt = $conn->prepare($sql);
     if ($status) {
-        $stmt->bind_param("s", $status); // Bind the status parameter
+        $stmt->bind_param("is", $user_id, $status); // 绑定用户 ID 和状态
+    } else {
+        $stmt->bind_param("i", $user_id); // 仅绑定用户 ID
     }
     $stmt->execute();
     return $stmt->get_result();
 }
 
 // Fetch orders for each tab
-$all_orders = fetchOrdersWithProducts($conn);
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+$all_orders = fetchOrdersWithProducts($conn, $user_id);
+$processing_orders = fetchOrdersWithProducts($conn, $user_id, 'Processing');
+$shipping_orders = fetchOrdersWithProducts($conn, $user_id, 'Shipping');
+$completed_orders = fetchOrdersWithProducts($conn, $user_id, 'Completed');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     // 获取订单 ID
@@ -750,6 +753,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         <?php
        function renderOrders($orders, $showCompleteButton = false) {
 		if ($orders->num_rows > 0) {
+			
 			while ($order = $orders->fetch_assoc()) {
 				echo '
 
