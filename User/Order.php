@@ -96,7 +96,7 @@ function fetchOrdersWithProducts($conn, $user_id, $status = null) {
 $all_orders = fetchOrdersWithProducts($conn, $user_id);
 $processing_orders = fetchOrdersWithProducts($conn, $user_id, 'Processing');
 $shipping_orders = fetchOrdersWithProducts($conn, $user_id, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, $user_id, 'Completed');
+$complete_orders = fetchOrdersWithProducts($conn, $user_id, 'Complete');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     // 获取订单 ID
@@ -750,7 +750,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <button id="All-tab" onclick="showTab('All')" class="active">All</button>
             <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
             <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
-            <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
+            <button id="Complete-tab" onclick="showTab('Complete')">Complete</button>
         </div>
 
         <!-- Order Containers for Each Status -->
