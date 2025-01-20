@@ -123,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $cart_result = mysqli_query($conn, $cart_query);
             while ($row = mysqli_fetch_assoc($cart_result)) {
                 $variant_id = $row['variant_id'];
-                $product_name = $row['product_name'];
+                $product_name = $row['item_name'];
                 $total_qty = $row['total_qty'];
 
                 // Get current stock
