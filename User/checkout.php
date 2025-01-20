@@ -1643,7 +1643,7 @@ function toggleAutofill() {
 		postcode.value = "<?php echo htmlspecialchars($address['postcode'] ?? ''); ?>";
 
         // Set the correct state in the dropdown
-        const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
+		const savedState = "<?php echo htmlspecialchars($address['state'] ?? ''); ?>";
         if (savedState) {
             const options = Array.from(state.options);
             const matchingOption = options.find(option => option.value === savedState);
