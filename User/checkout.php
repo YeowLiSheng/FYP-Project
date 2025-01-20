@@ -1145,10 +1145,12 @@ if ($paymentSuccess) {
 
 
 	$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
-	if ($use_autofill && $address) {
-		$shipping_address = ($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? '');
+	if ($use_autofill && !empty($address)) {
+		// 使用保存的地址
+		$shipping_address = trim(($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? ''));
 	} else {
-		$shipping_address = ($_POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? '');
+		// 使用用户手动输入的地址
+		$shipping_address = trim(($POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? ''));
 	}
 
 
@@ -1670,10 +1672,13 @@ function toggleAutofill() {
 
 // Enable disabled fields before form submission
 document.querySelector("form").addEventListener("submit", function () {
-    document.getElementById('address').disabled = false;
-    document.getElementById('city').disabled = false;
-    document.getElementById('state').disabled = false;
-    document.getElementById('postcode').disabled = false;
+    const addressFields = ['address', 'city', 'state', 'postcode'];
+    addressFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field.disabled) {
+            field.disabled = false; // Re-enable the field
+        }
+    });
 });
 
 
