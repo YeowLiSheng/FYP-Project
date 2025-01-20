@@ -105,14 +105,14 @@ while ($detail = $details_result->fetch_assoc()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $product_id = intval($_POST['product_or_promotion_id']);
+    $variant_id = intval($_POST['variant_id']); 
     $rating = intval($_POST['rating']);
     $comment = htmlspecialchars($_POST['comment'], ENT_QUOTES);
     $user_id = $_SESSION['id'];
     $image_path = null;
 
     
-    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE product_or_promotion_id = ? AND order_id = ?");
+    $detail_query = $conn->prepare("SELECT detail_id FROM order_details WHERE variant_id = ? AND order_id = ?");
     $detail_query->bind_param("ii", $product_id, $order_id);
     $detail_query->execute();
     $detail_result = $detail_query->get_result();
