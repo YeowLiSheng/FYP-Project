@@ -773,8 +773,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				if ($showCompleteButton) {
 					echo '
 						<button type="button" class="complete-btn" 
-								onclick="openPopup(' . $order['order_id'] . ')">
-							Complete
+ onclick="openPopup(event, ' . $order['order_id'] . ')">
+ 							Complete
 						</button>';
 				}
 	
@@ -1264,7 +1264,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         document.getElementById(status + '-tab').classList.add('active');
     }
 
-	function openPopup(orderId) {
+	function openPopup(event, orderId) {
+    event.stopPropagation(); // 阻止事件冒泡
     document.getElementById("popup-order-id").value = orderId;
     document.getElementById("popup-form").style.display = "flex";
 }
