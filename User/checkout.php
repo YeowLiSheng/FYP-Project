@@ -1144,14 +1144,11 @@ if ($paymentSuccess) {
     }
 
 
-	$use_autofill = isset($_POST['autofill-checkbox']) && $_POST['autofill-checkbox'] === 'on';
-	if ($use_autofill && !empty($address)) {
-		// 使用保存的地址
-		$shipping_address = trim(($address['address'] ?? '') . ', ' . ($address['postcode'] ?? '') . ', ' . ($address['city'] ?? '') . ', ' . ($address['state'] ?? ''));
-	} else {
-		// 使用用户手动输入的地址
-		$shipping_address = trim(($POST['address'] ?? '') . ', ' . ($_POST['postcode'] ?? '') . ', ' . ($_POST['city'] ?? '') . ', ' . ($_POST['state'] ?? ''));
-	}
+	$address = $autofillChecked ? $address['address'] : $_POST['address'];
+    $city = $autofillChecked ? $address['city'] : $_POST['city'];
+    $state = $autofillChecked ? $address['state'] : $_POST['state'];
+    $postcode = $autofillChecked ? $address['postcode'] : $_POST['postcode'];
+	$shippingAddress = "{$address}, {$postcode}, {$city}, {$state}";
 
 
     $user_message = isset($_POST['user_message']) ? $_POST['user_message'] : ''; 
@@ -1650,24 +1647,7 @@ function toggleAutofill() {
             }
         }
 
-        // Disable fields
-        address.disabled = true;
-        city.disabled = true;
-        postcode.disabled = true;
-        state.disabled = true;
-    } else {
-        // Clear fields for manual input if checkbox is unchecked
-        address.value = "";
-        city.value = "";
-        state.value = "";
-        postcode.value = "";
-
-        // Enable fields
-        address.disabled = false;
-        city.disabled = false;
-        postcode.disabled = false;
-        state.disabled = false;
-    }
+    } 
 }
 
 // Enable disabled fields before form submission
