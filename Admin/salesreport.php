@@ -115,6 +115,7 @@ LIMIT 5";
 $recentOrders_result = $connect->query($recentOrders_query);
 $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
+$totalQuantity = 0;
 // Fetch category-wise sales data
 $categorySales_query = "
     SELECT 
