@@ -525,13 +525,14 @@ textarea {
     margin-left: 10px;
 }
 .swal-popup-highest {
-    z-index: 9999 !important;
-    position: fixed; /* 添加固定定位 */
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    z-index: 9999 !important; /* Ensure it stays above all other elements */
 }
-
+.swal-overlay {
+    z-index: 1601 !important; /* 确保它高于 popup-container 的 z-index */
+}
+.swal-modal {
+    z-index: 1602 !important; /* 再次提高 modal 自身的 z-index */
+}
 </style>
 </head>
 <body class="animsition">
