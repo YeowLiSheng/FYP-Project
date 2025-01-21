@@ -348,8 +348,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
-            <button type="submit" name="delete_reply" class="btn btn-danger" 
-            onclick="event.preventDefault(); confirmDeleteReply();">Delete Reply</button>
+            <button type="submit" name="delete_reply" class="btn btn-danger" id="deleteReplyBtn">Delete Reply</button>
+
         </form>
     </div>
 </div>
@@ -391,22 +391,24 @@ function openImageModal(imageUrl) {
 function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
-function confirmDeleteReply() {
+document.getElementById('deleteReplyBtn').addEventListener('click', function(event) {
+        event.preventDefault(); // 阻止表单提交
+        
         Swal.fire({
-            icon: 'warning',
             title: 'Are you sure?',
-            text: 'Do you really want to delete this reply?',
+            text: 'You won\'t be able to revert this!',
+            icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'No, cancel!',
             reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
-                // Proceed with form submission if confirmed
-                document.getElementById('deleteReplyForm').submit();
+                // 如果用户点击 "Yes, delete it!"，提交表单
+                this.form.submit();
             }
         });
-    }
+    });
 </script>
 </body>
 </html>
