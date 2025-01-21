@@ -160,39 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         if ($update_stmt->execute()) {
             
-				echo "<script>
-					Swal.fire({
-						icon: 'success',
-						title: 'Order Status Updated Successfully',
-						text: 'Thank you for confirming your order.',
-						confirmButtonText: 'OK'
-					}).then((result) => {
-						if (result.isConfirmed) {
-							window.location.href = '" . $_SERVER['PHP_SELF'] . "';
-						}
-					});
-				</script>";
-			} else {
-				echo "<script>
-					Swal.fire({
-						icon: 'error',
-						title: 'Failed to Update Order Status',
-						text: 'Please try again later.',
-						confirmButtonText: 'OK'
-					});
-				</script>";
-			}
-		} else {
-			echo "<script>
-				Swal.fire({
-					icon: 'error',
-					title: 'Invalid Order',
-					text: 'Invalid order or permission denied.',
-					confirmButtonText: 'OK'
-				});
-			</script>";
-		}
-	
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit;
+        } else {
+            echo "<script>alert('Failed to update order status. Please try again later.');</script>";
+        }
+    } else {
+        echo "<script>alert('Invalid order or permission denied.');</script>";
+    }
 
     $stmt->close();
     $update_stmt->close();
@@ -1271,7 +1246,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 	<script>
     function showTab(status) {
