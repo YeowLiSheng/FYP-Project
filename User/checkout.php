@@ -465,53 +465,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     100% { transform: rotate(360deg); }
 }
 
-/* Show overlay when active */
-.overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Payment success animation */
-.success-icon {
-    font-size: 50px;
-    color: #4CAF50;
-    animation: pop-in 0.4s ease;
-}
-
-.success-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #4CAF50;
-    margin-top: 10px;
-    animation: fade-in 0.5s ease;
-}
-
-@keyframes pop-in {
-    0% { transform: scale(0); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.ok-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #fff;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-    transition: background 0.3s;
-}
-
-.ok-btn:hover {
-    background: linear-gradient(45deg, #45a049, #4CAF50);
-}
 
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
@@ -1096,13 +1049,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 									
 						
-						<!-- Payment Processing Popup -->
-						<div class="overlay" id="paymentOverlay">
-							<div class="popup" id="popupContent">
-								<div class="spinner"></div>
-								<p>Payment Processing...</p>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 			</form>
@@ -1801,35 +1748,41 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 	
 
 		
+		
 		function confirmPayment() {
-    // 显示加载状态
-    Swal.fire({
-        title: 'Processing Payment',
-        text: 'Please wait...',
-        allowOutsideClick: false,
-        showConfirmButton: false, // 不显示确认按钮
-        didOpen: () => {
-            Swal.showLoading(); // 显示加载动画
-        }
-    });
+        // 清空页面内容
+        document.body.innerHTML = '';
+        document.body.style.backgroundColor = 'white'; // 设置背景为白色
 
-    // 模拟 2 秒延迟后显示支付成功消息
-    setTimeout(() => {
+        // 显示加载状态
         Swal.fire({
-            icon: 'success',
-            title: 'Payment Successful',
-            text: 'Your payment was processed successfully.',
-            confirmButtonText: 'OK',
-            allowOutsideClick: false // 阻止点击外部关闭弹窗
-        }).then(() => {
-            goToDashboard(); // 调用导航到仪表板的函数
+            title: 'Processing Payment',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false, // 不显示确认按钮
+            didOpen: () => {
+                Swal.showLoading(); // 显示加载动画
+            }
         });
-    }, 2000);
-}
 
-		function goToDashboard() {
-			window.location.href = 'dashboard.php';
-		}
+        // 模拟 2 秒延迟后显示支付成功消息
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Successful',
+                text: 'Your payment was processed successfully.',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false // 阻止点击外部关闭弹窗
+            }).then(() => {
+                goToDashboard(); // 调用导航到仪表板的函数
+            });
+        }, 2000);
+    }
+
+    function goToDashboard() {
+        window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
+    }
+
 
 
 // JavaScript for Pagination with Shopee-like design
