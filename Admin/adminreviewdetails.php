@@ -391,6 +391,7 @@ function closeImageModal() {
 }
 
 function confirmDelete() {
+    function confirmDelete() {
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -400,8 +401,16 @@ function confirmDelete() {
             cancelButtonText: 'No, keep it'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Ensure the form is submitted
-                document.getElementById('replyForm').submit();
+                // Set the 'delete_reply' value to trigger delete action
+                const form = document.getElementById('replyForm');
+                const deleteButton = document.createElement('input');
+                deleteButton.type = 'hidden';
+                deleteButton.name = 'delete_reply';
+                deleteButton.value = '1'; // Indicate that delete operation should be performed
+                form.appendChild(deleteButton);
+
+                // Submit the form
+                form.submit();
             }
         });
     }
