@@ -459,13 +459,13 @@ if ($stmt->execute()) {
 
 .selected-product-preview {
     display: flex;
-    flex-direction: column; /* 垂直对齐 */
+    flex-direction: column; 
     align-items: center;
     margin-top: 10px;
 }
 
 .selected-product-preview img {
-    width: 100px; /* 调整图片大小 */
+    width: 100px; 
     height: 100px;
     border-radius: 10px;
     margin-bottom: 10px;
@@ -474,7 +474,7 @@ if ($stmt->execute()) {
 
 input[type="file"] {
     display: block;
-    margin: 0 auto; /* 居中 */
+    margin: 0 auto; 
     padding: 10px;
     font-size: 14px;
     cursor: pointer;
@@ -879,7 +879,7 @@ textarea {
                 </div>
             </div>
 
-            <!-- 评分 -->
+            
             <label for="rating">Rating:</label>
             <div id="stars" class="rating-stars">
                 <?php for ($i = 1; $i <= 5; $i++) { ?>
@@ -888,15 +888,15 @@ textarea {
             </div>
             <input type="hidden" id="rating" name="rating" value="" required>
 
-            <!-- 评论 -->
+           
             <label for="comment">Comment:</label>
             <textarea id="comment" name="comment" rows="4" required></textarea>
 
-            <!-- 上传图片 -->
+        
             <label for="image">Upload Image (optional):</label>
             <input type="file" id="image" name="image" accept="image/*">
 
-            <!-- 按钮 -->
+         
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="closePopup()">Cancel</button>
         </form>
@@ -1335,18 +1335,17 @@ textarea {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-// 打开弹窗
-// 打开弹窗
+
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
 
-// 关闭弹窗
+
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
-    document.getElementById("rateForm").reset(); // 重置表单
-    resetStars();   // 重置评分星星
-    resetProductPreview(); // 重置产品预览
+    document.getElementById("rateForm").reset(); 
+    resetStars();   
+    resetProductPreview(); 
 }
 
 document.getElementById("rateForm").addEventListener("submit", function (e) {
@@ -1373,7 +1372,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
                     didOpen: () => {
                         const swalContainer = document.querySelector('.swal2-container');
                         if (swalContainer) {
-                            swalContainer.style.zIndex = '9999'; // 确保 SweetAlert2 弹窗的层级最高
+                            swalContainer.style.zIndex = '9999'; 
                         }
                     }
                 }).then(() => {
@@ -1398,7 +1397,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
 }
-// 评分逻辑
+
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
     star.addEventListener("click", function () {
@@ -1416,7 +1415,7 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
-// 产品预览逻辑
+
 const productSelect = document.getElementById("productSelect");
 const productImage = document.getElementById("productImage");
 const productName = document.getElementById("productName");
