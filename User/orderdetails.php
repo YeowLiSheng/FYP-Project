@@ -442,7 +442,7 @@ if ($stmt->execute()) {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    z-index: 2000;
+    z-index: 1;
     border-radius: 10px;
     width: 400px;
     max-width: 90%;
@@ -1374,7 +1374,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         text: 'Your review has been successfully submitted!',
         confirmButtonText: 'OK',
         customClass: {
-            popup: 'swal-popup-highest swal2-popup'
+            popup: 'swal-popup-highest'
         }
     }).then(() => {
         // Optionally reload the page or navigate to another page
@@ -1388,7 +1388,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         text: 'You have already reviewed this product.',
         confirmButtonText: 'OK',
         customClass: {
-            popup: 'swal-popup-highest swal2-popup'
+            popup: 'swal-popup-highest'
         }
     });
 } else {
@@ -1399,7 +1399,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         text: 'Failed to submit review. Please try again.',
         confirmButtonText: 'OK',
         customClass: {
-            popup: 'swal-popup-highest swal2-popup'
+            popup: 'swal-popup-highest'
         }
     });
 }
