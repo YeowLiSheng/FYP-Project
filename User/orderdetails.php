@@ -1349,7 +1349,6 @@ function closePopup() {
     resetProductPreview(); // 重置产品预览
 }
 
-// 禁用重复提交
 document.getElementById("rateForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -1377,6 +1376,8 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
                             swalContainer.style.zIndex = '9999'; // 确保 SweetAlert2 弹窗的层级最高
                         }
                     }
+                }).then(() => {
+                    redirectToPage();
                 });
             };
 
@@ -1392,6 +1393,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
             console.error("Error submitting review:", error);
         });
 });
+
 
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
