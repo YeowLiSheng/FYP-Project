@@ -217,6 +217,22 @@ include 'admin_sidebar.php';
                 font-size: 12px;
             }
         }
+
+        .btn-primary {
+    background-color: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+}
+
+/* 设置 hover 状态 */
+.btn-primary:hover {
+    background-color: #45a049 !important;
+    border-color: #45a049 !important;
+}
+
+/* 防止按钮的颜色被其他样式覆盖 */
+.btn-group {
+    background-color: #4CAF50;
+}
     </style>
 </head>
 <body>
