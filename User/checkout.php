@@ -423,12 +423,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 /* Overlay background covering the entire screen */
 .overlay {
-    position: fixed;
+	position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(255, 255, 255, 1); /* 改为全白背景 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -436,6 +436,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s, visibility 0.3s;
+
 }
 
 /* Popup content */
