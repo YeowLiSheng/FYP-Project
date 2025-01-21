@@ -98,8 +98,6 @@ $pdf->Cell(95, 6, $order['user_name'], 0, 1, 'R');
 $pdf->SetX(105); // 设置起始位置
 $pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'R'); // 使用 MultiCell 自动换行
 
-// 行距
-$pdf->Ln(10);
 
 
 $pdf->SetDrawColor(128, 128, 128);
