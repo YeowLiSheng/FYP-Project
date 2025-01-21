@@ -732,7 +732,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			<li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
 			</ul>
     </div>
-d
+
     <!-- Content Area -->
     <div class="content">
         <h1>My Orders</h1>
