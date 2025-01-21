@@ -812,7 +812,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     <div class="popup-content">
         <h2>Confirm Order Completion</h2>
         <p>Are you sure you have received your order?</p>
-        <form method="post" onsubmit="return handleSubmit(event)">
+        <form id="confirm-order-form" method="post" onsubmit="return handleSubmit(event)">
             <input type="hidden" id="popup-order-id" name="order_id">
             <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
             <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
@@ -1249,7 +1249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	<script src="js/main.js"></script>
 	<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
-   function showTab(status) {
+    function showTab(status) {
         document.querySelectorAll('.order-container').forEach(container => {
             container.style.display = container.id === status ? 'block' : 'none';
         });
@@ -1270,16 +1270,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     }
 
     function handleSubmit(event) {
-        event.preventDefault(); // 阻止表单的默认提交行为
-        // 模拟提交后的处理，可以在这里加入实际的表单提交逻辑
+        event.preventDefault(); // 阻止默认提交行为
         Swal.fire({
             icon: 'success',
             title: 'Order Status Updated Successfully',
             text: 'Thank you for confirming your order.',
             confirmButtonText: 'OK'
-        }).then(() => {
-            // 这里可以处理表单提交后的进一步逻辑，比如刷新页面或跳转
-            document.querySelector('form').submit(); // 手动提交表单
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 确认后手动提交表单
+                document.getElementById('confirm-order-form').submit();
+            }
         });
     }
 	</script>
