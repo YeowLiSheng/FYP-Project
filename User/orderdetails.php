@@ -176,8 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $detail_id = $detail['detail_id'];
 
 
-	
-    // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
         if (!is_dir($upload_dir)) {
@@ -191,18 +189,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 检查是否存在重复评论
+
 $check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
 $check_stmt->bind_param("ii", $detail_id, $user_id);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows > 0) {
-    echo "duplicate"; // 返回重复状态
+    echo "duplicate"; 
     exit;
 }
 
-// 插入评论数据
+
 $stmt = $conn->prepare("
     INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
     VALUES (?, ?, ?, ?, ?)
@@ -210,9 +208,9 @@ $stmt = $conn->prepare("
 $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 
 if ($stmt->execute()) {
-    echo "success"; // 向前端返回成功状态
+    echo "success"; 
 } else {
-    echo "error"; // 向前端返回错误状态
+    echo "error"; 
 }
     exit;
 }
@@ -259,24 +257,24 @@ if ($stmt->execute()) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<!--===============================================================================================-->
 <style>
-    /* 全局样式 */
+
 	
     .main-container {
     display: flex;
     flex-direction: row;
-    width: 100%; /* 确保容器宽度为全屏 */
+    width: 100%; 
 
 }
     .sidebar {
 	width: 250px;
     padding: 20px;
     height: 100%;
-    position: static; /* 保持 static */
+    position: static; 
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     overflow-y: auto;
     flex-shrink: 0;
-    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+    z-index: 1; 
 }
 
     .sidebar .user-info {
@@ -340,7 +338,7 @@ if ($stmt->execute()) {
         color: #333;
         padding: 20px;
         margin: 0;
-        flex: 1; /* 让容器填满 sidebar 旁边的剩余空间 */
+        flex: 1; 
 
     }
     .card {
@@ -427,7 +425,7 @@ if ($stmt->execute()) {
         margin-top: 20px;
         text-align: center;
         cursor: pointer;
-        background: #28a745; /* 使用黄色作为评分按钮颜色 */
+        background: #28a745; 
         transition: 0.3s;
     }
 
@@ -444,7 +442,7 @@ if ($stmt->execute()) {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    z-index: 2000;
+    z-index: 1600;
     border-radius: 10px;
     width: 400px;
     max-width: 90%;
@@ -461,13 +459,13 @@ if ($stmt->execute()) {
 
 .selected-product-preview {
     display: flex;
-    flex-direction: column; /* 垂直对齐 */
+    flex-direction: column; 
     align-items: center;
     margin-top: 10px;
 }
 
 .selected-product-preview img {
-    width: 100px; /* 调整图片大小 */
+    width: 100px; 
     height: 100px;
     border-radius: 10px;
     margin-bottom: 10px;
@@ -476,7 +474,7 @@ if ($stmt->execute()) {
 
 input[type="file"] {
     display: block;
-    margin: 0 auto; /* 居中 */
+    margin: 0 auto; 
     padding: 10px;
     font-size: 14px;
     cursor: pointer;
@@ -526,57 +524,10 @@ textarea {
     color: white;
     margin-left: 10px;
 }
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-.popup-success {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-	z-index: 2000;
-    animation: fadeIn 0.5s ease;
+.swal2-container {
+    z-index: 9999 !important;
 }
 
-.success-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.success-icon {
-    font-size: 60px;
-    color: #28a745; /* 绿色图标 */
-    margin-bottom: 15px;
-}
-
-.popup-success h3 {
-    font-size: 20px;
-    color: #333;
-}
-
-/* 淡入动画 */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -60%);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-    }
-}
 </style>
 </head>
 <body class="animsition">
@@ -852,7 +803,7 @@ textarea {
     <div class="card">
         <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
     </div>
-    <!-- 订单概要 -->
+
     <div class="card">
         <h2><span class="icon">📋</span>Order Summary</h2>
         <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
@@ -863,7 +814,7 @@ textarea {
         <div class="summary-item"><strong>User Message:</strong> <span><?= !empty($order['user_message']) ? htmlspecialchars($order['user_message']) : 'N/A' ?></span></div>           
     </div>
 
-    <!-- 产品明细 -->
+
     <div class="card">
         <h2><span class="icon">🛒</span>Product Details</h2>
         <table class="product-table">
@@ -892,7 +843,7 @@ textarea {
         </table>
     </div>
 
-    <!-- 价格明细 -->
+
     <div class="card">
         <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
@@ -900,7 +851,7 @@ textarea {
         <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
-    <!-- 操作按钮 -->
+
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
@@ -910,7 +861,7 @@ textarea {
     <div class="popup-content">
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <!-- 产品选择 -->
+  
             <label for="productSelect">Select Product:</label>
             <div class="product-select-container">
                 <select id="productSelect" name="variant_id" required>
@@ -928,7 +879,7 @@ textarea {
                 </div>
             </div>
 
-            <!-- 评分 -->
+            
             <label for="rating">Rating:</label>
             <div id="stars" class="rating-stars">
                 <?php for ($i = 1; $i <= 5; $i++) { ?>
@@ -937,32 +888,23 @@ textarea {
             </div>
             <input type="hidden" id="rating" name="rating" value="" required>
 
-            <!-- 评论 -->
+           
             <label for="comment">Comment:</label>
             <textarea id="comment" name="comment" rows="4" required></textarea>
 
-            <!-- 上传图片 -->
+        
             <label for="image">Upload Image (optional):</label>
             <input type="file" id="image" name="image" accept="image/*">
 
-            <!-- 按钮 -->
+         
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="closePopup()">Cancel</button>
         </form>
     </div>
 </div>
-<div id="overlay" style="display: none;"></div>
 
-<div id="successPopup" class="popup-success" style="display: none;">
-    <div class="success-content">
-        <div class="success-icon">
-            <i class="fa fa-check-circle"></i>
-        </div>
-        <h3>Review Submitted Successfully!</h3>
-		<button class="submit-button" onclick="redirectToPage()">OK</button>
 
-    </div>
-</div>
+
 </div>
 </div>
 
@@ -1320,6 +1262,7 @@ textarea {
 	</script>
 	<!--===============================================================================================-->
 	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
 		$('.gallery-lb').each(function () { // the containers for all your galleries
 			$(this).magnificPopup({
@@ -1392,55 +1335,69 @@ textarea {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-// 打开弹窗
-// 打开弹窗
+
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
 
-// 关闭弹窗
+
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
-    document.getElementById("rateForm").reset(); // 重置表单
-    resetStars();   // 重置评分星星
-    resetProductPreview(); // 重置产品预览
+    document.getElementById("rateForm").reset(); 
+    resetStars();   
+    resetProductPreview(); 
 }
 
-// 禁用重复提交
 document.getElementById("rateForm").addEventListener("submit", function (e) {
-    // 阻止默认表单提交行为
     e.preventDefault();
 
-    // 获取表单元素
     const form = e.target;
     const formData = new FormData(form);
 
-    // 发送表单数据到后端
     fetch(window.location.href, {
         method: "POST",
         body: formData
     })
         .then(response => response.text())
         .then(data => {
-            // 检查后端响应
-			if (data.trim() === "success") {
-    // 显示成功弹窗
-    document.getElementById("successPopup").style.display = "block";
-} else if (data.trim() === "duplicate") {
-    alert("You have already reviewed this product.");
-} else {
-    alert("Failed to submit review. Please try again.");
-}
+            const handleSwalPopup = (icon, title, text) => {
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-popup-highest'
+                    },
+                    didOpen: () => {
+                        const swalContainer = document.querySelector('.swal2-container');
+                        if (swalContainer) {
+                            swalContainer.style.zIndex = '9999'; 
+                        }
+                    }
+                }).then(() => {
+                    redirectToPage();
+                });
+            };
+
+            if (data.trim() === "success") {
+                handleSwalPopup('success', 'Review Submitted', 'Your review has been successfully submitted!');
+            } else if (data.trim() === "duplicate") {
+                handleSwalPopup('warning', 'Duplicate Review', 'You have already reviewed this product.');
+            } else {
+                handleSwalPopup('error', 'Submission Failed', 'Failed to submit review. Please try again.');
+            }
         })
         .catch(error => {
             console.error("Error submitting review:", error);
         });
 });
 
+
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
 }
-// 评分逻辑
+
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
     star.addEventListener("click", function () {
@@ -1458,7 +1415,7 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
-// 产品预览逻辑
+
 const productSelect = document.getElementById("productSelect");
 const productImage = document.getElementById("productImage");
 const productName = document.getElementById("productName");
