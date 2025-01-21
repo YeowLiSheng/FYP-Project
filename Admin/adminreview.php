@@ -329,14 +329,14 @@ $review = "
                 <?php    
                           if ($reviewresult->num_rows > 0) {
                             while ($row = $reviewresult->fetch_assoc()) {
-                                echo "<tr onclick=\"viewReviewDetails('{$row['product_id']}')\">";
-                                echo "<td><img src='../User/images/{$row['product_image']}' alt='{$row['product_name']}' style='width: 50px; height: auto;'></td>";
-                                echo "<td>{$row['product_name']}</td>";
-                                echo "<td>{$row['category_name']}</td>";
-                                echo "<td>{$row['total_reviews']}</td>";
-                                echo "<td>{$row['avg_rating']}</td>";
-                                echo "<td>{$row['latest_review']}</td>";
-                                echo "</tr>";
+                                echo "<tr onclick=\"viewReviewDetails('{$row['item_id']}')\">";
+        echo "<td><img src='../User/images/{$row['item_image']}' alt='{$row['item_name']}' style='width: 50px; height: auto;'></td>";
+        echo "<td>{$row['item_name']}</td>";
+        echo "<td>{$row['category_name']}</td>";
+        echo "<td>{$row['total_reviews']}</td>";
+        echo "<td>{$row['avg_rating']}</td>";
+        echo "<td>{$row['latest_review']}</td>";
+        echo "</tr>";
                             }
                         } else {
                             echo "<tr><td colspan='6'>No reviewed products found</td></tr>";
