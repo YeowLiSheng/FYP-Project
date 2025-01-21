@@ -1,5 +1,5 @@
 <?php
-session_start();  // 启动会话
+session_start(); 
 
 // Connect to the database
 $servername = "localhost";
@@ -9,10 +9,10 @@ $dbname = "fyp";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// 设置字符集
+
 $conn->set_charset("utf8mb4");
 
-// 检查连接
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
@@ -26,13 +26,13 @@ if (!isset($_SESSION['id'])) {
 // Retrieve the user information
 $user_id = $_SESSION['id'];
 
-// 使用预处理语句来防止 SQL 注入
+
 $stmt = $conn->prepare("SELECT * FROM user WHERE user_id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $user_result = $stmt->get_result();
 
-// 获取用户信息
+
 if ($user_result && $user_result->num_rows > 0) {
     $user = $user_result->fetch_assoc();
 } else {
@@ -40,44 +40,58 @@ if ($user_result && $user_result->num_rows > 0) {
     exit;
 }
 
-// 获取当前用户的详细信息（动态获取用户ID）
+
 $current_user_id = $_SESSION['id']; 
 $current_user_query = $conn->prepare("SELECT user_name, user_image FROM user WHERE user_id = ?");
 $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
-// Fetch orders with all products for each order
-function fetchOrdersWithProducts($conn, $status = null) {
+function fetchOrdersWithProducts($conn, $user_id, $status = null) {
     $sql = "
-        SELECT o.order_id, o.order_date, o.final_amount, o.order_status, 
-               GROUP_CONCAT(p.product_name SEPARATOR ', ') AS products, 
-               MIN(p.product_image) AS product_image
+        SELECT 
+            o.order_id, 
+            o.order_date, 
+            o.final_amount, 
+            o.order_status, 
+            GROUP_CONCAT(
+                CASE 
+                    WHEN pv.product_id IS NOT NULL THEN p.product_name
+                    WHEN pv.promotion_id IS NOT NULL THEN pp.promotion_name
+                END
+                SEPARATOR ', '
+            ) AS products, 
+            pv.Quick_View1 AS product_image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
-        JOIN product p ON od.product_id = p.product_id";
-        
-    // Add a condition to filter by status if provided
+        JOIN product_variant pv ON od.variant_id = pv.variant_id
+        LEFT JOIN product p ON pv.product_id = p.product_id
+        LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+        WHERE o.user_id = ?"; // 只显示当前用户的订单
+
+    // 如果提供了状态参数，添加状态过滤
     if ($status) {
-        $sql .= " WHERE o.order_status = ?";
+        $sql .= " AND o.order_status = ?";
     }
 
     $sql .= " GROUP BY o.order_id 
               ORDER BY o.order_date DESC";
-    
+
     $stmt = $conn->prepare($sql);
     if ($status) {
-        $stmt->bind_param("s", $status);  // Bind the status parameter
+        $stmt->bind_param("is", $user_id, $status); // 绑定用户 ID 和状态
+    } else {
+        $stmt->bind_param("i", $user_id); // 仅绑定用户 ID
     }
     $stmt->execute();
     return $stmt->get_result();
 }
 
 // Fetch orders for each tab
-$all_orders = fetchOrdersWithProducts($conn);
-$processing_orders = fetchOrdersWithProducts($conn, 'Processing');
-$shipping_orders = fetchOrdersWithProducts($conn, 'Shipping');
-$completed_orders = fetchOrdersWithProducts($conn, 'Complete');
+$all_orders = fetchOrdersWithProducts($conn, $user_id);
+$processing_orders = fetchOrdersWithProducts($conn, $user_id, 'Processing');
+$shipping_orders = fetchOrdersWithProducts($conn, $user_id, 'Shipping');
+$complete_orders = fetchOrdersWithProducts($conn, $user_id, 'Complete');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     // 获取订单 ID
@@ -467,11 +481,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li class="active-menu">
@@ -582,11 +591,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			<ul class="main-menu-m">
 				<li>
 					<a href="dashboard.php">Home</a>
-					<ul class="sub-menu-m">
-						<li><a href="index.html">Homepage 1</a></li>
-						<li><a href="home-02.html">Homepage 2</a></li>
-						<li><a href="home-03.html">Homepage 3</a></li>
-					</ul>
+				
 					<span class="arrow-main-menu-m">
 						<i class="fa fa-angle-right" aria-hidden="true"></i>
 					</span>
@@ -708,15 +713,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             <h3><?= $current_user['user_name'] ?></h3>
         </div>
         <ul>
-            <!-- My Account -->
-            <li><i class="fa fa-user"></i> My Account</li>
+           <!-- My Account -->
+		   <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
-            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+
+<li class="profile-item">
+    <a href="edit_profile.php">
+        <i class="fa fa-edit"></i> Edit Profile
+    </a>
+</li>           
+
             <!-- My Orders -->
-            <li><i class="fa fa-box"></i> My Orders</li>
-        </ul>
+			<li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
+			</ul>
     </div>
 
     <!-- Content Area -->
@@ -726,14 +735,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         <div class="tabs">
             <button id="All-tab" onclick="showTab('All')" class="active">All</button>
             <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
-            <button id="Shipping-tab" onclick="showTab('Shipping')">To Ship</button>
-            <button id="Complete-tab" onclick="showTab('Complete')">Completed</button>
+            <button id="Shipping-tab" onclick="showTab('Shipping')">Shipping</button>
+            <button id="Complete-tab" onclick="showTab('Complete')">Complete</button>
         </div>
 
         <!-- Order Containers for Each Status -->
         <?php
        function renderOrders($orders, $showCompleteButton = false) {
 		if ($orders->num_rows > 0) {
+			
 			while ($order = $orders->fetch_assoc()) {
 				echo '
 
@@ -749,8 +759,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				if ($showCompleteButton) {
 					echo '
 						<button type="button" class="complete-btn" 
-								onclick="openPopup(' . $order['order_id'] . ')">
-							Complete
+ onclick="openPopup(event, ' . $order['order_id'] . ')">
+ 							Complete
 						</button>';
 				}
 	
@@ -786,7 +796,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
-            <?php renderOrders($completed_orders); ?>
+            <?php renderOrders($complete_orders); ?>
         </div>
     </div>
 
@@ -1240,7 +1250,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         document.getElementById(status + '-tab').classList.add('active');
     }
 
-	function openPopup(orderId) {
+	function openPopup(event, orderId) {
+    event.stopPropagation(); // 阻止事件冒泡
     document.getElementById("popup-order-id").value = orderId;
     document.getElementById("popup-form").style.display = "flex";
 }
