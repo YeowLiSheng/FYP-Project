@@ -265,7 +265,7 @@ include 'admin_sidebar.php';
                     <optgroup label="Delivery Status">
                         <option value="Processing">Processing</option>
                         <option value="Shipping">Shipping</option>
-                        <option value="Completed">Completed</option>
+                        <option value="Complete">Complete</option>
                     </optgroup>
                 </select>
                 <label>Sort by:</label>

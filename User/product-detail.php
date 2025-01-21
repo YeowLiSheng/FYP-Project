@@ -301,13 +301,14 @@ $review_query = "
     LEFT JOIN 
         admin a ON r.staff_id = a.staff_id
     WHERE 
-        pv.product_id = ? AND r.status = 'active'";
+        (pv.product_id = ? OR pv.promotion_id = ?) 
+        AND r.status = 'active'";
 
 $stmt = $connect->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $connect->error); 
 }
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("ii", $product_id, $promotion_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
 
@@ -322,13 +323,14 @@ $review_count_query = "
     JOIN 
         product_variant pv ON od.variant_id = pv.variant_id
     WHERE 
-        pv.product_id = ? AND r.status = 'active'";
+        (pv.product_id = ? OR pv.promotion_id = ?) 
+        AND r.status = 'active'";
 
 $stmt = $connect->prepare($review_count_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $connect->error); 
 }
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("ii", $product_id, $promotion_id);
 $stmt->execute();
 $review_count_result = $stmt->get_result();
 $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
