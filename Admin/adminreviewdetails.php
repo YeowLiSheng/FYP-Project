@@ -339,17 +339,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
-<!-- Review Reply Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
         <h2>Reply to Review</h2>
-        <form method="post">
+        <form method="post" id="replyForm">
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
-            <button type="submit" name="delete_reply" class="btn btn-danger" id="deleteReplyBtn">Delete Reply</button>
-
+            <button type="button" name="delete_reply" class="btn btn-danger" onclick="confirmDelete()">Delete Reply</button>
         </form>
     </div>
 </div>
@@ -359,7 +357,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <img src="" alt="Review Image" id="imagePreview">
     <span class="close-btn" onclick="closeImageModal()">&times;</span>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 function openReplyForm(reviewId, currentReply) {
@@ -391,24 +388,22 @@ function openImageModal(imageUrl) {
 function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
-document.getElementById('deleteReplyBtn').addEventListener('click', function(event) {
-        event.preventDefault(); // 阻止表单提交
-        
+
+function confirmDelete() {
         Swal.fire({
             title: 'Are you sure?',
-            text: 'You won\'t be able to revert this!',
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, cancel!',
-            reverseButtons: true
+            cancelButtonText: 'No, keep it'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 如果用户点击 "Yes, delete it!"，提交表单
-                this.form.submit();
+                // Submit the form to delete the reply
+                document.querySelector('button[name="delete_reply"]').form.submit();
             }
         });
-    });
+    }
 </script>
 </body>
 </html>
