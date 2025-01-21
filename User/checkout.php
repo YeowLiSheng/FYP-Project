@@ -70,7 +70,9 @@ $cart_result = mysqli_query($conn, $cart_query);
 
 
 if (mysqli_num_rows($cart_result) === 0) {
-    echo "<script>
+    echo "
+	<script>
+	
         Swal.fire({
             icon: 'error',
             title: 'Your Shopping Cart is Empty',
@@ -247,8 +249,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	<!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
-	<!--===============================================================================================-->
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+	<!--===============================================================================================-->
 
 
 
