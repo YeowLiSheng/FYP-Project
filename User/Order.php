@@ -1249,7 +1249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	<script src="js/main.js"></script>
 	<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
-    function showTab(status) {
+   function showTab(status) {
         document.querySelectorAll('.order-container').forEach(container => {
             container.style.display = container.id === status ? 'block' : 'none';
         });
@@ -1260,7 +1260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     }
 
     function openPopup(event, orderId) {
-        event.stopPropagation(); 
+        event.stopPropagation();
         document.getElementById("popup-order-id").value = orderId;
         document.getElementById("popup-form").style.display = "flex";
     }
@@ -1270,7 +1270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     }
 
     function handleSubmit(event) {
-        event.preventDefault(); // 阻止默认提交行为
+        event.preventDefault(); // 阻止默认表单提交
         Swal.fire({
             icon: 'success',
             title: 'Order Status Updated Successfully',
@@ -1278,8 +1278,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
             confirmButtonText: 'OK'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 确认后手动提交表单
-                document.getElementById('confirm-order-form').submit();
+                // 创建一个临时表单，触发实际提交
+                const form = document.getElementById('confirm-order-form');
+                const tempForm = document.createElement('form');
+                tempForm.method = form.method;
+                tempForm.action = form.action;
+
+                // 复制表单的所有字段和数据
+                Array.from(form.elements).forEach(input => {
+                    if (input.name && input.value) {
+                        const tempInput = document.createElement('input');
+                        tempInput.type = 'hidden';
+                        tempInput.name = input.name;
+                        tempInput.value = input.value;
+                        tempForm.appendChild(tempInput);
+                    }
+                });
+
+                document.body.appendChild(tempForm);
+                tempForm.submit();
             }
         });
     }
