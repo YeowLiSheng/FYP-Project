@@ -812,12 +812,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     <div class="popup-content">
         <h2>Confirm Order Completion</h2>
         <p>Are you sure you have received your order?</p>
-        <form method="post">
+        <form method="post" onsubmit="return handleSubmit(event)">
             <input type="hidden" id="popup-order-id" name="order_id">
             <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
             <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
         </form>
     </div>
+</div>
 </div>
 </div>
 
