@@ -525,7 +525,8 @@ textarea {
     margin-left: 10px;
 }
 .swal-popup-highest {
-    z-index: 9999 !important; /* Ensure it stays above all other elements */
+    position: fixed;
+    z-index: 9999 !important;
 }
 
 </style>
