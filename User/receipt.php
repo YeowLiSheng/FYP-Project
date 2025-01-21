@@ -102,8 +102,8 @@ $billToEndY = $pdf->GetY();
 $pdf->SetXY($currentX + 95, $currentY);
 $pdf->Cell(95, 6, $order['user_name'], 0, 0, 'R');
 $pdf->Ln(6); // 换行
-$pdf->SetXY($currentX + 95, $billToStartY); // 确保右列与左列对齐
-$pdf->MultiCell(80, 6, $order['shipping_address'], 0, 'R');
+$pdf->SetX($currentX + 95); // 重新设置起始 X 坐标
+$pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'R'); // 改为宽度 95 确保完整显示
 
 // 确保左右两列占用的高度相同
 $rightEndY = $pdf->GetY();
