@@ -160,14 +160,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
         if ($update_stmt->execute()) {
             
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
-        } else {
-            echo "<script>alert('Failed to update order status. Please try again later.');</script>";
-        }
-    } else {
-        echo "<script>alert('Invalid order or permission denied.');</script>";
-    }
+				echo "<script>
+					Swal.fire({
+						icon: 'success',
+						title: 'Order Status Updated Successfully',
+						text: 'Thank you for confirming your order.',
+						confirmButtonText: 'OK'
+					}).then((result) => {
+						if (result.isConfirmed) {
+							window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+						}
+					});
+				</script>";
+			} else {
+				echo "<script>
+					Swal.fire({
+						icon: 'error',
+						title: 'Failed to Update Order Status',
+						text: 'Please try again later.',
+						confirmButtonText: 'OK'
+					});
+				</script>";
+			}
+		} else {
+			echo "<script>
+				Swal.fire({
+					icon: 'error',
+					title: 'Invalid Order',
+					text: 'Invalid order or permission denied.',
+					confirmButtonText: 'OK'
+				});
+			</script>";
+		}
+	
 
     $stmt->close();
     $update_stmt->close();
@@ -812,13 +837,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     <div class="popup-content">
         <h2>Confirm Order Completion</h2>
         <p>Are you sure you have received your order?</p>
-        <form id="confirm-order-form" method="post" onsubmit="return handleSubmit(event)">
+        <form method="post">
             <input type="hidden" id="popup-order-id" name="order_id">
             <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
             <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
         </form>
     </div>
-</div>
 </div>
 </div>
 
@@ -1247,9 +1271,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-	<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 	<script>
-   function showTab(status) {
+    function showTab(status) {
         document.querySelectorAll('.order-container').forEach(container => {
             container.style.display = container.id === status ? 'block' : 'none';
         });
@@ -1259,47 +1284,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         document.getElementById(status + '-tab').classList.add('active');
     }
 
-    function openPopup(event, orderId) {
-        event.stopPropagation();
-        document.getElementById("popup-order-id").value = orderId;
-        document.getElementById("popup-form").style.display = "flex";
-    }
+	function openPopup(event, orderId) {
+    event.stopPropagation(); 
+    document.getElementById("popup-order-id").value = orderId;
+    document.getElementById("popup-form").style.display = "flex";
+}
 
-    function closePopup() {
-        document.getElementById("popup-form").style.display = "none";
-    }
-
-    function handleSubmit(event) {
-        event.preventDefault(); // 阻止默认表单提交
-        Swal.fire({
-            icon: 'success',
-            title: 'Order Status Updated Successfully',
-            text: 'Thank you for confirming your order.',
-            confirmButtonText: 'OK'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // 创建一个临时表单，触发实际提交
-                const form = document.getElementById('confirm-order-form');
-                const tempForm = document.createElement('form');
-                tempForm.method = form.method;
-                tempForm.action = form.action;
-
-                // 复制表单的所有字段和数据
-                Array.from(form.elements).forEach(input => {
-                    if (input.name && input.value) {
-                        const tempInput = document.createElement('input');
-                        tempInput.type = 'hidden';
-                        tempInput.name = input.name;
-                        tempInput.value = input.value;
-                        tempForm.appendChild(tempInput);
-                    }
-                });
-
-                document.body.appendChild(tempForm);
-                tempForm.submit();
-            }
-        });
-    }
+function closePopup() {
+    document.getElementById("popup-form").style.display = "none";
+}
 	</script>
 
 </body>
