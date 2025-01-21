@@ -162,16 +162,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			echo "
 				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 				<script>
-					Swal.fire({
-						icon: 'success',
-						title: 'Order Status Updated Successfully',
-						text: 'Thank you for confirming your order.',
-						confirmButtonText: 'OK'
-					}).then((result) => {
-						if (result.isConfirmed) {
-							window.location.href = '" . $_SERVER['PHP_SELF'] . "';
-						}
-					});
+					document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Order Status Updated Successfully',
+            text: 'Thank you for confirming your order.',
+            confirmButtonText: 'OK'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+            }
+        });
+    });
 				</script>";
 		} else {
 			echo "
