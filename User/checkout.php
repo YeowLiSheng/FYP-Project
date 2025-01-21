@@ -423,12 +423,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 /* Overlay background covering the entire screen */
 .overlay {
-	position: fixed;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 1); /* 改为全白背景 */
+    background-color: rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -436,7 +436,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s, visibility 0.3s;
-
 }
 
 /* Popup content */
@@ -466,53 +465,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     100% { transform: rotate(360deg); }
 }
 
-/* Show overlay when active */
-.overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Payment success animation */
-.success-icon {
-    font-size: 50px;
-    color: #4CAF50;
-    animation: pop-in 0.4s ease;
-}
-
-.success-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #4CAF50;
-    margin-top: 10px;
-    animation: fade-in 0.5s ease;
-}
-
-@keyframes pop-in {
-    0% { transform: scale(0); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.ok-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #fff;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-    transition: background 0.3s;
-}
-
-.ok-btn:hover {
-    background: linear-gradient(45deg, #45a049, #4CAF50);
-}
 
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
@@ -1097,13 +1049,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 									
 						
-						<!-- Payment Processing Popup -->
-						<div class="overlay" id="paymentOverlay">
-							<div class="popup" id="popupContent">
-								<div class="spinner"></div>
-								<p>Payment Processing...</p>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 			</form>
