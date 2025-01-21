@@ -60,7 +60,7 @@ $pdf->AddPage();
 $pdf->Image('../User/images/YLS2.jpg', 10, 10, 30);
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetXY(50, 15);
-$pdf->Cell(0, 10, 'YLS Atelier - Product & Package Reviews', 0, 1, 'L');
+$pdf->Cell(0, 10, 'YLS Atelier - Product Reviews', 0, 1, 'L');
 $pdf->Ln(20);
 
 // Table Header
@@ -110,5 +110,5 @@ $pdf->SetY(-15);
 $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
 // Output the PDF
-$pdf->Output('D', 'Product_and_Package_Reviews.pdf');
+$pdf->Output('D', 'Product_Reviews.pdf');
 ?>
