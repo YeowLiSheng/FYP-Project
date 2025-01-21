@@ -348,8 +348,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
-            <button type="button" class="btn btn-danger" onclick="confirmDeleteReply(<?php echo $review_id; ?>)">Delete Reply</button>
-
+            <button type="submit" name="delete_reply" class="btn btn-danger" 
+            onclick="event.preventDefault(); confirmDeleteReply();">Delete Reply</button>
         </form>
     </div>
 </div>
@@ -391,35 +391,19 @@ function openImageModal(imageUrl) {
 function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
-
-function confirmDeleteReply(reviewId) {
+function confirmDeleteReply() {
         Swal.fire({
             icon: 'warning',
             title: 'Are you sure?',
-            text: 'You will not be able to recover this reply!',
+            text: 'Do you really want to delete this reply?',
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, keep it'
+            cancelButtonText: 'No, cancel!',
+            reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit the form to delete the reply
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = ''; // Same page
-
-                var reviewInput = document.createElement('input');
-                reviewInput.type = 'hidden';
-                reviewInput.name = 'review_id';
-                reviewInput.value = reviewId;
-                form.appendChild(reviewInput);
-
-                var deleteReplyInput = document.createElement('input');
-                deleteReplyInput.type = 'hidden';
-                deleteReplyInput.name = 'delete_reply';
-                form.appendChild(deleteReplyInput);
-
-                document.body.appendChild(form);
-                form.submit();
+                // Proceed with form submission if confirmed
+                document.querySelector('form').submit();
             }
         });
     }
