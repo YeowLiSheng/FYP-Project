@@ -25,7 +25,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             color: #333;
         }
         main {
-            padding: 50px;
+            padding: 100px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -34,41 +34,42 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             flex-direction: column;
             gap: 30px;
         }
-        .section {
+        .view-admin, .recent-activity {
             background-color: white;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease-in-out;
         }
-        .section:hover {
+        .view-admin:hover, .recent-activity:hover {
             transform: translateY(-5px);
         }
-        .section h2 {
+        .view-admin h2, .recent-activity h2 {
             font-size: 1.8em;
             margin-bottom: 15px;
         }
-        .section table {
+        .view-admin table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
-        .section th, .section td {
+        .view-admin th, .view-admin td {
             padding: 12px 18px;
             border: 1px solid #ddd;
             text-align: left;
             font-size: 1.1em;
         }
-        .section th {
+        .view-admin th {
             background-color: #4CAF50; /* Green background */
-            color: white;
+            color: white; /* White text */
+            text-align: left;
             font-size: 1.1em;
-        }
+}
 
-        .section tr:nth-child(even) {
+        .view-admin tr:nth-child(even) {
             background-color: #fafafa;
         }
-        .section button {
+        .view-admin button {
             padding: 8px 14px;
             background-color: #4CAF50;
             color: white;
@@ -76,9 +77,10 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
+            margin-right: 8px;
             transition: background-color 0.3s;
         }
-        .section button:hover {
+        .view-admin button:hover {
             background-color: #45a049;
         }
         .add-staff-btn {
@@ -138,6 +140,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             gap: 10px;
         }
         .btn-success {
+            
             color: white;
             border-radius: 8px;
             padding: 8px 16px;
@@ -155,15 +158,16 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     <main>
         <section class="admin-content">
             <!-- View Admin Section -->
-            <div class="section">
+            <div class="view-admin">
                 <h2>Admin Management</h2>
                 <div class="top">
                     <div class="searchbar">
-                        <input type="text" placeholder="Search with name" name="search" id="search">
+                        <ion-icon class="magni" name="search-outline"></ion-icon>
+                        <input type="text" class="input" placeholder="Search with name" name="search" id="search">
                     </div>
                     <form method="POST" action="generate_admin.php">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 Export:
                             </button>
                             <ul class="dropdown-menu">
@@ -185,58 +189,69 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                 <hr>
 
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Staff ID</th>
-                            <th>Admin ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Actions</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                    <?php
-                    // Query the database for admin details
-                    $query = "SELECT staff_id, admin_id, admin_name, admin_email, admin_status FROM admin";
-                    $result = mysqli_query($connect, $query);
+    <thead>
+        <tr>
+            <th>Staff ID</th>
+            <th>Admin ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+            <th>Status</th>
+            
+        </tr>
+    </thead>
+    <tbody id="table-body">
+    <?php
+    // Query the database for admin details
+    $query = "SELECT staff_id, admin_id, admin_name, admin_email, admin_status FROM admin";
+    $result = mysqli_query($connect, $query);
 
-                    if ($result && mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr>";
-                            echo "<td>" . $row['staff_id'] . "</td>";
-                            echo "<td>" . $row['admin_id'] . "</td>";
-                            echo "<td>" . $row['admin_name'] . "</td>";
-                            echo "<td>" . $row['admin_email'] . "</td>";
-                            
-                            // Actions column
-                            echo "<td>";
-                            echo "<button onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\">View Details</button>";
-                            echo "</td>";
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['staff_id'] . "</td>";
+            echo "<td>" . $row['admin_id'] . "</td>";
+            echo "<td>" . $row['admin_name'] . "</td>";
+            echo "<td>" . $row['admin_email'] . "</td>";
+            
+            // Actions column
+            echo "<td>";
+            echo "<button onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\" style='background-color: #4CAF50; color: white; border: none; padding: 5px 10px;'>View Details</button>";
+            echo "</td>";
 
-                            // Status column
-                            echo "<td>";
-                            if ($admin_id === 'superadmin') {
-                                echo "<form method='POST' action='toggle_admin_status.php'>";
-                                echo "<input type='hidden' name='staff_id' value='" . $row['staff_id'] . "'>";
-                                echo "<button type='submit' name='toggle_status'>";
-                                echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
-                                echo "</button>";
-                                echo "</form>";
-                            } else {
-                                echo "<button onclick='noPermission()'>";
-                                echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
-                                echo "</button>";
-                            }
-                            echo "</td>";
-                            echo "</tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='6'>No admin data available</td></tr>";
-                    }
-                    ?>
-                    </tbody>
-                </table>
+            // Status column
+            echo "<td>";
+            if ($admin_id === 'superadmin') {
+                // For superadmin, show the form and allow toggling the admin status
+                echo "<form method='POST' action='toggle_admin_status.php' style='display:inline-block; margin: 0;'>";
+                echo "<input type='hidden' name='staff_id' value='" . $row['staff_id'] . "'>";
+                echo "<button type='submit' name='toggle_status' style='background-color: " . ($row['admin_status'] == 1 ? '#4CAF50' : '#ff4d4d') . "; color: white; border: none; padding: 5px 10px;'>";
+                echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
+                echo "</button>";
+                echo "</form>";
+            } else {
+                // For non-superadmin, show the same button but prevent form submission and show "No Permission"
+                echo "<form method='POST' action='#' style='display:inline-block; margin: 0;'>";
+                echo "<input type='hidden' name='staff_id' value='" . $row['staff_id'] . "'>";
+                echo "<button type='button' onclick='noPermission()' style='background-color: " . ($row['admin_status'] == 1 ? '#4CAF50' : '#ff4d4d') . "; color: white; border: none; padding: 5px 10px;'>";
+                echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
+                echo "</button>";
+                echo "</form>";
+            }
+            echo "</td>";
+            
+            
+            
+            
+            echo "</tr>";
+        }
+    } else {
+        echo "<tr><td colspan='6'>No admin data available</td></tr>";
+    }
+    ?>
+</tbody>
+
+</table>
 
             </div>
         </section>
