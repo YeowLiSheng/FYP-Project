@@ -4,7 +4,7 @@ include 'admin_sidebar.php';
 
 $product_id = $_GET['product_id'] ?? 0;
 
-// 查询产品或促销产品信息
+
 $product_query = "
     SELECT 
         COALESCE(p.product_id, pp.promotion_id) AS item_id,
@@ -27,7 +27,7 @@ $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $product = $stmt->get_result()->fetch_assoc();
 
-// 查询产品或促销产品的评论
+
 $review_query = "
     SELECT 
         r.review_id, 
@@ -166,11 +166,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 .modal-content {
     position: relative;
     text-align: center;
-    background: white; /* 白色背景 */
+    background: white; 
     padding: 25px;
     border-radius: 15px;
-    color: #333; /* 深灰文本颜色 */
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* 轻微阴影 */
+    color: #333; 
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Modal Header */
@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     font-size: 24px;
     font-weight: bold;
     letter-spacing: 0.5px;
-    color: #333; /* 深灰标题颜色 */
+    color: #333; 
 }
 
 /* Textarea */
@@ -188,20 +188,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     height: 150px;
     resize: none;
     padding: 15px;
-    border: 1px solid #ccc; /* 浅灰边框 */
+    border: 1px solid #ccc; 
     border-radius: 10px;
     font-size: 14px;
     font-family: Arial, sans-serif;
     margin-bottom: 20px;
-    background-color: #f9f9f9; /* 浅灰背景 */
-    color: #333; /* 深灰文本颜色 */
+    background-color: #f9f9f9; 
+    color: #333; 
     transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .modal textarea:focus {
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1); /* 聚焦效果 */
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
     outline: none;
-    border-color: #666; /* 聚焦时边框颜色 */
+    border-color: #666; 
 }
 
 /* Buttons */
@@ -212,13 +212,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     border: none;
     border-radius: 25px;
     cursor: pointer;
-    background: #333; /* 深灰背景 */
-    color: white; /* 白色按钮文本 */
+    background: #333; 
+    color: white; 
     transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .modal button:hover {
-    background: #555; /* 浅灰悬停效果 */
+    background: #555; 
     transform: scale(1.05);
 }
 
@@ -229,13 +229,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     right: 20px;
     font-size: 24px;
     font-weight: bold;
-    color: #333; /* 深灰关闭按钮 */
+    color: #333; 
     cursor: pointer;
     transition: color 0.3s ease;
 }
 
 .close-btn:hover {
-    color: #555; /* 悬停时的按钮颜色 */
+    color: #555; 
 }
 
         .image-modal {
@@ -348,7 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
-            <button type="submit" name="delete_reply" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this reply?')">Delete Reply</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteReply(<?php echo $review_id; ?>)">Delete Reply</button>
 
         </form>
     </div>
@@ -359,6 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <img src="" alt="Review Image" id="imagePreview">
     <span class="close-btn" onclick="closeImageModal()">&times;</span>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 function openReplyForm(reviewId, currentReply) {
@@ -369,7 +370,7 @@ function openReplyForm(reviewId, currentReply) {
     replyTextarea.value = currentReply || '';
     document.getElementById('reviewIdInput').value = reviewId;
 
-    // 如果当前回复为空，隐藏删除按钮
+    
     if (!currentReply) {
         deleteButton.style.display = 'none';
     } else {
@@ -390,6 +391,38 @@ function openImageModal(imageUrl) {
 function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
+
+function confirmDeleteReply(reviewId) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Are you sure?',
+            text: 'You will not be able to recover this reply!',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, keep it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit the form to delete the reply
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = ''; // Same page
+
+                var reviewInput = document.createElement('input');
+                reviewInput.type = 'hidden';
+                reviewInput.name = 'review_id';
+                reviewInput.value = reviewId;
+                form.appendChild(reviewInput);
+
+                var deleteReplyInput = document.createElement('input');
+                deleteReplyInput.type = 'hidden';
+                deleteReplyInput.name = 'delete_reply';
+                form.appendChild(deleteReplyInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
 </script>
 </body>
 </html>
