@@ -290,15 +290,11 @@ $distinct_items_query = "
     SELECT COUNT(*) AS distinct_count
     FROM (
         SELECT 
-            sc.variant_id, 
-            sc.color, 
-            sc.size
+            sc.variant_id
         FROM shopping_cart sc
         WHERE sc.user_id = $user_id
         GROUP BY 
-            sc.variant_id, 
-            sc.color, 
-            sc.size
+            sc.variant_id
     ) AS distinct_items";
 
 $distinct_items_result = $connect->query($distinct_items_query);

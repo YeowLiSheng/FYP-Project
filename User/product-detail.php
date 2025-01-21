@@ -43,9 +43,7 @@ $cart_items_query = "
         pm.promotion_status,
 		pv.stock AS product_stock,
         SUM(sc.qty) AS total_qty, 
-        SUM(sc.total_price) AS total_price,
-		MAX(sc.final_total_price) AS final_total_price, 
-		MAX(sc.voucher_applied) AS voucher_applied
+        SUM(sc.total_price) AS total_price
     FROM shopping_cart sc
     LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
 	LEFT JOIN product p ON pv.product_id = p.product_id
@@ -54,9 +52,31 @@ $cart_items_query = "
     GROUP BY 
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
+// Handle AJAX request to delete item
+
 $query = "SELECT * FROM product_variant";
 $result = mysqli_query($connect, $query);
 $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $connect->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
 
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id']) && isset($_GET['type'])) {
@@ -437,12 +457,7 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-						
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -490,8 +505,8 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 								<a href="product.php">Shop</a>
 							</li>
 
-							<li>
-								<a href="package.php">Packages</a>
+                            <li>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -514,17 +529,11 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
 			</div>	
@@ -546,6 +555,7 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 			</div>
 		</div>
 	</header>
+
 
 	<!-- Cart -->
 	<div class="wrap-header-cart js-panel-cart">
@@ -1761,7 +1771,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         dataType: 'json',
         success: function (response) {
             if (response.success) {
-                swal(`${productName} has been added to your cart!`, "", "success");
+                swal(`Peoduct has been added to your cart!`, "", "success");
                 clearStockWarning();
             } else {
                 showStockWarning(response.error || "Failed to add product to cart.");
