@@ -547,17 +547,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     flex-direction: column;
 }
 
-
-.fullscreen-white {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: white;
-        z-index: 9999;
-        display: none; /* 初始隐藏 */
-    }
 /* Pagination container positioned at the bottom-right */
 .pagination-controls {
     display: flex;
@@ -1059,8 +1048,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
 
 									
-						<div id="fullscreenWhite" class="fullscreen-white"></div>
-
+						
 						
 					</div>
 				</div>
@@ -1760,10 +1748,11 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 	
 
 		
+		
 		function confirmPayment() {
-        // 显示全屏白色背景
-        const whiteBackground = document.getElementById('fullscreenWhite');
-        whiteBackground.style.display = 'block';
+        // 清空页面内容
+        document.body.innerHTML = '';
+        document.body.style.backgroundColor = 'white'; // 设置背景为白色
 
         // 显示加载状态
         Swal.fire({
@@ -1785,7 +1774,6 @@ document.getElementById('expiry-date').addEventListener('input', function () {
                 confirmButtonText: 'OK',
                 allowOutsideClick: false // 阻止点击外部关闭弹窗
             }).then(() => {
-                whiteBackground.style.display = 'none'; // 隐藏全屏白色背景
                 goToDashboard(); // 调用导航到仪表板的函数
             });
         }, 2000);
@@ -1794,6 +1782,7 @@ document.getElementById('expiry-date').addEventListener('input', function () {
     function goToDashboard() {
         window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
     }
+
 
 
 // JavaScript for Pagination with Shopee-like design
