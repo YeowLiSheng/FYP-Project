@@ -1246,7 +1246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
-
+	<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
     function showTab(status) {
         document.querySelectorAll('.order-container').forEach(container => {
@@ -1258,36 +1258,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         document.getElementById(status + '-tab').classList.add('active');
     }
 
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    function openPopup(event, orderId) {
+        event.stopPropagation(); 
+        document.getElementById("popup-order-id").value = orderId;
+        document.getElementById("popup-form").style.display = "flex";
+    }
 
-function openPopup(event, orderId) {
-    event.stopPropagation(); 
-    document.getElementById("popup-order-id").value = orderId;
-    document.getElementById("popup-form").style.display = "flex";
-}
+    function closePopup() {
+        document.getElementById("popup-form").style.display = "none";
+    }
 
-function closePopup() {
-    document.getElementById("popup-form").style.display = "none";
-}
-
-function handleFormSubmit(event) {
-    event.preventDefault(); // 阻止表单的默认提交行为
-
-    // 模拟服务器请求
-    setTimeout(function() {
-        // 假设订单状态更新成功
+    function handleSubmit(event) {
+        event.preventDefault(); // 阻止表单的默认提交行为
+        // 模拟提交后的处理，可以在这里加入实际的表单提交逻辑
         Swal.fire({
             icon: 'success',
             title: 'Order Status Updated Successfully',
-            text: 'Your order status has been updated.',
+            text: 'Thank you for confirming your order.',
             confirmButtonText: 'OK'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                closePopup(); // 关闭弹窗
-            }
+        }).then(() => {
+            // 这里可以处理表单提交后的进一步逻辑，比如刷新页面或跳转
+            document.querySelector('form').submit(); // 手动提交表单
         });
-    }, 1000);
-}
+    }
 	</script>
 
 </body>
