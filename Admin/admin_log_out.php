@@ -1,8 +1,7 @@
 <?php
 session_start(); // Start the session
 include("dataconnection.php");
-// session_unset(); // This line is optional; it clears all session variables
-session_destroy(); // Destroy the session
+
 echo "<!DOCTYPE html>
 <html>
 <head>
