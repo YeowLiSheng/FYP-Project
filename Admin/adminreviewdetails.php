@@ -2,32 +2,57 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
-
 $product_id = $_GET['product_id'] ?? 0;
 
-// 查询产品信息
-$product_query = "SELECT product_name, product_image FROM product WHERE product_id = ?";
+// 查询产品或促销产品信息
+$product_query = "
+    SELECT 
+        COALESCE(p.product_id, pp.promotion_id) AS item_id,
+        CASE 
+            WHEN p.product_id IS NOT NULL THEN p.product_name
+            ELSE pp.promotion_name
+        END AS item_name,
+        CASE 
+            WHEN p.product_id IS NOT NULL THEN p.product_image
+            ELSE pp.promotion_image
+        END AS item_image
+    FROM product_variant pv
+    LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+    WHERE COALESCE(p.product_id, pp.promotion_id) = ?
+    LIMIT 1
+";
 $stmt = $connect->prepare($product_query);
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $product = $stmt->get_result()->fetch_assoc();
 
-// 查询产品评论
+// 查询产品或促销产品的评论
 $review_query = "
-    SELECT r.review_id, r.rating, r.comment, r.image AS review_image, r.created_at, 
-           u.user_name, u.user_image, r.admin_reply, r.status
+    SELECT 
+        r.review_id, 
+        r.rating, 
+        r.comment, 
+        r.image AS review_image, 
+        r.created_at, 
+        u.user_name, 
+        u.user_image, 
+        r.admin_reply, 
+        r.status
     FROM reviews r 
     INNER JOIN user u ON r.user_id = u.user_id 
     WHERE r.detail_id IN (
-        SELECT detail_id FROM order_details WHERE product_id = ?
+        SELECT od.detail_id 
+        FROM order_details od
+        INNER JOIN product_variant pv ON od.variant_id = pv.variant_id
+        WHERE pv.product_id = ? OR pv.promotion_id = ?
     )
     ORDER BY r.created_at DESC
 ";
 $stmt = $connect->prepare($review_query);
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("ii", $product_id, $product_id);
 $stmt->execute();
 $reviews = $stmt->get_result();
-
 // 处理管理员操作
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
