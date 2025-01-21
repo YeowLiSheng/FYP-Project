@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Operation Completed',
+                    title: 'Reply Updated',
                     text: '" . $success_message . "',
                     confirmButtonText: 'OK'
                 }).then((result) => {
