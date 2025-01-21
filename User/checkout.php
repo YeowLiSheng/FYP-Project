@@ -70,18 +70,21 @@ $cart_result = mysqli_query($conn, $cart_query);
 
 
 if (mysqli_num_rows($cart_result) === 0) {
-    echo '<script>
-        document.addEventListener("DOMContentLoaded", function() {
+    // 确保缓冲区正常启动
+    ob_clean();
+    echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+    echo "<script>
+        document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
-                icon: "error",
-                title: "Your Shopping Cart is Empty",
-                text: "Please add a product first.",
-                confirmButtonText: "OK"
+                icon: 'error',
+                title: '您的购物车为空',
+                text: '请先添加商品。',
+                confirmButtonText: '确定'
             }).then(() => {
-                window.location.href = "product.php";
+                window.location.href = 'product.php';
             });
         });
-    </script>';
+    </script>";
     exit;
 }
 
