@@ -6,16 +6,16 @@ include 'dataconnection.php';
 function fetchReviewData($connect) {
     $query = "
         SELECT 
-            item.item_id AS review_item_id,
-            item.item_name AS review_item_name,
-            item.item_image AS review_item_image,
-            item.category_name AS review_category_name,
-            item.item_type AS review_item_type, 
-
+            grouped.item_id AS review_item_id,
+            grouped.item_name AS review_item_name,
+            grouped.item_image AS review_item_image,
+            grouped.category_name AS review_category_name,
+            grouped.item_type AS review_item_type, 
             COUNT(r.review_id) AS total_reviews,
             ROUND(AVG(r.rating), 1) AS avg_rating,
             MAX(r.created_at) AS latest_review
         FROM (
+          
             SELECT 
                 p.product_id AS item_id,
                 p.product_name AS item_name,
@@ -23,25 +23,28 @@ function fetchReviewData($connect) {
                 c.category_name AS category_name,
                 'product' AS item_type,
                 od.detail_id
-            FROM product p
+            FROM product_variant pv
+            INNER JOIN product p ON pv.product_id = p.product_id
             INNER JOIN category c ON p.category_id = c.category_id
-            INNER JOIN order_details od ON p.product_id = od.product_id
-            WHERE od.product_id IS NOT NULL
+            INNER JOIN order_details od ON pv.variant_id = od.variant_id
+            WHERE pv.product_id IS NOT NULL
 
             UNION ALL
 
+          
             SELECT 
-                pp.package_id AS item_id,
-                pp.package_name AS item_name,
-                pp.package_image AS item_image,
-                'Package' AS category_name,
-                'package' AS item_type,
+                pp.promotion_id AS item_id,
+                pp.promotion_name AS item_name,
+                pp.promotion_image AS item_image,
+                'Promotion' AS category_name,
+                'promotion' AS item_type,
                 od.detail_id
-            FROM product_package pp
-            INNER JOIN order_details od ON pp.package_id = od.package_id
-            WHERE od.package_id IS NOT NULL
-        ) AS item
-        INNER JOIN reviews r ON item.detail_id = r.detail_id
+            FROM product_variant pv
+            INNER JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+            INNER JOIN order_details od ON pv.variant_id = od.variant_id
+            WHERE pv.promotion_id IS NOT NULL
+        ) AS grouped
+        INNER JOIN reviews r ON grouped.detail_id = r.detail_id
         WHERE r.status = 'active'
         GROUP BY review_item_id, review_item_name, review_item_image, review_category_name
         ORDER BY latest_review DESC
@@ -57,7 +60,7 @@ $pdf->AddPage();
 $pdf->Image('../User/images/YLS2.jpg', 10, 10, 30);
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->SetXY(50, 15);
-$pdf->Cell(0, 10, 'YLS Atelier - Product & Package Reviews', 0, 1, 'L');
+$pdf->Cell(0, 10, 'YLS Atelier - Product Reviews', 0, 1, 'L');
 $pdf->Ln(20);
 
 // Table Header
@@ -107,5 +110,5 @@ $pdf->SetY(-15);
 $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
 // Output the PDF
-$pdf->Output('D', 'Product_and_Package_Reviews.pdf');
+$pdf->Output('D', 'Product_Reviews.pdf');
 ?>

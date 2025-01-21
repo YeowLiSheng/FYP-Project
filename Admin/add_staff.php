@@ -147,12 +147,12 @@ include 'admin_sidebar.php';
 
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email">
+                <input type="email" class="form-control" id="email" name="email" required>
                 <div id="check_e" class="text-danger">Enter a valid email address</div>
             </div>
             <div class="mb-3">
                 <label for="contactNumber" class="form-label">Contact Number</label>
-                <input type="text" class="form-control" id="contactNumber" name="contactNumber">
+                <input type="text" class="form-control" id="contactNumber" name="contactNumber" required>
                 <div id="check_num" class="text-danger">Enter a valid contact number</div>
             </div>
             <input type="submit" class="btn btn-primary" name="addstaff" value="Add Staff">

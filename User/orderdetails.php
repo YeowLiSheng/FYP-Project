@@ -83,12 +83,13 @@ $details_stmt = $conn->prepare("
         od.detail_id,
         od.order_id,
         pv.variant_id,
+		pv.color,
         COALESCE(p.product_id, pp.promotion_id) AS product_or_promotion_id,
         COALESCE(p.product_name, pp.promotion_name) AS name,
         od.quantity,
         od.unit_price,
         od.total_price,
-        COALESCE(p.product_image, pp.promotion_image) AS image
+        pv.Quick_View1 AS image
     FROM order_details od
     JOIN product_variant pv ON od.variant_id = pv.variant_id
     LEFT JOIN product p ON pv.product_id = p.product_id
@@ -828,15 +829,19 @@ textarea {
             <h3><?= $current_user['user_name'] ?></h3>
         </div>
         <ul>
-            <!-- My Account -->
-            <li><i class="fa fa-user"></i> My Account</li>
+           <!-- My Account -->
+		   <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
-            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+
+<li class="profile-item">
+    <a href="edit_profile.php">
+        <i class="fa fa-edit"></i> Edit Profile
+    </a>
+</li>           
+
             <!-- My Orders -->
-            <li><i class="fa fa-box"></i> My Orders</li>
-        </ul>
+			<li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
+			</ul>
     </div>
 
 <div class="order-details-container">
@@ -863,6 +868,7 @@ textarea {
                 <tr>
                     <th>Image</th>
                     <th>Product Name</th>
+					<th>Color</th>
                     <th>Quantity</th>
                     <th>Unit Price</th>
                     <th>Total Price</th>
@@ -873,6 +879,7 @@ textarea {
                 <tr>
     <td><img src="images/<?= $detail['image'] ?>" alt="<?= $detail['name'] ?>" class="product-image"></td>
     <td><?= $detail['name'] ?></td>
+	<td><?= $detail['color']?></td>
     <td><?= $detail['quantity'] ?></td>
     <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
     <td>RM <?= number_format($detail['total_price'], 2) ?></td>

@@ -61,12 +61,7 @@ function fetchOrdersWithProducts($conn, $user_id, $status = null) {
                 END
                 SEPARATOR ', '
             ) AS products, 
-            MIN(
-                CASE 
-                    WHEN pv.product_id IS NOT NULL THEN p.product_image
-                    WHEN pv.promotion_id IS NOT NULL THEN pp.promotion_image
-                END
-            ) AS product_image
+            pv.Quick_View1 AS product_image
         FROM orders o
         JOIN order_details od ON o.order_id = od.order_id
         JOIN product_variant pv ON od.variant_id = pv.variant_id

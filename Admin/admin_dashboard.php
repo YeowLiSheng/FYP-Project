@@ -46,14 +46,30 @@ function getTotalSales($connect) {
 $totalSales = getTotalSales($connect);
 
 function getTopProducts($connect) {
-    $query = "SELECT p.product_name, p.product_image, SUM(od.quantity) AS total_sold 
-              FROM order_details od
-              INNER JOIN product p ON od.product_id = p.product_id
-              GROUP BY p.product_name, p.product_image
-              ORDER BY total_sold DESC LIMIT 5";
+    $query = "
+        SELECT 
+            IFNULL(p.product_name, pp.promotion_name) AS name,
+            pv.color AS color,
+            pv.Quick_View1 AS image,
+            SUM(od.quantity) AS total_sold
+        FROM 
+            order_details od
+        INNER JOIN 
+            product_variant pv ON od.variant_id = pv.variant_id
+        LEFT JOIN 
+            product p ON pv.product_id = p.product_id
+        LEFT JOIN 
+            promotion_product pp ON pv.promotion_id = pp.promotion_id
+        GROUP BY 
+            name, color, image
+        ORDER BY 
+            total_sold DESC
+        LIMIT 5";
+    
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
+
 $topProducts = getTopProducts($connect);
 
 function getWeeklySalesWithDates($connect) {
@@ -125,10 +141,25 @@ function getGenderDistribution($connect) {
 $genderDistribution = getGenderDistribution($connect);
 
 function getLowStockProducts($connect) {
-    $query = "SELECT product_name, product_image, product_stock 
-              FROM product 
-              ORDER BY product_stock ASC 
-              LIMIT 5";
+    $query = "
+        SELECT 
+            COALESCE(p.product_name, pp.promotion_name) AS product_name,
+            pv.Quick_View1 AS product_image,
+            pv.color,
+            pv.stock AS product_stock
+            
+        FROM 
+            product_variant pv
+        LEFT JOIN 
+            product p ON pv.product_id = p.product_id
+        LEFT JOIN 
+            promotion_product pp ON pv.promotion_id = pp.promotion_id
+        WHERE 
+            pv.stock > 0
+        ORDER BY 
+            pv.stock ASC
+        LIMIT 5
+    ";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
@@ -453,29 +484,35 @@ $lowStockProducts = getLowStockProducts($connect);
 
         <div class="card-container">
     <!-- Top 5 Products -->
-    <div class="card">
-        <div class="card-header">Top 5 Products by Sales</div>
-        <div class="card-content">
-            <table class="table table-striped">
-                <thead>
+<div class="card">
+    <div class="card-header">Top 5 Products by Sales</div>
+    <div class="card-content">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                    <th>Product Name</th>
+                    <th>Color</th>
+                    <th>Image</th>
+                    <th>Total Sold</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($topProducts as $product): ?>
                     <tr>
-                        <th>Product Image</th>
-                        <th>Product Name</th>
-                        <th>Units Sold</th>
+                        <td><?php echo htmlspecialchars($product['name']); ?></td>
+                        <td><?php echo htmlspecialchars($product['color']); ?></td>
+                        <td>
+                            <img src="../User/images/<?php echo htmlspecialchars($product['image']); ?>" 
+                                 alt="<?php echo htmlspecialchars($product['name']); ?>" 
+                                 style="width: 60px; height: 60px; border-radius: 8px;">
+                        </td>
+                        <td><?php echo htmlspecialchars($product['total_sold']); ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topProducts as $product): ?>
-                        <tr>
-                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
-                            <td><?php echo $product['product_name']; ?></td>
-                            <td><?php echo $product['total_sold']; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
+</div>
                         
     <!-- Recent Users -->
     <div class="card">
@@ -516,6 +553,7 @@ $lowStockProducts = getLowStockProducts($connect);
                 <thead>
                     <tr>
                         <th>Product Name</th>
+                        <th>Color</th>
                         <th>Image</th>
                         <th>Stock Quantity</th>
                     </tr>
@@ -524,6 +562,7 @@ $lowStockProducts = getLowStockProducts($connect);
                     <?php foreach ($lowStockProducts as $product): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                            <td><?php echo htmlspecialchars($product['color']); ?></td>
                             <td><img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
                             <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
                         </tr>

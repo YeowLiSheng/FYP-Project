@@ -115,18 +115,21 @@ LIMIT 5";
 $recentOrders_result = $connect->query($recentOrders_query);
 $recentOrders = $recentOrders_result->fetch_all(MYSQLI_ASSOC);
 
+$totalQuantity = 0;
 // Fetch category-wise sales data
 $categorySales_query = "
-    SELECT c.category_name, SUM(od.quantity) AS total_quantity
+    SELECT 
+        c.category_name, 
+        SUM(od.quantity) AS total_quantity
     FROM order_details od
-    JOIN product p ON od.product_id = p.product_id
-    JOIN category c ON p.category_id = c.category_id
+    LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
+    LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+    LEFT JOIN category c 
+        ON p.category_id = c.category_id 
+        OR pp.category_id = c.category_id
     GROUP BY c.category_id";
 $categorySales_result = $connect->query($categorySales_query);
-
-// Process data for the pie chart
-$categorySalesData = [];
-$totalQuantity = 0;
 
 while ($row = $categorySales_result->fetch_assoc()) {
     $totalQuantity += $row['total_quantity'];

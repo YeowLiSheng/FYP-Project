@@ -273,7 +273,7 @@ if (isset($_GET['blog_id'])) {
             cursor: pointer;
             position: absolute;
             margin-top: -65px;
-            right: 360px;
+            right: 480px;
         }
 
         .close-btn:hover {
