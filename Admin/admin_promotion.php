@@ -1,6 +1,6 @@
 <?php 
     include 'dataconnection.php';
-    $sql = "SELECT category_id FROM promotion"; 
+    $sql = "SELECT category_id FROM promotion_product"; 
     $result = $connect->query($sql);
 
     $categoryCounts = [1 => 0, 2 => 0, 3 => 0];
@@ -932,13 +932,13 @@ function add_check() {
                                     </td>
 
                                     <?php
-                                    if ($row['promotion_status'] == "Available") { ?>
+                                    if ($row['product_status'] == "Available") { ?>
                                         <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>" style="color:#0EAF09;">
-                                            <?php echo $row['promotion_status'] ?>
+                                            <?php echo $row['product_status'] ?>
                                         </td>
                                     <?php } else { ?>
                                         <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>" style="color:red;">
-                                            <?php echo $row['promotion_status'] ?>
+                                            <?php echo $row['product_status'] ?>
                                         </td>
                                     <?php 
                                 } 
@@ -1024,7 +1024,7 @@ function add_check() {
                                                             <div class="col-md-12">
                                                                 <div class="form-group mb-4">
                                                                     <label for="product_title">Product Name:</label>
-                                                                    <input type="text" class="form-control" name="product_name" placeholder="Enter product name" value="<?php echo $row["product_name"]; ?>">
+                                                                    <input type="text" class="form-control" name="product_name" placeholder="Enter product name" value="<?php echo $row["promotion_name"]; ?>">
                                                                 </div>
                                                             </div>
 
@@ -1130,7 +1130,7 @@ function add_check() {
 
 
                                     <?php
-                                    if ($row["promotion_status"] == "Available") { // 1 = Available, 0 = Unavailable
+                                    if ($row["product_status"] == "Available") { // 1 = Available, 0 = Unavailable
                                         ?>
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
@@ -1138,7 +1138,7 @@ function add_check() {
                                             <i class="lni lni-close"></i>
                                         </button>
                                         <?php
-                                    } else if ($row["promotion_status"] == "Unavailable") {
+                                    } else if ($row["product_status"] == "Unavailable") {
                                         ?>
                                         <button type="button" class="btn btn-success" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"

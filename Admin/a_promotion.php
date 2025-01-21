@@ -6,7 +6,7 @@ session_start();
 if (isset($_POST["save_product"])) {
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
-    $d = $_POST["desc"];
+    $d = mysqli_real_escape_string($connect, $_POST["desc"]);
     $img = $_POST["img"];
     $quick_view1 = $_POST["quick_view1"];
     $quick_view2 = $_POST["quick_view2"];

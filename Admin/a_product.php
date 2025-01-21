@@ -6,7 +6,7 @@ session_start();
 if (isset($_POST["save_product"])) {
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
-    $d = $_POST["desc"];
+    $d = mysqli_real_escape_string($connect, $_POST["desc"]);
     $img = $_POST["img"];
     $quick_view1 = $_POST["quick_view1"];
     $quick_view2 = $_POST["quick_view2"];
@@ -95,7 +95,7 @@ if (isset($_POST["edit_variant"])) {
     $variant_id = $_POST["variant_id"];
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
-    $d = $_POST["desc"];
+    $d = mysqli_real_escape_string($connect, $_POST["desc"]);
     $price = $_POST["price"];
     $qty = $_POST["qty"];
     $color1 = $_POST["color1"];
