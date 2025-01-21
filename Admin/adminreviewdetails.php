@@ -403,7 +403,7 @@ function confirmDeleteReply() {
         }).then((result) => {
             if (result.isConfirmed) {
                 // Proceed with form submission if confirmed
-                document.querySelector('form').submit();
+                document.getElementById('deleteReplyForm').submit();
             }
         });
     }
