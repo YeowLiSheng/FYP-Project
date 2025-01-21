@@ -442,7 +442,7 @@ if ($stmt->execute()) {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    z-index: 9980;;
+    z-index: 1600;
     border-radius: 10px;
     width: 400px;
     max-width: 90%;
@@ -525,7 +525,11 @@ textarea {
     margin-left: 10px;
 }
 .swal-popup-highest {
-    z-index: 9999 !important; /* Ensure it stays above all other elements */
+    z-index: 9999 !important;
+    position: fixed; /* 添加固定定位 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 </style>
