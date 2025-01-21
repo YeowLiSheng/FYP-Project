@@ -83,19 +83,32 @@ $pdf->Cell(95, 8, 'Bill To', 0, 0, 'L', true);
 $pdf->Cell(95, 8, 'Ship To', 0, 1, 'R', true);
 
 $pdf->SetFont('Arial', '', 10);
-// 左列：Bill To
+
+// 暂存当前位置
+$currentX = $pdf->GetX();
+$currentY = $pdf->GetY();
+
+// 左列内容：Bill To
+$pdf->SetXY($currentX, $currentY);
 $pdf->Cell(95, 6, $order['user_name'], 0, 0, 'L');
-$pdf->SetX(10); // 设置左对齐起始位置
+$pdf->Ln(6); // 换行
+$billToStartY = $pdf->GetY(); // 记录左列起始高度
 $pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'L');
 
-// 右列：Ship To
-$pdf->SetY($pdf->GetY() - 12); // 保持与左侧行起始位置一致
-$pdf->SetX(105); // 设置右对齐起始位置
-$pdf->Cell(95, 6, $order['user_name'], 0, 1, 'R');
-$pdf->SetX(105);
+// 记录左列的最终高度
+$billToEndY = $pdf->GetY();
+
+// 右列内容：Ship To
+$pdf->SetXY($currentX + 95, $currentY);
+$pdf->Cell(95, 6, $order['user_name'], 0, 0, 'R');
+$pdf->Ln(6); // 换行
+$pdf->SetXY($currentX + 95, $billToStartY); // 确保右列与左列对齐
 $pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'R');
 
-$pdf->Ln(10);
+// 确保左右两列占用的高度相同
+$rightEndY = $pdf->GetY();
+$finalY = max($billToEndY, $rightEndY); // 获取两列的最大 Y 值
+$pdf->SetY($finalY + 10); // 在两列结束后添加额外间距
 
 
 $pdf->SetDrawColor(128, 128, 128);
