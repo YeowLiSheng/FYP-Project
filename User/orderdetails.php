@@ -442,7 +442,7 @@ if ($stmt->execute()) {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    z-index: 1600;
+    z-index: 9980;;
     border-radius: 10px;
     width: 400px;
     max-width: 90%;
