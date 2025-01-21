@@ -936,13 +936,14 @@ body {
 .view-product-btn {
     background: #007bff;
     color: #fff;
-    border: none;
+    border: 10px;
+    font-size: 13px;
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
     transition: background 0.3s;
     height: 40px; /* Set fixed height */
-    width: 100px; /* Set fixed width */
+    width: 80px; /* Set fixed width */
     text-align: center; /* Ensure button text is centered */
     display: flex;
     align-items: center;
