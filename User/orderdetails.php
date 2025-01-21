@@ -524,57 +524,10 @@ textarea {
     color: white;
     margin-left: 10px;
 }
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-.popup-success {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-	z-index: 2000;
-    animation: fadeIn 0.5s ease;
+.swal-popup-highest {
+    z-index: 9999 !important; /* Ensure it stays above all other elements */
 }
 
-.success-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.success-icon {
-    font-size: 60px;
-    color: #28a745; /* 绿色图标 */
-    margin-bottom: 15px;
-}
-
-.popup-success h3 {
-    font-size: 20px;
-    color: #333;
-}
-
-/* 淡入动画 */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -60%);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-    }
-}
 </style>
 </head>
 <body class="animsition">
@@ -949,18 +902,9 @@ textarea {
         </form>
     </div>
 </div>
-<div id="overlay" style="display: none;"></div>
 
-<div id="successPopup" class="popup-success" style="display: none;">
-    <div class="success-content">
-        <div class="success-icon">
-            <i class="fa fa-check-circle"></i>
-        </div>
-        <h3>Review Submitted Successfully!</h3>
-		<button class="submit-button" onclick="redirectToPage()">OK</button>
 
-    </div>
-</div>
+
 </div>
 </div>
 
@@ -1428,7 +1372,10 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         icon: 'success',
         title: 'Review Submitted',
         text: 'Your review has been successfully submitted!',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
+        customClass: {
+            popup: 'swal-popup-highest'
+        }
     }).then(() => {
         // Optionally reload the page or navigate to another page
         location.reload();
@@ -1439,7 +1386,10 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         icon: 'warning',
         title: 'Duplicate Review',
         text: 'You have already reviewed this product.',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
+        customClass: {
+            popup: 'swal-popup-highest'
+        }
     });
 } else {
     // Show general error popup
@@ -1447,7 +1397,10 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         icon: 'error',
         title: 'Submission Failed',
         text: 'Failed to submit review. Please try again.',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
+        customClass: {
+            popup: 'swal-popup-highest'
+        }
     });
 }
         })
