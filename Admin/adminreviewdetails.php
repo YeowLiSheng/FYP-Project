@@ -53,11 +53,11 @@ $stmt = $connect->prepare($review_query);
 $stmt->bind_param("ii", $product_id, $product_id);
 $stmt->execute();
 $reviews = $stmt->get_result();
-// 处理管理员操作
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-    $staff_id = $_SESSION['staff_id']; // 使用 login.php 中的键名
-
+    $staff_id = $_SESSION['staff_id']; 
+    $success_message = '';
 
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
@@ -66,9 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("sii", $admin_reply, $staff_id, $review_id);
-        $stmt->execute();
-        if (!$stmt->execute()) {
-            die("SQL 执行失败：" . $stmt->error);
+        if ($stmt->execute()) {
+            $success_message = 'Reply added successfully.';
+        } else {
+            $success_message = 'Failed to add reply.';
         }
     } elseif (isset($_POST['toggle_status'])) {
         $new_status = $_POST['new_status'];
@@ -77,17 +78,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $new_status, $review_id);
-        $stmt->execute();
+        if ($stmt->execute()) {
+            $success_message = 'Status updated successfully.';
+        } else {
+            $success_message = 'Failed to update status.';
+        }
     } elseif (isset($_POST['delete_reply'])) {
         $query = "UPDATE reviews 
                   SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = NULL 
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("i", $review_id);
-        $stmt->execute();
+        if ($stmt->execute()) {
+            $success_message = 'Reply deleted successfully.';
+        } else {
+            $success_message = 'Failed to delete reply.';
+        }
     }
 
-    echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
+    echo "
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Operation Completed',
+                    text: '" . $success_message . "',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'adminreviewdetails.php?product_id=$product_id';
+                    }
+                });
+            });
+        </script>";
     exit();
 }
 ?>
