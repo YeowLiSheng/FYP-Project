@@ -46,14 +46,29 @@ function getTotalSales($connect) {
 $totalSales = getTotalSales($connect);
 
 function getTopProducts($connect) {
-    $query = "SELECT p.product_name, p.product_image, SUM(od.quantity) AS total_sold 
-              FROM order_details od
-              INNER JOIN product p ON od.product_id = p.product_id
-              GROUP BY p.product_name, p.product_image
-              ORDER BY total_sold DESC LIMIT 5";
+    $query = "
+        SELECT 
+            IFNULL(p.product_name, pp.promotion_name) AS name,
+            IFNULL(p.product_image, pp.promotion_image) AS image,
+            SUM(od.quantity) AS total_sold
+        FROM 
+            order_details od
+        INNER JOIN 
+            product_variant pv ON od.variant_id = pv.variant_id
+        LEFT JOIN 
+            product p ON pv.product_id = p.product_id
+        LEFT JOIN 
+            promotion_product pp ON pv.promotion_id = pp.promotion_id
+        GROUP BY 
+            name, image
+        ORDER BY 
+            total_sold DESC
+        LIMIT 5";
+    
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
+
 $topProducts = getTopProducts($connect);
 
 function getWeeklySalesWithDates($connect) {
