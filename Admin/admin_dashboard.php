@@ -144,6 +144,7 @@ function getLowStockProducts($connect) {
         SELECT 
             COALESCE(p.product_name, pp.promotion_name) AS product_name,
             COALESCE(p.product_image, pp.promotion_image) AS product_image,
+            pv.color,
             pv.stock AS product_stock
         FROM 
             product_variant pv
@@ -548,6 +549,7 @@ $lowStockProducts = getLowStockProducts($connect);
                 <thead>
                     <tr>
                         <th>Product Name</th>
+                        <th>Color</th>
                         <th>Image</th>
                         <th>Stock Quantity</th>
                     </tr>
@@ -556,6 +558,7 @@ $lowStockProducts = getLowStockProducts($connect);
                     <?php foreach ($lowStockProducts as $product): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                            <td><?php echo htmlspecialchars($product['color']); ?></td>
                             <td><img src="../User/images/<?php echo htmlspecialchars($product['product_image']); ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
                             <td><?php echo htmlspecialchars($product['product_stock']); ?></td>
                         </tr>
