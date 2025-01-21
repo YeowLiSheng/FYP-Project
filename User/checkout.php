@@ -69,12 +69,17 @@ $cart_result = mysqli_query($conn, $cart_query);
 
 
 if (mysqli_num_rows($cart_result) === 0) {
-
     echo "<script>
-        alert('Your Shopping Cart is Empty. Please add product first.');
-        window.location.href = 'product.php'; 
+        Swal.fire({
+            icon: 'error',
+            title: 'Your Shopping Cart is Empty',
+            text: 'Please add a product first.',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = 'product.php';
+        });
     </script>";
-    exit; 
+    exit;
 }
 
 
