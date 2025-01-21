@@ -17,9 +17,10 @@ if (isset($_GET['order_id'])) {
     // 查询订单详情信息
     $order_details_query = "
     SELECT od.*, 
-           COALESCE(p.product_name, pp.promotion_name) AS name,
-           COALESCE(p.product_image, pp.promotion_image) AS image
-    FROM order_details od
+            COALESCE(p.product_name, pp.promotion_name) AS name,
+            pv.Quick_View1 AS image,
+            pv.color,
+            FROM order_details od
     LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
     LEFT JOIN product p ON pv.product_id = p.product_id
     LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
