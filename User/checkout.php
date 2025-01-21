@@ -548,7 +548,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 
-.fullscreen-overlay {
+.fullscreen-white {
         position: fixed;
         top: 0;
         left: 0;
@@ -558,7 +558,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         z-index: 9999;
         display: none; /* 初始隐藏 */
     }
-
 /* Pagination container positioned at the bottom-right */
 .pagination-controls {
     display: flex;
@@ -1058,10 +1057,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<!-- Confirm Payment Button -->
 						
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
-<div id="fullscreenOverlay" class="fullscreen-overlay"></div>
 
 									
-						
+						<div id="fullscreenWhite" class="fullscreen-white"></div>
+
 						
 					</div>
 				</div>
@@ -1762,9 +1761,9 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 
 		
 		function confirmPayment() {
-        // 显示全屏白色遮罩
-        const overlay = document.getElementById('fullscreenOverlay');
-        overlay.style.display = 'block';
+        // 显示全屏白色背景
+        const whiteBackground = document.getElementById('fullscreenWhite');
+        whiteBackground.style.display = 'block';
 
         // 显示加载状态
         Swal.fire({
@@ -1786,7 +1785,7 @@ document.getElementById('expiry-date').addEventListener('input', function () {
                 confirmButtonText: 'OK',
                 allowOutsideClick: false // 阻止点击外部关闭弹窗
             }).then(() => {
-                overlay.style.display = 'none'; // 隐藏遮罩层
+                whiteBackground.style.display = 'none'; // 隐藏全屏白色背景
                 goToDashboard(); // 调用导航到仪表板的函数
             });
         }, 2000);
