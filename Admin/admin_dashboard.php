@@ -143,9 +143,10 @@ function getLowStockProducts($connect) {
     $query = "
         SELECT 
             COALESCE(p.product_name, pp.promotion_name) AS product_name,
-            COALESCE(p.product_image, pp.promotion_image) AS product_image,
+            pv.Quick_View1 AS product_image
             pv.color,
             pv.stock AS product_stock
+
         FROM 
             product_variant pv
         LEFT JOIN 
