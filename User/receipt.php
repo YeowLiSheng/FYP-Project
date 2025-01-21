@@ -85,9 +85,10 @@ $pdf->Cell(95, 8, 'Ship To', 0, 1, 'R', true);
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(95, 6, $order['user_name'], 0, 0, 'L');
 $pdf->Cell(95, 6, $order['user_name'], 0, 1, 'R');
-$pdf->Cell(95, 6, $order['shipping_address'], 0, 0, 'L');
-$pdf->Cell(95, 6, $order['shipping_address'], 0, 1, 'R');
-$pdf->Ln(10);
+$pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'L');
+$pdf->SetXY(105, $pdf->GetY() - 6); // 复位到右侧
+$pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'R');
+$pdf->Ln(18); // 3 行的间隔（6 * 3 = 18）
 
 
 $pdf->SetDrawColor(128, 128, 128);
