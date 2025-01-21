@@ -339,6 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
+<!-- Review Reply Modal -->
 <div class="modal" id="replyModal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
@@ -399,8 +400,8 @@ function confirmDelete() {
             cancelButtonText: 'No, keep it'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submit the form to delete the reply
-                document.querySelector('button[name="delete_reply"]').form.submit();
+                // Ensure the form is submitted
+                document.getElementById('replyForm').submit();
             }
         });
     }
