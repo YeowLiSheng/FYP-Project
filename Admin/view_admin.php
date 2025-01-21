@@ -232,23 +232,26 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 <body>
     <main>
         <section class="admin-content">
+            <!-- View Admin Section -->
             <div class="view-admin">
                 <h2>Admin Management</h2>
-                <div class="search-container">
-                    <ion-icon class="magni" name="search-outline"></ion-icon>
-                    <input type="text" class="input" placeholder="Search with name" name="search" id="search">
-                </div>
-                <form method="POST" action="generate_admin.php">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            Export:
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><button type="submit" class="dropdown-item" name="admin_pdf">PDF</button></li>
-                            <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
-                        </ul>
+                <div class="top">
+                    <div class="searchbar">
+                        <ion-icon class="magni" name="search-outline"></ion-icon>
+                        <input type="text" class="input" placeholder="Search with name" name="search" id="search">
                     </div>
-                </form>
+                    <form method="POST" action="generate_admin.php">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Export:
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button type="submit" class="dropdown-item" name="admin_pdf">PDF</button></li>
+                                <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
 
                 <hr>
 
@@ -260,54 +263,71 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 
                 <hr>
 
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Staff ID</th>
-                            <th>Admin ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Actions</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <?php
-                        $query = "SELECT staff_id, admin_id, admin_name, admin_email, admin_status FROM admin";
-                        $result = mysqli_query($connect, $query);
+                <table>
+    <thead>
+        <tr>
+            <th>Staff ID</th>
+            <th>Admin ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Actions</th>
+            <th>Status</th>
+            
+        </tr>
+    </thead>
+    <tbody id="table-body">
+    <?php
+    // Query the database for admin details
+    $query = "SELECT staff_id, admin_id, admin_name, admin_email, admin_status FROM admin";
+    $result = mysqli_query($connect, $query);
 
-                        if ($result && mysqli_num_rows($result) > 0) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                echo "<tr>";
-                                echo "<td>" . $row['staff_id'] . "</td>";
-                                echo "<td>" . $row['admin_id'] . "</td>";
-                                echo "<td>" . $row['admin_name'] . "</td>";
-                                echo "<td>" . $row['admin_email'] . "</td>";
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            echo "<tr>";
+            echo "<td>" . $row['staff_id'] . "</td>";
+            echo "<td>" . $row['admin_id'] . "</td>";
+            echo "<td>" . $row['admin_name'] . "</td>";
+            echo "<td>" . $row['admin_email'] . "</td>";
+            
+            // Actions column
+            echo "<td>";
+            echo "<button onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\" style='background-color: #4CAF50; color: white; border: none; padding: 5px 10px;'>View Details</button>";
+            echo "</td>";
 
-                                echo "<td><button onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\" style='background-color: #4CAF50; color: white; border: none; padding: 5px 10px;'>View Details</button></td>";
+            // Status column
+            echo "<td>";
+            if ($admin_id === 'superadmin') {
+                // For superadmin, show the form and allow toggling the admin status
+                echo "<form method='POST' action='toggle_admin_status.php' style='display:inline-block; margin: 0;'>";
+                echo "<input type='hidden' name='staff_id' value='" . $row['staff_id'] . "'>";
+                echo "<button type='submit' name='toggle_status' style='background-color: " . ($row['admin_status'] == 1 ? '#4CAF50' : '#ff4d4d') . "; color: white; border: none; padding: 5px 10px;'>";
+                echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
+                echo "</button>";
+                echo "</form>";
+            } else {
+                // For non-superadmin, show the same button but prevent form submission and show "No Permission"
+                echo "<form method='POST' action='#' style='display:inline-block; margin: 0;'>";
+                echo "<input type='hidden' name='staff_id' value='" . $row['staff_id'] . "'>";
+                echo "<button type='button' onclick='noPermission()' style='background-color: " . ($row['admin_status'] == 1 ? '#4CAF50' : '#ff4d4d') . "; color: white; border: none; padding: 5px 10px;'>";
+                echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
+                echo "</button>";
+                echo "</form>";
+            }
+            echo "</td>";
+            
+            
+            
+            
+            echo "</tr>";
+        }
+    } else {
+        echo "<tr><td colspan='6'>No admin data available</td></tr>";
+    }
+    ?>
+</tbody>
 
-                                echo "<td>";
-                                if ($admin_id === 'superadmin') {
-                                    echo "<form method='POST' action='toggle_admin_status.php' style='display:inline-block;'>";
-                                    echo "<input type='hidden' name='staff_id' value='" . $row['staff_id'] . "'>";
-                                    echo "<button type='submit' name='toggle_status' style='background-color: " . ($row['admin_status'] == 1 ? '#4CAF50' : '#ff4d4d') . "; color: white;'>";
-                                    echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
-                                    echo "</button>";
-                                    echo "</form>";
-                                } else {
-                                    echo "<button onclick='noPermission()' style='background-color: " . ($row['admin_status'] == 1 ? '#4CAF50' : '#ff4d4d') . "; color: white;'>";
-                                    echo $row['admin_status'] == 1 ? 'Active' : 'Deactivate';
-                                    echo "</button>";
-                                }
-                                echo "</td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6'>No admin data available</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
+</table>
+
             </div>
         </section>
     </main>
@@ -315,28 +335,31 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        function noPermission() {
-            Swal.fire({
-                icon: 'error',
-                title: 'Permission Denied',
-                text: 'You do not have permission to perform this action.',
-                confirmButtonText: 'OK'
-            });
-        }
-
-        $("#search").keyup(function() {
-            var searchQuery = $(this).val();
-
-            $.ajax({
-                url: "search_admin.php",
-                type: "POST",
-                data: { search: searchQuery },
-                success: function(data) {
-                    $("#table-body").html(data);
-                }
-            });
+<script>
+    function noPermission() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Permission Denied',
+            text: 'You do not have permission to perform this action.',
+            confirmButtonText: 'OK'
         });
-    </script>
+    }
+
+    // AJAX to fetch filtered results when user types
+    $("#search").keyup(function() {
+        var searchQuery = $(this).val();
+
+        $.ajax({
+            url: "search_admin.php",
+            type: "POST",
+            data: { search: searchQuery },
+            success: function(data) {
+                // Replace the table body with the new filtered data
+                $("#table-body").html(data);
+            }
+        });
+    });
+</script>
+
 </body>
 </html>
