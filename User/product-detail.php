@@ -1771,7 +1771,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         dataType: 'json',
         success: function (response) {
             if (response.success) {
-                swal(`${productName} has been added to your cart!`, "", "success");
+                swal(`Peoduct has been added to your cart!`, "", "success");
                 clearStockWarning();
             } else {
                 showStockWarning(response.error || "Failed to add product to cart.");
