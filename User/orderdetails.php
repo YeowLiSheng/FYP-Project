@@ -1377,7 +1377,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
                             swalContainer.style.zIndex = '9999'; // 确保 SweetAlert2 弹窗的层级最高
                         }
                     }
-                });.
+                });
             };
 
             if (data.trim() === "success") {
