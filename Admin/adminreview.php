@@ -7,22 +7,29 @@ $categoryresult=$connect->query($category);
 
 $review = "
     SELECT 
-        p.product_id, 
-        p.product_name, 
-        p.product_image, 
-        c.category_name, 
+        COALESCE(p.product_id, pp.promotion_id) AS item_id,
+        CASE 
+            WHEN p.product_id IS NOT NULL THEN p.product_name
+            ELSE pp.promotion_name
+        END AS item_name,
+        CASE 
+            WHEN p.product_id IS NOT NULL THEN p.product_image
+            ELSE pp.promotion_image
+        END AS item_image,
+        c.category_name,
         COUNT(r.review_id) AS total_reviews,
         ROUND(AVG(r.rating), 1) AS avg_rating,
         MAX(r.created_at) AS latest_review
-    FROM product p
-    INNER JOIN category c ON p.category_id = c.category_id
-    INNER JOIN order_details od ON p.product_id = od.product_id
+    FROM order_details od
+    INNER JOIN product_variant pv ON od.variant_id = pv.variant_id
+    LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+    LEFT JOIN category c ON (p.category_id = c.category_id OR pp.category_id = c.category_id)
     INNER JOIN reviews r ON od.detail_id = r.detail_id
     WHERE r.status = 'active'
-    GROUP BY p.product_id, p.product_name, p.product_image, c.category_name
+    GROUP BY item_id, item_name, item_image, c.category_name
     ORDER BY latest_review DESC
 ";
-
 
     $reviewresult = $connect->query($review);
 
