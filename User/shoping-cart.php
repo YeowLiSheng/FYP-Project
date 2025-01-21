@@ -487,12 +487,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-						
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -540,12 +535,16 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 								<a href="product.php">Shop</a>
 							</li>
 
+                            <li>
+								<a href="promotion.php">Promotion</a>
+							</li>
+
 							<li class="label1" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
@@ -560,17 +559,11 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
 			</div>	
