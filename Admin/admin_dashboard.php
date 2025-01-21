@@ -49,7 +49,8 @@ function getTopProducts($connect) {
     $query = "
         SELECT 
             IFNULL(p.product_name, pp.promotion_name) AS name,
-            IFNULL(p.product_image, pp.promotion_image) AS image,
+            pv.color AS color,
+            pv.Quick_View1 AS image,
             SUM(od.quantity) AS total_sold
         FROM 
             order_details od
@@ -60,7 +61,7 @@ function getTopProducts($connect) {
         LEFT JOIN 
             promotion_product pp ON pv.promotion_id = pp.promotion_id
         GROUP BY 
-            name, image
+            name, color, image
         ORDER BY 
             total_sold DESC
         LIMIT 5";
@@ -488,21 +489,23 @@ $lowStockProducts = getLowStockProducts($connect);
     <div class="card-content">
         <table class="table table-striped">
             <thead>
-                <tr>
-                    <th>Product Image</th>
+            <tr>
                     <th>Product Name</th>
-                    <th>Units Sold</th>
+                    <th>Color</th>
+                    <th>Image</th>
+                    <th>Total Sold</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($topProducts as $product): ?>
                     <tr>
+                        <td><?php echo htmlspecialchars($product['name']); ?></td>
+                        <td><?php echo htmlspecialchars($product['color']); ?></td>
                         <td>
                             <img src="../User/images/<?php echo htmlspecialchars($product['image']); ?>" 
                                  alt="<?php echo htmlspecialchars($product['name']); ?>" 
                                  style="width: 60px; height: 60px; border-radius: 8px;">
                         </td>
-                        <td><?php echo htmlspecialchars($product['name']); ?></td>
                         <td><?php echo htmlspecialchars($product['total_sold']); ?></td>
                     </tr>
                 <?php endforeach; ?>
