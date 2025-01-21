@@ -74,6 +74,8 @@ if (mysqli_num_rows($cart_result) === 0) {
     echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
     echo "
 	<script>
+	    document.addEventListener('DOMContentLoaded', function() {
+
         Swal.fire({
             icon: 'error',
             title: 'Your Shopping Cart is Empty',
@@ -82,6 +84,7 @@ if (mysqli_num_rows($cart_result) === 0) {
         }).then(() => {
             window.location.href = 'product.php';
         });
+		 });
     </script>";
     exit;
 }
