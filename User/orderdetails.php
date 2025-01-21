@@ -433,9 +433,7 @@ if ($stmt->execute()) {
         background: #e0a800;
     }
 
-    .swal-popup-highest {
-    z-index: 9999 !important; /* Ensure it stays above all other elements */
-}
+
 .popup-container {
     position: fixed;
     top: 50%;
@@ -1366,43 +1364,53 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         .then(response => response.text())
         .then(data => {
             // 检查后端响应
-			if (data.trim() === "success") {
-    // Show success popup using SweetAlert2
-    Swal.fire({
-        icon: 'success',
-        title: 'Review Submitted',
-        text: 'Your review has been successfully submitted!',
-        confirmButtonText: 'OK',
-        customClass: {
-            popup: 'swal-popup-highest'
-        }
-    }).then(() => {
-        // Optionally reload the page or navigate to another page
-        location.reload();
-    });
-} else if (data.trim() === "duplicate") {
-    // Show duplicate review error popup
-    Swal.fire({
-        icon: 'warning',
-        title: 'Duplicate Review',
-        text: 'You have already reviewed this product.',
-        confirmButtonText: 'OK',
-        customClass: {
-            popup: 'swal-popup-highest'
-        }
-    });
-} else {
-    // Show general error popup
-    Swal.fire({
-        icon: 'error',
-        title: 'Submission Failed',
-        text: 'Failed to submit review. Please try again.',
-        confirmButtonText: 'OK',
-        customClass: {
-            popup: 'swal-popup-highest'
-        }
-    });
-}
+            if (data.trim() === "success") {
+                // Show success popup using SweetAlert2
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Review Submitted',
+                    text: 'Your review has been successfully submitted!',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-popup-highest'
+                    },
+                    didOpen: () => {
+                        // 确保 Swal 弹窗的 z-index 最高
+                        document.querySelector('.swal2-popup').style.zIndex = '9999';
+                    }
+                }).then(() => {
+                    // Optionally reload the page or navigate to another page
+                    location.reload();
+                });
+            } else if (data.trim() === "duplicate") {
+                // Show duplicate review error popup
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Duplicate Review',
+                    text: 'You have already reviewed this product.',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-popup-highest'
+                    },
+                    didOpen: () => {
+                        document.querySelector('.swal2-popup').style.zIndex = '9999';
+                    }
+                });
+            } else {
+                // Show general error popup
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Submission Failed',
+                    text: 'Failed to submit review. Please try again.',
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-popup-highest'
+                    },
+                    didOpen: () => {
+                        document.querySelector('.swal2-popup').style.zIndex = '9999';
+                    }
+                });
+            }
         })
         .catch(error => {
             console.error("Error submitting review:", error);
