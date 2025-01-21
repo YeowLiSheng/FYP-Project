@@ -140,10 +140,23 @@ function getGenderDistribution($connect) {
 $genderDistribution = getGenderDistribution($connect);
 
 function getLowStockProducts($connect) {
-    $query = "SELECT product_name, product_image, product_stock 
-              FROM product 
-              ORDER BY product_stock ASC 
-              LIMIT 5";
+    $query = "
+        SELECT 
+            COALESCE(p.product_name, pp.promotion_name) AS product_name,
+            COALESCE(p.product_image, pp.promotion_image) AS product_image,
+            pv.stock AS product_stock
+        FROM 
+            product_variant pv
+        LEFT JOIN 
+            product p ON pv.product_id = p.product_id
+        LEFT JOIN 
+            promotion_product pp ON pv.promotion_id = pp.promotion_id
+        WHERE 
+            pv.stock > 0
+        ORDER BY 
+            pv.stock ASC
+        LIMIT 5
+    ";
     $result = mysqli_query($connect, $query);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
