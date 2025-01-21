@@ -155,8 +155,10 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                     echo "<td>{$row['admin_id']}</td>";
                                     echo "<td>{$row['admin_name']}</td>";
                                     echo "<td>{$row['admin_email']}</td>";
-                                    echo "<td><button class='button' onclick=\"location.href='admin_detail.php?staff_id={$row['staff_id']}\"">View</button></td>";
-                                    echo "<td><button class='button' style='background-color: " . ($row['admin_status'] ? '#4CAF50' : '#ff4d4d') . "'>" . ($row['admin_status'] ? 'Active' : 'Deactivate') . "</button></td>";
+                                    echo "<td><button class='button' onclick=\"location.href='admin_detail.php?staff_id=" . $row['staff_id'] . "'\">View</button></td>";
+
+                
+                                    echo "<td><button class='button' style='background-color: " . ($row['admin_status'] ? '#4CAF50' : '#ff4d4d') . ";'>" . ($row['admin_status'] ? 'Active' : 'Deactivate') . "</button></td>";
                                     echo "</tr>";
                                 }
                             } else {
@@ -170,9 +172,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         </section>
     </main>
 
-
-
-
+   
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
