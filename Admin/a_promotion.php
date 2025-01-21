@@ -6,7 +6,7 @@ session_start();
 if (isset($_POST["save_product"])) {
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
-    $d = $_POST["desc"];
+    $d = mysqli_real_escape_string($connect, $_POST["desc"]);
     $img = $_POST["img"];
     $quick_view1 = $_POST["quick_view1"];
     $quick_view2 = $_POST["quick_view2"];
@@ -30,7 +30,7 @@ if (isset($_POST["save_product"])) {
                            VALUES ('$promotion_id', '$color1', '$size1', '$qty', '$quick_view1', '$quick_view2', '$quick_view3')";
         $run_variant = mysqli_query($connect, $insert_variant);
 
-        if (isset($_POST["color2"])) {
+        if (!empty($_POST["color2"])) {
             $color2 = $_POST["color2"];
             $stock2 = $_POST["stock2"];
             $quick_view4 = $_POST["quick_view4"];
