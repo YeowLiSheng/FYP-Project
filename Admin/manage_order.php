@@ -227,8 +227,8 @@ include 'admin_sidebar.php';
         <ion-icon name="search-outline"></ion-icon>
         <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
 
-        <div class="btn-group" style="background-color: #28a745;">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="btn-group" style="background-color: #4CAF50;">
+        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 Export:
             </button>
             <ul class="dropdown-menu">

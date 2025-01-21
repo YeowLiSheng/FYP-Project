@@ -15,7 +15,7 @@ function fetchReviewData($connect) {
             ROUND(AVG(r.rating), 1) AS avg_rating,
             MAX(r.created_at) AS latest_review
         FROM (
-            -- 查询 product_id 的关联信息
+          
             SELECT 
                 p.product_id AS item_id,
                 p.product_name AS item_name,
@@ -31,7 +31,7 @@ function fetchReviewData($connect) {
 
             UNION ALL
 
-            -- 查询 promotion_id 的关联信息
+          
             SELECT 
                 pp.promotion_id AS item_id,
                 pp.promotion_name AS item_name,
