@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <tr><th>Product</th><th>Product Name</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr>
                 <?php while ($row = mysqli_fetch_assoc($order_details_result)): ?>
                     <tr>
-                        <td><img src="../User/images/<?= $row['image'] ?>" alt="<?= $row['product_name'] ?>" class="product-image"></td>
+                        <td><img src="../User/images/<?= $row['image'] ?>" alt="<?= $row['name'] ?>" class="product-image"></td>
                         <td><?= $row['name'] ?></td>
                         <td><?= $row['quantity'] ?></td>
                         <td>RM <?= number_format($row['unit_price'], 2) ?></td>
@@ -239,7 +239,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
             <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
             <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
-            <div class="summary-item"><span>Delivery Charge:</span><span class="value">+ RM <?= number_format($order_data['delivery_charge'], 2) ?></span></div>
             <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
