@@ -76,17 +76,25 @@ $pdf->SetDrawColor(220, 53, 69);
 $pdf->Line(10, 35, 200, 35);
 $pdf->Ln(5);
 
-// Bill To & Ship To 
+// Bill To & Ship To
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->SetFillColor(248, 249, 250);
 $pdf->Cell(95, 8, 'Bill To', 0, 0, 'L', true);
 $pdf->Cell(95, 8, 'Ship To', 0, 1, 'R', true);
 
 $pdf->SetFont('Arial', '', 10);
+// 左列：Bill To
 $pdf->Cell(95, 6, $order['user_name'], 0, 0, 'L');
+$pdf->SetX(10); // 设置左对齐起始位置
+$pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'L');
+
+// 右列：Ship To
+$pdf->SetY($pdf->GetY() - 12); // 保持与左侧行起始位置一致
+$pdf->SetX(105); // 设置右对齐起始位置
 $pdf->Cell(95, 6, $order['user_name'], 0, 1, 'R');
-$pdf->Cell(95, 6, $order['shipping_address'], 0, 0, 'L');
-$pdf->Cell(95, 6, $order['shipping_address'], 0, 1, 'R');
+$pdf->SetX(105);
+$pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'R');
+
 $pdf->Ln(10);
 
 
