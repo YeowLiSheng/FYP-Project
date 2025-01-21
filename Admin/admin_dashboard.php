@@ -481,29 +481,33 @@ $lowStockProducts = getLowStockProducts($connect);
 
         <div class="card-container">
     <!-- Top 5 Products -->
-    <div class="card">
-        <div class="card-header">Top 5 Products by Sales</div>
-        <div class="card-content">
-            <table class="table table-striped">
-                <thead>
+<div class="card">
+    <div class="card-header">Top 5 Products by Sales</div>
+    <div class="card-content">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Product Image</th>
+                    <th>Product Name</th>
+                    <th>Units Sold</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($topProducts as $product): ?>
                     <tr>
-                        <th>Product Image</th>
-                        <th>Product Name</th>
-                        <th>Units Sold</th>
+                        <td>
+                            <img src="../User/images/<?php echo htmlspecialchars($product['image']); ?>" 
+                                 alt="<?php echo htmlspecialchars($product['name']); ?>" 
+                                 style="width: 60px; height: 60px; border-radius: 8px;">
+                        </td>
+                        <td><?php echo htmlspecialchars($product['name']); ?></td>
+                        <td><?php echo htmlspecialchars($product['total_sold']); ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topProducts as $product): ?>
-                        <tr>
-                            <td><img src="../User/images/<?php echo $product['product_image']; ?>" alt="<?php echo $product['product_name']; ?>" style="width: 60px; height: 60px; border-radius: 8px;"></td>
-                            <td><?php echo $product['product_name']; ?></td>
-                            <td><?php echo $product['total_sold']; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
+</div>
                         
     <!-- Recent Users -->
     <div class="card">
