@@ -1749,6 +1749,11 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 
 		
 		function confirmPayment() {
+    // 设置背景为全白
+    document.body.style.backgroundColor = 'white';
+    document.body.style.height = '100vh';
+    document.body.style.overflow = 'hidden'; // 禁止滚动
+
     // 显示加载状态
     Swal.fire({
         title: 'Processing Payment',
@@ -1774,9 +1779,13 @@ document.getElementById('expiry-date').addEventListener('input', function () {
     }, 2000);
 }
 
-		function goToDashboard() {
-			window.location.href = 'dashboard.php';
-		}
+function goToDashboard() {
+    // 跳转到仪表板前恢复样式
+    document.body.style.backgroundColor = '';
+    document.body.style.height = '';
+    document.body.style.overflow = '';
+    window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
+}
 
 
 // JavaScript for Pagination with Shopee-like design
