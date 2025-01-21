@@ -163,27 +163,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 				<script>
 					document.addEventListener('DOMContentLoaded', function() {
-        Swal.fire({
-            icon: 'success',
-            title: 'Order Status Updated Successfully',
-            text: 'Thank you for confirming your order.',
-            confirmButtonText: 'OK'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = '" . $_SERVER['PHP_SELF'] . "';
-            }
-        });
-    });
+						Swal.fire({
+							icon: 'success',
+							title: 'Order Status Updated Successfully',
+							text: 'Thank you for confirming your order.',
+							confirmButtonText: 'OK'
+						}).then((result) => {
+							if (result.isConfirmed) {
+								window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+							}
+						});
+					});
 				</script>";
 		} else {
 			echo "
 				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 				<script>
-					Swal.fire({
-						icon: 'error',
-						title: 'Failed to Update Order Status',
-						text: 'Please try again later.',
-						confirmButtonText: 'OK'
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'error',
+							title: 'Failed to Update Order Status',
+							text: 'Please try again later.',
+							confirmButtonText: 'OK'
+						});
 					});
 				</script>";
 		}
@@ -191,11 +193,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			echo "
 				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 				<script>
-					Swal.fire({
-						icon: 'error',
-						title: 'Invalid Order',
-						text: 'Invalid order or permission denied.',
-						confirmButtonText: 'OK'
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'error',
+							title: 'Invalid Order',
+							text: 'Invalid order or permission denied.',
+							confirmButtonText: 'OK'
+						});
 					});
 				</script>";
 		}
