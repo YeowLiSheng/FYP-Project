@@ -525,8 +525,7 @@ textarea {
     margin-left: 10px;
 }
 .swal-popup-highest {
-    position: fixed;
-    z-index: 9999 !important;
+    z-index: 9999 !important; /* Ensure it stays above all other elements */
 }
 
 </style>
@@ -1375,7 +1374,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         text: 'Your review has been successfully submitted!',
         confirmButtonText: 'OK',
         customClass: {
-            popup: 'swal-popup-highest'
+            popup: 'swal-popup-highest swal2-popup'
         }
     }).then(() => {
         // Optionally reload the page or navigate to another page
@@ -1389,7 +1388,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         text: 'You have already reviewed this product.',
         confirmButtonText: 'OK',
         customClass: {
-            popup: 'swal-popup-highest'
+            popup: 'swal-popup-highest swal2-popup'
         }
     });
 } else {
@@ -1400,7 +1399,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         text: 'Failed to submit review. Please try again.',
         confirmButtonText: 'OK',
         customClass: {
-            popup: 'swal-popup-highest'
+            popup: 'swal-popup-highest swal2-popup'
         }
     });
 }
