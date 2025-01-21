@@ -913,8 +913,8 @@ textarea {
                 <select id="productSelect" name="variant_id" required>
                     <option value="" disabled selected>Select a product</option>
                     <?php foreach ($order_details as $detail) { ?>
-                        <option value="<?= $detail['product_or_promotion_id'] ?>" 
-                                data-img="images/<?= $detail['image'] ?>">
+						<option value="<?= $detail['variant_id'] ?>" 
+						data-img="images/<?= $detail['image'] ?>">
                             <?= $detail['name'] ?>
                         </option>
                     <?php } ?>
