@@ -71,6 +71,7 @@ $cart_result = mysqli_query($conn, $cart_query);
 
 if (mysqli_num_rows($cart_result) === 0) {
 	ob_clean();
+    echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
     echo "
 	<script>
         Swal.fire({
