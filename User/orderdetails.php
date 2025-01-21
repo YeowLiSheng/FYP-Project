@@ -176,8 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $detail_id = $detail['detail_id'];
 
 
-	
-    // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
         if (!is_dir($upload_dir)) {
@@ -191,18 +189,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 检查是否存在重复评论
+
 $check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
 $check_stmt->bind_param("ii", $detail_id, $user_id);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows > 0) {
-    echo "duplicate"; // 返回重复状态
+    echo "duplicate"; 
     exit;
 }
 
-// 插入评论数据
+
 $stmt = $conn->prepare("
     INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
     VALUES (?, ?, ?, ?, ?)
@@ -210,9 +208,9 @@ $stmt = $conn->prepare("
 $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 
 if ($stmt->execute()) {
-    echo "success"; // 向前端返回成功状态
+    echo "success"; 
 } else {
-    echo "error"; // 向前端返回错误状态
+    echo "error"; 
 }
     exit;
 }
@@ -259,24 +257,24 @@ if ($stmt->execute()) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<!--===============================================================================================-->
 <style>
-    /* 全局样式 */
+
 	
     .main-container {
     display: flex;
     flex-direction: row;
-    width: 100%; /* 确保容器宽度为全屏 */
+    width: 100%; 
 
 }
     .sidebar {
 	width: 250px;
     padding: 20px;
     height: 100%;
-    position: static; /* 保持 static */
+    position: static; 
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     overflow-y: auto;
     flex-shrink: 0;
-    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+    z-index: 1; 
 }
 
     .sidebar .user-info {
@@ -340,7 +338,7 @@ if ($stmt->execute()) {
         color: #333;
         padding: 20px;
         margin: 0;
-        flex: 1; /* 让容器填满 sidebar 旁边的剩余空间 */
+        flex: 1; 
 
     }
     .card {
@@ -427,7 +425,7 @@ if ($stmt->execute()) {
         margin-top: 20px;
         text-align: center;
         cursor: pointer;
-        background: #28a745; /* 使用黄色作为评分按钮颜色 */
+        background: #28a745; 
         transition: 0.3s;
     }
 
@@ -852,7 +850,7 @@ textarea {
     <div class="card">
         <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
     </div>
-    <!-- 订单概要 -->
+
     <div class="card">
         <h2><span class="icon">📋</span>Order Summary</h2>
         <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
@@ -863,7 +861,7 @@ textarea {
         <div class="summary-item"><strong>User Message:</strong> <span><?= !empty($order['user_message']) ? htmlspecialchars($order['user_message']) : 'N/A' ?></span></div>           
     </div>
 
-    <!-- 产品明细 -->
+
     <div class="card">
         <h2><span class="icon">🛒</span>Product Details</h2>
         <table class="product-table">
@@ -892,7 +890,7 @@ textarea {
         </table>
     </div>
 
-    <!-- 价格明细 -->
+
     <div class="card">
         <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
@@ -900,7 +898,7 @@ textarea {
         <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
-    <!-- 操作按钮 -->
+
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
@@ -910,7 +908,7 @@ textarea {
     <div class="popup-content">
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <!-- 产品选择 -->
+  
             <label for="productSelect">Select Product:</label>
             <div class="product-select-container">
                 <select id="productSelect" name="variant_id" required>
@@ -1424,12 +1422,32 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
         .then(data => {
             // 检查后端响应
 			if (data.trim() === "success") {
-    // 显示成功弹窗
-    document.getElementById("successPopup").style.display = "block";
+    // Show success popup using SweetAlert2
+    Swal.fire({
+        icon: 'success',
+        title: 'Review Submitted',
+        text: 'Your review has been successfully submitted!',
+        confirmButtonText: 'OK'
+    }).then(() => {
+        // Optionally reload the page or navigate to another page
+        location.reload();
+    });
 } else if (data.trim() === "duplicate") {
-    alert("You have already reviewed this product.");
+    // Show duplicate review error popup
+    Swal.fire({
+        icon: 'warning',
+        title: 'Duplicate Review',
+        text: 'You have already reviewed this product.',
+        confirmButtonText: 'OK'
+    });
 } else {
-    alert("Failed to submit review. Please try again.");
+    // Show general error popup
+    Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: 'Failed to submit review. Please try again.',
+        confirmButtonText: 'OK'
+    });
 }
         })
         .catch(error => {
