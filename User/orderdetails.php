@@ -83,12 +83,13 @@ $details_stmt = $conn->prepare("
         od.detail_id,
         od.order_id,
         pv.variant_id,
+		pv.color,
         COALESCE(p.product_id, pp.promotion_id) AS product_or_promotion_id,
         COALESCE(p.product_name, pp.promotion_name) AS name,
         od.quantity,
         od.unit_price,
         od.total_price,
-        COALESCE(p.product_image, pp.promotion_image) AS image
+        pv.Quick_View1 AS image
     FROM order_details od
     JOIN product_variant pv ON od.variant_id = pv.variant_id
     LEFT JOIN product p ON pv.product_id = p.product_id
@@ -863,6 +864,7 @@ textarea {
                 <tr>
                     <th>Image</th>
                     <th>Product Name</th>
+					<th>Color</th>
                     <th>Quantity</th>
                     <th>Unit Price</th>
                     <th>Total Price</th>
@@ -873,6 +875,7 @@ textarea {
                 <tr>
     <td><img src="images/<?= $detail['image'] ?>" alt="<?= $detail['name'] ?>" class="product-image"></td>
     <td><?= $detail['name'] ?></td>
+	<td><?= $detail['color']?></td>
     <td><?= $detail['quantity'] ?></td>
     <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
     <td>RM <?= number_format($detail['total_price'], 2) ?></td>
