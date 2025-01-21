@@ -524,7 +524,9 @@ textarea {
     color: white;
     margin-left: 10px;
 }
-
+.swal2-container {
+    z-index: 9999 !important;
+}
 
 </style>
 </head>
@@ -1349,67 +1351,41 @@ function closePopup() {
 
 // 禁用重复提交
 document.getElementById("rateForm").addEventListener("submit", function (e) {
-    // 阻止默认表单提交行为
     e.preventDefault();
 
-    // 获取表单元素
     const form = e.target;
     const formData = new FormData(form);
 
-    // 发送表单数据到后端
     fetch(window.location.href, {
         method: "POST",
         body: formData
     })
         .then(response => response.text())
         .then(data => {
-            // 检查后端响应
+            const handleSwalPopup = (icon, title, text) => {
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-popup-highest'
+                    },
+                    didOpen: () => {
+                        const swalContainer = document.querySelector('.swal2-container');
+                        if (swalContainer) {
+                            swalContainer.style.zIndex = '9999'; // 确保 SweetAlert2 弹窗的层级最高
+                        }
+                    }
+                });
+            };
+
             if (data.trim() === "success") {
-                // Show success popup using SweetAlert2
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Review Submitted',
-                    text: 'Your review has been successfully submitted!',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'swal-popup-highest'
-                    },
-                    didOpen: () => {
-                        // 确保 Swal 弹窗的 z-index 最高
-                        document.querySelector('.swal2-popup').style.zIndex = '9999';
-                    }
-                }).then(() => {
-                    // Optionally reload the page or navigate to another page
-                    location.reload();
-                });
+                handleSwalPopup('success', 'Review Submitted', 'Your review has been successfully submitted!');
             } else if (data.trim() === "duplicate") {
-                // Show duplicate review error popup
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Duplicate Review',
-                    text: 'You have already reviewed this product.',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'swal-popup-highest'
-                    },
-                    didOpen: () => {
-                        document.querySelector('.swal2-popup').style.zIndex = '9999';
-                    }
-                });
+                handleSwalPopup('warning', 'Duplicate Review', 'You have already reviewed this product.');
             } else {
-                // Show general error popup
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Submission Failed',
-                    text: 'Failed to submit review. Please try again.',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        popup: 'swal-popup-highest'
-                    },
-                    didOpen: () => {
-                        document.querySelector('.swal2-popup').style.zIndex = '9999';
-                    }
-                });
+                handleSwalPopup('error', 'Submission Failed', 'Failed to submit review. Please try again.');
             }
         })
         .catch(error => {
