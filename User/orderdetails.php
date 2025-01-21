@@ -829,15 +829,19 @@ textarea {
             <h3><?= $current_user['user_name'] ?></h3>
         </div>
         <ul>
-            <!-- My Account -->
-            <li><i class="fa fa-user"></i> My Account</li>
+           <!-- My Account -->
+		   <li><i class="fa fa-user"></i> My Account</li>
             <!-- Profile items directly below My Account with indentation -->
-            <li class="profile-item"><i class="fa fa-id-card"></i> My Profile</li>
-            <li class="profile-item"><i class="fa fa-edit"></i> Edit Profile</li>
-            <li class="profile-item"><i class="fa fa-lock"></i> Change Password</li>
+
+<li class="profile-item">
+    <a href="edit_profile.php">
+        <i class="fa fa-edit"></i> Edit Profile
+    </a>
+</li>           
+
             <!-- My Orders -->
-            <li><i class="fa fa-box"></i> My Orders</li>
-        </ul>
+			<li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
+			</ul>
     </div>
 
 <div class="order-details-container">
