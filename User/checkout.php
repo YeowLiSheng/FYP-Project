@@ -572,20 +572,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         overflow-y: auto; /* Enable vertical scrolling */
         max-height: 150px; /* Limit height to show 3 items */
     }
-	/* 调整 state 和 postcode 的 flex 属性 */
+
 .checkout-flex .checkout-input-box:nth-child(1) {
-    flex: 2; /* 增大 postcode 输入框的大小 */
+    flex: 2;
 }
 
 .checkout-flex .checkout-input-box:nth-child(2) {
-    flex: 1; /* 缩小 state 输入框的大小 */
+    flex: 1;
 }
 
 .checkout-flex {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 20px; /* 可根据需要调整间距 */
+    gap: 20px; 
 }
 
 .checkout-input-box {
@@ -1655,7 +1655,7 @@ function toggleAutofill() {
 
 
 		function formatExpiryDate(input) {
-    let value = input.value.replace(/\D/g, ""); // 移除非数字字符
+    let value = input.value.replace(/\D/g, ""); 
 
 
     if (value.length > 2) {
@@ -1791,7 +1791,7 @@ document.getElementById('expiry-date').addEventListener('input', function () {
     state.disabled = false;
     postcode.disabled = false;
 
-    // 表单验证成功后提交表单
+
     form.submit();
 			return true;
 		}
@@ -1800,18 +1800,30 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 
 		
 		function confirmPayment() {
-			const overlay = document.getElementById('paymentOverlay');
-			const popupContent = document.getElementById('popupContent');
-			overlay.classList.add('show');
+    // 显示加载状态
+    Swal.fire({
+        title: 'Processing Payment',
+        text: 'Please wait...',
+        allowOutsideClick: false,
+        showConfirmButton: false, // 不显示确认按钮
+        didOpen: () => {
+            Swal.showLoading(); // 显示加载动画
+        }
+    });
 
-			setTimeout(() => {
-				popupContent.innerHTML = `
-			<div class="success-icon">✓</div>
-			<h2 class="success-title">Payment Successful</h2>
-			<button class="ok-btn" onclick="goToDashboard()">OK</button>
-		`;
-			}, 2000);
-		}
+    // 模拟 2 秒延迟后显示支付成功消息
+    setTimeout(() => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Payment Successful',
+            text: 'Your payment was processed successfully.',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false // 阻止点击外部关闭弹窗
+        }).then(() => {
+            goToDashboard(); // 调用导航到仪表板的函数
+        });
+    }, 2000);
+}
 
 		function goToDashboard() {
 			window.location.href = 'dashboard.php';
