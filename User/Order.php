@@ -159,8 +159,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         $update_stmt->bind_param("i", $order_id);
 
         if ($update_stmt->execute()) {
-            
-				echo "<script>
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
 					Swal.fire({
 						icon: 'success',
 						title: 'Order Status Updated Successfully',
@@ -172,8 +173,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						}
 					});
 				</script>";
-			} else {
-				echo "<script>
+		} else {
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
 					Swal.fire({
 						icon: 'error',
 						title: 'Failed to Update Order Status',
@@ -181,19 +184,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						confirmButtonText: 'OK'
 					});
 				</script>";
-			}
-		} else {
-			echo "<script>
-				Swal.fire({
-					icon: 'error',
-					title: 'Invalid Order',
-					text: 'Invalid order or permission denied.',
-					confirmButtonText: 'OK'
-				});
-			</script>";
 		}
-	
-
+		} else {
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					Swal.fire({
+						icon: 'error',
+						title: 'Invalid Order',
+						text: 'Invalid order or permission denied.',
+						confirmButtonText: 'OK'
+					});
+				</script>";
+		}
     $stmt->close();
     $update_stmt->close();
 }
