@@ -316,7 +316,7 @@ $category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? int
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 
 // Define the number of products to display per page
-$products_per_page = 3;
+$products_per_page = 10;
 
 // Calculate the offset for the SQL query
 $offset = ($current_page - 1) * $products_per_page;
