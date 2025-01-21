@@ -525,14 +525,18 @@ textarea {
     margin-left: 10px;
 }
 .swal-popup-highest {
-    z-index: 9999 !important; /* Ensure it stays above all other elements */
-}
-.swal-overlay {
-    z-index: 1601 !important; /* 确保它高于 popup-container 的 z-index */
-}
-.swal-modal {
-    z-index: 1602 !important; /* 再次提高 modal 自身的 z-index */
-}
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+	z-index: 2000;
+    animation: fadeIn 0.5s ease;}
+
 </style>
 </head>
 <body class="animsition">
