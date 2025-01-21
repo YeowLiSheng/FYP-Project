@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 $servername = "localhost";
@@ -70,11 +71,22 @@ $cart_result = mysqli_query($conn, $cart_query);
 
 if (mysqli_num_rows($cart_result) === 0) {
 
-    echo "<script>
-        alert('Your Shopping Cart is Empty. Please add product first.');
-        window.location.href = 'product.php'; 
+    echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+    echo "
+	<script>
+	    document.addEventListener('DOMContentLoaded', function() {
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Your Shopping Cart is Empty',
+            text: 'Please add a product first.',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = 'product.php';
+        });
+		 });
     </script>";
-    exit; 
+    exit;
 }
 
 
@@ -157,15 +169,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             // If there are error messages, display them and prevent payment processing
-            if (!empty($errorMessages)) {
-                foreach ($errorMessages as $message) {
-                    echo "<script>alert('$message');window.location.href = 'dashboard.php';</script>";
-                }
-                $paymentSuccess = false; // Prevent further processing if there are stock issues
-            }
+            if (!empty($errorMessages)) 
+			{
+				// Combine all error messages into a single string
+				$allMessages = implode('<br>', $errorMessages); // Use <br> to separate messages into multiple lines
+			
+				echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>"; // Include SweetAlert2 library
+				echo "<script>
+
+					document.addEventListener('DOMContentLoaded', function() {
+					document.body.innerHTML = '';
+            		document.body.style.backgroundColor = 'white';
+						Swal.fire({
+							icon: 'error',
+							title: 'Stock Issues',
+							html: '$allMessages', // Use HTML to display multiple lines of messages
+							confirmButtonText: 'OK'
+						}).then(() => {
+							window.location.href = 'dashboard.php'; // Redirect to dashboard.php after confirmation
+						});
+					});
+				</script>";
+				$paymentSuccess = false; // Prevent further processing due to stock issues
+			}
         } else {
-            echo "<script>alert('Invalid card details');</script>";
-        }
+			echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>"; // Include SweetAlert2 library
+			echo "<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					Swal.fire({
+						icon: 'error',
+						title: 'Invalid Card Details',
+						text: 'Please check your card information and try again.',
+						confirmButtonText: 'OK'
+					});
+				});
+			</script>";
+		}
 
         $stmt->close();
 	}
