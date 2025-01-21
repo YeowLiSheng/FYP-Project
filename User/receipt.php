@@ -91,9 +91,6 @@ $pdf->Ln(6); // 换行
 
 $pdf->MultiCell(95, 6, $order['shipping_address'], 0, 'L'); // 使用 MultiCell 自动换行
 
-// 间隔 3 格
-$pdf->Ln(3);
-
 // 右侧 (Ship To)
 $pdf->SetXY(105, $pdf->GetY() - 9); // 调整右侧位置与对齐（105 = 95 + 10 间隔）
 
