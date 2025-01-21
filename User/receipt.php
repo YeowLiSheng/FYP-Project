@@ -119,7 +119,7 @@ $pdf->Cell(30, 6, 'Order Date:', 0, 1, 'R');
 $pdf->SetFont('Arial', '', 10);
 $pdf->Cell(20, 6, 'MY-' . str_pad($order['order_id'], 3, '0', STR_PAD_LEFT), 0, 0, 'L');
 $pdf->Cell(140, 6, '', 0, 0, 'L'); // 空白位置调整对齐
-$pdf->Cell(30, 6, date('Y-m-d', strtotime($order['order_date'])), 0, 1, 'R');
+$pdf->Cell(30, 6, date('Y-m-d H:i:s', strtotime($order['order_date'])), 0, 1, 'R');
 $pdf->Ln(5);
 
 
