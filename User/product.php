@@ -309,7 +309,7 @@ $category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? int
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 
 // Define the number of products to display per page
-$products_per_page = 1;
+$products_per_page = 3;
 
 // Calculate the offset for the SQL query
 $offset = ($current_page - 1) * $products_per_page;
@@ -428,7 +428,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                         </div>
                         <div class="block2-txt flex-w flex-t p-t-14">
                             <div class="block2-txt-child1 flex-col-l ">
-                                <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                <a href="product-detail.php?id=' . $product['product_id'] . '&type=product" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                 . $product['product_name'] . 
                                 '</a>
                                 <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
@@ -1353,7 +1353,7 @@ body {
                                 </div>
                                 <div class="block2-txt flex-w flex-t p-t-14">
                                     <div class="block2-txt-child1 flex-col-l ">
-                                        <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                        <a href="product-detail.php?id=' . $product['product_id'] . '&type=product" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                         . $product['product_name'] . 
                                         '</a>
                                         <span class="stext-105 cl3">$' . $product['product_price'] . '</span>

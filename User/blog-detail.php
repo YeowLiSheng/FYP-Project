@@ -42,6 +42,58 @@ if ($result && mysqli_num_rows($result) > 0) {
     exit();
 }
 
+// Handle the comment submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $blog_id = (int) $_POST['blog_id'];
+    $user_email = htmlspecialchars($_POST['email']);
+    $user_name = htmlspecialchars($_POST['name']);
+    $comment = htmlspecialchars($_POST['comment']);
+
+    // Insert the comment into the database
+    $query = "INSERT INTO blog_comment (blog_id, user_email, user_name, comment) 
+              VALUES ('$blog_id', '$user_email', '$user_name', '$comment')";
+
+	if (mysqli_query($connect, $query)) {
+		echo "<!DOCTYPE html>
+		<html>
+		<head>
+			<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+		</head>
+		<body>
+			<script>
+				Swal.fire({
+					icon: 'success',
+					title: 'Success',
+					text: 'Comment submitted successfully!',
+					confirmButtonText: 'OK'
+				}).then(() => {
+					window.location.href = 'blog-detail.php?id=$blog_id';
+				});
+			</script>
+		</body>
+		</html>";
+	} else {
+		echo "<!DOCTYPE html>
+		<html>
+		<head>
+			<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+		</head>
+		<body>
+			<script>
+				Swal.fire({
+					icon: 'error',
+					title: 'Error',
+					text: 'Failed to submit comment. Please try again later.',
+					confirmButtonText: 'OK'
+				}).then(() => {
+					window.location.href = 'blog-detail.php?id=$blog_id';
+				});
+			</script>
+		</body>
+		</html>";
+	}
+
+}
 
 
 	// Retrieve the user information
