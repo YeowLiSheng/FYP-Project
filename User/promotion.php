@@ -669,7 +669,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                         </div>
                                         <div class="block2-txt flex-w flex-t p-t-14">
                                             <div class="block2-txt-child1 flex-col-l ">
-                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '&type=promotion" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                                 . $promotion['promotion_name'] . 
                                                 '</a>
                                                 <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
@@ -774,7 +774,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                         </div>
                                         <div class="block2-txt flex-w flex-t p-t-14">
                                             <div class="block2-txt-child1 flex-col-l ">
-                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '&type=promotion" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                                 . $promotion['promotion_name'] . 
                                                 '</a>
                                                 <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
@@ -880,7 +880,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                             </div>
                                             <div class="block2-txt flex-w flex-t p-t-14">
                                                 <div class="block2-txt-child1 flex-col-l ">
-                                                    <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                    <a href="product-detail.php?id=' . $promotion['promotion_id'] . '&type=promotion" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                                     . $promotion['promotion_name'] . 
                                                     '</a>
                                                     <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
