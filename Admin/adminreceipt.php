@@ -39,6 +39,7 @@ $details_stmt = $conn->prepare("
         pv.variant_id,
         COALESCE(p.product_id, pp.promotion_id) AS product_or_promotion_id,
         COALESCE(p.product_name, pp.promotion_name) AS name,
+        pv.color,
         od.quantity,
         od.unit_price,
         od.total_price,
