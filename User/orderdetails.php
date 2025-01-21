@@ -1362,7 +1362,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
     })
         .then(response => response.text())
         .then(data => {
-            const handleSwalPopup = (icon, title, text) => {
+            const handleSwalPopup = (icon, title, text, redirectUrl = null) => {
                 Swal.fire({
                     icon: icon,
                     title: title,
@@ -1377,11 +1377,15 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
                             swalContainer.style.zIndex = '9999'; // 确保 SweetAlert2 弹窗的层级最高
                         }
                     }
+                }).then(() => {
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl; // 重定向到指定的 URL
+                    }
                 });
             };
 
             if (data.trim() === "success") {
-                handleSwalPopup('success', 'Review Submitted', 'Your review has been successfully submitted!');
+                handleSwalPopup('success', 'Review Submitted', 'Your review has been successfully submitted!', 'orderdetails.php');
             } else if (data.trim() === "duplicate") {
                 handleSwalPopup('warning', 'Duplicate Review', 'You have already reviewed this product.');
             } else {
@@ -1392,6 +1396,7 @@ document.getElementById("rateForm").addEventListener("submit", function (e) {
             console.error("Error submitting review:", error);
         });
 });
+
 
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
