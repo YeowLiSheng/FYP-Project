@@ -390,7 +390,7 @@ function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
 
-function confirmDelete() {
+
     function confirmDelete() {
         Swal.fire({
             title: 'Are you sure?',
@@ -401,19 +401,18 @@ function confirmDelete() {
             cancelButtonText: 'No, keep it'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Set the 'delete_reply' value to trigger delete action
+                // 当用户点击 "Yes, delete it!" 时，提交表单并触发删除逻辑
+                // 将删除按钮的值传递到后端
                 const form = document.getElementById('replyForm');
-                const deleteButton = document.createElement('input');
-                deleteButton.type = 'hidden';
-                deleteButton.name = 'delete_reply';
-                deleteButton.value = '1'; // Indicate that delete operation should be performed
-                form.appendChild(deleteButton);
-
-                // Submit the form
+                const deleteReplyInput = document.createElement('input');
+                deleteReplyInput.type = 'hidden';
+                deleteReplyInput.name = 'delete_reply';
+                form.appendChild(deleteReplyInput);
                 form.submit();
             }
         });
     }
+    
 </script>
 </body>
 </html>
