@@ -83,10 +83,24 @@ include 'admin_sidebar.php';
             font-size: 20px;
             color: #7f8c8d;
         }
+        
         .btn-group {
-    display: inline-block;
-    position: relative;
-}
+        background-color: #4CAF50;
+    }
+
+   
+    }
+
+    /* 设置 export 按钮颜色 */
+    .btn-primary {
+        background-color: #4CAF50 !important;
+        border-color: #4CAF50 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #45a049 !important;
+        border-color: #45a049 !important;
+    }
 
 .dropdown-menu {
     display: none;
@@ -103,6 +117,7 @@ include 'admin_sidebar.php';
 
 
 .dropdown-item {
+    background-color: #4CAF50;
     padding: 10px 15px;
     text-decoration: none;
     color: #2c3e50;
@@ -112,7 +127,8 @@ include 'admin_sidebar.php';
 }
 
 .dropdown-item:hover {
-    background-color: #ecf0f1;
+    background-color: #45a049; /* 稍微深一点的绿色 */
+    color: white;
 }
         .control-bar {
             display: flex;
@@ -233,15 +249,7 @@ include 'admin_sidebar.php';
     background-color: #4CAF50;
 }
 
-.export-btn {
-    background-color: #4CAF50 !important;
-    border-color: #4CAF50 !important;
-}
 
-.export-btn:hover {
-    background-color: #45a049 !important;
-    border-color: #45a049 !important;
-}
     </style>
 </head>
 <body>
@@ -428,7 +436,7 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const orderStatus = row.cells[5].textContent.trim(); // 确保去除空白字符
+        const orderStatus = row.cells[5].textContent.trim(); 
         row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
     });
 }
