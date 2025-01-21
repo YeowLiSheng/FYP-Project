@@ -1249,7 +1249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	<script src="js/main.js"></script>
 	<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
-    function showTab(status) {
+   function showTab(status) {
         document.querySelectorAll('.order-container').forEach(container => {
             container.style.display = container.id === status ? 'block' : 'none';
         });
