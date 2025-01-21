@@ -1318,6 +1318,7 @@ textarea {
 	</script>
 	<!--===============================================================================================-->
 	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
 		$('.gallery-lb').each(function () { // the containers for all your galleries
 			$(this).magnificPopup({
