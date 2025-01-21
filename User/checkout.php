@@ -176,8 +176,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			
 				echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>"; // Include SweetAlert2 library
 				echo "<script>
-					
+
 					document.addEventListener('DOMContentLoaded', function() {
+					document.body.innerHTML = '';
+            		document.body.style.backgroundColor = 'white';
 						Swal.fire({
 							icon: 'error',
 							title: 'Stock Issues',
