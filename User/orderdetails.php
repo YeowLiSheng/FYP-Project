@@ -433,7 +433,9 @@ if ($stmt->execute()) {
         background: #e0a800;
     }
 
-
+    .swal-popup-highest {
+    z-index: 9999 !important; /* Ensure it stays above all other elements */
+}
 .popup-container {
     position: fixed;
     top: 50%;
@@ -524,18 +526,7 @@ textarea {
     color: white;
     margin-left: 10px;
 }
-.swal-popup-highest {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-	z-index: 2000;
-    animation: fadeIn 0.5s ease;}
+
 
 </style>
 </head>
