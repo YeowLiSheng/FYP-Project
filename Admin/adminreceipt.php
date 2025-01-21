@@ -126,6 +126,7 @@ $pdf->SetTextColor(255);
 $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(20, 10, 'No.', 1, 0, 'C', true);
 $pdf->Cell(85, 10, 'Description', 1, 0, 'C', true);
+$pdf->Cell(30, 10, 'Color', 1, 0, 'C', true);
 $pdf->Cell(30, 10, 'Unit Price (RM)', 1, 0, 'C', true);
 $pdf->Cell(20, 10, 'Qty', 1, 0, 'C', true);
 $pdf->Cell(35, 10, 'Subtotal (RM)', 1, 1, 'C', true);
@@ -138,6 +139,7 @@ $itemNumber = 1;
 while ($detail = $details_result->fetch_assoc()) {
     $pdf->Cell(20, 8, $itemNumber, 1, 0, 'C');
     $pdf->Cell(85, 8, $detail['name'], 1, 0, 'C');
+    $pdf->Cell(30, 8, $detail['color'], 1, 0, 'C'); // Product color
     $pdf->Cell(30, 8, number_format($detail['unit_price'], 2), 1, 0, 'C');
     $pdf->Cell(20, 8, $detail['quantity'], 1, 0, 'C');
     $pdf->Cell(35, 8, number_format($detail['total_price'], 2), 1, 1, 'C');
