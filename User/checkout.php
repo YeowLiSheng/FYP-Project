@@ -547,6 +547,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     flex-direction: column;
 }
 
+
+.fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 9999;
+        display: none; /* 初始隐藏 */
+    }
+
 /* Pagination container positioned at the bottom-right */
 .pagination-controls {
     display: flex;
@@ -1046,6 +1058,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 						<!-- Confirm Payment Button -->
 						
 						<button type="submit" class="checkout-btn">Confirm Payment</button>
+<div id="fullscreenOverlay" class="fullscreen-overlay"></div>
 
 									
 						
@@ -1749,43 +1762,39 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 
 		
 		function confirmPayment() {
-    // 设置背景为全白
-    document.body.style.backgroundColor = 'white';
-    document.body.style.height = '100vh';
-    document.body.style.overflow = 'hidden'; // 禁止滚动
+        // 显示全屏白色遮罩
+        const overlay = document.getElementById('fullscreenOverlay');
+        overlay.style.display = 'block';
 
-    // 显示加载状态
-    Swal.fire({
-        title: 'Processing Payment',
-        text: 'Please wait...',
-        allowOutsideClick: false,
-        showConfirmButton: false, // 不显示确认按钮
-        didOpen: () => {
-            Swal.showLoading(); // 显示加载动画
-        }
-    });
-
-    // 模拟 2 秒延迟后显示支付成功消息
-    setTimeout(() => {
+        // 显示加载状态
         Swal.fire({
-            icon: 'success',
-            title: 'Payment Successful',
-            text: 'Your payment was processed successfully.',
-            confirmButtonText: 'OK',
-            allowOutsideClick: false // 阻止点击外部关闭弹窗
-        }).then(() => {
-            goToDashboard(); // 调用导航到仪表板的函数
+            title: 'Processing Payment',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false, // 不显示确认按钮
+            didOpen: () => {
+                Swal.showLoading(); // 显示加载动画
+            }
         });
-    }, 2000);
-}
 
-function goToDashboard() {
-    // 跳转到仪表板前恢复样式
-    document.body.style.backgroundColor = '';
-    document.body.style.height = '';
-    document.body.style.overflow = '';
-    window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
-}
+        // 模拟 2 秒延迟后显示支付成功消息
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Successful',
+                text: 'Your payment was processed successfully.',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false // 阻止点击外部关闭弹窗
+            }).then(() => {
+                overlay.style.display = 'none'; // 隐藏遮罩层
+                goToDashboard(); // 调用导航到仪表板的函数
+            });
+        }, 2000);
+    }
+
+    function goToDashboard() {
+        window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
+    }
 
 
 // JavaScript for Pagination with Shopee-like design
