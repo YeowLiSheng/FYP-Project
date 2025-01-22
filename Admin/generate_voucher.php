@@ -31,8 +31,8 @@ $header = [
     ['Discount Rate', 30],
     ['Usage Limit', 25],
     ['Min. Amount', 30],
-    ['Description', 60],
-    ['Status', 20]
+    ['Description', 50],
+    ['Status', 15]
 ];
 
 $left_margin = 10; 
@@ -72,11 +72,11 @@ if ($result->num_rows > 0) {
         // Description with MultiCell (auto-wraps text)
         $x = $pdf->GetX();
         $y = $pdf->GetY();
-        $pdf->MultiCell(60, $line_height, $description, 1, 'L');
-        $pdf->SetXY($x + 60, $y); // Move to the right for next cell
+        $pdf->MultiCell(50, $line_height, $description, 1, 'L');
+        $pdf->SetXY($x + 50, $y); // Move to the right for next cell
 
         // Status
-        $pdf->Cell(20, $row_height, $status, 1, 1, 'C');
+        $pdf->Cell(15, $row_height, $status, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
