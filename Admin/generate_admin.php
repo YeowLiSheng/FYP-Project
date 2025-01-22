@@ -64,50 +64,32 @@ if (isset($_POST["admin_pdf"])) {
 if (isset($_POST["admin_excel"])) {
     $output = '';
     $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
-
-    // 先定义列头，确保有列在 Excel 中
-    $output .= '
-        <table class="table" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;" bordered="1">
-            <tr style="background-color: #e6e6e6; text-align: center; font-weight: bold;">
-                <th style="border: 1px solid #ddd; padding: 8px;">#</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Staff ID</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Name</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Email</th>
-            </tr>
-    ';
-
-    // 检查是否有数据，并确保每一列都显示
     if ($excel->num_rows > 0) {
-        $counter = 1;
+        $output .= '
+            <table class="table" bordered="1">
+                <tr style="background-color: #e6e6e6;">
+                    <th>#</th>
+                    <th>Staff ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+        ';
         while ($row = mysqli_fetch_assoc($excel)) {
             $output .= '
-                <tr style="text-align: center;">
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . $counter++ . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["staff_id"]) && !empty($row["staff_id"]) ? $row["staff_id"] : '&nbsp;') . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["admin_id"]) && !empty($row["admin_id"]) ? $row["admin_id"] : '&nbsp;') . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["admin_name"]) && !empty($row["admin_name"]) ? $row["admin_name"] : '&nbsp;') . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["admin_email"]) && !empty($row["admin_email"]) ? $row["admin_email"] : '&nbsp;') . '</td>
+                <tr>
+                    <td>' . $row["staff_id"] . '</td>
+                    <td>' . $row["admin_id"] . '</td>
+                    <td>' . $row["admin_name"] . '</td>
+                    <td>' . $row["admin_email"] . '</td>
                 </tr>
             ';
         }
+        $output .= '</table>';
+        header('Content-Type: application/xls');
+        header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
+        echo $output;
     } else {
-        // 如果没有记录，添加一行空数据
-        $output .= '
-            <tr style="text-align: center;">
-                <td colspan="4" style="border: 1px solid #ddd; padding: 8px;">No records found</td>
-            </tr>
-        ';
+        echo "No record found :(";
     }
-
-    $output .= '</table>';
-
-    // 设置文件头
-    $time = date("Y-m-d_H-i-s"); // 获取当前时间
-    header('Content-Type: application/xls');
-    header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
-
-    // 输出表格
-    echo $output;
 }
-
 ?>
