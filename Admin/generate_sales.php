@@ -118,17 +118,13 @@ $pdf->Ln();
 
 // Fetch Category Sales Data
 $categorySales_query = "
-    SELECT 
-        c.category_name, 
-        SUM(od.quantity) AS total_quantity
-    FROM order_details od
-    LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
-    LEFT JOIN product p ON pv.product_id = p.product_id
-    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
-    LEFT JOIN category c 
-        ON p.category_id = c.category_id 
-        OR pp.category_id = c.category_id
-    GROUP BY c.category_id";
+    SELECT c.category_name, SUM(o.final_amount) AS category_sales 
+    FROM orders o
+    JOIN order_details od ON o.order_id = od.order_id
+    JOIN products p ON od.product_id = p.product_id
+    JOIN categories c ON p.category_id = c.category_id
+    GROUP BY c.category_name
+    ORDER BY c.category_name";
 $categorySales_result = $connect->query($categorySales_query);
 
 // Populate category data
