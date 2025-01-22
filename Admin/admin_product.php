@@ -1347,21 +1347,23 @@ window.onload = function() {
     });
 }
         function exportExcel() {
-            const wb = XLSX.utils.book_new();
+    const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Product List",
         Author: "YLS Atelier",
     };
 
-    // Prepare data for the table
+    // Select the table with product data
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim()); // Excluding image and action columns
+        // Exclude the first (Product Image) and last (Actions) columns
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
     });
 
-    // Get table headers (excluding image and action columns)
+    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
     const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
+        // Exclude the first and last columns
         return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
     }).filter(header => header !== null);
 
@@ -1370,7 +1372,7 @@ window.onload = function() {
     // Create worksheet from the extracted data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set column widths
+    // Set appropriate column widths for the product data, excluding the first and last columns
     ws['!cols'] = [
         { wch: 30 }, // Product Name
         { wch: 25 }, // Tags
