@@ -326,7 +326,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         const tableBody = document.getElementById("table-body");
         const pagination = document.getElementById("pagination");
 
-        const rowsPerPage = 10; // 每页显示的数据条数
+        const rowsPerPage = 1; // 每页显示的数据条数
         let currentPage = 1;
         let totalRows = tableBody.rows.length;
 
