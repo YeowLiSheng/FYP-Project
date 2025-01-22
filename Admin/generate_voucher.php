@@ -73,7 +73,7 @@ if ($result->num_rows > 0) {
         $x = $pdf->GetX();
         $y = $pdf->GetY();
         $pdf->MultiCell(50, $line_height, $description, 1, 'L');
-        $pdf->SetXY($x + 60, $y); // Move to the right for next cell
+        $pdf->SetXY($x + 50, $y); // Move to the right for next cell
 
         // Status
         $pdf->Cell(20, $row_height, $status, 1, 1, 'C');
