@@ -313,7 +313,7 @@ include 'admin_sidebar.php';
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="5">No orders found.</td>
+                            <td colspan="5">No transaction found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
