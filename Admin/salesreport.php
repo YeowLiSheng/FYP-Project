@@ -159,6 +159,8 @@ $categorySalesJson = json_encode($categorySalesData);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
     
     <script>
         function updateEndDateLimit() {
@@ -380,8 +382,8 @@ $categorySalesJson = json_encode($categorySalesData);
             </button>
             <ul class="dropdown-menu">
                 <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-                <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-            </ul>
+                <li><button type="button" class="dropdown-item" onclick="exportToExcel()">Excel</button></li>
+                </ul>
         </div>
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
@@ -440,6 +442,47 @@ $categorySalesJson = json_encode($categorySalesData);
 function exportPDF() {
         window.location.href = 'generate_sales.php'; // 跳转到 generate_sales.php
     }
+
+    function exportToExcel() {
+    // 准备表格数据
+    const salesData = [
+        ['Metric', 'Value'], // 表头
+        ['Total Orders', <?php echo $order_count; ?>],
+        ['Total Customers', <?php echo $total_customers; ?>],
+        ['Total Sales', '<?php echo number_format($totalSales, 2); ?>'],
+        ['Total Items Sold', <?php echo $total_item_sold; ?>]
+    ];
+
+    const recentOrdersData = [
+        ['Order ID', 'Customer Name', 'Order Date', 'Final Amount', 'Order Status'],
+        <?php foreach ($recentOrders as $order) { ?>
+            ['<?php echo $order['order_id']; ?>', '<?php echo htmlspecialchars($order['user_name']); ?>', '<?php echo $order['order_date']; ?>', '<?php echo number_format($order['final_amount'], 2); ?>', '<?php echo $order['order_status']; ?>'],
+        <?php } ?>
+    ];
+
+    const categorySalesData = [
+        ['Category', 'Quantity', 'Percentage'],
+        <?php foreach ($categorySalesData as $data) { ?>
+            ['<?php echo $data['category']; ?>', '<?php echo $data['quantity']; ?>', '<?php echo number_format($data['percentage'], 2); ?>%'],
+        <?php } ?>
+    ];
+
+    // 创建工作簿
+    const workbook = XLSX.utils.book_new();
+    
+    // 添加表格到工作簿
+    const salesSheet = XLSX.utils.aoa_to_sheet(salesData);
+    XLSX.utils.book_append_sheet(workbook, salesSheet, 'Summary');
+
+    const recentOrdersSheet = XLSX.utils.aoa_to_sheet(recentOrdersData);
+    XLSX.utils.book_append_sheet(workbook, recentOrdersSheet, 'Recent Orders');
+
+    const categorySalesSheet = XLSX.utils.aoa_to_sheet(categorySalesData);
+    XLSX.utils.book_append_sheet(workbook, categorySalesSheet, 'Category Sales');
+
+    // 导出为Excel文件
+    XLSX.writeFile(workbook, 'Sales_Report.xlsx');
+}
 
     function updateViewMode() {
         const viewMode = document.getElementById('view_mode').value;
