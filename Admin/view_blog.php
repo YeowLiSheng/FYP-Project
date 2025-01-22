@@ -23,11 +23,18 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
             color: #333;
+            margin: 0;
+    height: 100vh; /* 确保填满整个视口高度 */
+    display: flex;
+    flex-direction: column;
         }
         main {
-            padding: 100px;
-            max-width: 1200px;
-            margin: 0 auto;
+            margin-top: 50px;
+            margin-left: 78px;
+    padding: 15px;
+    width: calc(100% - 78px); /* 动态调整宽度 */
+    min-height: 100vh; /* 确保高度填满页面 */
+    background: white;
         }
         .admin-content {
             display: flex;
