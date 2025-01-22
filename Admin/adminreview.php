@@ -346,6 +346,9 @@ $review = "
                 ?>         
                 </tbody>
             </table>
+
+            <div class="pagination" id="pagination"></div>
+
         </div>
     </div>
     <script>
@@ -480,6 +483,72 @@ function searchTable() {
         function viewReviewDetails(productId) {
             window.location.href = `adminreviewdetails.php?product_id=${productId}`;
         }
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.getElementById("table-body");
+    const pagination = document.getElementById("pagination");
+
+    const rowsPerPage = 10; 
+    let currentPage = 1;
+
+    const rows = Array.from(tableBody.rows); 
+    const totalRows = rows.length; 
+
+
+    function initPagination() {
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    pagination.innerHTML = "";
+
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "Previous";
+    prevButton.disabled = currentPage === 1;
+    prevButton.classList.add("page-btn"); 
+    prevButton.addEventListener("click", () => goToPage(currentPage - 1));
+    pagination.appendChild(prevButton);
+
+
+    const maxPageButtons = 5;
+    const halfRange = Math.floor(maxPageButtons / 2);
+    const startPage = Math.max(1, currentPage - halfRange);
+    const endPage = Math.min(totalPages, currentPage + halfRange);
+
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement("button");
+        pageButton.textContent = i;
+        pageButton.classList.add("page-btn");
+        if (i === currentPage) pageButton.classList.add("active");
+        pageButton.addEventListener("click", () => goToPage(i));
+        pagination.appendChild(pageButton);
+    }
+
+
+    const nextButton = document.createElement("button");
+    nextButton.textContent = "Next";
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.classList.add("page-btn"); 
+    nextButton.addEventListener("click", () => goToPage(currentPage + 1));
+    pagination.appendChild(nextButton);
+}
+
+
+    function goToPage(pageNumber) {
+        currentPage = Math.max(1, Math.min(pageNumber, Math.ceil(totalRows / rowsPerPage)));
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+  
+        rows.forEach((row, index) => {
+            row.style.display = index >= start && index < end ? "" : "none";
+        });
+
+   
+        initPagination();
+    }
+
+
+    goToPage(1);
+});
     </script>
 </body>
 </html>
