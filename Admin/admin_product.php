@@ -143,7 +143,10 @@
     gap: 20px; /* Adjust space between boxes */
     padding: 20px;
 }
-
+.btn-group {
+    display: inline-block;
+    position: relative;
+}
 .category-box {
     display: flex;
     flex-direction: column;
@@ -465,6 +468,16 @@ function add_check() {
                         <option value="c">Highest price</option>
                         <option value="d">Lowest price</option>
                     </select>
+
+                    <div class="btn-group">
+    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Export:
+    </button>
+    <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+    </ul>
+</div>
 
                     <button type="submit" name="search_product" class="btn btn-dark" style="margin-left:30px; width:110px;">Search</button>
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"
