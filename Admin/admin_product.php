@@ -1333,51 +1333,43 @@ function add_check() {
         Author: "YLS Atelier",
     };
 
-    // Prepare data for the table with formatted dates
+    // Select the table with product data
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-
-        // Remove Product Image (column index 0) and Actions (last column) from the data
-        cells.shift(); // Remove first column (Product Image)
-        cells.pop();   // Remove last column (Actions)
-
-        // Return only the relevant columns
-        return cells.map(cell => cell.textContent);
+        // Exclude the first (Product Image) and last (Actions) columns
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
     });
 
-    // Add headers, excluding Product Image and Actions columns
+    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
     const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
-        // Skip Product Image (index 0) and Actions (last index)
-        if (index === 0 || index === table.querySelectorAll("thead th").length - 1) {
-            return null;
-        }
-        return header.textContent.trim();
-    }).filter(header => header !== null); // Filter out null headers
+        // Exclude the first and last columns
+        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
+    }).filter(header => header !== null);
 
-    // Insert the headers at the start of the rows
     rows.unshift(headers);
 
-    // Create worksheet from updated data
+    // Create worksheet from the extracted data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set column widths
+    // Set appropriate column widths for the product data, excluding the first and last columns
     ws['!cols'] = [
-        { wch: 20 }, // Product Name column
-        { wch: 15 }, // Tags column
-        { wch: 15 }, // Colors column
-        { wch: 20 }, // Category column
-        { wch: 10 }, // Price column
-        { wch: 10 }, // Stock column
-        { wch: 15 }, // Status column
+        { wch: 30 }, // Product Name
+        { wch: 25 }, // Tags
+        { wch: 20 }, // Colors
+        { wch: 20 }, // Category
+        { wch: 15 }, // Price
+        { wch: 20 }, // Stock (QTY)
+        { wch: 15 }  // Status
     ];
 
     // Append the sheet to the workbook
     XLSX.utils.book_append_sheet(wb, ws, "Products");
 
-    // Save the workbook
+    // Save the workbook as an Excel file
     XLSX.writeFile(wb, "Product_List.xlsx");
 }
+
 
 
 
