@@ -321,7 +321,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-    const itemsPerPage = 10; // 每页显示的行数
+    const itemsPerPage = 1; // 每页显示的行数
     const rows = document.querySelectorAll('.table-row');
     const totalPages = Math.ceil(rows.length / itemsPerPage);
 
