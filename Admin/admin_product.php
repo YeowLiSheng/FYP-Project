@@ -143,10 +143,47 @@
     gap: 20px; /* Adjust space between boxes */
     padding: 20px;
 }
-.btn-group {
-    display: inline-block;
-    position: relative;
-}
+/* 设置 Export 按钮的背景色 */
+.btn-primary {
+        background-color: #4CAF50 !important;
+        border-color: #4CAF50 !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #45a049 !important;
+        border-color: #45a049 !important;
+    }
+
+    .btn-group {
+        background-color: #4CAF50;
+    }
+
+    /* 设置下拉菜单项颜色 */
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background: #fff;
+        border: 1px solid #dcdde1;
+        border-radius: 5px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        margin-top: 5px;
+    }
+
+    .dropdown-item {
+        background-color: #4CAF50; /* 按钮颜色 */
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #fff; /* 设置文字颜色为白色 */
+        cursor: pointer;
+        display: block;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background-color: #45a049; /* 悬停时的深绿色 */
+        color: white; /* 保持文字为白色 */
+    }
 .category-box {
     display: flex;
     flex-direction: column;
