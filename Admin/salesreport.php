@@ -620,4 +620,3 @@ function drawCategoryChart() {
 </script>
 </body>
 </html>
-d
