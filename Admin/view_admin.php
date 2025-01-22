@@ -23,15 +23,13 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
             color: #333;
-            min-height: 100vh;
-            display: flex;
         }
         main {
-            margin-left: 250px; /* 根据 `admin_sidebar.php` 的宽度调整 */
-            flex: 1;
-        }
+            margin-left: 78px;
+            padding: 15px;
+          
 
-        
+        }
         .admin-content {
             display: flex;
             flex-direction: column;
