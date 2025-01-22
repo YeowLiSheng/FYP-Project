@@ -233,7 +233,42 @@ $review = "
         tr[onclick] {
             cursor: pointer;
         }
+        .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 5px;
+    }
+    .pagination .page-btn {
+    margin: 0;
+    padding: 10px 15px; 
+    border: 1px solid #007bff; 
+    background-color: #f8f9fa; 
+    color: #007bff; 
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1em; 
+    transition: background-color 0.3s, color 0.3s; 
+}
 
+.pagination .page-btn.active {
+    background-color: #007bff; 
+    color: white; 
+    font-weight: bold; 
+}
+
+.pagination .page-btn:hover {
+    background-color: #0056b3; 
+    color: white; 
+}
+
+.pagination .page-btn:disabled {
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed;
+    border-color: #ced4da; 
+}
         @media (max-width: 768px) {
             .control-bar {
                 flex-direction: column;
