@@ -14,17 +14,17 @@ $pdf = new FPDF();
 $pdf->AddPage();
 
 // Logo at the top-left
-$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
+$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30);
 $pdf->SetFont('Arial', 'B', 16);
-$pdf->SetXY(50, 15); // Set position for title to the right of the logo
-$pdf->Cell(0, 10, 'YLS Atelier - Product List', 0, 1, 'L'); // Align title with logo
+$pdf->SetXY(50, 15);
+$pdf->Cell(0, 10, 'YLS Atelier - Product List', 0, 1, 'L');
 
-$pdf->Ln(20); // Add spacing below title (adjusted to move table down)
+$pdf->Ln(20);
 
 // Table Header
 $pdf->SetFont('Arial', 'B', 12);
-$pdf->SetFillColor(230, 230, 230); // Light gray background for the header
-$pdf->SetDrawColor(180, 180, 180); // Border color
+$pdf->SetFillColor(230, 230, 230);
+$pdf->SetDrawColor(180, 180, 180);
 
 $header = [
     ['Product ID', 25],
@@ -32,12 +32,11 @@ $header = [
     ['Tags', 30],
     ['Color', 30],
     ['Category', 25],
-    ['Status', 25] // Adjusted widths for table columns
+    ['Status', 25]
 ];
 
-// Adjust left margin
-$left_margin = 10; 
-$pdf->SetX($left_margin); // Set initial left margin
+$left_margin = 10;
+$pdf->SetX($left_margin);
 foreach ($header as $col) {
     $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
 }
@@ -60,25 +59,21 @@ $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Fetch data for each row
-        $product_id = $row['product_id'];
-        $product_name = $row['product_name'];
-        $tags = $row['tags'];
-        $color = $row['color'];
-        $category_name = $row['category_name'];
-        $status = $row['product_status'];
-
-        // Set left margin for row data
         $pdf->SetX($left_margin);
 
-        // Output row data
-        $pdf->Cell(25, 10, $product_id, 1, 0, 'C');
-        $pdf->MultiCell($cell_width, $cell_height, $promotion_name, 1, 'C');
-        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
-        $pdf->Cell(30, 10, $tags, 1, 0, 'C');
-        $pdf->Cell(30, 10, $color, 1, 0, 'C');
-        $pdf->Cell(25, 10, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, 10, $status, 1, 1, 'C');
+        // Output each column with MultiCell for product name
+        $pdf->Cell(25, 10, $row['product_id'], 1, 0, 'C');
+        
+        // Using MultiCell for product name to handle long text
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->MultiCell(40, 10, $row['product_name'], 1, 'C');
+        $pdf->SetXY($x + 40, $y); // Move the cursor to the right of the MultiCell
+        
+        $pdf->Cell(30, 10, $row['tags'], 1, 0, 'C');
+        $pdf->Cell(30, 10, $row['color'], 1, 0, 'C');
+        $pdf->Cell(25, 10, $row['category_name'], 1, 0, 'C');
+        $pdf->Cell(25, 10, $row['product_status'], 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
