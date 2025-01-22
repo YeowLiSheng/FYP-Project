@@ -603,9 +603,16 @@ if (!empty($output)) {
 .promo-title {
     font-size: 26px;
     font-weight: bold;
-    color: #222;
     margin-bottom: 10px;
     text-align: center;
+}
+.promo-title a{
+    color: #222;
+}
+
+.promo-title a:hover {
+    text-decoration: underline; /* Add underline on hover for better usability */
+    color: #007bff; /* Optional: Change color on hover */
 }
 
 .promo-price {
@@ -702,7 +709,7 @@ if (!empty($output)) {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 5px;
     margin-top: 15px;
 }
 
@@ -710,31 +717,29 @@ if (!empty($output)) {
 .quantity .btn-num-promo-down {
     width: 40px;
     height: 40px;
-    border: none;
-    background-color: #007bff;
-    color: #fff;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
     font-size: 18px;
     font-weight: bold;
-    border-radius: 50%;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .quantity .btn-num-promo-up:hover,
 .quantity .btn-num-promo-down:hover {
-    background-color: #0056b3;
-    transform: scale(1.1);
+    background-color: #f0f0f0;
+    color: #000;
 }
 
 .quantity .num-promo {
-    width: 60px;
+    width: 50px;
     height: 40px;
     text-align: center;
     font-size: 16px;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    background-color: #fff;
     outline: none;
-    background-color: #f9f9f9;
     transition: border-color 0.3s ease;
 }
 
@@ -742,6 +747,7 @@ if (!empty($output)) {
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
+
 
 /* Add to Cart Button */
 .js-add-promo-cart {
@@ -826,11 +832,11 @@ if (!empty($output)) {
 }
 
 .slick-prev {
-    left: -50px; /* Position to the left of the slider */
+    left: -30px; /* Position to the left of the slider */
 }
 
 .slick-next {
-    right: -50px; /* Position to the right of the slider */
+    right: -10px; /* Position to the right of the slider */
 }
 
 /* Hover effects */
@@ -863,7 +869,16 @@ body {
 .isotope-grid {
     min-height: 50vh; /* Ensures content area fills the screen */
 }
+.size-display{
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
+    margin-top: 30px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
 
+}
 
 /* Promotion Box with Fixed Dimensions and Scrolling */
 /* Promotion Head with Glowing Effect */
@@ -874,7 +889,7 @@ body {
     text-align: center;
     background: transparent;
     width: 80%;
-    padding: 15px;
+    padding: 10px;
     animation: softGlow 1s infinite alternate;
     transition: transform 0.4s ease-in-out; /* Smooth scaling effect */
     margin: 10px auto;
@@ -1036,14 +1051,6 @@ h5 a:hover {
 .quick-view-images img {
     width: 100%;
     margin: 10px 0;
-}
-.size-display {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Space between size options */
-    justify-content: left;
-    align-items: left;
-    margin: 20px 0; /* Add spacing around the size display */
 }
 .unavailable-product{
     background-color: lightgrey; /* Soft grey background */
@@ -1784,10 +1791,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						<p class="stext-102 cl3 p-t-23">
 							<?php echo $product['product_des']; ?>
 						</p>
-						
+
+						<div class="size-display"></div>
+
 						<!--  -->
 						<div class="p-t-33">
-                            <div class="size-display"></div>
 
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-203 flex-c-m respon6">
@@ -2117,7 +2125,7 @@ $(document).on('click', '.view-product-btn', function () {
             console.log("Promotion details fetched:", promotion);
             if (promotion) {
                 // Populate modal with promotion details
-                $('#promotionModal .promo-title').text(promotion.promotion_name).data('promotion-id', promotionId);
+                $('#promotionModal .promo-title').html(`<a href="product-detail.php?id=${promotionId}&type=promotion">${promotion.promotion_name}</a>`).data('promotion-id', promotionId);
                 $('#promotionModal .promo-price').text('$' + promotion.promotion_price);
                 $('#promotionModal .promo-description').text(promotion.promotion_des);
                 
@@ -2564,7 +2572,7 @@ $(document).ready(function () {
         const promotionId = $('#promotionModal .promo-title').data('promotion-id'); // Assuming the promotion ID is stored in the modal
         console.log("Promotion ID retrieved from modal:", promotionId);
 
-        const promotionName = $('#promotionModal .promo-title').text(); // Promotion Name
+        const promotionName = $('#promotionModal .promo-title a').text();
         console.log("Promotion Name:", promotionName);
 
         const promotionPrice = parseFloat($('#promotionModal .promo-price').text().replace('$', '')); // Promotion Price
