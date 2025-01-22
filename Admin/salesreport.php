@@ -291,7 +291,7 @@ $categorySalesJson = json_encode($categorySalesData);
     </div>
 
     <!-- View Mode Selector -->
-<form method="POST" id="viewForm">
+    <form action="generate_sales.php" method="POST">
     <div class="row g-3 align-items-center">
         <!-- View Mode Dropdown -->
         <div class="col-auto">
