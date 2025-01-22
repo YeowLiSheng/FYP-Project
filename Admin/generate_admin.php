@@ -65,27 +65,34 @@ if (isset($_POST["admin_excel"])) {
     $output = '';
     $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
     if ($excel->num_rows > 0) {
+        // 开始构建表格
         $output .= '
-            <table class="table" bordered="1">
-                <tr style="background-color: #e6e6e6;">
-                    <th>#</th>
-                    <th>Staff ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
+            <table border="1">
+                <tr style="background-color: #e6e6e6; font-weight: bold;">
+                    <th style="width: 10%;">#</th>
+                    <th style="width: 15%;">Staff ID</th>
+                    <th style="width: 25%;">Name</th>
+                    <th style="width: 30%;">Email</th>
                 </tr>
         ';
+
+        // 填充表格内容
+        $counter = 1;
         while ($row = mysqli_fetch_assoc($excel)) {
             $output .= '
                 <tr>
-                    <td>' . $row["staff_id"] . '</td>
-                    <td>' . $row["admin_id"] . '</td>
-                    <td>' . $row["admin_name"] . '</td>
-                    <td>' . $row["admin_email"] . '</td>
+                    <td style="text-align: center;">' . $counter++ . '</td>
+                    <td>' . htmlspecialchars($row["staff_id"]) . '</td>
+                    <td>' . htmlspecialchars($row["admin_name"]) . '</td>
+                    <td>' . htmlspecialchars($row["admin_email"]) . '</td>
                 </tr>
             ';
         }
         $output .= '</table>';
-        header('Content-Type: application/xls');
+
+        // 设置 HTTP 头部信息，指定文件名和类型
+        $time = date('Y-m-d_H-i-s');
+        header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
         echo $output;
     } else {
