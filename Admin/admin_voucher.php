@@ -589,7 +589,7 @@ function exportExcel() {
                 $s = "SELECT * FROM voucher";
                 $s_run = mysqli_query($connect, $s);
                 ?>
-                <tbody>
+                    <tbody id="table-body">
                     <?php
                     while ($row = mysqli_fetch_assoc($s_run)) {
                         ?>
