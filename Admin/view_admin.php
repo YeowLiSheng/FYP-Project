@@ -321,7 +321,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
  
-        const itemsPerPage = 10; // 每页显示的数据条数
+        const itemsPerPage = 1; // 每页显示的数据条数
         const totalPages = Math.ceil(data.length / itemsPerPage);
         let currentPage = 1;
 
