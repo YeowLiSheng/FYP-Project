@@ -28,7 +28,7 @@ $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
     ['Promotion ID', 25],
-    ['Promotion Name', 40],
+    ['Promotion Name', 50],
     ['Tags', 30],
     ['Color', 30],
     ['Category', 25],
@@ -73,7 +73,7 @@ if ($result->num_rows > 0) {
 
         // Output row data
         $pdf->Cell(25, 10, $promotion_id, 1, 0, 'C');
-        $pdf->Cell(40, 10, $promotion_name, 1, 0, 'C');
+        $pdf->Cell(50, 10, $promotion_name, 1, 0, 'C');
         $pdf->Cell(30, 10, $tags, 1, 0, 'C');
         $pdf->Cell(30, 10, $color, 1, 0, 'C');
         $pdf->Cell(25, 10, $category_name, 1, 0, 'C');
