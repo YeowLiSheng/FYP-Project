@@ -316,7 +316,7 @@ $category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? int
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 
 // Define the number of products to display per page
-$products_per_page = 10;
+$products_per_page = 8;
 
 // Calculate the offset for the SQL query
 $offset = ($current_page - 1) * $products_per_page;
@@ -325,6 +325,7 @@ $offset = ($current_page - 1) * $products_per_page;
 $product_query = "SELECT DISTINCT p.* FROM product p
                   JOIN product_variant pv ON p.product_id = pv.product_id
                   WHERE p.product_name LIKE '%$search_query%'";
+                  
 
 
 // Apply category filter if it's not 'all'
@@ -426,7 +427,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
             }
 
-            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: -30px;">
+            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: -10px;">
                     <div class="block2 ' . $productStyle . '">
                         <div class="block2-pic hov-img0" >
                             <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -1542,7 +1543,7 @@ h5 a:hover {
 
 
                     // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -30px;">
+                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -10px;">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -1590,11 +1591,19 @@ h5 a:hover {
         	</div>
             <div class="pagination">
                 <?php
-                if ($current_page > 1) {
-                    echo '<a href="?page=' . ($current_page - 1) . '">Previous</a>';
+                $base_url = 'User/product.php?'; // Base URL for pagination links
+                if (!empty($_GET)) {
+                    $query_params = $_GET;
+                    unset($query_params['page']); // Remove the current page parameter
+                    $base_url .= http_build_query($query_params) . '&';
                 }
+
+                if ($current_page > 1) {
+                    echo '<a href="' . $base_url . 'page=' . ($current_page - 1) . '">Previous</a>';
+                }
+
                 if ($current_page < $total_pages) {
-                    echo '<a href="?page=' . ($current_page + 1) . '">Next</a>';
+                    echo '<a href="' . $base_url . 'page=' . ($current_page + 1) . '">Next</a>';
                 }
                 ?>
             </div>
@@ -2719,7 +2728,8 @@ function updateProducts() {
         price: filters.price,
         color: filters.color,
         tag: filters.tag,
-        category: filters.category
+        category: filters.category,
+        page: 1
     },
     success: function(response) {
         // Check if the response contains error
@@ -2732,6 +2742,15 @@ function updateProducts() {
             $('.isotope-grid').html('<p>No products found for the selected filters.</p>');
         } else {
             $('.isotope-grid').html(response);
+            // Update pagination links to include filters
+            $('.pagination a').each(function() {
+                    let url = new URL($(this).attr('href'), window.location.origin);
+                    url.searchParams.set('price', filters.price);
+                    url.searchParams.set('color', filters.color);
+                    url.searchParams.set('tag', filters.tag);
+                    url.searchParams.set('category', filters.category);
+                    $(this).attr('href', url.toString());
+                });
         }
 
         adjustLayoutAfterFiltering();
@@ -2743,7 +2762,22 @@ function updateProducts() {
 });
 
 }
+$('.pagination a').on('click', function(e) {
+    e.preventDefault(); // Prevent default link behavior
+    const url = $(this).attr('href');
 
+    // Load filtered products dynamically
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+            $('.isotope-grid').html(response); // Update product grid
+        },
+        error: function(xhr, status, error) {
+            alert('An error occurred while fetching products: ' + error);
+        }
+    });
+});
 
 // Function to adjust the layout and avoid overflow issues
 function adjustLayoutAfterFiltering() {

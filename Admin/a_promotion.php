@@ -46,7 +46,7 @@ if (isset($_POST["save_product"])) {
         $_SESSION['title'] = "$pd";
         $_SESSION['text'] = "successfully added!";
         $_SESSION['icon'] = "success";
-        header("location:admin_product.php");
+        header("location:admin_promotion.php");
     } else {
         $_SESSION['img'] = "";
         $_SESSION['title'] = "Error";
