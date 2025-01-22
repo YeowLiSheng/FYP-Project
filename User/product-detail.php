@@ -1788,64 +1788,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
 
 </script>
-	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-	<script>
-		$('.js-pscroll').each(function(){
-			$(this).css('position','relative');
-			$(this).css('overflow','hidden');
-			var ps = new PerfectScrollbar(this, {
-				wheelSpeed: 1,
-				scrollingThreshold: 1000,
-				wheelPropagation: false,
-			});
-
-			$(window).on('resize', function(){
-				ps.update();
-			})
-		});
-	</script>
-<script>
-    // Trigger AJAX call when a different product or promotion needs to be loaded dynamically
-    $(document).on('click', '.js-load-product', function(event) {
-        event.preventDefault();
-        var id = $(this).data('id'); // ID for the product or promotion
-        var type = $(this).data('type'); // 'product' or 'promotion'
-
-        // Make an AJAX call to fetch details based on type
-        $.ajax({
-            url: '', // Ensure this is the URL where details can be fetched
-            type: 'GET',
-            data: { fetch_product: true, id: id, type: type },
-            dataType: 'json',
-            success: function(response) {
-                if (response) {
-                    // Populate the page with data
-                    if (type === 'product') {
-                        $('.js-name-detail').text(response.product_name);
-                        $('.mtext-106').text('$' + response.product_price);
-                        $('.stext-102').text(response.product_des);
-                    } else if (type === 'promotion') {
-                        $('.js-name-detail').text(response.promotion_name);
-                        $('.mtext-106').text('$' + response.promotion_price);
-                        $('.stext-102').text(response.promotion_des);
-                    }
-
-                    // Update Quick View images (example logic for both product and promotion)
-                    $('.gallery-lb .item-slick3').each(function(index) {
-                        var imagePath = 'images/' + response['Quick_View' + (index + 1)];
-                        $(this).find('.wrap-pic-w img').attr('src', imagePath);
-                        $(this).find('.wrap-pic-w a').attr('href', imagePath);
-                    });
-                } else {
-                    alert('Details not found.');
-                }
-            },
-            error: function() {
-                alert('An error occurred while fetching details.');
-            }
-        });
-    });
-</script>
 
 <script>
     // Handle color change

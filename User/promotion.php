@@ -271,7 +271,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
 
-    .slick-prev, .slick-next {
+.slick-prev, .slick-next {
     position: absolute;
     top: 50%; /* Center vertically */
     transform: translateY(-50%);
@@ -334,6 +334,50 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
     display: block;
     margin-top: 5px;
     padding-left: 3px; /* Add extra space to the left of the price */
+}
+.category-container {
+    display: none;
+}
+.category-container.active {
+    display: block;
+}
+/* Center the container */
+.filter-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 50px;
+}
+
+/* Center align each item */
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.filter-name {
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  transition: color 0.3s, text-decoration 0.3s;
+}
+
+.filter-img {
+  width: 150px;
+  height: 150px;
+  transition: transform 0.3s;
+}
+
+/* Hover effects for name and image */
+.filter-item:hover .filter-name {
+  text-decoration: underline;
+}
+
+.filter-item:hover .filter-img {
+  transform: scale(1.05);
 }
 
 </style>
@@ -576,6 +620,26 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
         </div>
     </div>
 </div>
+
+        <div class="filter-container">
+        <div class="filter-item" data-category="all">
+            <img src="images/All.png" alt="All Categories" class="filter-img">
+            <div class="filter-name">All</div>
+        </div>
+        <div class="filter-item" data-category="1">
+            <img src="images/M13085.avif" alt="Monogram Multicolore" class="filter-img">
+            <div class="filter-name">Women's Bag</div>
+        </div>
+        <div class="filter-item" data-category="2">
+            <img src="images/M46271.avif" alt="Superflat" class="filter-img">
+            <div class="filter-name">Man's Bag</div>
+        </div>
+        <div class="filter-item" data-category="3">
+            <img src="images/louis-vuitton-le-damier.avif" alt="Accessories" class="filter-img">
+            <div class="filter-name">Accessories</div>
+        </div>
+        </div>
+
 	        <!-- Product -->
             <!-- Women Bag Category -->
             <div class="category-container" data-category="1">
@@ -1791,6 +1855,50 @@ document.addEventListener("click", function (event) {
         }
     }
 });
+</script>
+<script>
+    // Get all filter items and category containers
+const filterItems = document.querySelectorAll('.filter-item');
+const categoryContainers = document.querySelectorAll('.category-container');
+
+// Add click event listener to each filter item
+filterItems.forEach(item => {
+    item.addEventListener('click', () => {
+        const category = item.getAttribute('data-category');
+
+        // Remove active class from all items
+        filterItems.forEach(itm => itm.classList.remove('active'));
+
+        // Add active class to the clicked item
+        item.classList.add('active');
+
+        // Hide all category containers and show only the matching one
+        if (category === 'all') {
+            categoryContainers.forEach(container => container.classList.add('active'));
+        } else {
+            categoryContainers.forEach(container => {
+                if (container.getAttribute('data-category') === category) {
+                container.classList.add('active');
+                } else {
+                container.classList.remove('active');
+                }
+            });
+        }
+
+        // Trigger resize and Slick.js recalculation (if applicable)
+        window.dispatchEvent(new Event('resize'));
+        if (typeof $('.slick1').slick === 'function') {
+            $('.slick1').slick('setPosition');
+        }
+    });
+});
+
+// Show the first category by default
+if (filterItems.length > 0) {
+    filterItems[0].click();
+}
+
+
 </script>
 <script src="js/main.js"></script>
 

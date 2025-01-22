@@ -471,7 +471,7 @@ $lowStockProducts = getLowStockProducts($connect);
             </div>
             <div class="ccard">
                 <i class="fas fa-dollar-sign icon"></i>
-                <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+                <p class="number">$<?php echo number_format($totalSales, 2); ?></p>
                 <p class="name">Total Sales</p>
             </div>
         </div>
@@ -612,7 +612,7 @@ $lowStockProducts = getLowStockProducts($connect);
                 responsive: true,
                 scales: {
                     x: { title: { display: true, text: 'Week Range' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales (RM)' } }
+                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales ($)' } }
                 }
             }
         });
