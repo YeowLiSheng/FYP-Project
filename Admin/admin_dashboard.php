@@ -471,7 +471,7 @@ $lowStockProducts = getLowStockProducts($connect);
             </div>
             <div class="ccard">
                 <i class="fas fa-dollar-sign icon"></i>
-                <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+                <p class="number">$<?php echo number_format($totalSales, 2); ?></p>
                 <p class="name">Total Sales</p>
             </div>
         </div>
