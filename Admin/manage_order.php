@@ -265,16 +265,15 @@ include 'admin_sidebar.php';
         <ion-icon name="search-outline"></ion-icon>
         <input type="text" id="search-input" placeholder="Search by name" oninput="searchTable()">
 
-        <div class="btn-group" style="background-color: #4CAF50;">
-        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Export:
-            </button>
-            <ul class="dropdown-menu">
-                <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-                <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-            </ul>
-        </div>
-    </div>
+    </button>
+    <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+    </ul>
+</div>
 
         <div class="control-bar">
             <div class="filter-group">
