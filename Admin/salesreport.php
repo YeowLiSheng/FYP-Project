@@ -280,7 +280,7 @@ $categorySalesJson = json_encode($categorySalesData);
         </div>
         <div class="ccard">
             <i class="fas fa-dollar-sign icon"></i>
-            <p class="number">RM<?php echo number_format($totalSales, 2); ?></p>
+            <p class="number">$<?php echo number_format($totalSales, 2); ?></p>
             <p class="name">Total Sales</p>
         </div>
         <div class="ccard">
@@ -403,7 +403,7 @@ $categorySalesJson = json_encode($categorySalesData);
                                 <td><?= $order['order_id']; ?></td>
                                 <td><?= htmlspecialchars($order['user_name']); ?></td>
                                 <td><?= $order['order_date']; ?></td>
-                                <td>RM <?= number_format($order['final_amount'], 2); ?></td>
+                                <td>$ <?= number_format($order['final_amount'], 2); ?></td>
                                 <td><?= $order['order_status']; ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -495,21 +495,21 @@ $categorySalesJson = json_encode($categorySalesData);
         const dates = chartData.map(item => item.date);
         const sales = chartData.map(item => parseFloat(item.daily_sales));
 
-        createLineChart('Daily Sales (RM)', dates, sales);
+        createLineChart('Daily Sales ($)', dates, sales);
 
     } else if (viewMode === 'monthly_sales') {
         chartData = <?php echo json_encode($monthlySales); ?>;
         const months = chartData.map(item => item.month);
         const sales = chartData.map(item => parseFloat(item.monthly_sales));
 
-        createBarChart('Monthly Sales (RM)', months, sales);
+        createBarChart('Monthly Sales ($)', months, sales);
 
     } else if (viewMode === 'yearly_sales') {
         chartData = <?php echo json_encode($yearlySales); ?>;
         const years = chartData.map(item => item.year);
         const sales = chartData.map(item => parseFloat(item.yearly_sales));
 
-        createBarChart('Yearly Sales (RM)', years, sales);
+        createBarChart('Yearly Sales ($)', years, sales);
     }
 
     function createLineChart(label, labels, data) {
@@ -537,7 +537,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 },
                 scales: {
                     x: { title: { display: true, text: 'Date' } },
-                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+                    y: { title: { display: true, text: 'Sales ($)' }, beginAtZero: true }
                 }
             }
         });
@@ -567,7 +567,7 @@ $categorySalesJson = json_encode($categorySalesData);
                 },
                 scales: {
                     x: { title: { display: true, text: 'Date' } },
-                    y: { title: { display: true, text: 'Sales (RM)' }, beginAtZero: true }
+                    y: { title: { display: true, text: 'Sales ($)' }, beginAtZero: true }
                 }
             }
         });
