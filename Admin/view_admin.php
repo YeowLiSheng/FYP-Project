@@ -171,32 +171,32 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     }
     .pagination .page-btn {
     margin: 0;
-    padding: 10px 15px; /* 增加按钮内边距 */
-    border: 1px solid #007bff; /* 使用蓝色边框 */
-    background-color: #f8f9fa; /* 使用浅灰色背景 */
-    color: #007bff; /* 蓝色文字 */
+    padding: 10px 15px; 
+    border: 1px solid #007bff; 
+    background-color: #f8f9fa; 
+    color: #007bff; 
     cursor: pointer;
     border-radius: 5px;
-    font-size: 1em; /* 调整字体大小 */
-    transition: background-color 0.3s, color 0.3s; /* 添加交互动画 */
+    font-size: 1em; 
+    transition: background-color 0.3s, color 0.3s; 
 }
 
 .pagination .page-btn.active {
-    background-color: #007bff; /* 蓝色背景 */
-    color: white; /* 白色文字 */
-    font-weight: bold; /* 加粗文字 */
+    background-color: #007bff; 
+    color: white; 
+    font-weight: bold; 
 }
 
 .pagination .page-btn:hover {
-    background-color: #0056b3; /* 深蓝色背景 */
-    color: white; /* 白色文字 */
+    background-color: #0056b3; 
+    color: white; 
 }
 
 .pagination .page-btn:disabled {
-    background-color: #e9ecef; /* 浅灰色背景 */
-    color: #6c757d; /* 深灰色文字 */
-    cursor: not-allowed; /* 不允许点击 */
-    border-color: #ced4da; /* 浅灰色边框 */
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed;
+    border-color: #ced4da; 
 }
     </style>
 </head>
@@ -333,31 +333,30 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
 
-    // 在 JavaScript 中设置分页逻辑
+
 document.addEventListener("DOMContentLoaded", function () {
     const tableBody = document.getElementById("table-body");
     const pagination = document.getElementById("pagination");
 
-    const rowsPerPage = 1; // 每页显示的数据条数
+    const rowsPerPage = 10; 
     let currentPage = 1;
 
-    const rows = Array.from(tableBody.rows); // 缓存所有行
-    const totalRows = rows.length; // 总行数
+    const rows = Array.from(tableBody.rows); 
+    const totalRows = rows.length; 
 
-    // 初始化分页
+
     function initPagination() {
     const totalPages = Math.ceil(totalRows / rowsPerPage);
     pagination.innerHTML = "";
 
-    // 添加上一页按钮
     const prevButton = document.createElement("button");
     prevButton.textContent = "Previous";
     prevButton.disabled = currentPage === 1;
-    prevButton.classList.add("page-btn"); // 添加样式类
+    prevButton.classList.add("page-btn"); 
     prevButton.addEventListener("click", () => goToPage(currentPage - 1));
     pagination.appendChild(prevButton);
 
-    // 动态生成页码按钮
+
     const maxPageButtons = 5;
     const halfRange = Math.floor(maxPageButtons / 2);
     const startPage = Math.max(1, currentPage - halfRange);
@@ -366,38 +365,37 @@ document.addEventListener("DOMContentLoaded", function () {
     for (let i = startPage; i <= endPage; i++) {
         const pageButton = document.createElement("button");
         pageButton.textContent = i;
-        pageButton.classList.add("page-btn"); // 添加样式类
+        pageButton.classList.add("page-btn");
         if (i === currentPage) pageButton.classList.add("active");
         pageButton.addEventListener("click", () => goToPage(i));
         pagination.appendChild(pageButton);
     }
 
-    // 添加下一页按钮
+
     const nextButton = document.createElement("button");
     nextButton.textContent = "Next";
     nextButton.disabled = currentPage === totalPages;
-    nextButton.classList.add("page-btn"); // 添加样式类
+    nextButton.classList.add("page-btn"); 
     nextButton.addEventListener("click", () => goToPage(currentPage + 1));
     pagination.appendChild(nextButton);
 }
 
 
-    // 跳转到指定页面
     function goToPage(pageNumber) {
         currentPage = Math.max(1, Math.min(pageNumber, Math.ceil(totalRows / rowsPerPage)));
         const start = (currentPage - 1) * rowsPerPage;
         const end = start + rowsPerPage;
 
-        // 更新表格
+  
         rows.forEach((row, index) => {
             row.style.display = index >= start && index < end ? "" : "none";
         });
 
-        // 更新分页
+   
         initPagination();
     }
 
-    // 初始化分页
+
     goToPage(1);
 });
 
