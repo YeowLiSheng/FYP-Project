@@ -197,7 +197,47 @@ function exportExcel() {
             padding: 20px;
             margin-bottom: 30px;
         }
+        .btn-primary {
+        background-color: #4CAF50 !important;
+        border-color: #4CAF50 !important;
+    }
 
+    .btn-primary:hover {
+        background-color: #45a049 !important;
+        border-color: #45a049 !important;
+    }
+
+    .btn-group {
+        background-color: #4CAF50;
+        display: inline-block;
+        position: relative;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background: #fff;
+        border: 1px solid #dcdde1;
+        border-radius: 5px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        margin-top: 5px;
+    }
+
+    .dropdown-item {
+        background-color: #4CAF50; 
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #fff; 
+        cursor: pointer;
+        display: block;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background-color: #45a049; 
+        color: white; 
+    }
         .overview-card {
             flex: 1;
             text-align: center;
