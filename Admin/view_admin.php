@@ -179,8 +179,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 Export:
                             </button>
                             <ul class="dropdown-menu">
-                                <li><button type="submit" class="dropdown-item" name="admin_pdf"onclick="exportPDF()">PDF</button></li>
-                                <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
+                            <li><button type="button" class="dropdown-item" name="admin_pdf" onclick="exportPDF()">PDF</button></li>
+                            <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
                             </ul>
                         </div>
                
