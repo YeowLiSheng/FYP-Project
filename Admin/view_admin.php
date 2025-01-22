@@ -165,10 +165,12 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         .pagination {
         display: flex;
         justify-content: center;
+        align-items: center;
         margin: 20px 0;
+        gap: 5px;
     }
     .pagination .page-btn {
-        margin: 0 5px;
+        margin: 0;
         padding: 5px 10px;
         border: 1px solid #ccc;
         background-color: #f9f9f9;
@@ -180,8 +182,10 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         color: white;
         border-color: #007bff;
     }
-    .pagination .page-btn:hover {
+    .pagination .page-btn:disabled {
         background-color: #ddd;
+        color: #aaa;
+        cursor: not-allowed;
     }
     </style>
 </head>
@@ -322,7 +326,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         const tableBody = document.getElementById("table-body");
         const pagination = document.getElementById("pagination");
 
-        const rowsPerPage = 2; // 每页显示的数据条数
+        const rowsPerPage = 10; // 每页显示的数据条数
         let currentPage = 1;
         let totalRows = tableBody.rows.length;
 
@@ -331,7 +335,19 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             const totalPages = Math.ceil(totalRows / rowsPerPage);
             pagination.innerHTML = ""; // 清空分页按钮
 
-            // 生成分页按钮
+            // 添加上一页按钮
+            const prevButton = document.createElement("button");
+            prevButton.textContent = "Previous";
+            prevButton.classList.add("page-btn");
+            prevButton.disabled = currentPage === 1; // 如果是第一页，禁用按钮
+            prevButton.addEventListener("click", function () {
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+            pagination.appendChild(prevButton);
+
+            // 添加页码按钮
             for (let i = 1; i <= totalPages; i++) {
                 const pageButton = document.createElement("button");
                 pageButton.textContent = i;
@@ -344,11 +360,24 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                 });
                 pagination.appendChild(pageButton);
             }
+
+            // 添加下一页按钮
+            const nextButton = document.createElement("button");
+            nextButton.textContent = "Next";
+            nextButton.classList.add("page-btn");
+            nextButton.disabled = currentPage === totalPages; // 如果是最后一页，禁用按钮
+            nextButton.addEventListener("click", function () {
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+            pagination.appendChild(nextButton);
         }
 
         // 跳转到指定页面
         function goToPage(pageNumber) {
-            currentPage = pageNumber;
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            currentPage = Math.max(1, Math.min(pageNumber, totalPages)); // 保证页码在有效范围内
 
             // 显示当前页数据
             const start = (currentPage - 1) * rowsPerPage;
@@ -362,14 +391,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                 }
             });
 
-            // 更新按钮状态
-            Array.from(pagination.children).forEach((button, index) => {
-                if (index === currentPage - 1) {
-                    button.classList.add("active");
-                } else {
-                    button.classList.remove("active");
-                }
-            });
+            // 更新分页按钮
+            initPagination();
         }
 
         // 初始化分页
