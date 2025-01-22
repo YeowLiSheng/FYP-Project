@@ -27,7 +27,7 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background for the header
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Product ID', 30],
+    ['Product ID', 25],
     ['Product Name', 40],
     ['Tags', 30],
     ['Color', 30],
@@ -72,7 +72,7 @@ if ($result->num_rows > 0) {
         $pdf->SetX($left_margin);
 
         // Output row data
-        $pdf->Cell(20, 10, $product_id, 1, 0, 'C');
+        $pdf->Cell(25, 10, $product_id, 1, 0, 'C');
         $pdf->Cell(40, 10, $product_name, 1, 0, 'C');
         $pdf->Cell(30, 10, $tags, 1, 0, 'C');
         $pdf->Cell(30, 10, $color, 1, 0, 'C');
