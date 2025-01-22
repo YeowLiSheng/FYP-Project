@@ -498,7 +498,7 @@ include 'dataconnection.php';
 </body>
 <script>
 document.getElementById("export-pdf").addEventListener("click", exportPDF);
-document.getElementById("export-excel").addEventListener("click", exportExcel);
+
 
         function exportPDF() {
             window.location.href = "generate_voucher.php";
@@ -506,7 +506,8 @@ document.getElementById("export-excel").addEventListener("click", exportExcel);
         }
 
  
-        function exportExcel() {
+      // Excel Export Function
+function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Voucher List",
@@ -548,4 +549,7 @@ document.getElementById("export-excel").addEventListener("click", exportExcel);
     // Save the workbook as an Excel file
     XLSX.writeFile(wb, "Voucher_List.xlsx");
 }
+
+// Attach the exportExcel function to the button
+document.getElementById("export-excel").addEventListener("click", exportExcel);
 </script>
