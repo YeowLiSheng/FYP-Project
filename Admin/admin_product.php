@@ -1327,8 +1327,7 @@ function add_check() {
 
         var products = <?php echo json_encode($products); ?>;
 
-// 渲染数据到表格
-window.onload = function() {
+        document.addEventListener("DOMContentLoaded", function() {
     var tableBody = document.querySelector("#myTable tbody");
     products.forEach(function(product) {
         var row = document.createElement("tr");
@@ -1345,7 +1344,7 @@ window.onload = function() {
         `;
         tableBody.appendChild(row);
     });
-}
+});
         function exportExcel() {
             const wb = XLSX.utils.book_new();
     wb.Props = {
