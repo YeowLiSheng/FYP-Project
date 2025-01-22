@@ -261,7 +261,10 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
-
+<div id="pagination">
+        <button id="prev-btn" disabled>Previous</button>
+        <button id="next-btn">Next</button>
+    </div>
             </div>
         </section>
     </main>
@@ -293,6 +296,44 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             }
         });
     });
+
+    const rowsPerPage = 10;
+        const tableBody = document.getElementById('table-body');
+        const rows = Array.from(tableBody.querySelectorAll('tr'));
+        const totalRows = rows.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        let currentPage = 1;
+
+        // Function to display rows for the current page
+        function displayPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            rows.forEach((row, index) => {
+                row.style.display = index >= start && index < end ? '' : 'none';
+            });
+
+            document.getElementById('prev-btn').disabled = page === 1;
+            document.getElementById('next-btn').disabled = page === totalPages;
+        }
+
+        // Event listeners for pagination buttons
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPage(currentPage);
+            }
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayPage(currentPage);
+            }
+        });
+
+        // Initialize the table display
+        displayPage(currentPage);
 </script>
 
 </body>
