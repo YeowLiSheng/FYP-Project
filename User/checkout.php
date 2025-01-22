@@ -1789,37 +1789,37 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 		
 		
 		function confirmPayment() {
-        // 清空页面内容
-        document.body.innerHTML = '';
-        document.body.style.backgroundColor = 'white'; // 设置背景为白色
 
-        // 显示加载状态
+        document.body.innerHTML = '';
+        document.body.style.backgroundColor = 'white';
+
+
         Swal.fire({
             title: 'Processing Payment',
             text: 'Please wait...',
             allowOutsideClick: false,
-            showConfirmButton: false, // 不显示确认按钮
+            showConfirmButton: false, 
             didOpen: () => {
-                Swal.showLoading(); // 显示加载动画
+                Swal.showLoading(); 
             }
         });
 
-        // 模拟 2 秒延迟后显示支付成功消息
+       
         setTimeout(() => {
             Swal.fire({
                 icon: 'success',
                 title: 'Payment Successful',
                 text: 'Your payment was processed successfully.',
                 confirmButtonText: 'OK',
-                allowOutsideClick: false // 阻止点击外部关闭弹窗
+                allowOutsideClick: false 
             }).then(() => {
-                goToDashboard(); // 调用导航到仪表板的函数
+                goToDashboard(); 
             });
         }, 2000);
     }
 
     function goToDashboard() {
-        window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
+        window.location.href = 'dashboard.php'; 
     }
 
 
