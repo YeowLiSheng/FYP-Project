@@ -27,7 +27,7 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background for the header
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Promotion ID', 25],
+    ['Promotion ID', 30],
     ['Promotion Name', 40],
     ['Tags', 30],
     ['Color', 30],
@@ -70,14 +70,14 @@ if ($result->num_rows > 0) {
 
         // Handle word wrapping for the 'Promotion Name' column
         $cell_width = 40; // Width of 'Promotion Name'
-        $cell_height = 6; // Height of each wrapped line
+        $cell_height = 8; // Height of each wrapped line
         $line_count = ceil($pdf->GetStringWidth($promotion_name) / $cell_width);
 
         // Set left margin for row data
         $pdf->SetX($left_margin);
 
         // Output row data
-        $pdf->Cell(25, $cell_height * $line_count, $promotion_id, 1, 0, 'C');
+        $pdf->Cell(30, $cell_height * $line_count, $promotion_id, 1, 0, 'C');
         $x = $pdf->GetX(); // Save x position
         $y = $pdf->GetY(); // Save y position
         $pdf->MultiCell($cell_width, $cell_height, $promotion_name, 1, 'C');
