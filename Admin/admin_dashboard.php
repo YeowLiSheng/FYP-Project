@@ -612,7 +612,7 @@ $lowStockProducts = getLowStockProducts($connect);
                 responsive: true,
                 scales: {
                     x: { title: { display: true, text: 'Week Range' } },
-                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales (RM)' } }
+                    y: { beginAtZero: true, title: { display: true, text: 'Total Sales ($)' } }
                 }
             }
         });
