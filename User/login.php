@@ -309,9 +309,7 @@ if (isset($_POST["loginbtn"])) {
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
+						
 
 						
 
@@ -357,7 +355,7 @@ if (isset($_POST["loginbtn"])) {
 							</li>
 
                             <li>
-								<a href="package.php">Packages</a>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">

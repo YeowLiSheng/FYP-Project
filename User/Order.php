@@ -117,9 +117,9 @@ function fetchOrdersWithProducts($conn, $user_id, $status = null) {
         JOIN product_variant pv ON od.variant_id = pv.variant_id
         LEFT JOIN product p ON pv.product_id = p.product_id
         LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
-        WHERE o.user_id = ?"; // 只显示当前用户的订单
+        WHERE o.user_id = ?"; 
 
-    // 如果提供了状态参数，添加状态过滤
+   
     if ($status) {
         $sql .= " AND o.order_status = ?";
     }
@@ -129,9 +129,9 @@ function fetchOrdersWithProducts($conn, $user_id, $status = null) {
 
     $stmt = $conn->prepare($sql);
     if ($status) {
-        $stmt->bind_param("is", $user_id, $status); // 绑定用户 ID 和状态
+        $stmt->bind_param("is", $user_id, $status); 
     } else {
-        $stmt->bind_param("i", $user_id); // 仅绑定用户 ID
+        $stmt->bind_param("i", $user_id); 
     }
     $stmt->execute();
     return $stmt->get_result();
@@ -144,31 +144,65 @@ $shipping_orders = fetchOrdersWithProducts($conn, $user_id, 'Shipping');
 $complete_orders = fetchOrdersWithProducts($conn, $user_id, 'Complete');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
-    // 获取订单 ID
+   
     $order_id = intval($_POST['order_id']);
     
-    // 检查订单是否属于当前用户
+    
     $stmt = $conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
     $stmt->bind_param("ii", $order_id, $_SESSION['id']);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // 更新订单状态为 "Complete"
+        
         $update_stmt = $conn->prepare("UPDATE orders SET order_status = 'Complete' WHERE order_id = ?");
         $update_stmt->bind_param("i", $order_id);
 
         if ($update_stmt->execute()) {
-            // 添加页面重定向，刷新页面
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
-        } else {
-            echo "<script>alert('Failed to update order status. Please try again later.');</script>";
-        }
-    } else {
-        echo "<script>alert('Invalid order or permission denied.');</script>";
-    }
-
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'success',
+							title: 'Order Status Updated Successfully',
+							text: 'Thank you for confirming your order.',
+							confirmButtonText: 'OK'
+						}).then((result) => {
+							if (result.isConfirmed) {
+								window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+							}
+						});
+					});
+				</script>";
+		} else {
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'error',
+							title: 'Failed to Update Order Status',
+							text: 'Please try again later.',
+							confirmButtonText: 'OK'
+						});
+					});
+				</script>";
+		}
+		} else {
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'error',
+							title: 'Invalid Order',
+							text: 'Invalid order or permission denied.',
+							confirmButtonText: 'OK'
+						});
+					});
+				</script>";
+		}
     $stmt->close();
     $update_stmt->close();
 }
@@ -226,12 +260,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	width: 250px;
     padding: 20px;
     height: 100%;
-    position: static; /* 保持 static */
+    position: static; 
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     overflow-y: auto;
     flex-shrink: 0;
-    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+    z-index: 1; 
 }
 
     .sidebar .user-info {
@@ -320,12 +354,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 12px;
-    background-color: #f7f9fc; /* 添加浅色背景 */
+    background-color: #f7f9fc; 
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
     cursor: pointer;
-    position: relative; /* 关键：为绝对定位的按钮提供参考 */
+    position: relative; 
 }
 
 .order-summary:hover {
@@ -335,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
 .order-summary img {
     width: 100%;
-    height: 100px; /* 让图片更大以填充空间 */
+    height: 100px; 
     border-radius: 10px;
     object-fit: cover;
 }
@@ -344,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 10px; /* 增加内部间距 */
+    gap: 10px; 
 }
 
 .order-summary h3 {
@@ -400,9 +434,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    position: absolute; /* 绝对定位 */
-    bottom: 20px; /* 距离底部 */
-    right: 20px; /* 距离右侧 */
+    position: absolute; 
+    bottom: 20px; 
+    right: 20px; 
     transition: background-color 0.3s ease;
 }
 
@@ -763,7 +797,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
 						<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
 						
-				// 如果需要显示 "Complete" 按钮
+				// if need "Complete" button
 				if ($showCompleteButton) {
 					echo '
 						<button type="button" class="complete-btn" 
@@ -1246,6 +1280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 	<script>
     function showTab(status) {
@@ -1259,7 +1294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     }
 
 	function openPopup(event, orderId) {
-    event.stopPropagation(); // 阻止事件冒泡
+    event.stopPropagation(); 
     document.getElementById("popup-order-id").value = orderId;
     document.getElementById("popup-form").style.display = "flex";
 }

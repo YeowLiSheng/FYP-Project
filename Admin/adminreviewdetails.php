@@ -4,7 +4,7 @@ include 'admin_sidebar.php';
 
 $product_id = $_GET['product_id'] ?? 0;
 
-// 查询产品或促销产品信息
+
 $product_query = "
     SELECT 
         COALESCE(p.product_id, pp.promotion_id) AS item_id,
@@ -27,7 +27,7 @@ $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $product = $stmt->get_result()->fetch_assoc();
 
-// 查询产品或促销产品的评论
+
 $review_query = "
     SELECT 
         r.review_id, 
@@ -53,11 +53,11 @@ $stmt = $connect->prepare($review_query);
 $stmt->bind_param("ii", $product_id, $product_id);
 $stmt->execute();
 $reviews = $stmt->get_result();
-// 处理管理员操作
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $review_id = $_POST['review_id'];
-    $staff_id = $_SESSION['staff_id']; // 使用 login.php 中的键名
-
+    $staff_id = $_SESSION['staff_id']; 
+    $success_message = '';
 
     if (isset($_POST['reply'])) {
         $admin_reply = trim($_POST['admin_reply']);
@@ -66,9 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("sii", $admin_reply, $staff_id, $review_id);
-        $stmt->execute();
-        if (!$stmt->execute()) {
-            die("SQL 执行失败：" . $stmt->error);
+        if ($stmt->execute()) {
+            $success_message = 'Reply added successfully.';
+        } else {
+            $success_message = 'Failed to add reply.';
         }
     } elseif (isset($_POST['toggle_status'])) {
         $new_status = $_POST['new_status'];
@@ -77,17 +78,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("si", $new_status, $review_id);
-        $stmt->execute();
+        if ($stmt->execute()) {
+            $success_message = 'Status updated successfully.';
+        } else {
+            $success_message = 'Failed to update status.';
+        }
     } elseif (isset($_POST['delete_reply'])) {
         $query = "UPDATE reviews 
                   SET admin_reply = NULL, admin_reply_updated_at = CURRENT_TIMESTAMP, staff_id = NULL 
                   WHERE review_id = ?";
         $stmt = $connect->prepare($query);
         $stmt->bind_param("i", $review_id);
-        $stmt->execute();
+        if ($stmt->execute()) {
+            $success_message = 'Reply deleted successfully.';
+        } else {
+            $success_message = 'Failed to delete reply.';
+        }
     }
 
-    echo "<script>window.location.href='adminreviewdetails.php?product_id=$product_id';</script>";
+    echo "
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reply Updated',
+                    text: '" . $success_message . "',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'adminreviewdetails.php?product_id=$product_id';
+                    }
+                });
+            });
+        </script>";
     exit();
 }
 ?>
@@ -142,11 +166,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 .modal-content {
     position: relative;
     text-align: center;
-    background: white; /* 白色背景 */
+    background: white; 
     padding: 25px;
     border-radius: 15px;
-    color: #333; /* 深灰文本颜色 */
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* 轻微阴影 */
+    color: #333; 
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Modal Header */
@@ -155,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     font-size: 24px;
     font-weight: bold;
     letter-spacing: 0.5px;
-    color: #333; /* 深灰标题颜色 */
+    color: #333; 
 }
 
 /* Textarea */
@@ -164,20 +188,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     height: 150px;
     resize: none;
     padding: 15px;
-    border: 1px solid #ccc; /* 浅灰边框 */
+    border: 1px solid #ccc; 
     border-radius: 10px;
     font-size: 14px;
     font-family: Arial, sans-serif;
     margin-bottom: 20px;
-    background-color: #f9f9f9; /* 浅灰背景 */
-    color: #333; /* 深灰文本颜色 */
+    background-color: #f9f9f9; 
+    color: #333; 
     transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .modal textarea:focus {
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1); /* 聚焦效果 */
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.1);
     outline: none;
-    border-color: #666; /* 聚焦时边框颜色 */
+    border-color: #666; 
 }
 
 /* Buttons */
@@ -188,13 +212,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     border: none;
     border-radius: 25px;
     cursor: pointer;
-    background: #333; /* 深灰背景 */
-    color: white; /* 白色按钮文本 */
+    background: #333; 
+    color: white; 
     transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .modal button:hover {
-    background: #555; /* 浅灰悬停效果 */
+    background: #555; 
     transform: scale(1.05);
 }
 
@@ -205,13 +229,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     right: 20px;
     font-size: 24px;
     font-weight: bold;
-    color: #333; /* 深灰关闭按钮 */
+    color: #333; 
     cursor: pointer;
     transition: color 0.3s ease;
 }
 
 .close-btn:hover {
-    color: #555; /* 悬停时的按钮颜色 */
+    color: #555; 
 }
 
         .image-modal {
@@ -320,12 +344,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="modal-content">
         <span class="close-btn" onclick="closeReplyForm()">&times;</span>
         <h2>Reply to Review</h2>
-        <form method="post">
+        <form method="post" id="replyForm">
             <textarea id="replyTextarea" name="admin_reply" placeholder="Type your reply here..." required></textarea>
             <input type="hidden" name="review_id" id="reviewIdInput">
             <button type="submit" name="reply">Save changes</button>
-            <button type="submit" name="delete_reply" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this reply?')">Delete Reply</button>
-
+            <button type="button" name="delete_reply" class="btn btn-danger" onclick="confirmDelete()">Delete Reply</button>
         </form>
     </div>
 </div>
@@ -345,7 +368,7 @@ function openReplyForm(reviewId, currentReply) {
     replyTextarea.value = currentReply || '';
     document.getElementById('reviewIdInput').value = reviewId;
 
-    // 如果当前回复为空，隐藏删除按钮
+    
     if (!currentReply) {
         deleteButton.style.display = 'none';
     } else {
@@ -366,6 +389,30 @@ function openImageModal(imageUrl) {
 function closeImageModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
+
+
+    function confirmDelete() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, keep it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 当用户点击 "Yes, delete it!" 时，提交表单并触发删除逻辑
+                // 将删除按钮的值传递到后端
+                const form = document.getElementById('replyForm');
+                const deleteReplyInput = document.createElement('input');
+                deleteReplyInput.type = 'hidden';
+                deleteReplyInput.name = 'delete_reply';
+                form.appendChild(deleteReplyInput);
+                form.submit();
+            }
+        });
+    }
+    
 </script>
 </body>
 </html>
