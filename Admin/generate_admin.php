@@ -63,34 +63,31 @@ if (isset($_POST["admin_pdf"])) {
 
 if (isset($_POST["admin_excel"])) {
     $output = '';
-    header: $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
+    $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
     if ($excel->num_rows > 0) {
-        // Initialize an array for the Excel sheet data
-        $rows = [];
-        $rows[] = ['#', 'Staff ID', 'Name', 'Email']; // Adding headers
-
+        $output .= '
+            <table class="table" bordered="1">
+                <tr style="background-color: #e6e6e6;">
+                    <th>#</th>
+                    <th>Staff ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+        ';
         while ($row = mysqli_fetch_assoc($excel)) {
-            $rows[] = [$row["staff_id"], $row["admin_id"], $row["admin_name"], $row["admin_email"]];
+            $output .= '
+                <tr>
+                    <td>' . $row["staff_id"] . '</td>
+                    <td>' . $row["admin_id"] . '</td>
+                    <td>' . $row["admin_name"] . '</td>
+                    <td>' . $row["admin_email"] . '</td>
+                </tr>
+            ';
         }
-
-        // Create an Excel sheet from the rows
-        $wb = XLSX.utils.book_new();
-        $ws = XLSX.utils.aoa_to_sheet($rows);
-
-        // Set column widths
-        ws['!cols'] = [
-            { wch: 15 }, // Staff ID
-            { wch: 20 }, // Name
-            { wch: 30 }, // Email
-        ];
-
-        // Append the sheet to the workbook
-        XLSX.utils.book_append_sheet(wb, ws, "Admin Report");
-
-        // Output the file for download
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="admin_report.xlsx"');
-        XLSX.writeFile(wb, "php://output");
+        $output .= '</table>';
+        header('Content-Type: application/xls');
+        header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
+        echo $output;
     } else {
         echo "No record found :(";
     }
