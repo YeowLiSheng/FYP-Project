@@ -1328,12 +1328,13 @@ function add_check() {
         var products = <?php echo json_encode($products); ?>;
 
 // 渲染数据到表格
-document.addEventListener("DOMContentLoaded", function() {
+window.onload = function() {
     var tableBody = document.querySelector("#myTable tbody");
     products.forEach(function(product) {
         var row = document.createElement("tr");
 
         row.innerHTML = `
+            <td><img src="../User/images/${product.Quick_view1}" style="max-height:100px; max-width:auto;" /></td>
             <td>${product.product_name}</td>
             <td>${product.tags}</td>
             <td>${product.color}</td>
@@ -1344,7 +1345,7 @@ document.addEventListener("DOMContentLoaded", function() {
         `;
         tableBody.appendChild(row);
     });
-});
+}
         function exportExcel() {
             const wb = XLSX.utils.book_new();
     wb.Props = {
