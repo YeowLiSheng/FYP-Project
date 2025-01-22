@@ -2,7 +2,7 @@
 include 'dataconnection.php';
 session_start();
 
-//add product
+//add promotion product
 if (isset($_POST["save_product"])) {
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
