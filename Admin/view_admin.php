@@ -15,143 +15,185 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     <style>
         /* Reset and Layout Styles */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        main {
-            padding: 100px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom, #f5f7fa, #e4e9f0);
+        color: #333;
+        padding: 20px;
+    }
+
+    main {
+        padding: 20px;
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .admin-content {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    /* Card Styling */
+    .view-admin, .recent-activity {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .view-admin:hover, .recent-activity:hover {
+        transform: translateY(-5px);
+    }
+
+    .view-admin h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    /* Search Bar Styling */
+    .searchbar {
+        display: flex;
+        align-items: center;
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .searchbar input {
+        flex: 1;
+        border: none;
+        outline: none;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .searchbar ion-icon {
+        font-size: 20px;
+        color: #666;
+        margin-right: 10px;
+    }
+
+    /* Button Group Styling */
+    .btn-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-success {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-success:hover {
+        background-color: #45a049;
+    }
+
+    /* Dropdown Menu */
+    .dropdown-menu li {
+        padding: 10px 20px;
+    }
+
+    .dropdown-menu li button {
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .dropdown-menu li button:hover {
+        color: #4CAF50;
+    }
+
+    /* Add Staff Button */
+    .add-staff-btn {
+        background-color: #007BFF;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .add-staff-btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* Table Styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 12px 18px;
+        text-align: left;
+        font-size: 14px;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    button {
+        padding: 8px 12px;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        cursor: pointer;
+        background-color: #4CAF50;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
         .admin-content {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-        .view-admin, .recent-activity {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out;
-        }
-        .view-admin:hover, .recent-activity:hover {
-            transform: translateY(-5px);
-        }
-        .view-admin h2, .recent-activity h2 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-        .view-admin table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        .view-admin th, .view-admin td {
-            padding: 12px 18px;
-            border: 1px solid #ddd;
-            text-align: left;
-            font-size: 1.1em;
-        }
-        .view-admin th {
-            background-color: #4CAF50; /* Green background */
-            color: white; /* White text */
-            text-align: left;
-            font-size: 1.1em;
-}
-
-        .view-admin tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        .view-admin button {
-            padding: 8px 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-right: 8px;
-            transition: background-color 0.3s;
-        }
-        .view-admin button:hover {
-            background-color: #45a049;
-        }
-        .add-staff-btn {
-            padding: 10px 16px;
-            margin-top: 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
-        }
-        .add-staff-btn:hover {
-            background-color: #0056b3;
-        }
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .admin-content {
-                gap: 20px;
-            }
-
-            .top {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .btn-group {
-                width: 100%;
-            }
+            gap: 20px;
         }
 
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
         .searchbar {
-            display: flex;
-            align-items: center;
-            background-color: #fff;
-            padding: 8px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 50%;
-        }
-        .searchbar input {
-            border: none;
-            outline: none;
-            font-size: 1em;
-            padding: 8px;
             width: 100%;
-            border-radius: 8px;
         }
-        .btn-group { 
-            display: flex;
-            gap: 10px;
+
+        table {
+            font-size: 12px;
         }
-        .btn-success {
-            
-            color: white;
-            border-radius: 8px;
-            padding: 8px 16px;
-            border: none;
+
+        th, td {
+            padding: 8px 12px;
         }
-        .btn-success:hover {
-            background-color: #4CAF50;
-        }
-        .dropdown-menu li {
-            padding: 8px 10px;
-        }
+    }
     </style>
 </head>
 <body>
