@@ -173,13 +173,13 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 /* 分页按钮通用样式 */
 .pagination .page-btn {
     padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    color: #333;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    border: 1px solid #ddd !important;
+    border-radius: 5px !important;
+    background-color: #f9f9f9 !important;
+    color: #333 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
 /* 鼠标悬停时的效果 */
