@@ -156,6 +156,8 @@
 
     .btn-group {
         background-color: #4CAF50;
+        display: inline-block;
+        position: relative;
     }
 
     /* 设置下拉菜单项颜色 */
