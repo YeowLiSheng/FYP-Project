@@ -416,17 +416,17 @@ function filterByDate() {
     const rows = document.querySelectorAll("#table-body tr");
 
     rows.forEach(row => {
-        const latestReviewDate = row.cells[5].textContent.trim(); // 获取"最新评论"列的日期
-        const reviewDate = latestReviewDate.split(" ")[0]; // 假设日期和时间可能存在分离
+        const latestReviewDate = row.cells[5].textContent.trim();
+        const reviewDate = latestReviewDate.split(" ")[0]; 
 
         const start = startDate ? new Date(startDate) : null;
         const end = endDate ? new Date(endDate) : null;
         const currentReviewDate = new Date(reviewDate);
 
         if ((!start || currentReviewDate >= start) && (!end || currentReviewDate <= end)) {
-            row.style.display = ""; // 显示符合条件的行
+            row.style.display = ""; 
         } else {
-            row.style.display = "none"; // 隐藏不符合条件的行
+            row.style.display = "none"; 
         }
     });
 }
@@ -447,18 +447,18 @@ function sortTable() {
 
     rows.sort((a, b) => {
         if (sortOrder === "newest" || sortOrder === "oldest") {
-            // 根据最新评论日期排序
+
             const dateA = new Date(a.cells[5].textContent.trim());
             const dateB = new Date(b.cells[5].textContent.trim());
             return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
 
         } else if (sortOrder === "highest" || sortOrder === "lowest") {
-            // 根据平均评分排序
+
             const ratingA = parseFloat(a.cells[4].textContent.trim()) || 0;
             const ratingB = parseFloat(b.cells[4].textContent.trim()) || 0;
             return sortOrder === "highest" ? ratingB - ratingA : ratingA - ratingB;
         }
-        return 0; // 默认不排序
+        return 0;
     });
 
     const tbody = document.getElementById("table-body");

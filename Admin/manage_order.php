@@ -328,7 +328,7 @@ include 'admin_sidebar.php';
                                 <td><?php echo $row["user_name"]; ?></td>
                                 <td><?php echo $row["order_datetime"]; ?></td>
                                 <td><?php echo $row["shipping_address"]; ?></td>
-                                <td>RM<?php echo number_format($row["final_amount"], 2); ?></td>
+                                <td>$<?php echo number_format($row["final_amount"], 2); ?></td>
                                 <td><?php echo $row["order_status"]; ?></td>
                             </tr>
                         <?php }
