@@ -868,108 +868,143 @@ body {
 /* Promotion Box with Fixed Dimensions and Scrolling */
 /* Promotion Head with Glowing Effect */
 .promotion-head {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
     color: #ff3b3b;
     text-align: center;
     background: transparent;
-    width: 200px;
-    padding: 10px;
+    width: 80%;
+    padding: 15px;
     animation: softGlow 1s infinite alternate;
-    border-radius: 5px;
     transition: transform 0.4s ease-in-out; /* Smooth scaling effect */
-    margin: 0 auto;
+    margin: 10px auto;
 }
 
 @keyframes softGlow {
     from {
-        text-shadow: 0 0 5px #ff6b6b, 0 0 8px #ff9999;
+        text-shadow: 0 0 8px #ff6b6b, 0 0 12px #ff9999;
         transform: scale(1); /* Normal size */
     }
     to {
- 
-        text-shadow: 0 0 3px #ff3b3b, 0 0 5px #ff6b6b;
+        text-shadow: 0 0 5px #ff3b3b, 0 0 10px #ff6b6b;
         transform: scale(1.1); /* Slightly larger size */
     }
 }
 
-/* Promotion Box with Fixed Dimensions and Scrolling */
+/* Promotion Box with Modern Design */
 .promotion-box {
-    margin-top: 20px;
-    padding: 10px;
-    border-top: 1px solid #ddd;
-    width: 400px;
-    height: 300px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
     overflow-y: auto;
     background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
 }
 
-#promotionContent {
-    margin-top: 10px;
-}
-
-/* Individual Promotion Items with Fixed Dimensions */
+/* Individual Promotion Items with Uniform Appearance */
 .promotion-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
     background: #fff;
-    border-radius: 5px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    height: 100px; /* Set height */
-    width: 100%;  /* Ensure full width of the box */
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    height: auto; /* Auto height for flexibility */
+    width: 450px;
 }
 
 /* Product Image Styling */
 .promotion-item img {
-    width: 60px;
-    height: 60px; /* Fixed height for uniformity */
-    border-radius: 5px;
+    width: 70px;
+    height: 70px; /* Larger for visibility */
+    border-radius: 10px;
+    border: 1px solid #ddd;
 }
 
 /* Product Details Section */
 .promo-details {
     flex-grow: 1;
-    margin-left: 10px;
+    margin-left: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
 .promotion-item h5 {
     font-size: 16px;
-    margin: 0 0 5px;
+    text-align: center;
+    margin: 0;
+    color: #333;
+    font-weight: bold;
+    word-wrap: break-word; /* Allows breaking words */
+    word-break: break-word; /* Break words for long strings */
+    overflow: hidden; /* Ensure no overflow */
+    max-width: 100px;
+}
+
+.promotion-item h5 a {
+    color: #333;
+}
+
+h5 a:hover {
+    text-decoration: underline; /* Add underline on hover for better usability */
+    color: #007bff; /* Optional: Change color on hover */
 }
 
 .promo-price {
     color: #ff5722;
     font-weight: bold;
-    font-size: 16px; /* Increase font size */
+    font-size: 16px;
+    text-align: center;
+}
+
+/* View Product Button with Modern Style */
+.view-product-btn {
+    background: #007bff;
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s, transform 0.3s;
+    height: 40px; /* Set fixed height */
+    width: 80px; /* Set fixed width */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-product-btn:hover {
+    background: #0056b3;
+    transform: scale(1.05); /* Slight hover effect */
 }
 
 /* Separator Line Between Products */
 .promotion-divider {
     border: 0;
     border-top: 1px solid #ddd;
-    margin: 10px 0;
+    margin: 15px 0;
 }
 
-/* View Product Button with Fixed Dimensions */
-.view-product-btn {
-    background: #007bff;
-    color: #fff;
-    border: 10px;
-    font-size: 13px;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background 0.3s;
-    height: 40px; /* Set fixed height */
-    width: 80px; /* Set fixed width */
-    text-align: center; /* Ensure button text is centered */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Scrollbar Styling */
+.promotion-box::-webkit-scrollbar {
+    width: 8px;
 }
+.promotion-box::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 5px;
+}
+.promotion-box::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+}
+
 
 
 .promotion-modal {
@@ -2042,7 +2077,11 @@ function fetchPromotions(categoryId) {
                     var promoHTML = `
                         <div class="promotion-item">
                             <img src="images/${promotion.promotion_image}" alt="${promotion.promotion_name}" class="promo-image">
-                            <h5>${promotion.promotion_name}</h5>
+                            <h5>
+                                <a href="product-detail.php?id=${promotion.promotion_id}&type=promotion">
+                                    ${promotion.promotion_name}
+                                </a>
+                            </h5>
                             <span class="promo-price">$${promotion.promotion_price}</span>
                             <button class="view-product-btn" data-promotion-id="${promotion.promotion_id}">
                                 View Product
