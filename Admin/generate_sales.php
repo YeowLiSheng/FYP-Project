@@ -9,18 +9,39 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Fetch required data (reuse logic from your existing script)
+// Create PDF instance
+$pdf = new FPDF();
+$pdf->AddPage();
 
-// 1. Sales trend data
-$salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
-                      FROM orders 
-                      WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate' 
-                      GROUP BY DATE(order_date) 
-                      ORDER BY DATE(order_date)";
-$salesTrend_result = $connect->query($salesTrend_query);
-$salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
+// Logo and title
+$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
+$pdf->SetFont('Arial', 'B', 16);
+$pdf->SetXY(50, 15); // Position title
+$pdf->Cell(0, 10, 'YLS Atelier - Sales Report', 0, 1, 'L');
 
-// 2. Monthly sales
+$pdf->Ln(10); // Space below title
+
+// Add a section for Monthly Sales
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(0, 10, 'Monthly Sales Summary', 0, 1, 'L');
+$pdf->Ln(5);
+
+// Monthly Sales Header
+$pdf->SetFont('Arial', 'B', 12);
+$pdf->SetFillColor(230, 230, 230);
+$pdf->SetDrawColor(180, 180, 180);
+
+$monthlyHeader = [
+    ['Month', 70],
+    ['Total Sales (RM)', 60]
+];
+foreach ($monthlyHeader as $col) {
+    $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
+}
+$pdf->Ln();
+
+// Fetch Monthly Sales Data
+$selectedYear = date('Y');
 $monthlySales_query = "
     SELECT DATE_FORMAT(order_date, '%Y-%m') AS month, SUM(final_amount) AS monthly_sales 
     FROM orders 
@@ -28,107 +49,56 @@ $monthlySales_query = "
     GROUP BY DATE_FORMAT(order_date, '%Y-%m') 
     ORDER BY DATE_FORMAT(order_date, '%Y-%m')";
 $monthlySales_result = $connect->query($monthlySales_query);
-$monthlySales = $monthlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// 3. Yearly sales
+// Populate monthly data
+$pdf->SetFont('Arial', '', 10);
+if ($monthlySales_result->num_rows > 0) {
+    while ($row = $monthlySales_result->fetch_assoc()) {
+        $pdf->Cell(70, 10, $row['month'], 1, 0, 'C');
+        $pdf->Cell(60, 10, 'RM ' . number_format($row['monthly_sales'], 2), 1, 1, 'C');
+    }
+} else {
+    $pdf->Cell(0, 10, 'No monthly sales data found.', 1, 1, 'C');
+}
+
+$pdf->Ln(10); // Space between sections
+
+// Add a section for Yearly Sales
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(0, 10, 'Yearly Sales Summary', 0, 1, 'L');
+$pdf->Ln(5);
+
+// Yearly Sales Header
+$pdf->SetFont('Arial', 'B', 12);
+$yearlyHeader = [
+    ['Year', 70],
+    ['Total Sales (RM)', 60]
+];
+foreach ($yearlyHeader as $col) {
+    $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
+}
+$pdf->Ln();
+
+// Fetch Yearly Sales Data
 $yearlySales_query = "
     SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
     FROM orders 
     GROUP BY YEAR(order_date) 
-    ORDER BY YEAR(order_date) DESC";
+    ORDER BY YEAR(order_date)";
 $yearlySales_result = $connect->query($yearlySales_query);
-$yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// 4. Category sales
-$categorySales_query = "
-    SELECT 
-        c.category_name, 
-        SUM(od.quantity) AS total_quantity
-    FROM order_details od
-    LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
-    LEFT JOIN product p ON pv.product_id = p.product_id
-    LEFT JOIN category c ON p.category_id = c.category_id
-    GROUP BY c.category_id";
-$categorySales_result = $connect->query($categorySales_query);
-$categorySalesData = $categorySales_result->fetch_all(MYSQLI_ASSOC);
-
-// Create PDF instance
-$pdf = new FPDF();
-$pdf->AddPage();
-
-// Logo
-$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30);
-$pdf->SetFont('Arial', 'B', 16);
-$pdf->SetXY(50, 15);
-$pdf->Cell(0, 10, 'YLS Atelier - Sales Report', 0, 1, 'L');
-
-$pdf->Ln(20);
-
-// Section 1: Sales Trend
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Sales Trend (Daily)', 0, 1, 'L');
+// Populate yearly data
 $pdf->SetFont('Arial', '', 10);
-
-$pdf->SetFillColor(230, 230, 230);
-$pdf->Cell(50, 8, 'Date', 1, 0, 'C', true);
-$pdf->Cell(50, 8, 'Sales (RM)', 1, 1, 'C', true);
-
-foreach ($salesTrend as $row) {
-    $pdf->Cell(50, 8, $row['date'], 1, 0, 'C');
-    $pdf->Cell(50, 8, 'RM ' . number_format($row['daily_sales'], 2), 1, 1, 'C');
+if ($yearlySales_result->num_rows > 0) {
+    while ($row = $yearlySales_result->fetch_assoc()) {
+        $pdf->Cell(70, 10, $row['year'], 1, 0, 'C');
+        $pdf->Cell(60, 10, 'RM ' . number_format($row['yearly_sales'], 2), 1, 1, 'C');
+    }
+} else {
+    $pdf->Cell(0, 10, 'No yearly sales data found.', 1, 1, 'C');
 }
 
-$pdf->Ln(10);
-
-// Section 2: Monthly Sales
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Monthly Sales', 0, 1, 'L');
-$pdf->SetFont('Arial', '', 10);
-
-$pdf->SetFillColor(230, 230, 230);
-$pdf->Cell(50, 8, 'Month', 1, 0, 'C', true);
-$pdf->Cell(50, 8, 'Sales (RM)', 1, 1, 'C', true);
-
-foreach ($monthlySales as $row) {
-    $pdf->Cell(50, 8, $row['month'], 1, 0, 'C');
-    $pdf->Cell(50, 8, 'RM ' . number_format($row['monthly_sales'], 2), 1, 1, 'C');
-}
-
-$pdf->Ln(10);
-
-// Section 3: Yearly Sales
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Yearly Sales', 0, 1, 'L');
-$pdf->SetFont('Arial', '', 10);
-
-$pdf->SetFillColor(230, 230, 230);
-$pdf->Cell(50, 8, 'Year', 1, 0, 'C', true);
-$pdf->Cell(50, 8, 'Sales (RM)', 1, 1, 'C', true);
-
-foreach ($yearlySales as $row) {
-    $pdf->Cell(50, 8, $row['year'], 1, 0, 'C');
-    $pdf->Cell(50, 8, 'RM ' . number_format($row['yearly_sales'], 2), 1, 1, 'C');
-}
-
-$pdf->Ln(10);
-
-// Section 4: Category-wise Sales
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, 'Category-wise Sales', 0, 1, 'L');
-$pdf->SetFont('Arial', '', 10);
-
-$pdf->SetFillColor(230, 230, 230);
-$pdf->Cell(60, 8, 'Category', 1, 0, 'C', true);
-$pdf->Cell(30, 8, 'Quantity', 1, 0, 'C', true);
-$pdf->Cell(30, 8, 'Percentage', 1, 1, 'C', true);
-
-$totalQuantity = array_sum(array_column($categorySalesData, 'total_quantity'));
-foreach ($categorySalesData as $data) {
-    $percentage = ($data['total_quantity'] / $totalQuantity) * 100;
-    $pdf->Cell(60, 8, $data['category_name'], 1, 0, 'C');
-    $pdf->Cell(30, 8, $data['total_quantity'], 1, 0, 'C');
-    $pdf->Cell(30, 8, number_format($percentage, 2) . '%', 1, 1, 'C');
-}
+$pdf->Ln(20); // Space before footer
 
 // Footer
 $pdf->SetFont('Arial', 'I', 8);
