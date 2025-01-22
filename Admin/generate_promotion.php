@@ -81,7 +81,7 @@ if ($result->num_rows > 0) {
         $x = $pdf->GetX(); // Save x position
         $y = $pdf->GetY(); // Save y position
         $pdf->MultiCell($cell_width, $cell_height, $promotion_name, 1, 'C');
-        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
+        $pdf->SetXY($x + 4, $y); // Move to next cell
         $pdf->Cell(30, $cell_height * $line_count, $tags, 1, 0, 'C');
         $pdf->Cell(30, $cell_height * $line_count, $color, 1, 0, 'C');
         $pdf->Cell(25, $cell_height * $line_count, $category_name, 1, 0, 'C');
