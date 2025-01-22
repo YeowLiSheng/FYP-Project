@@ -63,40 +63,50 @@ if (isset($_POST["admin_pdf"])) {
 
 if (isset($_POST["admin_excel"])) {
     $output = '';
+    $time = date('Y-m-d_H-i-s');
     $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
     if ($excel->num_rows > 0) {
-        // 开始构建表格
+        // Initialize the output table
         $output .= '
-            <table border="1">
-                <tr style="background-color: #e6e6e6; font-weight: bold;">
-                    <th style="width: 10%;">#</th>
-                    <th style="width: 15%;">Staff ID</th>
-                    <th style="width: 25%;">Name</th>
-                    <th style="width: 30%;">Email</th>
-                </tr>
+            <table border="1" style="border-collapse: collapse; font-family: Arial, sans-serif;">
+                <thead>
+                    <tr style="background-color: #e6e6e6; text-align: center;">
+                        <th style="width: 15%; padding: 5px;">#</th>
+                        <th style="width: 20%; padding: 5px;">Staff ID</th>
+                        <th style="width: 25%; padding: 5px;">Name</th>
+                        <th style="width: 40%; padding: 5px;">Email</th>
+                    </tr>
+                </thead>
+                <tbody>
         ';
-
-        // 填充表格内容
-        $counter = 1;
+        
+        // Populate the rows with data
+        $count = 1;
         while ($row = mysqli_fetch_assoc($excel)) {
             $output .= '
-                <tr>
-                    <td style="text-align: center;">' . $counter++ . '</td>
-                    <td>' . htmlspecialchars($row["staff_id"]) . '</td>
-                    <td>' . htmlspecialchars($row["admin_name"]) . '</td>
-                    <td>' . htmlspecialchars($row["admin_email"]) . '</td>
+                <tr style="text-align: center;">
+                    <td style="padding: 5px;">' . $count++ . '</td>
+                    <td style="padding: 5px;">' . htmlspecialchars($row["staff_id"]) . '</td>
+                    <td style="padding: 5px;">' . htmlspecialchars($row["admin_name"]) . '</td>
+                    <td style="padding: 5px;">' . htmlspecialchars($row["admin_email"]) . '</td>
                 </tr>
             ';
         }
-        $output .= '</table>';
-
-        // 设置 HTTP 头部信息，指定文件名和类型
-        $time = date('Y-m-d_H-i-s');
+        
+        $output .= '
+                </tbody>
+            </table>
+        ';
+        
+        // Output headers for Excel file
         header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
+        
+        // Output the table
         echo $output;
     } else {
         echo "No record found :(";
     }
 }
+
 ?>
