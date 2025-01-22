@@ -319,7 +319,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
 
-    const rowsPerPage = 10;
+    const rowsPerPage = 1;
     const tableBody = document.getElementById('table-body');
     const paginationDiv = document.getElementById('pagination');
 
