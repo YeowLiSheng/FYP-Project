@@ -76,14 +76,15 @@ if (isset($_POST["admin_excel"])) {
                     <th style="border: 1px solid #ddd; padding: 8px;">Email</th>
                 </tr>
         ';
+        
         // 检查每一行数据，并添加样式
         while ($row = mysqli_fetch_assoc($excel)) {
             $output .= '
                 <tr style="text-align: center;">
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (!empty($row["staff_id"]) ? $row["staff_id"] : '') . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (!empty($row["admin_id"]) ? $row["admin_id"] : '') . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (!empty($row["admin_name"]) ? $row["admin_name"] : '') . '</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">' . (!empty($row["admin_email"]) ? $row["admin_email"] : '') . '</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["staff_id"]) && $row["staff_id"] ? $row["staff_id"] : '&nbsp;') . '</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["admin_id"]) && $row["admin_id"] ? $row["admin_id"] : '&nbsp;') . '</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["admin_name"]) && $row["admin_name"] ? $row["admin_name"] : '&nbsp;') . '</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">' . (isset($row["admin_email"]) && $row["admin_email"] ? $row["admin_email"] : '&nbsp;') . '</td>
                 </tr>
             ';
         }
