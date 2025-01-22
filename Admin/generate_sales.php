@@ -13,15 +13,17 @@ if ($connect->connect_error) {
 $pdf = new FPDF();
 $pdf->AddPage();
 
-// Logo and title
+// Add Logo
 $pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
+
+// Add Title
 $pdf->SetFont('Arial', 'B', 16);
-$pdf->SetXY(50, 15); // Position title
+$pdf->SetXY(50, 20); // Ensure title doesn't overlap the logo
 $pdf->Cell(0, 10, 'YLS Atelier - Sales Report', 0, 1, 'L');
 
-$pdf->Ln(10); // Space below title
+$pdf->Ln(20); // Add more space below the title
 
-// Add a section for Monthly Sales
+// Monthly Sales Section
 $pdf->SetFont('Arial', 'B', 14);
 $pdf->Cell(0, 10, 'Monthly Sales Summary', 0, 1, 'L');
 $pdf->Ln(5);
@@ -50,7 +52,7 @@ $monthlySales_query = "
     ORDER BY DATE_FORMAT(order_date, '%Y-%m')";
 $monthlySales_result = $connect->query($monthlySales_query);
 
-// Populate monthly data
+// Populate Monthly Sales Data
 $pdf->SetFont('Arial', '', 10);
 if ($monthlySales_result->num_rows > 0) {
     while ($row = $monthlySales_result->fetch_assoc()) {
@@ -61,9 +63,9 @@ if ($monthlySales_result->num_rows > 0) {
     $pdf->Cell(0, 10, 'No monthly sales data found.', 1, 1, 'C');
 }
 
-$pdf->Ln(10); // Space between sections
+$pdf->Ln(10); // Add space between sections
 
-// Add a section for Yearly Sales
+// Yearly Sales Section
 $pdf->SetFont('Arial', 'B', 14);
 $pdf->Cell(0, 10, 'Yearly Sales Summary', 0, 1, 'L');
 $pdf->Ln(5);
@@ -87,7 +89,7 @@ $yearlySales_query = "
     ORDER BY YEAR(order_date)";
 $yearlySales_result = $connect->query($yearlySales_query);
 
-// Populate yearly data
+// Populate Yearly Sales Data
 $pdf->SetFont('Arial', '', 10);
 if ($yearlySales_result->num_rows > 0) {
     while ($row = $yearlySales_result->fetch_assoc()) {
@@ -98,9 +100,9 @@ if ($yearlySales_result->num_rows > 0) {
     $pdf->Cell(0, 10, 'No yearly sales data found.', 1, 1, 'C');
 }
 
-$pdf->Ln(10); // Space between sections
+$pdf->Ln(10); // Add space between sections
 
-// Add a section for Category Sales
+// Category Sales Section
 $pdf->SetFont('Arial', 'B', 14);
 $pdf->Cell(0, 10, 'Category Sales Summary', 0, 1, 'L');
 $pdf->Ln(5);
@@ -131,7 +133,7 @@ $categorySales_query = "
     GROUP BY c.category_id";
 $categorySales_result = $connect->query($categorySales_query);
 
-// Populate category data
+// Populate Category Sales Data
 $pdf->SetFont('Arial', '', 10);
 if ($categorySales_result->num_rows > 0) {
     while ($row = $categorySales_result->fetch_assoc()) {
@@ -142,7 +144,7 @@ if ($categorySales_result->num_rows > 0) {
     $pdf->Cell(0, 10, 'No category sales data found.', 1, 1, 'C');
 }
 
-$pdf->Ln(20); // Space before footer
+$pdf->Ln(20); // Add space before footer
 
 // Footer
 $pdf->SetFont('Arial', 'I', 8);
