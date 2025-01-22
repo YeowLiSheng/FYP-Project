@@ -374,15 +374,7 @@ $categorySalesJson = json_encode($categorySalesData);
     </div>
 </form>
 
-<div class="btn-group" style="background-color: #28a745;">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                Export:
-            </button>
-            <ul class="dropdown-menu">
-                <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-                <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-            </ul>
-        </div>
+
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
@@ -436,42 +428,7 @@ $categorySalesJson = json_encode($categorySalesData);
 </div>
 </div>
 <script>
-document.getElementById("export-pdf").addEventListener("click", exportPDF);
-        document.getElementById("export-excel").addEventListener("click", exportExcel);
 
-        function exportPDF() {
-            window.location.href = "generate_sales.php";
-
-        }
-
- 
-        function exportExcel() {
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Order List",
-        Author: "YLS Atelier",
-    };
-
-    // Prepare data for the table with formatted dates
-    const table = document.querySelector(".table");
-    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
-    });
 
     function updateViewMode() {
         const viewMode = document.getElementById('view_mode').value;
@@ -661,8 +618,6 @@ function drawCategoryChart() {
     var categoryPieChart = new google.visualization.PieChart(document.getElementById('categoryPieChart'));
     categoryPieChart.draw(categorySalesData, categoryChartOptions);
 }
-
-
 </script>
 </body>
 </html>
