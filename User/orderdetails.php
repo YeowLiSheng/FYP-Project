@@ -835,8 +835,8 @@ textarea {
     <td><?= $detail['name'] ?></td>
 	<td><?= $detail['color']?></td>
     <td><?= $detail['quantity'] ?></td>
-    <td>RM <?= number_format($detail['unit_price'], 2) ?></td>
-    <td>RM <?= number_format($detail['total_price'], 2) ?></td>
+    <td>$ <?= number_format($detail['unit_price'], 2) ?></td>
+    <td>$ <?= number_format($detail['total_price'], 2) ?></td>
 </tr>
                 <?php } ?>
             </tbody>
@@ -846,9 +846,9 @@ textarea {
 
     <div class="card">
         <h2><span class="icon">💰</span>Pricing Details</h2>
-        <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
-        <div class="pricing-item"><span>Discount:</span><span>- RM <?= number_format($order['discount_amount'], 2) ?></span></div>
-        <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
+        <div class="pricing-item"><span>Grand Total:</span><span>$ <?= number_format($order['Grand_total'], 2) ?></span></div>
+        <div class="pricing-item"><span>Discount:</span><span>- $<?= number_format($order['discount_amount'], 2) ?></span></div>
+        <div class="pricing-item"><span>Final Amount:</span><span>$ <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
 
