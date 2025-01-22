@@ -416,54 +416,59 @@ $(function () {
         }
 
  
-        function exportExcel() {
+        function exportExcel() { 
+    // Create a new workbook
     const wb = XLSX.utils.book_new();
     wb.Props = {
-        Title: "Order List",
+        Title: "Transaction Record",
         Author: "YLS Atelier",
     };
 
-    // Prepare data for the table with formatted dates
+    // Select the table and prepare data
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
+        return cells.map(cell => cell.textContent.trim());
     });
 
-    // Add headers
+    // Add headers from the table
     const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
     rows.unshift(headers);
 
-    // Create worksheet from updated data
+    // Format the date column (index 4 in this case)
+    const dateColumnIndex = 4; 
+    rows.forEach((row, index) => {
+        if (index > 0 && row[dateColumnIndex]) { // Skip the header row
+            const rawDate = new Date(row[dateColumnIndex]);
+            if (!isNaN(rawDate)) { // Check if the date is valid
+                row[dateColumnIndex] = rawDate.toLocaleString("en-GB", { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                }).replace(",", ""); // Remove comma for proper formatting
+            }
+        }
+    });
+
+    // Create a worksheet from the prepared data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set column widths
+    // Set column widths for better readability
     ws['!cols'] = [
-        { wch: 15 }, // Order# column
+        { wch: 15 }, // Transaction# column
         { wch: 20 }, // Customer Name column
-        { wch: 25 }, // Order Time column
-        { wch: 50 }, // Shipped To column
-        { wch: 15 }, // Total column
+        { wch: 15 }, // Order ID column
+        { wch: 20 }, // Transaction Amount column
+        { wch: 25 }, // Date column
     ];
 
-    // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Transaction");
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Transaction Record");
 
-    // Save the workbook
+    // Trigger the file download
     XLSX.writeFile(wb, "Transaction Record.xlsx");
 }
 
