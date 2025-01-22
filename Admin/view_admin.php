@@ -31,16 +31,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             flex: 1;
         }
 
-        .admin-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 250px; /* 与 `margin-left` 的值一致 */
-    height: 100%;
-    background-color: #333; /* 示例背景颜色 */
-    color: white;
-    z-index: 1000; /* 确保侧边栏显示在顶部 */
-}
+        
         .admin-content {
             display: flex;
             flex-direction: column;
