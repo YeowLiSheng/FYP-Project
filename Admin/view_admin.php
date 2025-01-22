@@ -161,29 +161,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         .dropdown-menu li {
             padding: 8px 10px;
         }
-
-        #pagination {
-    margin-top: 20px;
-    text-align: center;
-}
-
-#pagination button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-    color: #333;
-    cursor: pointer;
-}
-
-#pagination button.active {
-    background-color: #4CAF50;
-    color: white;
-}
-
-#pagination button:hover:not(.active) {
-    background-color: #ddd;
-}
     </style>
 </head>
 <body>
@@ -284,7 +261,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
-<div id="pagination"></div>
 
             </div>
         </section>
@@ -317,53 +293,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             }
         });
     });
-
-    const rowsPerPage = 10;
-let currentPage = 1;
-
-function displayTableData(page) {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    const tableBody = document.getElementById('table-body');
-    tableBody.innerHTML = ''; // Clear existing rows
-
-    const pageData = adminData.slice(start, end);
-    pageData.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${row.staff_id}</td>
-            <td>${row.admin_id}</td>
-            <td>${row.admin_name}</td>
-            <td>${row.admin_email}</td>
-            <td><button onclick="location.href='admin_detail.php?staff_id=${row.staff_id}'" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px;">View Details</button></td>
-            <td>${row.admin_status == 1 ? 'Active' : 'Deactivate'}</td>
-        `;
-        tableBody.appendChild(tr);
-    });
-}
-
-function setupPagination() {
-    const totalPages = Math.ceil(adminData.length / rowsPerPage);
-    const paginationDiv = document.getElementById('pagination');
-    paginationDiv.innerHTML = ''; // Clear existing buttons
-
-    for (let i = 1; i <= totalPages; i++) {
-        const button = document.createElement('button');
-        button.innerText = i;
-        button.classList.add(i === currentPage ? 'active' : '');
-        button.addEventListener('click', () => {
-            currentPage = i;
-            displayTableData(currentPage);
-            setupPagination();
-        });
-        paginationDiv.appendChild(button);
-    }
-}
-
-// Initial rendering
-displayTableData(currentPage);
-setupPagination();
 </script>
 
 </body>
