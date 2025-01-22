@@ -371,9 +371,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php else: ?>
                     <tr><td colspan="7">No reviews found.</td></tr>
                 <?php endif; ?>
+                <div class="pagination" id="pagination"></div>
+
             </tbody>
         </table>
-        <div class="pagination" id="pagination"></div>
 
     </div>
 </div>
