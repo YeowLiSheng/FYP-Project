@@ -161,6 +161,28 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         .dropdown-menu li {
             padding: 8px 10px;
         }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        .pagination button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -261,10 +283,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
-<div id="pagination">
-        <button id="prev-btn" disabled>Previous</button>
-        <button id="next-btn">Next</button>
-    </div>
+<div class="pagination" id="pagination"></div>
+
             </div>
         </section>
     </main>
@@ -302,6 +322,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         const rows = Array.from(tableBody.querySelectorAll('tr'));
         const totalRows = rows.length;
         const totalPages = Math.ceil(totalRows / rowsPerPage);
+        const paginationContainer = document.getElementById('pagination');
         let currentPage = 1;
 
         // Function to display rows for the current page
@@ -313,27 +334,34 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                 row.style.display = index >= start && index < end ? '' : 'none';
             });
 
-            document.getElementById('prev-btn').disabled = page === 1;
-            document.getElementById('next-btn').disabled = page === totalPages;
+            // Highlight the current page button
+            Array.from(paginationContainer.children).forEach((btn, index) => {
+                btn.classList.toggle('active', index + 1 === page);
+            });
         }
 
-        // Event listeners for pagination buttons
-        document.getElementById('prev-btn').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displayPage(currentPage);
+        // Function to create pagination buttons
+        function createPagination() {
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    displayPage(currentPage);
+                });
+                paginationContainer.appendChild(button);
             }
-        });
 
-        document.getElementById('next-btn').addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displayPage(currentPage);
+            // Set the first page as active
+            if (paginationContainer.children.length > 0) {
+                paginationContainer.children[0].classList.add('active');
             }
-        });
+        }
 
-        // Initialize the table display
+        // Initialize the table display and pagination
+        createPagination();
         displayPage(currentPage);
+
 </script>
 
 </body>
