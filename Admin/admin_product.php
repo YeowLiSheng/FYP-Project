@@ -508,7 +508,15 @@ function add_check() {
                         <option value="d">Lowest price</option>
                     </select>
 
-                    <div class="btn-group">
+                    
+
+                    <button type="submit" name="search_product" class="btn btn-dark" style="margin-left:30px; width:110px;">Search</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"
+                        style="background-color: #218838; margin-left:240px; height:50px;">Add Product</button>
+                </div>
+            </form>
+            <div class="btn-group" style="background-color: #4CAF50;">
+
     <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Export:
     </button>
@@ -517,12 +525,6 @@ function add_check() {
         <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
     </ul>
 </div>
-
-                    <button type="submit" name="search_product" class="btn btn-dark" style="margin-left:30px; width:110px;">Search</button>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal"
-                        style="background-color: #218838; margin-left:240px; height:50px;">Add Product</button>
-                </div>
-            </form>
         </div>
         <?php
         if (isset($_SESSION['title']) && $_SESSION['title'] != '') {
