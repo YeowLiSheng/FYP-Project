@@ -495,44 +495,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
-
-
-.pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 20px 0;
-        gap: 5px;
-    }
-    .pagination .page-btn {
-    margin: 0;
-    padding: 10px 15px; 
-    border: 1px solid #007bff; 
-    background-color: #f8f9fa; 
-    color: #007bff; 
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 1em; 
-    transition: background-color 0.3s, color 0.3s; 
-}
-
-.pagination .page-btn.active {
-    background-color: #007bff; 
-    color: white; 
-    font-weight: bold; 
-}
-
-.pagination .page-btn:hover {
-    background-color: #0056b3; 
-    color: white; 
-}
-
-.pagination .page-btn:disabled {
-    background-color: #e9ecef; 
-    color: #6c757d; 
-    cursor: not-allowed;
-    border-color: #ced4da; 
-}
 </style>
 
 </head>
@@ -862,29 +824,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
         <!-- All Orders -->
         <div class="order-container" id="All" style="display: block;">
             <?php renderOrders($all_orders); ?>
-			<div class="pagination" id="pagination-All"></div>
-
+			
         </div>
 
         <!-- Processing Orders -->
         <div class="order-container" id="Processing" style="display: none;">
             <?php renderOrders($processing_orders); ?>
-			<div class="pagination" id="pagination-Processing"></div>
-
         </div>
 
         <!-- Shipping Orders -->
         <div class="order-container" id="Shipping" style="display: none;">
     <?php renderOrders($shipping_orders, true); ?>
-	<div class="pagination" id="pagination-Shipping"></div>
-
 </div>
 
         <!-- Completed Orders -->
         <div class="order-container" id="Complete" style="display: none;">
             <?php renderOrders($complete_orders); ?>
-			<div class="pagination" id="pagination-Complete"></div>
-
         </div>
     </div>
 
@@ -1348,76 +1303,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 function closePopup() {
     document.getElementById("popup-form").style.display = "none";
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-    const rowsPerPage = 1; // Adjust the number of rows per page as needed
-    const tabIds = ["All", "Processing", "Shipping", "Complete"];
-
-    // Initialize pagination for each tab
-    tabIds.forEach((tabId) => {
-        const container = document.getElementById(tabId);
-        const rows = Array.from(container.querySelectorAll(".order-summary"));
-        const pagination = document.getElementById(`pagination-${tabId}`);
-
-        if (rows.length === 0) {
-            pagination.innerHTML = "";
-            return;
-        }
-
-        let currentPage = 1;
-
-        function initPagination() {
-            const totalRows = rows.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
-            pagination.innerHTML = "";
-
-            const prevButton = document.createElement("button");
-            prevButton.textContent = "Previous";
-            prevButton.disabled = currentPage === 1;
-            prevButton.classList.add("page-btn");
-            prevButton.addEventListener("click", () => goToPage(currentPage - 1));
-            pagination.appendChild(prevButton);
-
-            const maxPageButtons = 5;
-            const halfRange = Math.floor(maxPageButtons / 2);
-            const startPage = Math.max(1, currentPage - halfRange);
-            const endPage = Math.min(totalPages, currentPage + halfRange);
-
-            for (let i = startPage; i <= endPage; i++) {
-                const pageButton = document.createElement("button");
-                pageButton.textContent = i;
-                pageButton.classList.add("page-btn");
-                if (i === currentPage) pageButton.classList.add("active");
-                pageButton.addEventListener("click", () => goToPage(i));
-                pagination.appendChild(pageButton);
-            }
-
-            const nextButton = document.createElement("button");
-            nextButton.textContent = "Next";
-            nextButton.disabled = currentPage === totalPages;
-            nextButton.classList.add("page-btn");
-            nextButton.addEventListener("click", () => goToPage(currentPage + 1));
-            pagination.appendChild(nextButton);
-        }
-
-        function goToPage(pageNumber) {
-            const totalRows = rows.length;
-            const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-            currentPage = Math.max(1, Math.min(pageNumber, totalPages));
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-
-            rows.forEach((row, index) => {
-                row.style.display = index >= start && index < end ? "" : "none";
-            });
-
-            initPagination();
-        }
-
-        goToPage(1);
-    });
-});
 	</script>
 
 </body>
