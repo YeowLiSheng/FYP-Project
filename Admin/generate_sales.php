@@ -9,16 +9,16 @@ if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
 }
 
-// Fetch sales trend data (replace with your logic if needed)
+// Fetch sales trend data (getting data for the last 30 days)
 $salesTrend_query = "SELECT DATE(order_date) AS date, SUM(final_amount) AS daily_sales 
                      FROM orders 
-                     WHERE DATE(order_date) BETWEEN '$startDate' AND '$endDate' 
+                     WHERE DATE(order_date) >= CURDATE() - INTERVAL 30 DAY
                      GROUP BY DATE(order_date) 
                      ORDER BY DATE(order_date)";
 $salesTrend_result = $connect->query($salesTrend_query);
 $salesTrend = $salesTrend_result->fetch_all(MYSQLI_ASSOC);
 
-// Fetch yearly sales data
+// Fetch yearly sales data (all years)
 $yearlySales_query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS yearly_sales 
                       FROM orders 
                       GROUP BY YEAR(order_date) 
@@ -26,7 +26,7 @@ $yearlySales_query = "SELECT YEAR(order_date) AS year, SUM(final_amount) AS year
 $yearlySales_result = $connect->query($yearlySales_query);
 $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
-// Fetch category-wise sales data
+// Fetch category-wise sales data (all categories)
 $categorySales_query = "SELECT c.category_name, SUM(od.quantity) AS total_quantity 
                         FROM order_details od
                         LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
@@ -81,7 +81,7 @@ $pdf->Cell(0, 10, 'Category-wise Sales', 0, 1, 'L');
 $pdf->SetFont('Arial', '', 10);
 if (!empty($categorySales)) {
     foreach ($categorySales as $data) {
-        $pdf->Cell(60, 8, $data['category'], 1);
+        $pdf->Cell(60, 8, $data['category_name'], 1);
         $pdf->Cell(60, 8, $data['total_quantity'] . ' items', 1, 1);
     }
 } else {
