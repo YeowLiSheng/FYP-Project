@@ -180,10 +180,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 Export:
                             </button>
                             <ul class="dropdown-menu">
-                            <li>
-                <button type="button" class="dropdown-item" id="export_pdf">PDF</button>
-            </li>
-                                            <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
+                                <li><button type="submit" class="dropdown-item" name="admin_pdf">PDF</button></li>
+                                <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
                             </ul>
                         </div>
                     </form>
@@ -295,20 +293,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             }
         });
     });
-
-
-    document.getElementById("export_pdf").addEventListener("click", function () {
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = ""; // Current page
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "generate_pdf";
-    input.value = "1";
-    form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-});
 </script>
 
 </body>

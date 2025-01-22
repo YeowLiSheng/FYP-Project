@@ -5,7 +5,7 @@ require("php_libs/fpdf.php");
 date_default_timezone_set("Asia/Kuching");
 $time = date("dmY");
 
-if (isset($_POST["generate_pdf"])) {
+if (isset($_POST["admin_pdf"])) {
     $pdf = new FPDF("P", "mm", "A4");
 
     // Add Page and Logo
