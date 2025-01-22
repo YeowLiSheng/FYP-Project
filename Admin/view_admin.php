@@ -161,31 +161,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         .dropdown-menu li {
             padding: 8px 10px;
         }
-
-        .pagination-controls {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 10px;
-}
-
-.pagination-button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.pagination-button.active {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.pagination-button:disabled {
-    background-color: #ddd;
-    cursor: not-allowed;
-}
     </style>
 </head>
 <body>
@@ -286,7 +261,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
-<div class="pagination-controls"></div>
 
             </div>
         </section>
@@ -319,86 +293,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             }
         });
     });
-
- 
-        const itemsPerPage = 1; // 每页显示的数据条数
-        const totalPages = Math.ceil(data.length / itemsPerPage);
-        let currentPage = 1;
-
-        const tableBody = document.getElementById('table-body');
-        const paginationContainer = document.querySelector('.pagination-controls');
-
-        // 渲染当前页的数据
-        const renderPage = (page) => {
-            tableBody.innerHTML = ''; // 清空表格内容
-
-            const start = (page - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-
-            data.slice(start, end).forEach(item => {
-                const row = `
-                    <tr>
-                        <td>${item.staff_id}</td>
-                        <td>${item.admin_id}</td>
-                        <td>${item.name}</td>
-                        <td>${item.email}</td>
-                        <td><button>View Details</button></td>
-                        <td>${item.status}</td>
-                    </tr>
-                `;
-                tableBody.insertAdjacentHTML('beforeend', row);
-            });
-
-            updatePaginationControls();
-        };
-
-        // 创建分页控件
-        const updatePaginationControls = () => {
-            paginationContainer.innerHTML = ''; // 清空分页控件
-
-            // 上一页按钮
-            const prevButton = document.createElement('button');
-            prevButton.textContent = 'Previous';
-            prevButton.classList.add('pagination-button');
-            prevButton.disabled = currentPage === 1;
-            prevButton.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderPage(currentPage);
-                }
-            });
-            paginationContainer.appendChild(prevButton);
-
-            // 页码按钮
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.classList.add('pagination-button');
-                if (i === currentPage) pageButton.classList.add('active');
-                pageButton.addEventListener('click', () => {
-                    currentPage = i;
-                    renderPage(currentPage);
-                });
-                paginationContainer.appendChild(pageButton);
-            }
-
-            // 下一页按钮
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Next';
-            nextButton.classList.add('pagination-button');
-            nextButton.disabled = currentPage === totalPages;
-            nextButton.addEventListener('click', () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderPage(currentPage);
-                }
-            });
-            paginationContainer.appendChild(nextButton);
-        };
-
-        // 初始化
-        renderPage(currentPage);
-
 </script>
 
 </body>
