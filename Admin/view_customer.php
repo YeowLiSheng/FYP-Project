@@ -47,8 +47,22 @@ include 'dataconnection.php';
     }
 
     .searchbar {
-        position: relative;
-    }
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 50%;
+        }
+        .searchbar input {
+            border: none;
+            outline: none;
+            font-size: 1em;
+            padding: 8px;
+            width: 100%;
+            border-radius: 8px;
+        }
 
     .magni {
         position: absolute;
