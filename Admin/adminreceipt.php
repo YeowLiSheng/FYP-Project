@@ -128,9 +128,9 @@ $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(15, 10, 'No.', 1, 0, 'C', true);
 $pdf->Cell(70, 10, 'Description', 1, 0, 'C', true);
 $pdf->Cell(20, 10, 'Color', 1, 0, 'C', true);
-$pdf->Cell(30, 10, 'Unit Price (RM)', 1, 0, 'C', true);
+$pdf->Cell(30, 10, 'Unit Price ($)', 1, 0, 'C', true);
 $pdf->Cell(20, 10, 'Qty', 1, 0, 'C', true);
-$pdf->Cell(35, 10, 'Subtotal (RM)', 1, 1, 'C', true);
+$pdf->Cell(35, 10, 'Subtotal ($)', 1, 1, 'C', true);
 
 
 $pdf->SetFont('Arial', '', 10);
@@ -153,7 +153,7 @@ $pdf->SetFont('Arial', 'B', 10);
 $pdf->Cell(151, 6, 'Grand Total:', 0, 0, 'R');
 $pdf->Cell(40, 6, '$ ' . number_format($order['Grand_total'], 2), 0, 1, 'R');
 $pdf->Cell(151, 6, 'Discount:', 0, 0, 'R');
-$pdf->Cell(40, 6, '-$ ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
+$pdf->Cell(40, 6, '- $ ' . number_format($order['discount_amount'], 2), 0, 1, 'R');
 $pdf->SetFont('Arial', 'B', 12);
 $pdf->Cell(151, 10, 'Total Amount:', 0, 0, 'R');
 $pdf->Cell(40, 10, '$ ' . number_format($order['final_amount'], 2), 0, 1, 'R');
