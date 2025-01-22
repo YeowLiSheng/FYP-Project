@@ -5,6 +5,10 @@ require("php_libs/fpdf.php");
 date_default_timezone_set("Asia/Kuching");
 $time = date("dmY");
 
+header("Content-Type: application/pdf");
+header("Content-Disposition: attachment; filename=admin_list_$time.pdf");
+header("Pragma: no-cache");
+header("Expires: 0");
     $pdf = new FPDF("P", "mm", "A4");
 
     // Add Page and Logo
