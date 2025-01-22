@@ -28,7 +28,7 @@ $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
     ['Promotion ID', 25],
-    ['Promotion Name', 50],
+    ['Promotion Name', 40],
     ['Tags', 30],
     ['Color', 30],
     ['Category', 25],
@@ -68,16 +68,24 @@ if ($result->num_rows > 0) {
         $category_name = $row['category_name'];
         $status = $row['product_status'];
 
+        // Handle word wrapping for the 'Promotion Name' column
+        $cell_width = 40; // Width of 'Promotion Name'
+        $cell_height = 6; // Height of each wrapped line
+        $line_count = ceil($pdf->GetStringWidth($promotion_name) / $cell_width);
+
         // Set left margin for row data
         $pdf->SetX($left_margin);
 
         // Output row data
-        $pdf->Cell(25, 10, $promotion_id, 1, 0, 'C');
-        $pdf->Cell(50, 10, $promotion_name, 1, 0, 'C');
-        $pdf->Cell(30, 10, $tags, 1, 0, 'C');
-        $pdf->Cell(30, 10, $color, 1, 0, 'C');
-        $pdf->Cell(25, 10, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, 10, $status, 1, 1, 'C');
+        $pdf->Cell(25, $cell_height * $line_count, $promotion_id, 1, 0, 'C');
+        $x = $pdf->GetX(); // Save x position
+        $y = $pdf->GetY(); // Save y position
+        $pdf->MultiCell($cell_width, $cell_height, $promotion_name, 1, 'C');
+        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
+        $pdf->Cell(30, $cell_height * $line_count, $tags, 1, 0, 'C');
+        $pdf->Cell(30, $cell_height * $line_count, $color, 1, 0, 'C');
+        $pdf->Cell(25, $cell_height * $line_count, $category_name, 1, 0, 'C');
+        $pdf->Cell(25, $cell_height * $line_count, $status, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
