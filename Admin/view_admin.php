@@ -161,6 +161,29 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         .dropdown-menu li {
             padding: 8px 10px;
         }
+
+        .pagination {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+
+        .pagination button:hover:not(.active) {
+            background-color: #ddd;
+        }
     </style>
 </head>
 <body>
@@ -261,6 +284,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
+<div class="pagination" id="pagination"></div>
 
             </div>
         </section>
@@ -293,6 +317,59 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             }
         });
     });
+
+
+    const rowsPerPage = 10;
+    const tableBody = document.getElementById('table-body');
+    const paginationDiv = document.getElementById('pagination');
+
+    // Function to display the data for a specific page
+    function displayPage(page) {
+        tableBody.innerHTML = ''; // Clear current rows
+
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageData = adminData.slice(start, end);
+
+        // Render rows
+        pageData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.staff_id}</td>
+                <td>${row.admin_id}</td>
+                <td>${row.admin_name}</td>
+                <td>${row.admin_email}</td>
+                <td><button style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px;">View Details</button></td>
+                <td><button style="background-color: ${row.admin_status ? '#4CAF50' : '#ff4d4d'}; color: white; border: none; padding: 5px 10px;">
+                    ${row.admin_status ? 'Active' : 'Deactivate'}
+                </button></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+        // Update active button
+        document.querySelectorAll('.pagination button').forEach(button => {
+            button.classList.remove('active');
+        });
+        document.getElementById(`page-${page}`).classList.add('active');
+    }
+
+    // Function to generate pagination buttons
+    function setupPagination() {
+        const totalPages = Math.ceil(adminData.length / rowsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const button = document.createElement('button');
+            button.id = `page-${i}`;
+            button.textContent = i;
+            button.onclick = () => displayPage(i);
+            paginationDiv.appendChild(button);
+        }
+    }
+
+    // Initialize
+    setupPagination();
+    displayPage(1); // Show the first page initially
 </script>
 
 </body>
