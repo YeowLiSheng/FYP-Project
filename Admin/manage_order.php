@@ -274,6 +274,7 @@ include 'admin_sidebar.php';
         <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
     </ul>
 </div>
+    </div>
 
         <div class="control-bar">
             <div class="filter-group">
