@@ -27,12 +27,12 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Voucher Code', 30],
-    ['Discount Rate', 25],
+    ['Voucher Code', 35],
+    ['Discount Rate', 30],
     ['Usage Limit', 25],
     ['Min. Amount', 30],
-    ['Status', 20],
-    ['Description', 60] // Wider column for description
+    ['Description', 60],
+    ['Status', 20]
 ];
 
 $left_margin = 10; 
@@ -53,26 +53,30 @@ if ($result->num_rows > 0) {
         $discount_rate = $row['discount_rate'] . '%';
         $usage_limit = $row['usage_limit'];
         $min_amount = '$' . number_format($row['minimum_amount'], 2);
-        $status = $row['voucher_status'];
         $description = $row['voucher_des'];
+        $status = $row['voucher_status'];
+
+        // Calculate the height of the row based on the description
+        $line_height = 6; // Height of each line
+        $description_lines = $pdf->GetStringWidth($description) > 60 ? ceil($pdf->GetStringWidth($description) / 60) : 1;
+        $row_height = $description_lines * $line_height;
 
         $pdf->SetX($left_margin);
 
-        // Add each column except description
-        $pdf->Cell(30, 6, $voucher_code, 1, 0, 'C');
-        $pdf->Cell(25, 6, $discount_rate, 1, 0, 'C');
-        $pdf->Cell(25, 6, $usage_limit, 1, 0, 'C');
-        $pdf->Cell(30, 6, $min_amount, 1, 0, 'C');
-        $pdf->Cell(20, 6, $status, 1, 0, 'C');
+        // Output other fields with fixed cell widths
+        $pdf->Cell(35, $row_height, $voucher_code, 1, 0, 'C');
+        $pdf->Cell(30, $row_height, $discount_rate, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $usage_limit, 1, 0, 'C');
+        $pdf->Cell(30, $row_height, $min_amount, 1, 0, 'C');
 
-        // Add description with automatic line breaks
-        $x = $pdf->GetX(); // Get current X position
-        $y = $pdf->GetY(); // Get current Y position
-        $pdf->MultiCell(60, 6, $description, 1, 'L'); // Multiline cell for description
+        // Description with MultiCell (auto-wraps text)
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->MultiCell(60, $line_height, $description, 1, 'L');
+        $pdf->SetXY($x + 60, $y); // Move to the right for next cell
 
-        // Reset position to align other rows correctly
-        $pdf->SetXY($x + 60, $y);
-        $pdf->Ln(); // Move to the next row
+        // Status
+        $pdf->Cell(20, $row_height, $status, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
