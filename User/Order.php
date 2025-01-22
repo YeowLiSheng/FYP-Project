@@ -1350,7 +1350,7 @@ function closePopup() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const rowsPerPage = 5; // Adjust the number of rows per page as needed
+    const rowsPerPage = 1; // Adjust the number of rows per page as needed
     const tabIds = ["All", "Processing", "Shipping", "Complete"];
 
     // Initialize pagination for each tab
