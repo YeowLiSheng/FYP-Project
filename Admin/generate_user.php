@@ -58,6 +58,9 @@ if (isset($_POST["cust_pdf"])) {
     $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
     $pdf->Output();
+
+    $pdf->Output('D', 'User_List.pdf'); 
+
 }
 
 if (isset($_POST["cust_excel"])) {
