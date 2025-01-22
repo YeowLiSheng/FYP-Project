@@ -163,30 +163,46 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         }
 
         .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 20px 0;
-        gap: 5px;
-    }
-    .pagination .page-btn {
-        margin: 0;
-        padding: 5px 10px;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-    .pagination .page-btn.active {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
-    }
-    .pagination .page-btn:disabled {
-        background-color: #ddd;
-        color: #aaa;
-        cursor: not-allowed;
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 10px; /* 调整间距，让按钮显得更宽松 */
+}
+
+.pagination .page-btn {
+    margin: 0;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #333;
+    cursor: pointer;
+    border-radius: 8px; /* 圆角效果 */
+    font-size: 14px;
+    transition: all 0.3s ease; /* 添加平滑过渡效果 */
+}
+
+.pagination .page-btn:hover {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff; /* 鼠标悬停样式 */
+}
+
+.pagination .page-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    font-weight: bold; /* 突出当前页 */
+    pointer-events: none; /* 禁用点击 */
+}
+
+.pagination .page-btn:disabled {
+    background-color: #f5f5f5;
+    color: #aaa;
+    cursor: not-allowed;
+    border-color: #ddd; /* 禁用样式 */
+    pointer-events: none;
+}
     </style>
 </head>
 <body>
