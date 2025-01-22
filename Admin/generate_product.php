@@ -71,7 +71,7 @@ if ($result->num_rows > 0) {
         // Handle word wrapping for the 'Promotion Name' column
         $cell_width = 40; // Width of 'Promotion Name'
         $cell_height = 8; // Height of each wrapped line
-        $line_count = ceil($pdf->GetStringWidth($promotion_name) / $cell_width);
+        $line_count = ceil($pdf->GetStringWidth($product_name) / $cell_width);
 
         // Set left margin for row data
         $pdf->SetX($left_margin);
