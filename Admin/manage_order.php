@@ -161,7 +161,7 @@ include 'admin_sidebar.php';
 
     .control-bar select:hover,
     .control-bar input:hover {
-        border-color: #45a049;
+        border-color: #3498db;
     }
 
     .date-range {
