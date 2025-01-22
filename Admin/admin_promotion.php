@@ -16,7 +16,8 @@
 <?php include 'admin_sidebar.php' ?>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css" />
-  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
 <script src="https://cdn.datatables.net/2.1.3/js/dataTables.js"></script>
 
 <script>
@@ -66,6 +67,8 @@
         width: 1040px;
         height: 50px;
         border-radius: 10px;
+        text-indent: 40px;
+
     }
 
    
@@ -197,7 +200,47 @@
     margin-bottom: 20px; /* Space between title and category boxes */
     font-family: Arial, sans-serif; /* Consistent font style */
 }
+.btn-primary {
+        background-color: #4CAF50 !important;
+        border-color: #4CAF50 !important;
+    }
 
+    .btn-primary:hover {
+        background-color: #45a049 !important;
+        border-color: #45a049 !important;
+    }
+
+    .btn-group {
+        background-color: #4CAF50;
+        display: inline-block;
+        position: relative;
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        background: #fff;
+        border: 1px solid #dcdde1;
+        border-radius: 5px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        margin-top: 5px;
+    }
+
+    .dropdown-item {
+        background-color: #4CAF50; 
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #fff; 
+        cursor: pointer;
+        display: block;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background-color: #45a049; 
+        color: white; 
+    }
 </style>
 
 <script type="text/JavaScript">
@@ -381,7 +424,7 @@ function add_check() {
     <div class="main p-3">
         <div class="head" style="display:flex;">
             <i class="lni lni-cart-full" style="font-size:50px;"></i>
-            <h1 style="margin: 12px 0 0 30px;">Product</h1>
+            <h1 style="margin: 12px 0 0 30px;">Promotion Product</h1>
             <hr>
         </div>
         <hr>
@@ -471,6 +514,16 @@ function add_check() {
                         style="background-color: #218838; margin-left:240px; height:50px;">Add Product</button>
                 </div>
             </form>
+            <div class="btn-group" style="background-color: #4CAF50;">
+
+    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Export:
+    </button>
+    <ul class="dropdown-menu">
+        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+    </ul>
+</div>
         </div>
         <?php
         if (isset($_SESSION['title']) && $_SESSION['title'] != '') {
@@ -1255,4 +1308,58 @@ function add_check() {
         // Show the additional color section when the button is clicked
         document.getElementById('additional_color_section').style.display = 'block';
     });
+
+
+    document.getElementById("export-pdf").addEventListener("click", exportPDF);
+        document.getElementById("export-excel").addEventListener("click", exportExcel);
+
+        function exportPDF() {
+            window.location.href = "generate_promotion.php";
+
+        }
+
+ 
+       function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Promotion Product List",
+        Author: "YLS Atelier",
+    };
+
+    // Select the table with product data
+    const table = document.querySelector(".table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        // Exclude the first (Product Image) and last (Actions) columns
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
+    });
+
+    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
+    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
+        // Exclude the first and last columns
+        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
+    }).filter(header => header !== null);
+
+    rows.unshift(headers);
+
+    // Create worksheet from the extracted data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Set appropriate column widths for the product data, excluding the first and last columns
+    ws['!cols'] = [
+        { wch: 30 }, // Product Name
+        { wch: 25 }, // Tags
+        { wch: 20 }, // Colors
+        { wch: 20 }, // Category
+        { wch: 15 }, // Price
+        { wch: 20 }, // Stock (QTY)
+        { wch: 15 }  // Status
+    ];
+
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+
+    // Save the workbook as an Excel file
+    XLSX.writeFile(wb, "Product_List.xlsx");
+}
 </script>

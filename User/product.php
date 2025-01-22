@@ -603,9 +603,16 @@ if (!empty($output)) {
 .promo-title {
     font-size: 26px;
     font-weight: bold;
-    color: #222;
     margin-bottom: 10px;
     text-align: center;
+}
+.promo-title a{
+    color: #222;
+}
+
+.promo-title a:hover {
+    text-decoration: underline; /* Add underline on hover for better usability */
+    color: #007bff; /* Optional: Change color on hover */
 }
 
 .promo-price {
@@ -625,13 +632,36 @@ if (!empty($output)) {
     text-align: center;
 }
 
+.promo-size-display {
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
+    margin-top: 10px;
+    text-align: center;
+    display: block;
+}
+.stock-warning{
+    text-align: center;
+    display: block;
+}
+.promo-stock-warning{
+    text-align: center;
+    display: block;
+}
 /* Color Selection */
 .promo-color-selection {
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
     margin-top: 15px;
-    text-align: center;
+    display: flex; /* Use flexbox to align the label and dropdown side by side */
+    align-items: center; /* Vertically align the elements */
+    justify-content: center; /* Center-align the entire block */
+    gap: 10px; /* Add spacing between the label and dropdown */
 }
 
 .promo-select {
+    gap: 10px;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
@@ -659,12 +689,6 @@ if (!empty($output)) {
     justify-content: center;
     align-items: center;
 }
-
-.slick-slide {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 .promo-gallery img {
     width: 300px;
     height: 300px;
@@ -685,7 +709,7 @@ if (!empty($output)) {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 5px;
     margin-top: 15px;
 }
 
@@ -693,31 +717,29 @@ if (!empty($output)) {
 .quantity .btn-num-promo-down {
     width: 40px;
     height: 40px;
-    border: none;
-    background-color: #007bff;
-    color: #fff;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #333;
     font-size: 18px;
     font-weight: bold;
-    border-radius: 50%;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .quantity .btn-num-promo-up:hover,
 .quantity .btn-num-promo-down:hover {
-    background-color: #0056b3;
-    transform: scale(1.1);
+    background-color: #f0f0f0;
+    color: #000;
 }
 
 .quantity .num-promo {
-    width: 60px;
+    width: 50px;
     height: 40px;
     text-align: center;
     font-size: 16px;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    background-color: #fff;
     outline: none;
-    background-color: #f9f9f9;
     transition: border-color 0.3s ease;
 }
 
@@ -725,6 +747,7 @@ if (!empty($output)) {
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
+
 
 /* Add to Cart Button */
 .js-add-promo-cart {
@@ -758,7 +781,11 @@ if (!empty($output)) {
         transform: scale(1);
     }
 }
-
+.slick-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .slick-prev-p, .slick-next-p {
     position: absolute;
     top: 50%; /* Center vertically */
@@ -805,11 +832,11 @@ if (!empty($output)) {
 }
 
 .slick-prev {
-    left: -50px; /* Position to the left of the slider */
+    left: -30px; /* Position to the left of the slider */
 }
 
 .slick-next {
-    right: -50px; /* Position to the right of the slider */
+    right: -10px; /* Position to the right of the slider */
 }
 
 /* Hover effects */
@@ -842,113 +869,157 @@ body {
 .isotope-grid {
     min-height: 50vh; /* Ensures content area fills the screen */
 }
+.size-display{
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
+    margin-top: 30px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
 
+}
 
 /* Promotion Box with Fixed Dimensions and Scrolling */
 /* Promotion Head with Glowing Effect */
 .promotion-head {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
     color: #ff3b3b;
     text-align: center;
     background: transparent;
-    width: 200px;
+    width: 80%;
     padding: 10px;
     animation: softGlow 1s infinite alternate;
-    border-radius: 5px;
     transition: transform 0.4s ease-in-out; /* Smooth scaling effect */
-    margin: 0 auto;
+    margin: 10px auto;
 }
 
 @keyframes softGlow {
     from {
-        text-shadow: 0 0 5px #ff6b6b, 0 0 8px #ff9999;
+        text-shadow: 0 0 8px #ff6b6b, 0 0 12px #ff9999;
         transform: scale(1); /* Normal size */
     }
     to {
- 
-        text-shadow: 0 0 3px #ff3b3b, 0 0 5px #ff6b6b;
+        text-shadow: 0 0 5px #ff3b3b, 0 0 10px #ff6b6b;
         transform: scale(1.1); /* Slightly larger size */
     }
 }
 
-/* Promotion Box with Fixed Dimensions and Scrolling */
+/* Promotion Box with Modern Design */
 .promotion-box {
-    margin-top: 20px;
-    padding: 10px;
-    border-top: 1px solid #ddd;
-    width: 400px;
-    height: 300px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 800px;
+    height: 400px;
     overflow-y: auto;
     background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
 }
 
-#promotionContent {
-    margin-top: 10px;
-}
-
-/* Individual Promotion Items with Fixed Dimensions */
+/* Individual Promotion Items with Uniform Appearance */
 .promotion-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
-    padding: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
     background: #fff;
-    border-radius: 5px;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-    height: 100px; /* Set height */
-    width: 100%;  /* Ensure full width of the box */
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    height: auto; /* Auto height for flexibility */
+    width: 450px;
 }
 
 /* Product Image Styling */
 .promotion-item img {
-    width: 60px;
-    height: 60px; /* Fixed height for uniformity */
-    border-radius: 5px;
+    width: 70px;
+    height: 70px; /* Larger for visibility */
+    border-radius: 10px;
+    border: 1px solid #ddd;
 }
 
 /* Product Details Section */
 .promo-details {
     flex-grow: 1;
-    margin-left: 10px;
+    margin-left: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
 .promotion-item h5 {
     font-size: 16px;
-    margin: 0 0 5px;
+    text-align: center;
+    margin: 0;
+    color: #333;
+    font-weight: bold;
+    word-wrap: break-word; /* Allows breaking words */
+    word-break: break-word; /* Break words for long strings */
+    overflow: hidden; /* Ensure no overflow */
+    max-width: 100px;
+}
+
+.promotion-item h5 a {
+    color: #333;
+}
+
+h5 a:hover {
+    text-decoration: underline; /* Add underline on hover for better usability */
+    color: #007bff; /* Optional: Change color on hover */
 }
 
 .promo-price {
     color: #ff5722;
     font-weight: bold;
-    font-size: 16px; /* Increase font size */
+    font-size: 16px;
+    text-align: center;
+}
+
+/* View Product Button with Modern Style */
+.view-product-btn {
+    background: #007bff;
+    color: #fff;
+    font-size: 13px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s, transform 0.3s;
+    height: 40px; /* Set fixed height */
+    width: 80px; /* Set fixed width */
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-product-btn:hover {
+    background: #0056b3;
+    transform: scale(1.05); /* Slight hover effect */
 }
 
 /* Separator Line Between Products */
 .promotion-divider {
     border: 0;
     border-top: 1px solid #ddd;
-    margin: 10px 0;
+    margin: 15px 0;
 }
 
-/* View Product Button with Fixed Dimensions */
-.view-product-btn {
-    background: #007bff;
-    color: #fff;
-    border: 10px;
-    font-size: 13px;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background 0.3s;
-    height: 40px; /* Set fixed height */
-    width: 80px; /* Set fixed width */
-    text-align: center; /* Ensure button text is centered */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Scrollbar Styling */
+.promotion-box::-webkit-scrollbar {
+    width: 8px;
 }
+.promotion-box::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 5px;
+}
+.promotion-box::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+}
+
 
 
 .promotion-modal {
@@ -980,14 +1051,6 @@ body {
 .quick-view-images img {
     width: 100%;
     margin: 10px 0;
-}
-.size-display {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px; /* Space between size options */
-    justify-content: left;
-    align-items: left;
-    margin: 20px 0; /* Add spacing around the size display */
 }
 .unavailable-product{
     background-color: lightgrey; /* Soft grey background */
@@ -1728,10 +1791,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						<p class="stext-102 cl3 p-t-23">
 							<?php echo $product['product_des']; ?>
 						</p>
-						
+
+						<div class="size-display"></div>
+
 						<!--  -->
 						<div class="p-t-33">
-                            <div class="size-display"></div>
 
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-203 flex-c-m respon6">
@@ -1773,8 +1837,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 										Add to cart
 									</button>
 								</div>
-								<p class="stock-warning" style="color: red; display: none;">Quantity exceeds available stock.</p>
 							</div>	
+                            <p class="stock-warning" style="color: red; display: none;"></p>
 						</div>
 
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
@@ -1826,11 +1890,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
             <div class="promotion-details">
                 <div class="quantity">
-                    <button class="btn-num-promo-up">+</button>
-                    <input type="number" class="num-promo" value="1" min="1" />
                     <button class="btn-num-promo-down">-</button>
+                    <input type="number" class="num-promo" value="1" min="1" />
+                    <button class="btn-num-promo-up">+</button>
                 </div>
-                <div class="promo-stock-warning" style="display:none;"></div>
+                <div class="promo-stock-warning" style="color: red; display: none;"></div>
             </div>
 
             <button class="js-add-promo-cart">Add to Cart</button>
@@ -2021,7 +2085,11 @@ function fetchPromotions(categoryId) {
                     var promoHTML = `
                         <div class="promotion-item">
                             <img src="images/${promotion.promotion_image}" alt="${promotion.promotion_name}" class="promo-image">
-                            <h5>${promotion.promotion_name}</h5>
+                            <h5>
+                                <a href="product-detail.php?id=${promotion.promotion_id}&type=promotion">
+                                    ${promotion.promotion_name}
+                                </a>
+                            </h5>
                             <span class="promo-price">$${promotion.promotion_price}</span>
                             <button class="view-product-btn" data-promotion-id="${promotion.promotion_id}">
                                 View Product
@@ -2057,7 +2125,7 @@ $(document).on('click', '.view-product-btn', function () {
             console.log("Promotion details fetched:", promotion);
             if (promotion) {
                 // Populate modal with promotion details
-                $('#promotionModal .promo-title').text(promotion.promotion_name).data('promotion-id', promotionId);
+                $('#promotionModal .promo-title').html(`<a href="product-detail.php?id=${promotionId}&type=promotion">${promotion.promotion_name}</a>`).data('promotion-id', promotionId);
                 $('#promotionModal .promo-price').text('$' + promotion.promotion_price);
                 $('#promotionModal .promo-description').text(promotion.promotion_des);
                 
@@ -2272,10 +2340,15 @@ $(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (
         if (currentVal > 1) {
             $input.val(currentVal - 1);
             $('.stock-warning').hide();
+        }else if (currentVal < productStock){
+            $input.val(1); // Prevent going below 1
+            $('.stock-warning').hide();
         }
     }
 });
-
+$(document).on('focus', '.num-product', function (e) {
+    $(this).blur(); // Prevent manual typing by immediately removing focus
+});
 // Update the color change logic
 $(document).on('change', 'select[name="color"]', function () {
     $('.stock-warning').hide(); // Hide any previous warnings
@@ -2463,6 +2536,9 @@ $(document).on('click', '.btn-num-promo-up, .btn-num-promo-down', function (e) {
     }
 });
 
+$(document).on('focus', '.num-promo', function (e) {
+    $(this).blur(); // Prevent manual typing by immediately removing focus
+});
 // Update the color change logic for promotion
 $(document).on('change', '#promo-color', function () {
     $('.promo-stock-warning').hide(); // Hide any previous warnings
@@ -2496,7 +2572,7 @@ $(document).ready(function () {
         const promotionId = $('#promotionModal .promo-title').data('promotion-id'); // Assuming the promotion ID is stored in the modal
         console.log("Promotion ID retrieved from modal:", promotionId);
 
-        const promotionName = $('#promotionModal .promo-title').text(); // Promotion Name
+        const promotionName = $('#promotionModal .promo-title a').text();
         console.log("Promotion Name:", promotionName);
 
         const promotionPrice = parseFloat($('#promotionModal .promo-price').text().replace('$', '')); // Promotion Price
