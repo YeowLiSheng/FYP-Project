@@ -25,9 +25,10 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             color: #333;
         }
         main {
-            margin-left: 78px;
-            padding: 15px;
-          
+            margin-left: 250px; /* 与 sidebar 的宽度一致 */
+    padding: 20px;
+    background-color: #f4f4f4;
+    min-height: 100vh;
 
         }
         .admin-content {
