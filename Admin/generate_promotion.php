@@ -68,24 +68,25 @@ if ($result->num_rows > 0) {
         $category_name = $row['category_name'];
         $status = $row['product_status'];
 
-        // Handle word wrapping for the 'Promotion Name' column
-        $cell_width = 40; // Width of 'Promotion Name'
-        $cell_height = 6; // Height of each wrapped line
-        $line_count = ceil($pdf->GetStringWidth($promotion_name) / $cell_width);
+        // Calculate maximum height for row
+        $cell_height = 6;
+        $promotion_name_lines = ceil($pdf->GetStringWidth($promotion_name) / 40);
+        $max_lines = max($promotion_name_lines, 1);
+        $row_height = $cell_height * $max_lines;
 
         // Set left margin for row data
         $pdf->SetX($left_margin);
 
         // Output row data
-        $pdf->Cell(25, $cell_height * $line_count, $promotion_id, 1, 0, 'C');
-        $x = $pdf->GetX(); // Save x position
-        $y = $pdf->GetY(); // Save y position
-        $pdf->MultiCell($cell_width, $cell_height, $promotion_name, 1, 'C');
-        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
-        $pdf->Cell(30, $cell_height * $line_count, $tags, 1, 0, 'C');
-        $pdf->Cell(30, $cell_height * $line_count, $color, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $status, 1, 1, 'C');
+        $pdf->Cell(25, $row_height, $promotion_id, 1, 0, 'C');
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->MultiCell(40, $cell_height, $promotion_name, 1, 'C');
+        $pdf->SetXY($x + 40, $y); // Adjust to fixed width for next cell
+        $pdf->Cell(30, $row_height, $tags, 1, 0, 'C');
+        $pdf->Cell(30, $row_height, $color, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $category_name, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $status, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
