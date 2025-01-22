@@ -4,6 +4,8 @@ include 'dataconnection.php';
 
 <head>
 <script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
     function add_check(event) {
         event.preventDefault(); // Prevent form submission
         var no_error = true;
@@ -110,7 +112,7 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_product.php";
+            window.location.href = "generate_voucher.php";
 
         }
 
