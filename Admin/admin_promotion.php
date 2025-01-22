@@ -67,6 +67,8 @@
         width: 1040px;
         height: 50px;
         border-radius: 10px;
+        text-indent: 40px;
+
     }
 
    
