@@ -625,13 +625,36 @@ if (!empty($output)) {
     text-align: center;
 }
 
+.promo-size-display {
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
+    margin-top: 10px;
+    text-align: center;
+    display: block;
+}
+.stock-warning{
+    text-align: center;
+    display: block;
+}
+.promo-stock-warning{
+    text-align: center;
+    display: block;
+}
 /* Color Selection */
 .promo-color-selection {
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
     margin-top: 15px;
-    text-align: center;
+    display: flex; /* Use flexbox to align the label and dropdown side by side */
+    align-items: center; /* Vertically align the elements */
+    justify-content: center; /* Center-align the entire block */
+    gap: 10px; /* Add spacing between the label and dropdown */
 }
 
 .promo-select {
+    gap: 10px;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;
@@ -655,12 +678,6 @@ if (!empty($output)) {
     margin: 0 auto;
 }
 .promo-gallery .quick_view {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.slick-slide {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -758,7 +775,11 @@ if (!empty($output)) {
         transform: scale(1);
     }
 }
-
+.slick-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .slick-prev-p, .slick-next-p {
     position: absolute;
     top: 50%; /* Center vertically */
@@ -1773,8 +1794,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 										Add to cart
 									</button>
 								</div>
-								<p class="stock-warning" style="color: red; display: none;">Quantity exceeds available stock.</p>
 							</div>	
+                            <p class="stock-warning" style="color: red; display: none;"></p>
 						</div>
 
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
@@ -1826,11 +1847,11 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
             <div class="promotion-details">
                 <div class="quantity">
-                    <button class="btn-num-promo-up">+</button>
-                    <input type="number" class="num-promo" value="1" min="1" />
                     <button class="btn-num-promo-down">-</button>
+                    <input type="number" class="num-promo" value="1" min="1" />
+                    <button class="btn-num-promo-up">+</button>
                 </div>
-                <div class="promo-stock-warning" style="display:none;"></div>
+                <div class="promo-stock-warning" style="color: red; display: none;"></div>
             </div>
 
             <button class="js-add-promo-cart">Add to Cart</button>
@@ -2272,10 +2293,15 @@ $(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (
         if (currentVal > 1) {
             $input.val(currentVal - 1);
             $('.stock-warning').hide();
+        }else if (currentVal < productStock){
+            $input.val(1); // Prevent going below 1
+            $('.stock-warning').hide();
         }
     }
 });
-
+$(document).on('focus', '.num-product', function (e) {
+    $(this).blur(); // Prevent manual typing by immediately removing focus
+});
 // Update the color change logic
 $(document).on('change', 'select[name="color"]', function () {
     $('.stock-warning').hide(); // Hide any previous warnings
@@ -2463,6 +2489,9 @@ $(document).on('click', '.btn-num-promo-up, .btn-num-promo-down', function (e) {
     }
 });
 
+$(document).on('focus', '.num-promo', function (e) {
+    $(this).blur(); // Prevent manual typing by immediately removing focus
+});
 // Update the color change logic for promotion
 $(document).on('change', '#promo-color', function () {
     $('.promo-stock-warning').hide(); // Hide any previous warnings
