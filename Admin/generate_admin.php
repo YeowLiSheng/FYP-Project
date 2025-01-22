@@ -58,36 +58,39 @@ if (isset($_POST["admin_pdf"])) {
     $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
 
-    $pdf->Output('D', 'Admin_List.pdf'); // 自动下载文件
+    $pdf->Output('D', 'Admin_List.pdf'); 
 }
 
 if (isset($_POST["admin_excel"])) {
     $output = '';
-    $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
+    header: $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
     if ($excel->num_rows > 0) {
-        $output .= '
-            <table class="table" bordered="1">
-                <tr style="background-color: #e6e6e6;">
-                    <th>#</th>
-                    <th>Staff ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
-        ';
+        // Initialize an array for the Excel sheet data
+        $rows = [];
+        $rows[] = ['#', 'Staff ID', 'Name', 'Email']; // Adding headers
+
         while ($row = mysqli_fetch_assoc($excel)) {
-            $output .= '
-                <tr>
-                    <td>' . $row["staff_id"] . '</td>
-                    <td>' . $row["admin_id"] . '</td>
-                    <td>' . $row["admin_name"] . '</td>
-                    <td>' . $row["admin_email"] . '</td>
-                </tr>
-            ';
+            $rows[] = [$row["staff_id"], $row["admin_id"], $row["admin_name"], $row["admin_email"]];
         }
-        $output .= '</table>';
-        header('Content-Type: application/xls');
-        header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
-        echo $output;
+
+        // Create an Excel sheet from the rows
+        $wb = XLSX.utils.book_new();
+        $ws = XLSX.utils.aoa_to_sheet($rows);
+
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 15 }, // Staff ID
+            { wch: 20 }, // Name
+            { wch: 30 }, // Email
+        ];
+
+        // Append the sheet to the workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Admin Report");
+
+        // Output the file for download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="admin_report.xlsx"');
+        XLSX.writeFile(wb, "php://output");
     } else {
         echo "No record found :(";
     }
