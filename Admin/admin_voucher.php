@@ -80,34 +80,7 @@ include 'dataconnection.php';
             document.getElementById("s_form").submit();
         }
     }
-    document.addEventListener("DOMContentLoaded", function () {
-    const table = document.querySelector(".table");
-    const rowsPerPage = 5;
-    const rows = table.querySelectorAll("tbody tr");
-    const pageCount = Math.ceil(rows.length / rowsPerPage);
-    const pagination = document.createElement("div");
-    pagination.classList.add("pagination");
 
-    for (let i = 1; i <= pageCount; i++) {
-        const button = document.createElement("button");
-        button.innerHTML = i;
-        button.onclick = function () {
-            paginateTable(i);
-        };
-        pagination.appendChild(button);
-    }
-    table.parentNode.appendChild(pagination);
-    paginateTable(1);
-
-    function paginateTable(page) {
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-
-        rows.forEach((row, index) => {
-            row.style.display = index >= start && index < end ? "" : "none";
-        });
-    }
-});
 
 
 document.addEventListener("DOMContentLoaded", function () {
