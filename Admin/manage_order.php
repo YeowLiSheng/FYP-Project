@@ -87,47 +87,66 @@ include 'admin_sidebar.php';
         color: #7f8c8d;
     }
 
-    /* 设置 Export 按钮的背景色 */
     .btn-primary {
-        background-color: #4CAF50 !important;
-        border-color: #4CAF50 !important;
-    }
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
 
-    .btn-primary:hover {
-        background-color: #45a049 !important;
-        border-color: #45a049 !important;
-    }
+.btn-primary:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}
 
-    .btn-group {
-        background-color: #4CAF50;
-    }
+.btn-group {
+    position: relative;
+    display: inline-block;
+}
 
-    /* 设置下拉菜单项颜色 */
-    .dropdown-menu {
-        display: none;
-        position: absolute;
-        background: #fff;
-        border: 1px solid #dcdde1;
-        border-radius: 5px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        z-index: 10;
-        margin-top: 5px;
-    }
+.dropdown-toggle::after {
+    margin-left: 0.5em;
+    border-top: 0.4em solid;
+    border-right: 0.4em solid transparent;
+    border-left: 0.4em solid transparent;
+}
 
-    .dropdown-item {
-        background-color: #4CAF50; /* 按钮颜色 */
-        padding: 10px 15px;
-        text-decoration: none;
-        color: #fff; /* 设置文字颜色为白色 */
-        cursor: pointer;
-        display: block;
-        transition: background-color 0.2s;
-    }
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background: #fff;
+    border: 1px solid #dcdde1;
+    border-radius: 5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    margin-top: 5px;
+    width: 100%;
+}
 
-    .dropdown-item:hover {
-        background-color: #45a049; /* 悬停时的深绿色 */
-        color: white; /* 保持文字为白色 */
-    }
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    background-color: #4CAF50;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: white;
+    display: block;
+    border: none;
+    text-align: left;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #45a049;
+    color: white;
+}
 
     .control-bar {
         display: flex;
