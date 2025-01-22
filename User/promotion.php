@@ -271,7 +271,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
 
-    .slick-prev, .slick-next {
+.slick-prev, .slick-next {
     position: absolute;
     top: 50%; /* Center vertically */
     transform: translateY(-50%);
