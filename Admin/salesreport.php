@@ -374,7 +374,15 @@ $categorySalesJson = json_encode($categorySalesData);
     </div>
 </form>
 
-
+<div class="btn-group" style="background-color: #28a745;">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Export:
+            </button>
+            <ul class="dropdown-menu">
+                <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+                <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+            </ul>
+        </div>
     <!-- Sales Trend Chart -->
     <div id="chartContainer">
         <canvas id="salesChart"></canvas>
