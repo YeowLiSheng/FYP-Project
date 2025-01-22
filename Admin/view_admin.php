@@ -163,47 +163,30 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         }
 
         .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    gap: 10px; /* 分页按钮之间的间距 */
-}
-
-/* 分页按钮通用样式 */
-.pagination .page-btn {
-    padding: 8px 16px;
-    border: 1px solid #ddd !important;
-    border-radius: 5px !important;
-    background-color: #f9f9f9 !important;
-    color: #333 !important;
-    font-size: 14px !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-/* 鼠标悬停时的效果 */
-.pagination .page-btn:hover {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-/* 当前页高亮 */
-.pagination .page-btn.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-    cursor: default; /* 当前页不可点击 */
-}
-
-/* 禁用按钮样式 */
-.pagination .page-btn:disabled {
-    background-color: #ddd;
-    color: #aaa;
-    border-color: #ddd;
-    cursor: not-allowed;
-}
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 5px;
+    }
+    .pagination .page-btn {
+        margin: 0;
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .pagination .page-btn.active {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    .pagination .page-btn:disabled {
+        background-color: #ddd;
+        color: #aaa;
+        cursor: not-allowed;
+    }
     </style>
 </head>
 <body>
@@ -344,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const tableBody = document.getElementById("table-body");
     const pagination = document.getElementById("pagination");
 
-    const rowsPerPage = 1; // 每页显示的数据条数
+    const rowsPerPage = 10; // 每页显示的数据条数
     let currentPage = 1;
 
     const rows = Array.from(tableBody.rows); // 缓存所有行
