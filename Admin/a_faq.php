@@ -21,6 +21,7 @@ if (isset($_POST['add_faq'])) {
     }
     header("Location: admin_faq.php");
     
+    
     exit();
 }
 
