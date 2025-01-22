@@ -1,11 +1,10 @@
 <?php
-include 'dataconnection.php'; // 连接数据库
-include 'admin_sidebar.php'; // 引入管理员侧边栏
+include 'dataconnection.php'; 
+include 'admin_sidebar.php'; 
 
 if (isset($_GET['order_id'])) {
     $order_id = (int)$_GET['order_id'];
 
-    // 查询订单信息
     $order_query = "
         SELECT o.*, u.user_name, u.user_email, u.user_contact_number
         FROM orders o
@@ -14,7 +13,6 @@ if (isset($_GET['order_id'])) {
     $order_result = mysqli_query($connect, $order_query);
     $order_data = mysqli_fetch_assoc($order_result);
 
-    // 查询订单详情信息
     $order_details_query = "
         SELECT od.*, 
            COALESCE(p.product_name, pp.promotion_name) AS name,
@@ -31,14 +29,39 @@ $order_details_result = mysqli_query($connect, $order_details_query);
     exit();
 }
 
-// 处理订单状态更新
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $new_status = mysqli_real_escape_string($connect, $_POST['order_status']);
     $update_query = "UPDATE orders SET order_status = '$new_status' WHERE order_id = $order_id";
     if (mysqli_query($connect, $update_query)) {
-        echo "<script>alert('Order status updated successfully.'); window.location.href='?order_id=$order_id';</script>";
+        echo "
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order Status Updated Successfully',
+                        text: 'The order status has been updated.',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '?order_id=$order_id';
+                        }
+                    });
+                });
+            </script>";
     } else {
-        echo "<script>alert('Failed to update order status.');</script>";
+        echo "
+            <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to Update Order Status',
+                        text: 'There was an error updating the order status. Please try again later.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            </script>";
     }
 }
 ?>
@@ -95,10 +118,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             margin-bottom: 20px;
         }
         table img {
-        max-width: 100px; /* 限制图片的最大宽度 */
-        max-height: 100px; /* 限制图片的最大高度 */
-        object-fit: cover; /* 保持图片比例且裁剪溢出的部分 */
-        border-radius: 5px; /* 可选：为图片添加圆角 */
+        max-width: 100px; 
+        max-height: 100px; 
+        object-fit: cover; 
+        border-radius: 5px; 
     }
         table th, table td {
             padding: 12px 15px;
@@ -195,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <h1>Order Details</h1>
     </div>
     <div class="content">
-        <!-- 用户信息 -->
+
         <div class="section">
             <h3><i class="fas fa-user icon"></i>User Information</h3>
             <table>
@@ -205,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
         </div>
 
-        <!-- 订单信息 -->
+  
         <div class="section">
             <h3><i class="fas fa-box icon"></i>Order Information</h3>
             <table>
@@ -218,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
         </div>
 
-        <!-- 订单详情 -->
+
         <div class="section">
             <h3><i class="fas fa-list-ul icon"></i>Order Items</h3>
             <table>
@@ -236,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
         </div>
 
-        <!-- 订单汇总 -->
+      
         <div class="order-summary">
             <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
             <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
@@ -244,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
-        <!-- 更新订单状态 -->
+       
         <div class="status-section">
             <form method="post">
                 <label for="order_status"><i class="fas fa-edit icon"></i>Update Status:</label>
@@ -257,7 +280,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
 
-        <!-- 返回按钮和打印按钮 -->
         <div class="buttons">
             <a href="manage_order.php" class="back-button"><i class="fas fa-arrow-left"></i> Back</a>
             <a href="adminreceipt.php?order_id=<?= $order_id ?>" class="print-button"><i class="fas fa-print"></i> Print Receipt</a>

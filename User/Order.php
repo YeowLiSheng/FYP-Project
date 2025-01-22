@@ -47,6 +47,56 @@ $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
+$cart_items_query = "
+    SELECT 
+        sc.variant_id,
+		pv.product_id,
+        pv.promotion_id, 
+        pv.color, 
+        pv.size, 
+        p.product_name, 
+        p.product_price,
+		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
+		pv.stock AS product_stock,
+        SUM(sc.qty) AS total_qty, 
+        SUM(sc.total_price) AS total_price
+    FROM shopping_cart sc
+    LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
+    WHERE sc.user_id = $user_id
+    GROUP BY 
+        sc.variant_id";
+$cart_items_result = $conn->query($cart_items_query);
+// Handle AJAX request to delete item
+
+$query = "SELECT * FROM product_variant";
+$result = mysqli_query($conn, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $conn->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+
 function fetchOrdersWithProducts($conn, $user_id, $status = null) {
     $sql = "
         SELECT 
@@ -67,9 +117,9 @@ function fetchOrdersWithProducts($conn, $user_id, $status = null) {
         JOIN product_variant pv ON od.variant_id = pv.variant_id
         LEFT JOIN product p ON pv.product_id = p.product_id
         LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
-        WHERE o.user_id = ?"; // 只显示当前用户的订单
+        WHERE o.user_id = ?"; 
 
-    // 如果提供了状态参数，添加状态过滤
+   
     if ($status) {
         $sql .= " AND o.order_status = ?";
     }
@@ -79,9 +129,9 @@ function fetchOrdersWithProducts($conn, $user_id, $status = null) {
 
     $stmt = $conn->prepare($sql);
     if ($status) {
-        $stmt->bind_param("is", $user_id, $status); // 绑定用户 ID 和状态
+        $stmt->bind_param("is", $user_id, $status); 
     } else {
-        $stmt->bind_param("i", $user_id); // 仅绑定用户 ID
+        $stmt->bind_param("i", $user_id); 
     }
     $stmt->execute();
     return $stmt->get_result();
@@ -94,31 +144,65 @@ $shipping_orders = fetchOrdersWithProducts($conn, $user_id, 'Shipping');
 $complete_orders = fetchOrdersWithProducts($conn, $user_id, 'Complete');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
-    // 获取订单 ID
+   
     $order_id = intval($_POST['order_id']);
     
-    // 检查订单是否属于当前用户
+    
     $stmt = $conn->prepare("SELECT * FROM orders WHERE order_id = ? AND user_id = ?");
     $stmt->bind_param("ii", $order_id, $_SESSION['id']);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        // 更新订单状态为 "Complete"
+        
         $update_stmt = $conn->prepare("UPDATE orders SET order_status = 'Complete' WHERE order_id = ?");
         $update_stmt->bind_param("i", $order_id);
 
         if ($update_stmt->execute()) {
-            // 添加页面重定向，刷新页面
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit;
-        } else {
-            echo "<script>alert('Failed to update order status. Please try again later.');</script>";
-        }
-    } else {
-        echo "<script>alert('Invalid order or permission denied.');</script>";
-    }
-
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'success',
+							title: 'Order Status Updated Successfully',
+							text: 'Thank you for confirming your order.',
+							confirmButtonText: 'OK'
+						}).then((result) => {
+							if (result.isConfirmed) {
+								window.location.href = '" . $_SERVER['PHP_SELF'] . "';
+							}
+						});
+					});
+				</script>";
+		} else {
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'error',
+							title: 'Failed to Update Order Status',
+							text: 'Please try again later.',
+							confirmButtonText: 'OK'
+						});
+					});
+				</script>";
+		}
+		} else {
+			echo "
+				<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+				<script>
+					document.addEventListener('DOMContentLoaded', function() {
+						Swal.fire({
+							icon: 'error',
+							title: 'Invalid Order',
+							text: 'Invalid order or permission denied.',
+							confirmButtonText: 'OK'
+						});
+					});
+				</script>";
+		}
     $stmt->close();
     $update_stmt->close();
 }
@@ -176,12 +260,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	width: 250px;
     padding: 20px;
     height: 100%;
-    position: static; /* 保持 static */
+    position: static; 
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     overflow-y: auto;
     flex-shrink: 0;
-    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+    z-index: 1; 
 }
 
     .sidebar .user-info {
@@ -270,12 +354,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 12px;
-    background-color: #f7f9fc; /* 添加浅色背景 */
+    background-color: #f7f9fc; 
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%;
     cursor: pointer;
-    position: relative; /* 关键：为绝对定位的按钮提供参考 */
+    position: relative; 
 }
 
 .order-summary:hover {
@@ -285,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
 .order-summary img {
     width: 100%;
-    height: 100px; /* 让图片更大以填充空间 */
+    height: 100px; 
     border-radius: 10px;
     object-fit: cover;
 }
@@ -294,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 10px; /* 增加内部间距 */
+    gap: 10px; 
 }
 
 .order-summary h3 {
@@ -350,9 +434,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    position: absolute; /* 绝对定位 */
-    bottom: 20px; /* 距离底部 */
-    right: 20px; /* 距离右侧 */
+    position: absolute; 
+    bottom: 20px; 
+    right: 20px; 
     transition: background-color 0.3s ease;
 }
 
@@ -429,17 +513,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 300px;"></span> 
+							New user will get 10% discount!!!<span style="padding-left: 300px;"></span>
+							Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+							<span style="padding-left: 300px;"></span> Free shipping for standard order over $10000 
+							<span style="padding-left: 300px;"></span> New user will get 10% discount!!! 
+							<span style="padding-left: 300px;"></span> Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+							@keyframes marquee {
+								0% {
+									transform: translateX(0);
+								}
+								100% {
+									transform: translateX(-55%);
+								}
+							}
+						</style>
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -451,14 +547,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
 
 
-						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
-							<?php
-							echo "HI '" . htmlspecialchars($user["user_name"]);
-							?>
-						</a>
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+								echo "HI '" . htmlspecialchars($user['user_name']);
+                            ?>
+                        </a>
 
 
-						<a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
 							LOG OUT
 						</a>
 
@@ -470,10 +566,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
 			<div class="wrap-menu-desktop how-shadow1">
 				<nav class="limiter-menu-desktop container">
-
-					<!-- Logo desktop -->
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					
+					<!-- Logo desktop -->		
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
@@ -487,136 +583,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 								<a href="product.php">Shop</a>
 							</li>
 
+                            <li>
+								<a href="promotion.php">Promotion</a>
+							</li>
+
 							<li class="label1" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
-					</div>
+					</div>	
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
-							data-notify="2">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
-							data-notify="0">
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
-			</div>
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->
-			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart"
-					data-notify="2">
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti"
-					data-notify="0">
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="dashboard.php">Home</a>
-				
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.php">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.php" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
-				</li>
-			</ul>
+			</div>	
 		</div>
 
 		<!-- Modal Search -->
@@ -637,70 +635,114 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	</header>
 
 	<!-- Cart -->
-	<div class="wrap-header-cart js-panel-cart">
-		<div class="s-full js-hide-cart"></div>
+	<!-- Cart -->
+<div class="wrap-header-cart js-panel-cart">
+    <div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+    <div class="header-cart flex-col-l p-l-65 p-r-25">
+        <div class="header-cart-title flex-w flex-sb-m p-b-8">
+            <span class="mtext-103 cl2">
+                Your Cart
+            </span>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-					<i class="zmdi zmdi-close"></i>
-				</div>
-			</div>
+            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                <i class="zmdi zmdi-close"></i>
+            </div>
+        </div>
+        
+        <div class="header-cart-content flex-w js-pscroll">
+            <ul class="header-cart-wrapitem w-full" id="cart-items">
+                <?php
+                $total_price = 0;
 
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full" id="cart-items">
-					<?php
-					// Display combined cart items
-					$total_price = 0;
-					if ($cart_items_result->num_rows > 0) {
-						while ($cart_item = $cart_items_result->fetch_assoc()) {
-							$total_price += $cart_item['total_price'];
-							echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-                            </div>
-                        </li>';
-						}
-					} else {
-						echo '<p>Your cart is empty.</p>';
-					}
-					?>
-				</ul>
+                if ($cart_items_result->num_rows > 0) {
+                    while ($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        $quick_view_image = '';
+                        
+                        // Find the appropriate image based on the product or promotion
+                        foreach ($product_variants as $variant) {
+                            // Check if the item is a promotion
+                            if (!empty($cart_item['promotion_id'])) {
+                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            } else {
+                                // Check if the item is a regular product
+                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            }
+                        }                        
 
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: RM<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
-					</div>
+                        // Check if the item is a promotion
+                        if (!empty($cart_item['promotion_id'])) {
+                            // Render promotion details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['promotion_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        } else {
+                            // Render product details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['product_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        }
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
 
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.php"
-							class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
+            </ul>
+            
+            <div class="w-full">
+                <div class="header-cart-total w-full p-tb-40">
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                </div>
 
-						<a href="shoping-cart.html"
-							class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                <div class="header-cart-buttons flex-w w-full">
+                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        View Cart
+                    </a>
 
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                        Check Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 					
 	<!-- Main Container -->
@@ -755,7 +797,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
 						<p><i class="fa fa-dollar-sign"></i> Total Price: RM ' . $order['final_amount'] . '</p>';
 						
-				// 如果需要显示 "Complete" 按钮
+				// if need "Complete" button
 				if ($showCompleteButton) {
 					echo '
 						<button type="button" class="complete-btn" 
@@ -1238,6 +1280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 	<script>
     function showTab(status) {
@@ -1251,7 +1294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
     }
 
 	function openPopup(event, orderId) {
-    event.stopPropagation(); // 阻止事件冒泡
+    event.stopPropagation(); 
     document.getElementById("popup-order-id").value = orderId;
     document.getElementById("popup-form").style.display = "flex";
 }

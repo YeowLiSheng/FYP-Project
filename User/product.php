@@ -30,23 +30,34 @@ if ($result && mysqli_num_rows($result) > 0) {
 // Fetch and combine cart items for the logged-in user where the product_id is the same
 $cart_items_query = "
     SELECT 
-        sc.variant_id, 
+        sc.variant_id,
+		pv.product_id,
+        pv.promotion_id, 
+        pv.color, 
+        pv.size, 
         p.product_name, 
-        p.product_image, 
         p.product_price,
-        sc.color, 
-        sc.size, 
+		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
+		pv.stock AS product_stock,
         SUM(sc.qty) AS total_qty, 
         SUM(sc.total_price) AS total_price
     FROM shopping_cart sc
     LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
 	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
     WHERE sc.user_id = $user_id
     GROUP BY 
-        sc.variant_id, 
-        sc.color, 
-        sc.size";
+        sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
+
+$query = "SELECT * FROM product_variant";
+$result = mysqli_query($connect, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+
 // Handle AJAX request to delete item
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
     $id = intval($_POST['id']); // Ensure ID is an integer
@@ -279,15 +290,11 @@ $distinct_items_query = "
     SELECT COUNT(*) AS distinct_count
     FROM (
         SELECT 
-            sc.variant_id, 
-            sc.color, 
-            sc.size
+            sc.variant_id
         FROM shopping_cart sc
         WHERE sc.user_id = $user_id
         GROUP BY 
-            sc.variant_id, 
-            sc.color, 
-            sc.size
+            sc.variant_id
     ) AS distinct_items";
 
 $distinct_items_result = $connect->query($distinct_items_query);
@@ -309,7 +316,7 @@ $category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? int
 $current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 
 // Define the number of products to display per page
-$products_per_page = 1;
+$products_per_page = 10;
 
 // Calculate the offset for the SQL query
 $offset = ($current_page - 1) * $products_per_page;
@@ -419,7 +426,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
             }
 
-            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: 30px;">
+            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: -30px;">
                     <div class="block2 ' . $productStyle . '">
                         <div class="block2-pic hov-img0" >
                             <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -428,7 +435,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                         </div>
                         <div class="block2-txt flex-w flex-t p-t-14">
                             <div class="block2-txt-child1 flex-col-l ">
-                                <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                <a href="product-detail.php?id=' . $product['product_id'] . '&type=product" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                 . $product['product_name'] . 
                                 '</a>
                                 <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
@@ -535,7 +542,7 @@ if (!empty($output)) {
     pointer-events: none;
 }
 
-/* Overlay */
+/* Modal Wrapper */
 .wrap-promo-modal {
     position: fixed;
     top: 0;
@@ -545,7 +552,7 @@ if (!empty($output)) {
     height: 100%;
     overflow: auto;
     display: none;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.8); /* Darker overlay for emphasis */
 }
 
 .wrap-promo-modal.show {
@@ -564,72 +571,194 @@ if (!empty($output)) {
 .bg-promo-modal {
     position: relative;
     margin: 5% auto;
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    max-width: 600px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #fdfdfd; /* Softer white for modern look */
+    border-radius: 12px;
+    padding: 25px;
+    max-width: 650px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Enhanced shadow for depth */
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* Close Button */
 .close-promo-modal {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 10px;
+    right: 10px;
     background: none;
     border: none;
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.close-promo-modal:hover {
+    transform: scale(1.2); /* Slight zoom on hover */
+}
+
+.close-promo-modal img {
+    width: 24px;
+    height: 24px;
 }
 
 /* Title and Text */
 .promo-title {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: bold;
-    color: #333;
+    color: #222;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 .promo-price {
-    font-size: 20px;
+    font-size: 22px;
     color: #e74c3c;
+    font-weight: bold;
+    text-align: center;
+    display: block;
+    margin-bottom: 10px;
 }
 
 .promo-description {
     margin-top: 15px;
     font-size: 16px;
-    color: #555;
+    color: #666;
+    line-height: 1.5;
+    text-align: center;
 }
 
 /* Color Selection */
 .promo-color-selection {
     margin-top: 15px;
+    text-align: center;
 }
 
 .promo-select {
     padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.promo-select:focus {
+    border-color: #007bff;
 }
 
 /* Gallery */
 .promo-gallery {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
     margin-top: 20px;
+    flex-wrap: wrap;
+    margin: 0 auto;
+}
+.promo-gallery .quick_view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+.slick-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .promo-gallery img {
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
     margin: 5px;
-    border-radius: 5px;
+    border-radius: 8px;
     object-fit: cover;
     cursor: pointer;
     border: 2px solid transparent;
+    transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
 .promo-gallery img:hover {
-    border-color: #007bff;
+    transform: scale(1.1);
 }
+
+/* Quantity Controls */
+.quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.quantity .btn-num-promo-up,
+.quantity .btn-num-promo-down {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.quantity .btn-num-promo-up:hover,
+.quantity .btn-num-promo-down:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+.quantity .num-promo {
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+.quantity .num-promo:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Add to Cart Button */
+.js-add-promo-cart {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.js-add-promo-cart:hover {
+    background-color: #218838;
+    transform: scale(1.02);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 .slick-prev-p, .slick-next-p {
     position: absolute;
     top: 50%; /* Center vertically */
@@ -647,11 +776,11 @@ if (!empty($output)) {
 }
 
 .slick-prev-p {
-    left: -10px; /* Position to the left of the slider */
+    left: 100px; /* Position to the left of the slider */
 }
 
 .slick-next-p {
-    right: 340px; /* Position to the right of the slider */
+    right: 100px; /* Position to the right of the slider */
 }
 
 /* Hover effects */
@@ -749,7 +878,7 @@ body {
     padding: 10px;
     border-top: 1px solid #ddd;
     width: 400px;
-    height: 500px;
+    height: 300px;
     overflow-y: auto;
     background: #f9f9f9;
 }
@@ -807,13 +936,14 @@ body {
 .view-product-btn {
     background: #007bff;
     color: #fff;
-    border: none;
+    border: 10px;
+    font-size: 13px;
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
     transition: background 0.3s;
     height: 40px; /* Set fixed height */
-    width: 100px; /* Set fixed width */
+    width: 80px; /* Set fixed width */
     text-align: center; /* Ensure button text is centered */
     display: flex;
     align-items: center;
@@ -851,7 +981,14 @@ body {
     width: 100%;
     margin: 10px 0;
 }
-
+.size-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Space between size options */
+    justify-content: left;
+    align-items: left;
+    margin: 20px 0; /* Add spacing around the size display */
+}
 .unavailable-product{
     background-color: lightgrey; /* Soft grey background */
     border: 1px solid #d9d9d9; /* Light border for separation */
@@ -918,12 +1055,7 @@ body {
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-						
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -972,7 +1104,7 @@ body {
 							</li>
 
                             <li>
-								<a href="package.php">Packages</a>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -995,17 +1127,11 @@ body {
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
 			</div>	
@@ -1029,7 +1155,7 @@ body {
 	</header>
 
 	<!-- Cart -->
-<div class="wrap-header-cart js-panel-cart">
+    <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
     <div class="header-cart flex-col-l p-l-65 p-r-25">
@@ -1046,66 +1172,76 @@ body {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                    // Display combined cart items
-                    $total_price = 0;
+                $total_price = 0;
 
-                    if ($cart_items_result->num_rows > 0) {
-                        while ($cart_item = $cart_items_result->fetch_assoc()) {
-                            $total_price += $cart_item['total_price'];
-                            
-                            if (!empty($cart_item['package_id'])) {
-                                // Render package details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['package_id'] . '" data-type="package"data-product1-color="' . $cart_item['product1_color'] . '" 
-                                    data-product1-size="' . $cart_item['product1_size'] . '" 
-                                    data-product2-color="' . $cart_item['product2_color'] . '" 
-                                    data-product2-size="' . $cart_item['product2_size'] . '" 
-                                    data-product3-color="' . $cart_item['product3_color'] . '" 
-                                    data-product3-size="' . $cart_item['product3_size'] . '">
-                                        <img src="images/' . $cart_item['package_image'] . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="package-detail.php?id=' . $cart_item['package_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['package_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['total_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Product 1: Color ' . $cart_item['product1_color'] . ', Size ' . $cart_item['product1_size'] . '<br>
-                                            Product 2: Color ' . $cart_item['product2_color'] . ', Size ' . $cart_item['product2_size'] . '<br>
-                                            Product 3: Color ' . $cart_item['product3_color'] . ', Size ' . $cart_item['product3_size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
+                if ($cart_items_result->num_rows > 0) {
+                    while ($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        $quick_view_image = '';
+                        
+                        // Find the appropriate image based on the product or promotion
+                        foreach ($product_variants as $variant) {
+                            // Check if the item is a promotion
+                            if (!empty($cart_item['promotion_id'])) {
+                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
                             } else {
-                                // Render individual product details
-                                echo '
-                                <li class="header-cart-item flex-w flex-t m-b-12">
-                                    <div class="header-cart-item-img delete-item" data-id="' . $cart_item['product_id'] . '" data-type="product"  data-color="' . $cart_item['color'] . '" data-size="' . $cart_item['size'] . '">
-                                        <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                                    </div>
-                                    <div class="header-cart-item-txt p-t-8">
-                                        <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                            ' . $cart_item['product_name'] . '
-                                        </a>
-                                        <span class="header-cart-item-info">
-                                            ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                        </span>
-                                        <span class="header-cart-item-info">
-                                            Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                        </span>
-                                    </div>
-                                </li>';
+                                // Check if the item is a regular product
+                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
                             }
-                        }
-                    } else {
-                        echo '<p>Your cart is empty.</p>';
-                    }
-                    
+                        }                        
 
+                        // Check if the item is a promotion
+                        if (!empty($cart_item['promotion_id'])) {
+                            // Render promotion details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['promotion_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        } else {
+                            // Render product details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['product_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        }
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
                 ?>
+
             </ul>
             
             <div class="w-full">
@@ -1342,7 +1478,7 @@ body {
 
 
                     // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '">
+                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -30px;">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -1353,7 +1489,7 @@ body {
                                 </div>
                                 <div class="block2-txt flex-w flex-t p-t-14">
                                     <div class="block2-txt-child1 flex-col-l ">
-                                        <a href="product-detail.php?id=' . $product['product_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                        <a href="product-detail.php?id=' . $product['product_id'] . '&type=product" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                         . $product['product_name'] . 
                                         '</a>
                                         <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
@@ -1398,13 +1534,6 @@ body {
                 }
                 ?>
             </div>
-
-			<!-- Load more -->
-			<div class="flex-c-m flex-w w-full p-t-45">
-				<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-					Load More
-				</a>
-			</div>
 		</div>
 	</div>
 		
@@ -1682,7 +1811,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         </button>
         <div class="bg-promo-modal p-t-40 p-b-30 p-lr-20-lg how-pos3-parent">
 
-            <div class="promo-gallery flex-w flex-sb p-t-30"></div>
+            <div class="promo-gallery"></div>
 
             <h2 class="promo-title mtext-105 cl2 p-b-10"></h2>
             <span class="promo-price mtext-106 cl2"></span>
@@ -2023,7 +2152,7 @@ function updatePromotionImages(variant) {
             var imagePath = 'images/' + variant[imageKey];
             galleryContainer.append(`
                 <div class="quick_view" data-thumb="${imagePath}">
-                    <div class="wrap-pic-w pos-relative">
+                    <div class=" pos-relative">
                         <img src="${imagePath}" alt="IMG-PRODUCT">
                     </div>
                 </div>
@@ -2133,7 +2262,7 @@ $(document).on('click', '.btn-num-product-up, .btn-num-product-down', function (
 
     if ($(this).hasClass('btn-num-product-up')) {
         if (currentVal < productStock) {
-            $input.val(currentVal + 1);
+            $input.val(currentVal ++);
             $('.stock-warning').hide();
         } else {
             $('.stock-warning').text(`Only ${productStock} items are available in stock.`).show();

@@ -214,15 +214,11 @@ $distinct_items_query = "
     SELECT COUNT(*) AS distinct_count
     FROM (
         SELECT 
-            sc.variant_id, 
-            sc.color, 
-            sc.size
+            sc.variant_id
         FROM shopping_cart sc
         WHERE sc.user_id = $user_id
         GROUP BY 
-            sc.variant_id, 
-            sc.color, 
-            sc.size
+            sc.variant_id
     ) AS distinct_items";
 
 $distinct_items_result = $connect->query($distinct_items_query);
@@ -373,12 +369,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-						
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -427,7 +418,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 							</li>
 
                             <li>
-								<a href="package.php">Packages</a>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -450,17 +441,11 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
 			</div>	
@@ -483,7 +468,6 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 		</div>
 	</header>
 
-	<!-- Cart -->
 <!-- Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
@@ -655,7 +639,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
                             }
 
-                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '"style="margin-right: -30px;">
                                     <div class="block2 ' . $productStyle . '">
                                         <div class="block2-pic hov-img0" >
                                             <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
@@ -669,7 +653,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                         </div>
                                         <div class="block2-txt flex-w flex-t p-t-14">
                                             <div class="block2-txt-child1 flex-col-l ">
-                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '&type=promotion" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                                 . $promotion['promotion_name'] . 
                                                 '</a>
                                                 <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
@@ -762,7 +746,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                             echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
                                     <div class="block2 ' . $productStyle . '">
                                         <div class="block2-pic hov-img0" >
-                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '"style="margin-right: -30px;">
                                             <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                                 data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
                                             </a>
@@ -774,7 +758,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                         </div>
                                         <div class="block2-txt flex-w flex-t p-t-14">
                                             <div class="block2-txt-child1 flex-col-l ">
-                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                <a href="product-detail.php?id=' . $promotion['promotion_id'] . '&type=promotion" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                                 . $promotion['promotion_name'] . 
                                                 '</a>
                                                 <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>
@@ -869,7 +853,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                 echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
                                         <div class="block2 ' . $productStyle . '">
                                             <div class="block2-pic hov-img0" >
-                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
+                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '"style="margin-right: -30px;">
                                                 <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                                     data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
                                                 </a>
@@ -880,7 +864,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                             </div>
                                             <div class="block2-txt flex-w flex-t p-t-14">
                                                 <div class="block2-txt-child1 flex-col-l ">
-                                                    <a href="product-detail.php?id=' . $promotion['promotion_id'] . '" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
+                                                    <a href="product-detail.php?id=' . $promotion['promotion_id'] . '&type=promotion" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>'
                                                     . $promotion['promotion_name'] . 
                                                     '</a>
                                                     <span class="stext-105 cl3">$' . $promotion['promotion_price'] . '</span>

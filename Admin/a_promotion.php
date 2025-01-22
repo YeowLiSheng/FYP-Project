@@ -18,16 +18,16 @@ if (isset($_POST["save_product"])) {
     $tags = $_POST["tags"];
 
     $status = "1";
-    $insert_product = "INSERT INTO product (category_id, product_status, product_name, product_des, product_image, product_price, tags) 
+    $insert_product = "INSERT INTO promotion_product (category_id, promotion_status, promotion_name, promotion_des, promotion_image, promotion_price, tags) 
                 VALUES ('$c', '$status', '$pd', '$d', '$img', '$price', '$tags')";
     $run_product = mysqli_query($connect, $insert_product);
 
     if ($run_product) {
 
-        $product_id = mysqli_insert_id($connect);
+        $promotion_id = mysqli_insert_id($connect);
 
-        $insert_variant = "INSERT INTO product_variant (product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
-                           VALUES ('$product_id', '$color1', '$size1', '$qty', '$quick_view1', '$quick_view2', '$quick_view3')";
+        $insert_variant = "INSERT INTO product_variant (promotion_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
+                           VALUES ('$promotion_id', '$color1', '$size1', '$qty', '$quick_view1', '$quick_view2', '$quick_view3')";
         $run_variant = mysqli_query($connect, $insert_variant);
 
         if (!empty($_POST["color2"])) {
@@ -37,8 +37,8 @@ if (isset($_POST["save_product"])) {
             $quick_view5 = $_POST["quick_view5"];
             $quick_view6 = $_POST["quick_view6"];
 
-            $insert_variant2 = "INSERT INTO product_variant (product_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
-                                VALUES ('$product_id', '$color2', '$size1', '$stock2', '$quick_view4', '$quick_view5', '$quick_view6')";
+            $insert_variant2 = "INSERT INTO product_variant (promotion_id, color, size, stock, Quick_View1, Quick_View2, Quick_View3) 
+                                VALUES ('$promotion_id', '$color2', '$size1', '$stock2', '$quick_view4', '$quick_view5', '$quick_view6')";
             $run_variant2 = mysqli_query($connect, $insert_variant2);
         }
 
@@ -52,24 +52,24 @@ if (isset($_POST["save_product"])) {
         $_SESSION['title'] = "Error";
         $_SESSION['text'] = "Failed to add product!";
         $_SESSION['icon'] = "error";
-        header("location:admin_product.php");
+        header("location:admin_promotion.php");
     }
 }
 
 //delete product
-if (isset($_GET["product_id"])) {
-    $p = $_GET["product_id"];
+if (isset($_GET["promotion_id"])) {
+    $p = $_GET["promotion_id"];
 
-    $query = mysqli_query($connect, "SELECT * FROM product WHERE product_id = '$p'");
+    $query = mysqli_query($connect, "SELECT * FROM promotion_product WHERE promotion_id = '$p'");
     $row = mysqli_fetch_assoc($query);
-    $pn = $row['product_name'];
-    $check = $row['product_status'];
+    $pn = $row['promotion_name'];
+    $check = $row['promotion_status'];
 
     if ($check == 1) {
-        $st = "UPDATE product SET product_status = 2 WHERE product_id='$p'";
+        $st = "UPDATE promotion_product SET promotion_status = 2 WHERE promotion_id='$p'";
         $text = "is now unavailable";
     } else if ($check == 2) {
-        $st = "UPDATE product SET product_status = 1 WHERE product_id='$p'";
+        $st = "UPDATE promotion_product SET promotion_status = 1 WHERE promotion_id='$p'";
         $text = "is now available";
     }
 
@@ -79,23 +79,23 @@ if (isset($_GET["product_id"])) {
         $_SESSION['title'] = "$pn";
         $_SESSION['text'] = "$text";
         $_SESSION['icon'] = "success";
-        header("location:admin_product.php");
+        header("location:admin_promotion.php");
     } else {
         $_SESSION['title'] = "$pn";
         $_SESSION['text'] = "Failed to update status";
         $_SESSION['icon'] = "error";
-        header("location:admin_product.php");
+        header("location:admin_promotion.php");
     }
 }
 
 
 //edit product
 if (isset($_POST["edit_variant"])) {
-    $id = $_POST["product_id"];
+    $id = $_POST["promotion_id"];
     $variant_id = $_POST["variant_id"];
     $pd = $_POST["product_name"];
     $c = $_POST["cate"];
-    $d = mysqli_real_escape_string($connect, $_POST["desc"]);
+    $d = $_POST["desc"];
     $price = $_POST["price"];
     $qty = $_POST["qty"];
     $color1 = $_POST["color1"];
@@ -128,14 +128,14 @@ if (isset($_POST["edit_variant"])) {
     }
 
     // Update the product table
-    $update = "UPDATE product SET 
+    $update = "UPDATE promotion_product SET 
                 category_id='$c',
-                product_name='$pd',
-                product_des='$d',
-                product_image='$img',
-                product_price='$price',
+                promotion_name='$pd',
+                promotion_des='$d',
+                promotion_image='$img',
+                promotion_price='$price',
                 tags='$tags'
-                WHERE product_id = '$id'";
+                WHERE promotion_id = '$id'";
 
     $update_run = mysqli_query($connect, $update);
 
@@ -155,12 +155,12 @@ if (isset($_POST["edit_variant"])) {
         $_SESSION['title'] = "Congrats!";
         $_SESSION['text'] = "Successfully edited.";
         $_SESSION['icon'] = "success";
-        header("location:admin_product.php");
+        header("location:admin_promotion.php");
     } else {
         $_SESSION['title'] = ":(";
         $_SESSION['text'] = "Failed to edit!";
         $_SESSION['icon'] = "error";
-        header("location:admin_product.php");
+        header("location:admin_promotion.php");
     }
 }
 

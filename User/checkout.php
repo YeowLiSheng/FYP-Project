@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 $servername = "localhost";
@@ -70,11 +71,22 @@ $cart_result = mysqli_query($conn, $cart_query);
 
 if (mysqli_num_rows($cart_result) === 0) {
 
-    echo "<script>
-        alert('Your Shopping Cart is Empty. Please add product first.');
-        window.location.href = 'product.php'; 
+    echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+    echo "
+	<script>
+	    document.addEventListener('DOMContentLoaded', function() {
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Your Shopping Cart is Empty',
+            text: 'Please add a product first.',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            window.location.href = 'product.php';
+        });
+		 });
     </script>";
-    exit; 
+    exit;
 }
 
 
@@ -157,15 +169,42 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             // If there are error messages, display them and prevent payment processing
-            if (!empty($errorMessages)) {
-                foreach ($errorMessages as $message) {
-                    echo "<script>alert('$message');window.location.href = 'dashboard.php';</script>";
-                }
-                $paymentSuccess = false; // Prevent further processing if there are stock issues
-            }
+            if (!empty($errorMessages)) 
+			{
+				// Combine all error messages into a single string
+				$allMessages = implode('<br>', $errorMessages); // Use <br> to separate messages into multiple lines
+			
+				echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>"; // Include SweetAlert2 library
+				echo "<script>
+
+					document.addEventListener('DOMContentLoaded', function() {
+					document.body.innerHTML = '';
+            		document.body.style.backgroundColor = 'white';
+						Swal.fire({
+							icon: 'error',
+							title: 'Stock Issues',
+							html: '$allMessages', // Use HTML to display multiple lines of messages
+							confirmButtonText: 'OK'
+						}).then(() => {
+							window.location.href = 'dashboard.php'; // Redirect to dashboard.php after confirmation
+						});
+					});
+				</script>";
+				$paymentSuccess = false; // Prevent further processing due to stock issues
+			}
         } else {
-            echo "<script>alert('Invalid card details');</script>";
-        }
+			echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>"; // Include SweetAlert2 library
+			echo "<script>
+				document.addEventListener('DOMContentLoaded', function() {
+					Swal.fire({
+						icon: 'error',
+						title: 'Invalid Card Details',
+						text: 'Please check your card information and try again.',
+						confirmButtonText: 'OK'
+					});
+				});
+			</script>";
+		}
 
         $stmt->close();
 	}
@@ -465,53 +504,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     100% { transform: rotate(360deg); }
 }
 
-/* Show overlay when active */
-.overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Payment success animation */
-.success-icon {
-    font-size: 50px;
-    color: #4CAF50;
-    animation: pop-in 0.4s ease;
-}
-
-.success-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #4CAF50;
-    margin-top: 10px;
-    animation: fade-in 0.5s ease;
-}
-
-@keyframes pop-in {
-    0% { transform: scale(0); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.ok-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #fff;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-    transition: background 0.3s;
-}
-
-.ok-btn:hover {
-    background: linear-gradient(45deg, #45a049, #4CAF50);
-}
 
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
@@ -572,20 +564,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         overflow-y: auto; /* Enable vertical scrolling */
         max-height: 150px; /* Limit height to show 3 items */
     }
-	/* 调整 state 和 postcode 的 flex 属性 */
+
 .checkout-flex .checkout-input-box:nth-child(1) {
-    flex: 2; /* 增大 postcode 输入框的大小 */
+    flex: 2;
 }
 
 .checkout-flex .checkout-input-box:nth-child(2) {
-    flex: 1; /* 缩小 state 输入框的大小 */
+    flex: 1;
 }
 
 .checkout-flex {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 20px; /* 可根据需要调整间距 */
+    gap: 20px; 
 }
 
 .checkout-input-box {
@@ -1096,13 +1088,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 									
 						
-						<!-- Payment Processing Popup -->
-						<div class="overlay" id="paymentOverlay">
-							<div class="popup" id="popupContent">
-								<div class="spinner"></div>
-								<p>Payment Processing...</p>
-							</div>
-						</div>
+						
 					</div>
 				</div>
 			</form>
@@ -1609,6 +1595,8 @@ if ($use_autofill && $address) {
 	</script>
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 	<script>
 
@@ -1655,7 +1643,7 @@ function toggleAutofill() {
 
 
 		function formatExpiryDate(input) {
-    let value = input.value.replace(/\D/g, ""); // 移除非数字字符
+    let value = input.value.replace(/\D/g, ""); 
 
 
     if (value.length > 2) {
@@ -1791,7 +1779,7 @@ document.getElementById('expiry-date').addEventListener('input', function () {
     state.disabled = false;
     postcode.disabled = false;
 
-    // 表单验证成功后提交表单
+
     form.submit();
 			return true;
 		}
@@ -1799,23 +1787,41 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 	
 
 		
+		
 		function confirmPayment() {
-			const overlay = document.getElementById('paymentOverlay');
-			const popupContent = document.getElementById('popupContent');
-			overlay.classList.add('show');
+        // 清空页面内容
+        document.body.innerHTML = '';
+        document.body.style.backgroundColor = 'white'; // 设置背景为白色
 
-			setTimeout(() => {
-				popupContent.innerHTML = `
-			<div class="success-icon">✓</div>
-			<h2 class="success-title">Payment Successful</h2>
-			<button class="ok-btn" onclick="goToDashboard()">OK</button>
-		`;
-			}, 2000);
-		}
+        // 显示加载状态
+        Swal.fire({
+            title: 'Processing Payment',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false, // 不显示确认按钮
+            didOpen: () => {
+                Swal.showLoading(); // 显示加载动画
+            }
+        });
 
-		function goToDashboard() {
-			window.location.href = 'dashboard.php';
-		}
+        // 模拟 2 秒延迟后显示支付成功消息
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Successful',
+                text: 'Your payment was processed successfully.',
+                confirmButtonText: 'OK',
+                allowOutsideClick: false // 阻止点击外部关闭弹窗
+            }).then(() => {
+                goToDashboard(); // 调用导航到仪表板的函数
+            });
+        }, 2000);
+    }
+
+    function goToDashboard() {
+        window.location.href = 'dashboard.php'; // 修改为你的仪表板页面链接
+    }
+
 
 
 // JavaScript for Pagination with Shopee-like design

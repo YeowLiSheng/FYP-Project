@@ -29,30 +29,83 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 // Fetch and combine cart items for the logged-in user
 $cart_items_query = "
-    SELECT sc.product_id, p.product_name, p.product_image, p.product_price, 
-           SUM(sc.qty) AS total_qty, 
-           SUM(sc.total_price) AS total_price 
-    FROM shopping_cart sc 
-    JOIN product p ON sc.product_id = p.product_id 
-    WHERE sc.user_id = $user_id 
-    GROUP BY sc.product_id";
+    SELECT 
+        sc.variant_id,
+		pv.product_id,
+        pv.promotion_id, 
+        pv.color, 
+        pv.size, 
+        p.product_name, 
+        p.product_price,
+		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
+		pv.stock AS product_stock,
+        SUM(sc.qty) AS total_qty, 
+        SUM(sc.total_price) AS total_price
+    FROM shopping_cart sc
+    LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
+    WHERE sc.user_id = $user_id
+    GROUP BY 
+        sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
+// Handle AJAX request to delete item
+
+$query = "SELECT * FROM product_variant";
+$result = mysqli_query($connect, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $connect->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
 
 // Handle AJAX request to fetch product details
-if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
-    $product_id = intval($_GET['id']);
-    $query = "SELECT * FROM product WHERE product_id = $product_id";
+if (isset($_GET['fetch_product']) && isset($_GET['id']) && isset($_GET['type'])) {
+    $id = intval($_GET['id']); // Fetch the ID from the request
+    $type = $_GET['type'];     // Fetch the type (product or promotion)
+
+    // Prepare the query based on the type
+    if ($type === 'product') {
+        $query = "SELECT * FROM product WHERE product_id = $id";
+    } elseif ($type === 'promotion') {
+        $query = "SELECT * FROM promotion_product WHERE promotion_id = $id";
+    } else {
+        // Invalid type
+        echo json_encode(null);
+        exit;
+    }
+
+    // Execute the query
     $result = $connect->query($query);
 
-    if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-        echo json_encode($product);
+    if ($result && $result->num_rows > 0) {
+        $details = $result->fetch_assoc(); // Fetch the row as an associative array
+        echo json_encode($details);
     } else {
-        echo json_encode(null);
+        echo json_encode(null); // Return null if no data is found
     }
     exit;
 }
-$query = "SELECT *, stock AS product_stock FROM product WHERE product_id = ?";
+
 if (isset($_GET['check_cart_qty']) && isset($_GET['product_id'])) {
     $product_id = intval($_GET['product_id']);
     $user_id = $_SESSION['id'];
@@ -70,13 +123,13 @@ if (isset($_GET['check_cart_qty']) && isset($_GET['product_id'])) {
     exit;
 }
 // Handle AJAX request to add product to shopping cart
-if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
-    $product_id = intval($_POST['product_id']);
+if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
+    $variant_id = intval($_POST['variant_id']);
     $qty = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
     $user_id = $_SESSION['id'];
 
-    $cart_query = "INSERT INTO shopping_cart (user_id, product_id, qty, total_price) VALUES ($user_id, $product_id, $qty, $total_price)";
+    $cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) VALUES ($user_id, $variant_id, $qty, $total_price)";
     if ($connect->query($cart_query) === TRUE) {
         echo json_encode(['success' => true]);
     } else {
@@ -84,25 +137,165 @@ if (isset($_POST['add_to_cart']) && isset($_POST['product_id']) && isset($_POST[
     }
     exit;
 }
+
 // Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_products_query = "SELECT COUNT(DISTINCT product_id) AS distinct_count FROM shopping_cart WHERE user_id = $user_id";
-$distinct_products_result = $connect->query($distinct_products_query);
-$distinct_count = 0;
+$id = $_GET['id'];
+$type = $_GET['type'];
 
-if ($distinct_products_result) {
-    $row = $distinct_products_result->fetch_assoc();
-    $distinct_count = $row['distinct_count'] ?? 0;
+if ($type === 'promotion') {
+    $promotion_id = $id;
+    // Now you can use $promotion_id as needed
+}else{
+	$product_id = $id;
 }
-$product_id = $_GET['id'];
 
-$query = "SELECT * FROM product WHERE product_id = ?";
-$stmt = $connect->prepare($query);
-$stmt->bind_param("i", $product_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$product = $result->fetch_assoc();
 
-$stmt->close();
+// Handle AJAX request for fetching variant by color
+if (isset($_GET['fetch_variant_by_color']) && isset($_GET['id']) && isset($_GET['color']) && isset($_GET['type'])) {
+    $id = intval($_GET['id']);
+    $color = $_GET['color'];
+    $type = $_GET['type'];
+
+    if ($type === 'promotion') {
+        $query = "SELECT pv.*, pm.promotion_name, pm.promotion_price, pm.promotion_des 
+                  FROM product_variant pv 
+                  JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id 
+                  WHERE pv.promotion_id = ? AND pv.color = ?";
+    } else {
+        $query = "SELECT pv.*, p.product_name, p.product_price, p.product_des 
+                  FROM product_variant pv 
+                  JOIN product p ON pv.product_id = p.product_id 
+                  WHERE pv.product_id = ? AND pv.color = ?";
+    }
+
+    $stmt = $connect->prepare($query);
+    $stmt->bind_param("is", $id, $color);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $variant = $result->fetch_assoc();
+
+        // Fetch sizes
+        $size_query = "SELECT DISTINCT size FROM product_variant WHERE " . ($type === 'promotion' ? "promotion_id" : "product_id") . " = ? AND color = ?";
+        $size_stmt = $connect->prepare($size_query);
+        $size_stmt->bind_param("is", $id, $color);
+        $size_stmt->execute();
+        $size_result = $size_stmt->get_result();
+
+        $sizes = [];
+        while ($size_row = $size_result->fetch_assoc()) {
+            $sizes[] = $size_row['size'];
+        }
+
+        $variant['sizes'] = $sizes;
+
+        echo json_encode($variant);
+    } else {
+        echo json_encode(null);
+    }
+    exit;
+}
+
+if (isset($_GET['fetch_variant_by_color_promotion']) && isset($_GET['promotion_id']) && isset($_GET['color'])) {
+    $promotion_id = intval($_GET['promotion_id']);
+    $color = $_GET['color'];
+
+    // Fetch the variant data for the selected color and product ID
+    $variant_query = "SELECT pv.*, pm.promotion_name, pm.promotion_price, pm.promotion_des 
+                      FROM product_variant pv 
+                      JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id 
+                      WHERE pv.promotion_id = ? AND pv.color = ?";
+    $stmt = $connect->prepare($variant_query);
+    $stmt->bind_param("is", $promotion_id, $color);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $variant = $result->fetch_assoc();
+
+        // Fetch unique sizes for this product and color
+        $size_query = "SELECT DISTINCT size FROM product_variant WHERE promotion_id = ? AND color = ?";
+        $size_stmt = $connect->prepare($size_query);
+        $size_stmt->bind_param("is", $promotion_id, $color);
+        $size_stmt->execute();
+        $size_result = $size_stmt->get_result();
+
+        $sizes = [];
+        while ($size_row = $size_result->fetch_assoc()) {
+            $sizes[] = $size_row['size'];
+        }
+
+        // Include sizes in the response
+        $variant['sizes'] = $sizes;
+
+        echo json_encode($variant);
+    } else {
+        echo json_encode(null);
+    }
+    exit;
+}
+
+
+if ($type === 'promotion') {
+    $promotion_id = $id;
+
+    // Fetch promotion details
+    $promotion_query = "SELECT * FROM promotion_product WHERE promotion_id = ?";
+    $stmt = $connect->prepare($promotion_query);
+    $stmt->bind_param("i", $promotion_id);
+    $stmt->execute();
+    $promotion_result = $stmt->get_result();
+    $promotion = $promotion_result->fetch_assoc();
+
+    // Fetch promotion variants
+    $variant_query = "SELECT * FROM product_variant WHERE promotion_id = ?";
+    $stmt = $connect->prepare($variant_query);
+    $stmt->bind_param("i", $promotion_id);
+    $stmt->execute();
+    $variant_result = $stmt->get_result();
+    $variant = $variant_result->fetch_assoc();
+
+    // Fetch colors for the promotion
+    $color_query = "SELECT DISTINCT color FROM product_variant WHERE promotion_id = ?";
+    $stmt = $connect->prepare($color_query);
+    $stmt->bind_param("i", $promotion_id);
+    $stmt->execute();
+    $color_result = $stmt->get_result();
+    $colors = [];
+    while ($row = $color_result->fetch_assoc()) {
+        $colors[] = $row['color'];
+    }
+} else {
+    $product_id = $id;
+
+    // Fetch product details
+    $product_query = "SELECT * FROM product WHERE product_id = ?";
+    $stmt = $connect->prepare($product_query);
+    $stmt->bind_param("i", $product_id);
+    $stmt->execute();
+    $product_result = $stmt->get_result();
+    $product = $product_result->fetch_assoc();
+
+    // Fetch product variants
+    $variant_query = "SELECT * FROM product_variant WHERE product_id = ?";
+    $stmt = $connect->prepare($variant_query);
+    $stmt->bind_param("i", $product_id);
+    $stmt->execute();
+    $variant_result = $stmt->get_result();
+    $variant = $variant_result->fetch_assoc();
+
+    // Fetch colors for the product
+    $color_query = "SELECT DISTINCT color FROM product_variant WHERE product_id = ?";
+    $stmt = $connect->prepare($color_query);
+    $stmt->bind_param("i", $product_id);
+    $stmt->execute();
+    $color_result = $stmt->get_result();
+    $colors = [];
+    while ($row = $color_result->fetch_assoc()) {
+        $colors[] = $row['color'];
+    }
+}
 
 // Fetch reviews for the product
 $review_query = "
@@ -128,13 +321,14 @@ $review_query = "
     LEFT JOIN 
         admin a ON r.staff_id = a.staff_id
     WHERE 
-        pv.product_id = ? AND r.status = 'active'";
+        (pv.product_id = ? OR pv.promotion_id = ?) 
+        AND r.status = 'active'";
 
 $stmt = $connect->prepare($review_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $connect->error); 
 }
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("ii", $product_id, $promotion_id);
 $stmt->execute();
 $reviews_result = $stmt->get_result();
 
@@ -149,20 +343,18 @@ $review_count_query = "
     JOIN 
         product_variant pv ON od.variant_id = pv.variant_id
     WHERE 
-        pv.product_id = ? AND r.status = 'active'";
+        (pv.product_id = ? OR pv.promotion_id = ?) 
+        AND r.status = 'active'";
 
 $stmt = $connect->prepare($review_count_query);
 if (!$stmt) {
     die("SQL prepare failed: " . $connect->error); 
 }
-$stmt->bind_param("i", $product_id);
+$stmt->bind_param("ii", $product_id, $promotion_id);
 $stmt->execute();
 $review_count_result = $stmt->get_result();
 $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 
-
-// Close the connection
-$connect->close();
 ?>
 
 <!DOCTYPE html>
@@ -201,6 +393,38 @@ $connect->close();
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<style>
+.wrap-slick3-dots {
+    display: none; /* Hides the thumbnails/dots at the left */
+}
+.wrap-slick3-arrows {
+	right: 120px;
+}
+.size-option {
+        display: inline-block;
+        padding: 10px 15px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .size-option:hover {
+        background-color: #f1f1f1;
+    }
+
+    .size-option.selected {
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
+    }
+
+    .no-size {
+        color: red;
+        font-size: 14px;
+    }
+</style>
 </head>
 <body class="animsition">
 	
@@ -233,12 +457,7 @@ $connect->close();
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-						
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -286,8 +505,8 @@ $connect->close();
 								<a href="product.php">Shop</a>
 							</li>
 
-							<li>
-								<a href="package.php">Packages</a>
+                            <li>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -310,17 +529,11 @@ $connect->close();
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
 						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" >
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
 			</div>	
@@ -343,8 +556,9 @@ $connect->close();
 		</div>
 	</header>
 
+
 	<!-- Cart -->
-<div class="wrap-header-cart js-panel-cart">
+	<div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
     <div class="header-cart flex-col-l p-l-65 p-r-25">
@@ -361,30 +575,75 @@ $connect->close();
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                // Display combined cart items
                 $total_price = 0;
                 if ($cart_items_result->num_rows > 0) {
-                    while($cart_item = $cart_items_result->fetch_assoc()) {
+                    while ($cart_item = $cart_items_result->fetch_assoc()) {
                         $total_price += $cart_item['total_price'];
-                        echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-                            </div>
-                        </li>';
+                        $quick_view_image = '';
+                        
+                        // Find the appropriate image based on the product or promotion
+                        foreach ($product_variants as $variant) {
+                            // Check if the item is a promotion
+                            if (!empty($cart_item['promotion_id'])) {
+                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            } else {
+                                // Check if the item is a regular product
+                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            }
+                        }                        
+
+                        // Check if the item is a promotion
+                        if (!empty($cart_item['promotion_id'])) {
+                            // Render promotion details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['promotion_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        } else {
+                            // Render product details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['product_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        }
                     }
                 } else {
                     echo '<p>Your cart is empty.</p>';
                 }
                 ?>
+
             </ul>
             
             <div class="w-full">
@@ -420,7 +679,7 @@ $connect->close();
 			</a>
 
 			<span class="stext-109 cl4">
-				<?php echo $product['product_name']; ?>
+				<?php echo isset($type) && $type === 'promotion' ? $promotion['promotion_name'] : $product['product_name']; ?>
 			</span>
 		</div>
 	</div>
@@ -430,50 +689,65 @@ $connect->close();
 <section class="sec-product-detail bg0 p-t-65 p-b-60">
     <div class="container">
         <div class="row">
-            <div class="col-md-6 col-lg-7 p-b-30">
-                <div class="p-l-25 p-r-30 p-lr-0-lg">
-                    <div class="wrap-slick3 flex-sb flex-w">
-                        <div class="wrap-slick3-dots"></div>
-                        <div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
-                        <div class="slick3 gallery-lb">
-                            <!-- Quick View Images -->
-                            <div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View1']; ?>">
-                                <div class="wrap-pic-w pos-relative">
-									<img src="images/<?php echo $product['Quick_View1']; ?>" alt="IMG-PRODUCT">
-                                    <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04"  href="images/<?php echo $product['Quick_View1']; ?>">
-                                        <i class="fa fa-expand"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View2']; ?>">
-                                <div class="wrap-pic-w pos-relative">
-                                    <img src="images/<?php echo $product['Quick_View2']; ?>" alt="IMG-PRODUCT">
-                                    <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View2']; ?>">
-                                        <i class="fa fa-expand"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="item-slick3" data-thumb="images/<?php echo $product['Quick_View3']; ?>">
-                                <div class="wrap-pic-w pos-relative">
-                                    <img src="images/<?php echo $product['Quick_View3']; ?>" alt="IMG-PRODUCT">
-                                    <a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/<?php echo $product['Quick_View3']; ?>">
-                                        <i class="fa fa-expand"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+			<div class="col-md-6 col-lg-7 p-b-30">
+				<div class="p-l-25 p-r-30 p-lr-0-lg">
+					<div class="wrap-slick3 flex-sb flex-w">
+						<div class="wrap-slick3-dots"></div>
+						<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
+						<div class="slick3 gallery-lb">
+							<?php 
+							// Check if ID type is promotion or product
+							if (isset($promotion_id) || isset($product_id)) {
+								// Determine the query based on the type
+								$query = "";
+								if (isset($promotion_id)) {
+									$query = "SELECT * FROM product_variant WHERE promotion_id = $promotion_id ORDER BY variant_id ASC LIMIT 1";
+								} elseif (isset($product_id)) {
+									$query = "SELECT * FROM product_variant WHERE product_id = $product_id ORDER BY variant_id ASC LIMIT 1";
+								}
+
+								// Execute the query
+								$result = $connect->query($query);
+								if ($result && $result->num_rows > 0) {
+									$variant = $result->fetch_assoc();
+
+									// Loop through quick view images for the selected variant
+									for ($i = 1; $i <= 3; $i++) {
+										$image_key = "Quick_View$i"; // Dynamically generate the key for the quick view image
+										if (!empty($variant[$image_key])) { // Check if the image exists
+											echo '
+											<div class="item-slick3">
+												<div class="wrap-pic-w pos-relative">
+													<img src="images/' . $variant[$image_key] . '" alt="IMG-' . (isset($promotion_id) ? 'PROMOTION' : 'PRODUCT') . '">
+													<a class="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04" href="images/' . $variant[$image_key] . '">
+														<i class="fa fa-expand"></i>
+													</a>
+												</div>
+											</div>';
+										}
+									}
+								} else {
+									echo '<p>No images available for this product or promotion.</p>';
+								}
+							} else {
+								echo '<p>No images available for this product or promotion.</p>';
+							}
+							?>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
                 
             <div class="col-md-6 col-lg-5 p-b-30">
                 <div class="p-r-50 p-t-5 p-lr-0-lg">
                     <h4 class="mtext-105 cl2 js-name-detail p-b-14">
-                        <?php echo $product['product_name']; ?>
+						<?php echo isset($type) && $type === 'promotion' ? $promotion['promotion_name'] : $product['product_name']; ?>
                     </h4>
 
                     <span class="mtext-106 cl2">
-                        $<?php echo $product['product_price']; ?>
+						$<?php echo isset($type) && $type === 'promotion' ? $promotion['promotion_price'] : $product['product_price']; ?>
                     </span>
 
                     <!--  -->
@@ -484,13 +758,8 @@ $connect->close();
 							</div>
 
 							<div class="size-204 respon6-next">
-								<div class="rs1-select2 bor8 bg0">
-									<select class="js-select2" name="time">
-										<option>Choose an option</option>
-										<option value="size1"><?php echo $product['size1']; ?></option>
-                						<option value="size2"><?php echo $product['size2']; ?></option>
-									</select>
-									<div class="dropDownSelect2"></div>
+								<div id="size-container" class="flex-w flex-m">
+									<!-- Sizes will be dynamically added here -->
 								</div>
 							</div>
 						</div>
@@ -502,10 +771,11 @@ $connect->close();
 
 							<div class="size-204 respon6-next">
 								<div class="rs1-select2 bor8 bg0">
-									<select class="js-select2" name="time">
+									<select class="js-select2" id="color-select" name="color">
 										<option>Choose an option</option>
-										<option value="color1"><?php echo $product['color1']; ?></option>
-                						<option value="color2"><?php echo $product['color2']; ?></option>
+										<?php foreach ($colors as $color): ?>
+											<option value="<?php echo $color; ?>"data-variant-id="<?php echo $variant['variant_id']; ?>"><?php echo $color; ?></option>
+										<?php endforeach; ?>
 									</select>
 									<div class="dropDownSelect2"></div>
 								</div>
@@ -527,9 +797,7 @@ $connect->close();
                                 	</div>
                             	</div>
 
-                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
-									data-id="<?php echo $product['product_id']; ?>"
-									data-stock="<?php echo $product['product_stock']; ?>">
+                            	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
 									Add to cart
 								</button>
                         	</div>
@@ -584,7 +852,7 @@ $connect->close();
 						<div class="tab-pane fade show active" id="description" role="tabpanel">
 							<div class="how-pos2 p-lr-15-md">
 								<p class="stext-102 cl6">
-								<?php echo $product['product_des']; ?>
+									<?php echo isset($type) && $type === 'promotion' ? $promotion['promotion_des'] : $product['product_des']; ?>
 								</p>
 							</div>
 						</div>
@@ -1427,9 +1695,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     $(document).on('click', '.btn-num-product-up', async function () {
         const $input = $(this).siblings('.num-product');
         const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0;
-        const productId = $('.js-addcart-detail').data('id');
 
-        const exceedsStock = await checkCartQuantity(productId, productStock);
+        const exceedsStock = await checkCartQuantity(productStock);
 
         if (exceedsStock) {
             showStockWarning("Your quantity in the cart for this product already reached the maximum.");
@@ -1460,56 +1727,62 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 
     // Add to Cart Functionality
     $(document).on('click', '.js-addcart-detail', async function (event) {
-        event.preventDefault();
+    event.preventDefault();
 
-        const productId = $(this).data('id');
-        const productName = $('.js-name-detail').text();
-        const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
-        const productQuantity = parseInt($('.num-product').val());
-        const productStock = parseInt($(this).data('stock')) || 0;
+    const variantId = $('#color-select').find(':selected').data('variant-id'); // Get the selected variant ID
+    const productName = $('.js-name-detail').text();
+    const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
+    const productQuantity = parseInt($('.num-product').val());
+    const productStock = parseInt($(this).data('stock')) || 0;
 
-        const exceedsStock = await checkCartQuantity(productId, productStock);
+    if (!variantId) {
+        showStockWarning("Please select a color!!!");
+        return;
+    }
 
-        if (exceedsStock) {
-            showStockWarning("Your quantity in the cart for this product already reached the maximum.");
-            lockQuantityInput();
-            return;
-        }
+    const exceedsStock = await checkCartQuantity(variantId, productStock);
 
-        if (productQuantity > productStock) {
-            showStockWarning(`Cannot add more than ${productStock} items.`);
-            return;
-        } else if (productQuantity === 0) {
-            showStockWarning('Quantity cannot be zero.');
-            return;
-        }
+    if (exceedsStock) {
+        showStockWarning("Your quantity in the cart for this product already reached the maximum.");
+        lockQuantityInput();
+        return;
+    }
 
-        const totalPrice = productPrice * productQuantity;
+    if (productQuantity > productStock) {
+        showStockWarning(`Cannot add more than ${productStock} items.`);
+        return;
+    } else if (productQuantity === 0) {
+        showStockWarning('Quantity cannot be zero.');
+        return;
+    }
 
-        // Send data to the server via AJAX
-        $.ajax({
-            url: '', // Replace with your PHP URL to handle adding to the cart
-            type: 'POST',
-            data: {
-                add_to_cart: true,
-                product_id: productId,
-                qty: productQuantity,
-                total_price: totalPrice
-            },
-            dataType: 'json',
-            success: function (response) {
-                if (response.success) {
-                    swal(`${productName} has been added to your cart!`, "", "success");
-                    clearStockWarning();
-                } else {
-                    showStockWarning(response.error || "Failed to add product to cart.");
-                }
-            },
-            error: function () {
-                showStockWarning("An error occurred while adding to the cart.");
+    const totalPrice = productPrice * productQuantity;
+
+    // Send data to the server via AJAX
+    $.ajax({
+        url: '', // Replace with your PHP URL to handle adding to the cart
+        type: 'POST',
+        data: {
+            add_to_cart: true,
+            variant_id: variantId, // Send the variant ID instead of the product ID
+            qty: productQuantity,
+            total_price: totalPrice
+        },
+        dataType: 'json',
+        success: function (response) {
+            if (response.success) {
+                swal(`Peoduct has been added to your cart!`, "", "success");
+                clearStockWarning();
+            } else {
+                showStockWarning(response.error || "Failed to add product to cart.");
             }
-        });
+        },
+        error: function () {
+            showStockWarning("An error occurred while adding to the cart.");
+        }
     });
+});
+
 });
 
 
@@ -1531,42 +1804,159 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			})
 		});
 	</script>
-	<script>
-    // Trigger AJAX call when a different product needs to be loaded dynamically
+<script>
+    // Trigger AJAX call when a different product or promotion needs to be loaded dynamically
     $(document).on('click', '.js-load-product', function(event) {
         event.preventDefault();
-        var productId = $(this).data('id'); // Assuming there's a clickable element for each product
-        
-        // Make an AJAX call to fetch product details
+        var id = $(this).data('id'); // ID for the product or promotion
+        var type = $(this).data('type'); // 'product' or 'promotion'
+
+        // Make an AJAX call to fetch details based on type
         $.ajax({
-            url: '', // Ensure this is the URL where product details can be fetched
+            url: '', // Ensure this is the URL where details can be fetched
             type: 'GET',
-            data: { fetch_product: true, id: productId },
+            data: { fetch_product: true, id: id, type: type },
             dataType: 'json',
             success: function(response) {
                 if (response) {
-                    // Populate the page with product data
-                    $('.js-name-detail').text(response.product_name);
-                    $('.mtext-106').text('$' + response.product_price);
-                    $('.stext-102').text(response.product_des);
-                    
-                    // Update Quick View images
+                    // Populate the page with data
+                    if (type === 'product') {
+                        $('.js-name-detail').text(response.product_name);
+                        $('.mtext-106').text('$' + response.product_price);
+                        $('.stext-102').text(response.product_des);
+                    } else if (type === 'promotion') {
+                        $('.js-name-detail').text(response.promotion_name);
+                        $('.mtext-106').text('$' + response.promotion_price);
+                        $('.stext-102').text(response.promotion_des);
+                    }
+
+                    // Update Quick View images (example logic for both product and promotion)
                     $('.gallery-lb .item-slick3').each(function(index) {
                         var imagePath = 'images/' + response['Quick_View' + (index + 1)];
                         $(this).find('.wrap-pic-w img').attr('src', imagePath);
                         $(this).find('.wrap-pic-w a').attr('href', imagePath);
-                        $(this).attr('data-thumb', imagePath);
                     });
                 } else {
-                    alert('Product details not found.');
+                    alert('Details not found.');
                 }
             },
             error: function() {
-                alert('An error occurred while fetching product details.');
+                alert('An error occurred while fetching details.');
             }
         });
     });
 </script>
+
+<script>
+    // Handle color change
+	$('#color-select').change(function() {
+        var selectedColor = $(this).val();
+        var productId = <?php echo $product_id; ?>; // Current product ID
+
+        if (selectedColor) {
+            // Fetch new variant data via AJAX
+            $.ajax({
+                url: '', // Ensure this is the URL for the request
+                type: 'GET',
+                data: { fetch_variant_by_color: true, product_id: productId, color: selectedColor },
+                dataType: 'json',
+                success: function(response) {
+                    if (response) {
+                        const sizeContainer = $('#size-container');
+                        sizeContainer.empty(); // Clear existing sizes
+						console.log('Response for Product Variant:', response);
+
+                        // Update product details
+                        $('.js-name-detail').text(response.product_name);
+                        $('.mtext-106').text('$' + response.product_price);
+
+                        // Update Quick View images
+                        $('.gallery-lb .item-slick3').each(function(index) {
+                            var imagePath = 'images/' + response['Quick_View' + (index + 1)];
+                            $(this).find('.wrap-pic-w img').attr('src', imagePath);
+                            $(this).find('.wrap-pic-w a').attr('href', imagePath);
+                        });
+
+                        // Update stock
+                        $('.js-addcart-detail').data('stock', response.stock);
+
+                        // Populate sizes in the size container
+                        if (response.sizes && response.sizes.length > 0) {
+                            response.sizes.forEach(function(size) {
+                                const sizeOption = $('<div>')
+                                    .addClass('size-option')
+                                    .text(size);
+                                sizeContainer.append(sizeOption);
+                            });
+                        } else {
+                            sizeContainer.append('<div class="no-sizes">No sizes available</div>');
+                        }
+                    } else {
+                        alert('Variant not found for the selected color.');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while fetching variant data.');
+                }
+            });
+        }
+    });
+</script>
+<script>
+    // Handle promotion color change
+    $('#color-select').change(function () {
+        var selectedColor = $(this).val();
+        var promotionId = <?php echo $promotion_id; ?>;
+
+        if (selectedColor) {
+            $.ajax({
+                url: '', // Replace with your URL for fetching promotion variant
+                type: 'GET',
+                data: { fetch_variant_by_color_promotion: true, promotion_id: promotionId, color: selectedColor },
+                dataType: 'json',
+                success: function (response) {
+                    if (response) {
+                        const sizeContainer = $('#size-container');
+                        sizeContainer.empty();
+
+						console.log('Response for Product Variant:', response);
+						
+                        $('.js-name-promotion').text(response.promotion_name);
+                        $('.mtext-106').text('$' + response.promotion_price);
+
+						$('.gallery-lb .item-slick3').each(function(index) {
+                            var imagePath = 'images/' + response['Quick_View' + (index + 1)];
+                            $(this).find('.wrap-pic-w img').attr('src', imagePath);
+                            $(this).find('.wrap-pic-w a').attr('href', imagePath);
+                        });
+
+
+                        $('.js-addcart-detail').data('stock', response.stock);
+
+                        if (response.sizes && response.sizes.length > 0) {
+                            response.sizes.forEach(function (size) {
+                                const sizeOption = $('<div>')
+                                    .addClass('size-option')
+                                    .text(size);
+                                sizeContainer.append(sizeOption);
+                            });
+                        } else {
+                            sizeContainer.append('<div class="no-sizes">No sizes available</div>');
+                        }
+                    } else {
+                        alert('Variant not found for the selected color.');
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while fetching promotion variant data.');
+                }
+            });
+        }
+    });
+
+
+</script>
+
 	<script src="js/main.js"></script>
 	<script> function openModal(imageSrc) {
         const modal = document.getElementById('imageModal');

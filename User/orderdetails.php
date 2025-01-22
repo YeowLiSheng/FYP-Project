@@ -47,6 +47,55 @@ $current_user_query->bind_param("i", $current_user_id);
 $current_user_query->execute();
 $current_user = $current_user_query->get_result()->fetch_assoc();
 
+$cart_items_query = "
+    SELECT 
+        sc.variant_id,
+		pv.product_id,
+        pv.promotion_id, 
+        pv.color, 
+        pv.size, 
+        p.product_name, 
+        p.product_price,
+		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
+		pv.stock AS product_stock,
+        SUM(sc.qty) AS total_qty, 
+        SUM(sc.total_price) AS total_price
+    FROM shopping_cart sc
+    LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
+    WHERE sc.user_id = $user_id
+    GROUP BY 
+        sc.variant_id";
+$cart_items_result = $conn->query($cart_items_query);
+// Handle AJAX request to delete item
+
+$query = "SELECT * FROM product_variant";
+$result = mysqli_query($conn, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $conn->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
 
 if (!isset($_GET['order_id'])) {
     echo "Invalid order ID.";
@@ -127,8 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $detail_id = $detail['detail_id'];
 
 
-	
-    // 处理图片上传
     if (!empty($_FILES['image']['name'])) {
         $upload_dir = "uploads/reviews/";
         if (!is_dir($upload_dir)) {
@@ -142,18 +189,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // 检查是否存在重复评论
+
 $check_stmt = $conn->prepare("SELECT review_id FROM reviews WHERE detail_id = ? AND user_id = ?");
 $check_stmt->bind_param("ii", $detail_id, $user_id);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows > 0) {
-    echo "duplicate"; // 返回重复状态
+    echo "duplicate"; 
     exit;
 }
 
-// 插入评论数据
+
 $stmt = $conn->prepare("
     INSERT INTO reviews (detail_id, rating, comment, image, user_id) 
     VALUES (?, ?, ?, ?, ?)
@@ -161,9 +208,9 @@ $stmt = $conn->prepare("
 $stmt->bind_param("iissi", $detail_id, $rating, $comment, $image_path, $user_id);
 
 if ($stmt->execute()) {
-    echo "success"; // 向前端返回成功状态
+    echo "success"; 
 } else {
-    echo "error"; // 向前端返回错误状态
+    echo "error"; 
 }
     exit;
 }
@@ -210,24 +257,24 @@ if ($stmt->execute()) {
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 	<!--===============================================================================================-->
 <style>
-    /* 全局样式 */
+
 	
     .main-container {
     display: flex;
     flex-direction: row;
-    width: 100%; /* 确保容器宽度为全屏 */
+    width: 100%; 
 
 }
     .sidebar {
 	width: 250px;
     padding: 20px;
     height: 100%;
-    position: static; /* 保持 static */
+    position: static; 
     background-color: #fff;
     border-right: 1px solid #e0e0e0;
     overflow-y: auto;
     flex-shrink: 0;
-    z-index: 1; /* 设置层级，确保 sidebar 不会覆盖其他内容 */
+    z-index: 1; 
 }
 
     .sidebar .user-info {
@@ -291,7 +338,7 @@ if ($stmt->execute()) {
         color: #333;
         padding: 20px;
         margin: 0;
-        flex: 1; /* 让容器填满 sidebar 旁边的剩余空间 */
+        flex: 1; 
 
     }
     .card {
@@ -378,7 +425,7 @@ if ($stmt->execute()) {
         margin-top: 20px;
         text-align: center;
         cursor: pointer;
-        background: #28a745; /* 使用黄色作为评分按钮颜色 */
+        background: #28a745; 
         transition: 0.3s;
     }
 
@@ -395,7 +442,7 @@ if ($stmt->execute()) {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    z-index: 2000;
+    z-index: 1600;
     border-radius: 10px;
     width: 400px;
     max-width: 90%;
@@ -412,13 +459,13 @@ if ($stmt->execute()) {
 
 .selected-product-preview {
     display: flex;
-    flex-direction: column; /* 垂直对齐 */
+    flex-direction: column; 
     align-items: center;
     margin-top: 10px;
 }
 
 .selected-product-preview img {
-    width: 100px; /* 调整图片大小 */
+    width: 100px; 
     height: 100px;
     border-radius: 10px;
     margin-bottom: 10px;
@@ -427,7 +474,7 @@ if ($stmt->execute()) {
 
 input[type="file"] {
     display: block;
-    margin: 0 auto; /* 居中 */
+    margin: 0 auto; 
     padding: 10px;
     font-size: 14px;
     cursor: pointer;
@@ -477,57 +524,10 @@ textarea {
     color: white;
     margin-left: 10px;
 }
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-.popup-success {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-	z-index: 2000;
-    animation: fadeIn 0.5s ease;
+.swal2-container {
+    z-index: 9999 !important;
 }
 
-.success-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.success-icon {
-    font-size: 60px;
-    color: #28a745; /* 绿色图标 */
-    margin-bottom: 15px;
-}
-
-.popup-success h3 {
-    font-size: 20px;
-    color: #333;
-}
-
-/* 淡入动画 */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -60%);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-    }
-}
 </style>
 </head>
 <body class="animsition">
@@ -544,17 +544,29 @@ textarea {
 			<!-- Topbar -->
 			<div class="top-bar">
 				<div class="content-topbar flex-sb-m h-full container">
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
+					<div class="left-top-bar" style="white-space: nowrap; overflow: hidden; display: block; flex: 1; max-width: calc(100% - 300px);">
+						<span style="display: inline-block; animation: marquee 20s linear infinite;">
+							Free shipping for standard order over $10000 <span style="padding-left: 300px;"></span> 
+							New user will get 10% discount!!!<span style="padding-left: 300px;"></span>
+							Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+							<span style="padding-left: 300px;"></span> Free shipping for standard order over $10000 
+							<span style="padding-left: 300px;"></span> New user will get 10% discount!!! 
+							<span style="padding-left: 300px;"></span> Get 5% discount for any purchasement above $5000 (code: DIS4FIVE)
+						</span>
+						<style>
+							@keyframes marquee {
+								0% {
+									transform: translateX(0);
+								}
+								100% {
+									transform: translateX(-55%);
+								}
+							}
+						</style>
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
-
-
-
+				
 						<a href="#" class="flex-c-m trans-04 p-lr-25">
 							EN
 						</a>
@@ -566,14 +578,14 @@ textarea {
 
 
 
-						<a href="edit_profile.php?edit_user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
-							<?php
-							echo "HI '" . htmlspecialchars($user["user_name"]);
-							?>
-						</a>
+                        <a href="Order.php?user=<?php echo $user_id; ?>" class="flex-c-m trans-04 p-lr-25">
+                            <?php
+								echo "HI '" . htmlspecialchars($user['user_name']);
+                            ?>
+                        </a>
 
 
-						<a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
+                        <a href="log_out.php" class="flex-c-m trans-04 p-lr-25">
 							LOG OUT
 						</a>
 
@@ -585,10 +597,10 @@ textarea {
 
 			<div class="wrap-menu-desktop how-shadow1">
 				<nav class="limiter-menu-desktop container">
-
-					<!-- Logo desktop -->
-					<a href="#" class="logo">
-						<img src="images/icons/logo-01.png" alt="IMG-LOGO">
+					
+					<!-- Logo desktop -->		
+					<a href="dashboard.php" class="logo">
+						<img src="images/YLS2.jpg" alt="IMG-LOGO">
 					</a>
 
 					<!-- Menu desktop -->
@@ -596,15 +608,14 @@ textarea {
 						<ul class="main-menu">
 							<li>
 								<a href="dashboard.php">Home</a>
-								<ul class="sub-menu">
-									<li><a href="index.html">Homepage 1</a></li>
-									<li><a href="home-02.html">Homepage 2</a></li>
-									<li><a href="home-03.html">Homepage 3</a></li>
-								</ul>
 							</li>
 
 							<li class="active-menu">
 								<a href="product.php">Shop</a>
+							</li>
+
+                            <li>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
@@ -612,131 +623,29 @@ textarea {
 							</li>
 
 							<li>
-								<a href="blog.html">Blog</a>
+								<a href="blog.php">Blog</a>
 							</li>
 
 							<li>
-								<a href="about.html">About</a>
+								<a href="about.php">About</a>
 							</li>
 
 							<li>
-								<a href="contact.html">Contact</a>
+								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
-					</div>
+					</div>	
 
 					<!-- Icon header -->
 					<div class="wrap-icon-header flex-w flex-r-m">
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-							<i class="zmdi zmdi-search"></i>
-						</div>
 
-						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
-							data-notify="2">
+						<div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="<?php echo $distinct_count; ?>">
 							<i class="zmdi zmdi-shopping-cart"></i>
 						</div>
 
-						<a href="#" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
-							data-notify="0">
-							<i class="zmdi zmdi-favorite-outline"></i>
-						</a>
 					</div>
 				</nav>
-			</div>
-		</div>
-
-		<!-- Header Mobile -->
-		<div class="wrap-header-mobile">
-			<!-- Logo moblie -->
-			<div class="logo-mobile">
-				<a href="index.html"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-			</div>
-
-			<!-- Icon header -->
-			<div class="wrap-icon-header flex-w flex-r-m m-r-15">
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search">
-					<i class="zmdi zmdi-search"></i>
-				</div>
-
-				<div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart"
-					data-notify="2">
-					<i class="zmdi zmdi-shopping-cart"></i>
-				</div>
-
-				<a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti"
-					data-notify="0">
-					<i class="zmdi zmdi-favorite-outline"></i>
-				</a>
-			</div>
-
-			<!-- Button show menu -->
-			<div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-				<span class="hamburger-box">
-					<span class="hamburger-inner"></span>
-				</span>
-			</div>
-		</div>
-
-
-		<!-- Menu Mobile -->
-		<div class="menu-mobile">
-			<ul class="topbar-mobile">
-				<li>
-					<div class="left-top-bar">
-						Free shipping for standard order over $100
-					</div>
-				</li>
-
-				<li>
-					<div class="right-top-bar flex-w h-full">
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							Help & FAQs
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							My Account
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							EN
-						</a>
-
-						<a href="#" class="flex-c-m p-lr-10 trans-04">
-							USD
-						</a>
-					</div>
-				</li>
-			</ul>
-
-			<ul class="main-menu-m">
-				<li>
-					<a href="dashboard.php">Home</a>
-
-					<span class="arrow-main-menu-m">
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
-					</span>
-				</li>
-
-				<li>
-					<a href="product.php">Shop</a>
-				</li>
-
-				<li>
-					<a href="shoping-cart.php" class="label1 rs1" data-label1="hot">Features</a>
-				</li>
-
-				<li>
-					<a href="blog.html">Blog</a>
-				</li>
-
-				<li>
-					<a href="about.html">About</a>
-				</li>
-
-				<li>
-					<a href="contact.html">Contact</a>
-				</li>
-			</ul>
+			</div>	
 		</div>
 
 		<!-- Modal Search -->
@@ -757,69 +666,114 @@ textarea {
 	</header>
 
 	<!-- Cart -->
-	<div class="wrap-header-cart js-panel-cart">
-		<div class="s-full js-hide-cart"></div>
+	<!-- Cart -->
+<div class="wrap-header-cart js-panel-cart">
+    <div class="s-full js-hide-cart"></div>
 
-		<div class="header-cart flex-col-l p-l-65 p-r-25">
-			<div class="header-cart-title flex-w flex-sb-m p-b-8">
-				<span class="mtext-103 cl2">
-					Your Cart
-				</span>
+    <div class="header-cart flex-col-l p-l-65 p-r-25">
+        <div class="header-cart-title flex-w flex-sb-m p-b-8">
+            <span class="mtext-103 cl2">
+                Your Cart
+            </span>
 
-				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-					<i class="zmdi zmdi-close"></i>
-				</div>
-			</div>
+            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+                <i class="zmdi zmdi-close"></i>
+            </div>
+        </div>
+        
+        <div class="header-cart-content flex-w js-pscroll">
+            <ul class="header-cart-wrapitem w-full" id="cart-items">
+                <?php
+                $total_price = 0;
 
-			<div class="header-cart-content flex-w js-pscroll">
-				<ul class="header-cart-wrapitem w-full" id="cart-items">
-					<?php
-					// Display combined cart items
-					$total_price = 0;
-					if ($cart_items_result->num_rows > 0) {
-						while ($cart_item = $cart_items_result->fetch_assoc()) {
-							$total_price += $cart_item['total_price'];
-							echo '
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
-                            </div>
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . $cart_item['product_name'] . '
-                                </a>
-                                <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                </span>
-                            </div>
-                        </li>';
-						}
-					} else {
-						echo '<p>Your cart is empty.</p>';
-					}
-					?>
-				</ul>
+                if ($cart_items_result->num_rows > 0) {
+                    while ($cart_item = $cart_items_result->fetch_assoc()) {
+                        $total_price += $cart_item['total_price'];
+                        $quick_view_image = '';
+                        
+                        // Find the appropriate image based on the product or promotion
+                        foreach ($product_variants as $variant) {
+                            // Check if the item is a promotion
+                            if (!empty($cart_item['promotion_id'])) {
+                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            } else {
+                                // Check if the item is a regular product
+                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
+                                    $quick_view_image = $variant['Quick_View1'];
+                                    break;
+                                }
+                            }
+                        }                        
 
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: RM<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
-					</div>
+                        // Check if the item is a promotion
+                        if (!empty($cart_item['promotion_id'])) {
+                            // Render promotion details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['promotion_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        } else {
+                            // Render product details
+                            echo '
+                            <li class="header-cart-item flex-w flex-t m-b-12">
+                                <div class="header-cart-item-img">
+                                    <img src="images/' . $quick_view_image . '" alt="IMG">
+                                </div>
+                                <div class="header-cart-item-txt p-t-8">
+                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                        ' . $cart_item['product_name'] . '
+                                    </a>
+                                    <span class="header-cart-item-info">
+                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
+                                    </span>
+                                    <span class="header-cart-item-info">
+                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
+                                    </span>
+                                </div>
+                            </li>';
+                        }
+                    }
+                } else {
+                    echo '<p>Your cart is empty.</p>';
+                }
+                ?>
 
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.php"
-							class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
+            </ul>
+            
+            <div class="w-full">
+                <div class="header-cart-total w-full p-tb-40">
+                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                </div>
 
-						<a href="shoping-cart.html"
-							class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                <div class="header-cart-buttons flex-w w-full">
+                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                        View Cart
+                    </a>
+
+                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                        Check Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="main-container">
     <div class="sidebar">
@@ -849,7 +803,7 @@ textarea {
     <div class="card">
         <h2><span class="icon">🆔</span> Order ID: <?= $order['order_id'] ?></h2>
     </div>
-    <!-- 订单概要 -->
+
     <div class="card">
         <h2><span class="icon">📋</span>Order Summary</h2>
         <div class="summary-item"><strong>User:</strong> <span><?= $order['user_name'] ?></span></div>
@@ -860,7 +814,7 @@ textarea {
         <div class="summary-item"><strong>User Message:</strong> <span><?= !empty($order['user_message']) ? htmlspecialchars($order['user_message']) : 'N/A' ?></span></div>           
     </div>
 
-    <!-- 产品明细 -->
+
     <div class="card">
         <h2><span class="icon">🛒</span>Product Details</h2>
         <table class="product-table">
@@ -889,7 +843,7 @@ textarea {
         </table>
     </div>
 
-    <!-- 价格明细 -->
+
     <div class="card">
         <h2><span class="icon">💰</span>Pricing Details</h2>
         <div class="pricing-item"><span>Grand Total:</span><span>RM <?= number_format($order['Grand_total'], 2) ?></span></div>
@@ -897,7 +851,7 @@ textarea {
         <div class="pricing-item"><span>Final Amount:</span><span>RM <?= number_format($order['final_amount'], 2) ?></span></div>
     </div>
 
-    <!-- 操作按钮 -->
+
     <a href="order.php" class="back-button">Back to Orders</a>
     <a href="receipt.php?order_id=<?= $order['order_id'] ?>" class="print-button">🖨️ Print Receipt</a>
 	<?php if ($order['order_status'] === 'Complete') { ?>
@@ -907,14 +861,14 @@ textarea {
     <div class="popup-content">
         <h2>Rate Product</h2>
         <form id="rateForm" method="POST" enctype="multipart/form-data">
-            <!-- 产品选择 -->
+  
             <label for="productSelect">Select Product:</label>
             <div class="product-select-container">
                 <select id="productSelect" name="variant_id" required>
                     <option value="" disabled selected>Select a product</option>
                     <?php foreach ($order_details as $detail) { ?>
-                        <option value="<?= $detail['product_or_promotion_id'] ?>" 
-                                data-img="images/<?= $detail['image'] ?>">
+						<option value="<?= $detail['variant_id'] ?>" 
+						data-img="images/<?= $detail['image'] ?>">
                             <?= $detail['name'] ?>
                         </option>
                     <?php } ?>
@@ -925,7 +879,7 @@ textarea {
                 </div>
             </div>
 
-            <!-- 评分 -->
+            
             <label for="rating">Rating:</label>
             <div id="stars" class="rating-stars">
                 <?php for ($i = 1; $i <= 5; $i++) { ?>
@@ -934,32 +888,23 @@ textarea {
             </div>
             <input type="hidden" id="rating" name="rating" value="" required>
 
-            <!-- 评论 -->
+           
             <label for="comment">Comment:</label>
             <textarea id="comment" name="comment" rows="4" required></textarea>
 
-            <!-- 上传图片 -->
+        
             <label for="image">Upload Image (optional):</label>
             <input type="file" id="image" name="image" accept="image/*">
 
-            <!-- 按钮 -->
+         
             <button type="submit" class="submit-button">Submit</button>
             <button type="button" class="cancel-button" onclick="closePopup()">Cancel</button>
         </form>
     </div>
 </div>
-<div id="overlay" style="display: none;"></div>
 
-<div id="successPopup" class="popup-success" style="display: none;">
-    <div class="success-content">
-        <div class="success-icon">
-            <i class="fa fa-check-circle"></i>
-        </div>
-        <h3>Review Submitted Successfully!</h3>
-		<button class="submit-button" onclick="redirectToPage()">OK</button>
 
-    </div>
-</div>
+
 </div>
 </div>
 
@@ -1317,6 +1262,7 @@ textarea {
 	</script>
 	<!--===============================================================================================-->
 	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 	<script>
 		$('.gallery-lb').each(function () { // the containers for all your galleries
 			$(this).magnificPopup({
@@ -1389,55 +1335,69 @@ textarea {
 	<!--===============================================================================================-->
 	<script src="js/main.js"></script>
 	<script>
-// 打开弹窗
-// 打开弹窗
+
 function openPopup() {
     document.getElementById("ratePopup").style.display = "block";
 }
 
-// 关闭弹窗
+
 function closePopup() {
     document.getElementById("ratePopup").style.display = "none";
-    document.getElementById("rateForm").reset(); // 重置表单
-    resetStars();   // 重置评分星星
-    resetProductPreview(); // 重置产品预览
+    document.getElementById("rateForm").reset(); 
+    resetStars();   
+    resetProductPreview(); 
 }
 
-// 禁用重复提交
 document.getElementById("rateForm").addEventListener("submit", function (e) {
-    // 阻止默认表单提交行为
     e.preventDefault();
 
-    // 获取表单元素
     const form = e.target;
     const formData = new FormData(form);
 
-    // 发送表单数据到后端
     fetch(window.location.href, {
         method: "POST",
         body: formData
     })
         .then(response => response.text())
         .then(data => {
-            // 检查后端响应
-			if (data.trim() === "success") {
-    // 显示成功弹窗
-    document.getElementById("successPopup").style.display = "block";
-} else if (data.trim() === "duplicate") {
-    alert("You have already reviewed this product.");
-} else {
-    alert("Failed to submit review. Please try again.");
-}
+            const handleSwalPopup = (icon, title, text) => {
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: text,
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        popup: 'swal-popup-highest'
+                    },
+                    didOpen: () => {
+                        const swalContainer = document.querySelector('.swal2-container');
+                        if (swalContainer) {
+                            swalContainer.style.zIndex = '9999'; 
+                        }
+                    }
+                }).then(() => {
+                    redirectToPage();
+                });
+            };
+
+            if (data.trim() === "success") {
+                handleSwalPopup('success', 'Review Submitted', 'Your review has been successfully submitted!');
+            } else if (data.trim() === "duplicate") {
+                handleSwalPopup('warning', 'Duplicate Review', 'You have already reviewed this product.');
+            } else {
+                handleSwalPopup('error', 'Submission Failed', 'Failed to submit review. Please try again.');
+            }
         })
         .catch(error => {
             console.error("Error submitting review:", error);
         });
 });
 
+
 function redirectToPage() {
     window.location.href = "orderdetails.php?order_id=<?= $order_id ?>";
 }
-// 评分逻辑
+
 const stars = document.querySelectorAll(".rating-stars .fa-star");
 stars.forEach(star => {
     star.addEventListener("click", function () {
@@ -1455,7 +1415,7 @@ function resetStars() {
     stars.forEach(star => star.classList.remove("active"));
 }
 
-// 产品预览逻辑
+
 const productSelect = document.getElementById("productSelect");
 const productImage = document.getElementById("productImage");
 const productName = document.getElementById("productName");

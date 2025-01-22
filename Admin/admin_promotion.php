@@ -1,6 +1,6 @@
 <?php 
     include 'dataconnection.php';
-    $sql = "SELECT category_id FROM product"; 
+    $sql = "SELECT category_id FROM promotion_product"; 
     $result = $connect->query($sql);
 
     $categoryCounts = [1 => 0, 2 => 0, 3 => 0];
@@ -394,7 +394,8 @@ function add_check() {
                 <?php
                 // Fetch categories and product statuses
                 $c = mysqli_query($connect, "SELECT * FROM category");
-                $s = mysqli_query($connect, "SELECT * FROM product_status");
+				$s = mysqli_query($connect, "SELECT * FROM product_status");
+
                 ?>
                 <div class="filter" style="margin-top:8px;">
                     <label>Filter1 by:</label>
@@ -413,7 +414,7 @@ function add_check() {
                         <optgroup label="Tags:">
                             <?php
                             // Fetch distinct tags from the product table
-                            $tags = mysqli_query($connect, "SELECT DISTINCT tags FROM product");
+                            $tags = mysqli_query($connect, "SELECT DISTINCT tags FROM promotion_product");
                             while ($row_tags = mysqli_fetch_assoc($tags)) {
                                 ?>
                                 <option value="tags_<?php echo $row_tags["tags"]; ?>"><?php echo $row_tags["tags"]; ?>
@@ -499,13 +500,13 @@ function add_check() {
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <!-- Modal body -->
-                    <form id="p_form" name="p_form" action="a_product.php" method="POST">
+                    <form id="p_form" name="p_form" action="a_promotion.php" method="POST">
                         <div class="modal-body">
                             <div class="row">
                                 <!-- product title -->
                                 <div class="col-md-12">
                                     <div class="form-group mb-4">
-                                        <label for="prodcuct_title">Product:</label>
+                                        <label for="prodcuct_title">Promotion Product:</label>
                                         <input type="text" class="form-control" name="product_name"
                                             placeholder="product name">
                                         <span id="check_name"></span>
@@ -514,7 +515,7 @@ function add_check() {
                                 <!-- Colors -->
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
-                                        <label for="color1">Color 1:</label>
+                                        <label for="color1">Color:</label>
                                         <input type="text" class="form-control" id="color1" name="color1" placeholder="Primary color">
                                         <span id="check_color1"></span>
                                     </div>
@@ -522,7 +523,7 @@ function add_check() {
                                 <!-- Sizes -->
                                 <div class="col-md-6">
                                     <div class="form-group mb-4">
-                                        <label for="size1">Size 1:</label>
+                                        <label for="size1">Size:</label>
                                         <input type="text" class="form-control" id="size1" name="size1" placeholder="Primary size">
                                         <span id="check_size1"></span>
                                     </div>
@@ -701,29 +702,29 @@ function add_check() {
         <hr>
         <?php
         $query = "SELECT 
-         product.product_id, 
-         product.product_name,
+         promotion_product.promotion_id, 
+         promotion_product.promotion_name,
          product_variant.variant_id,
          product_variant.Quick_view1,
          product_variant.Quick_view2,
          product_variant.Quick_view3,
-         product.product_des AS product_desc, 
-         product.product_image AS image, 
-         product.product_price AS price, 
+         promotion_product.promotion_des AS product_desc, 
+         promotion_product.promotion_image AS image, 
+         promotion_product.promotion_price AS price, 
          product_variant.stock AS stock,
          product_status.product_status, 
          category.category_name,
-         product.tags,
+         promotion_product.tags,
          product_variant.color,
          product_variant.size
-         FROM product
-         JOIN category ON product.category_id = category.category_id
-         JOIN product_status ON product.product_status = product_status.p_status_id
-         JOIN product_variant ON product.product_id = product_variant.product_id";
+         FROM promotion_product
+         JOIN category ON promotion_product.category_id = category.category_id
+         JOIN product_status ON promotion_product.promotion_status = product_status.p_status_id
+         JOIN product_variant ON promotion_product.promotion_id = product_variant.promotion_id";
 
         if (isset($_POST["search_product"])) {
             $search = $_POST["search"];
-            $query .= " WHERE product_name LIKE '%$search%'";
+            $query .= " WHERE promotion_name LIKE '%$search%'";
 
             // Filter1
             $filter1 = $_POST["filter1"];
@@ -732,10 +733,10 @@ function add_check() {
                 $filter_type = $p1[0];
                 $filter_value = intval($p1[1]);
                 if ($filter_type == 'c') { // Category filter
-                    $query .= " AND product.category_id = '$filter_value'";
+                    $query .= " AND promotion_product.category_id = '$filter_value'";
                 } else if ($filter_type == 'tags') { // Tags filter
                     $tag = $p1[1]; // Tags are likely strings, not integers
-                    $query .= " AND product.tags = '$tag'";
+                    $query .= " AND promotion_product.tags = '$tag'";
                 }
             }
 
@@ -743,41 +744,41 @@ function add_check() {
             $filter2 = $_POST["filter2"];
             if (!empty($filter2)) {
                 if ($filter2 == 'in_stock') {
-                    $query .= " AND product.stock > 0";
+                    $query .= " AND product_variant.stock > 0";
                 } else if ($filter2 == 'out_stock') {
-                    $query .= " AND product.stock = 0";
+                    $query .= " AND product_variant.stock = 0";
                 } else {
                     $p2 = explode('_', $filter2);
                     $filter_type = $p2[0];
                     $filter_value = $p2[1]; // String for color or status
                     if ($filter_type == 'color') { // Color filter
-                        $query .= " AND (product.color1 = '$filter_value' OR product.color2 = '$filter_value')";
+                        $query .= " AND (product_variant.color = '$filter_value'";
                     } else if ($filter_type == 'status') { // Product status filter
                         $status = intval($filter_value);
-                        $query .= " AND product.product_status = $status";
+                        $query .= " AND promotion_product.promotion_status = $status";
                     }
                 }
             }
 
             // Sort
-            $query .= " ORDER BY product.product_status"; // Default order
+            $query .= " ORDER BY promotion_product.promotion_status"; // Default order
             $sort_p = $_POST["sort_p"];
             if (!empty($sort_p)) {
                 if ($sort_p == 'a') {
-                    $query .= ", product.product_name";
+                    $query .= ", promotion_product.promotion_name";
                 }
                 if ($sort_p == 'b') {
-                    $query .= ", product.product_name DESC";
+                    $query .= ", promotion_product.promotion_name DESC";
                 }
                 if ($sort_p == 'c') {
-                    $query .= ", product.price DESC";
+                    $query .= ", promotion_product.price DESC";
                 }
                 if ($sort_p == 'd') {
-                    $query .= ", product.price";
+                    $query .= ", promotion_product.price";
                 }
             }
         } else {
-            $query .= " ORDER BY product.product_status"; // Default order if no search or filters
+            $query .= " ORDER BY promotion_product.promotion_status"; // Default order if no search or filters
         }
 
         $result = mysqli_query($connect, $query);
@@ -801,13 +802,13 @@ function add_check() {
                 </tr>
             </thead>
             <tbody>
-                <form action="a_product.php" method="POST" id="pd">
+                <form action="a_promotion.php" method="POST" id="pd">
                     <?php
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
                             ?>
                             <tr>
-                                <div class="modal fade" id="v<?php echo $row["product_id"]; ?>" tabindex="-1"
+                                <div class="modal fade" id="v<?php echo $row["promotion_id"]; ?>" tabindex="-1"
                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered modal-lg" style="width:40%;">
                                         <div class="modal-content">
@@ -824,7 +825,7 @@ function add_check() {
                                                     <hr>
                                                     <div class="p_info">
                                                         <div class="form-group">
-                                                            <b><?php echo $row['product_name'] ?></b>
+                                                            <b><?php echo $row['promotion_name'] ?></b>
                                                             <hr><br>
                                                         </div>
                                                         <div class="lr">
@@ -869,14 +870,14 @@ function add_check() {
                                                                     <label style="margin-right:19px;">
                                                                         <b>Price</b>
                                                                     </label>
-                                                                    RM<?php echo $row['price'] ?>
+                                                                    USD<?php echo $row['price'] ?>
                                                                 </div>
 
                                                                 <div class="form-group mb-4">
                                                                     <label style="margin-right:9px;">
                                                                         <b>Status</b>
                                                                     </label>
-                                                                    <?php echo $row['product_status'] ?>
+                                                                    <?php echo $row['promotion_status'] ?>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -903,27 +904,27 @@ function add_check() {
                                         <img src="../User/images/<?php echo $row['Quick_view1'] ?>" style="max-height:100px; max-width:auto;" />
                                     </td>
 
-                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
-                                        <?php echo $row['product_name'] ?>
+                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>">
+                                        <?php echo $row['promotion_name'] ?>
                                     </td>
 
-                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
+                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>">
                                         <?php echo $row['tags'] ?>
                                     </td>
 
-                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
+                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>">
                                         <?php echo $row['color'] ?>
                                     </td>
 
-                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
+                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>">
                                         <?php echo str_replace("_", " ", $row['category_name']); ?>
                                     </td>
 
-                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
+                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>">
                                         USD <?php echo $row['price'] ?>
                                     </td>
 
-                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>">
+                                    <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>">
                                         <?php echo $row['stock'] ?><br>
                                         <div style="font-size:80%; color:<?php echo ($row['stock'] < 1) ? 'red' : 'green'; ?>">
                                             <?php echo ($row['stock'] < 1) ? 'Out of Stock' : 'In Stock'; ?>
@@ -932,11 +933,11 @@ function add_check() {
 
                                     <?php
                                     if ($row['product_status'] == "Available") { ?>
-                                        <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>" style="color:#0EAF09;">
+                                        <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>" style="color:#0EAF09;">
                                             <?php echo $row['product_status'] ?>
                                         </td>
                                     <?php } else { ?>
-                                        <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["product_id"]; ?>" style="color:red;">
+                                        <td data-bs-toggle="modal" data-bs-target="#v<?php echo $row["promotion_id"]; ?>" style="color:red;">
                                             <?php echo $row['product_status'] ?>
                                         </td>
                                     <?php 
@@ -946,54 +947,54 @@ function add_check() {
                 <td class="button-action">
                                     <!-- Validation Script -->
                                     <script>
-                                        function add_check<?php echo $row['product_id'] ?>() {
+                                        function add_check<?php echo $row['promotion_id'] ?>() {
                                             event.preventDefault();
                                             var no_error = true;
 
                                             // Input values
-                                            var n = document.e_form<?php echo $row['product_id'] ?>.product_name<?php echo $row['product_id'] ?>.value;
-                                            var d = document.e_form<?php echo $row['product_id'] ?>.desc<?php echo $row['product_id'] ?>.value;
-                                            var price = document.e_form<?php echo $row['product_id'] ?>.price<?php echo $row['product_id'] ?>.value;
-                                            var qty = document.e_form<?php echo $row['product_id'] ?>.qty<?php echo $row['product_id'] ?>.value;
+                                            var n = document.e_form<?php echo $row['promotion_id'] ?>.product_name<?php echo $row['promotion_id'] ?>.value;
+                                            var d = document.e_form<?php echo $row['promotion_id'] ?>.desc<?php echo $row['promotion_id'] ?>.value;
+                                            var price = document.e_form<?php echo $row['promotion_id'] ?>.price<?php echo $row['promotion_id'] ?>.value;
+                                            var qty = document.e_form<?php echo $row['promotion_id'] ?>.qty<?php echo $row['promotion_id'] ?>.value;
 
                                             // Validation logic
                                             if (n == "") {
-                                                document.getElementById("check_name<?php echo $row['product_id'] ?>").innerHTML = "Product name is required";
+                                                document.getElementById("check_name<?php echo $row['promotion_id'] ?>").innerHTML = "Product name is required";
                                                 no_error = false;
                                             } else {
-                                                document.getElementById("check_name<?php echo $row['product_id'] ?>").innerHTML = "";
+                                                document.getElementById("check_name<?php echo $row['promotion_id'] ?>").innerHTML = "";
                                             }
 
                                             if (d == "") {
-                                                document.getElementById("check_desc<?php echo $row['product_id'] ?>").innerHTML = "Product description is required";
+                                                document.getElementById("check_desc<?php echo $row['promotion_id'] ?>").innerHTML = "Product description is required";
                                                 no_error = false;
                                             } else {
-                                                document.getElementById("check_desc<?php echo $row['product_id'] ?>").innerHTML = "";
+                                                document.getElementById("check_desc<?php echo $row['promotion_id'] ?>").innerHTML = "";
                                             }
 
                                             if (price == "") {
-                                                document.getElementById("check_price<?php echo $row['product_id'] ?>").innerHTML = "Price is required";
+                                                document.getElementById("check_price<?php echo $row['promotion_id'] ?>").innerHTML = "Price is required";
                                                 no_error = false;
                                             } else if (isNaN(price) || price < 1) {
-                                                document.getElementById("check_price<?php echo $row['product_id'] ?>").innerHTML = "Enter a valid price (min RM1)";
+                                                document.getElementById("check_price<?php echo $row['promotion_id'] ?>").innerHTML = "Enter a valid price (min RM1)";
                                                 no_error = false;
                                             } else {
-                                                document.getElementById("check_price<?php echo $row['product_id'] ?>").innerHTML = "";
+                                                document.getElementById("check_price<?php echo $row['promotion_id'] ?>").innerHTML = "";
                                             }
 
                                             if (qty == "") {
-                                                document.getElementById("check_stock<?php echo $row['product_id'] ?>").innerHTML = "Stock is required";
+                                                document.getElementById("check_stock<?php echo $row['promotion_id'] ?>").innerHTML = "Stock is required";
                                                 no_error = false;
                                             } else if (isNaN(qty) || qty < 0) {
-                                                document.getElementById("check_stock<?php echo $row['product_id'] ?>").innerHTML = "Enter a valid stock (>= 0)";
+                                                document.getElementById("check_stock<?php echo $row['promotion_id'] ?>").innerHTML = "Enter a valid stock (>= 0)";
                                                 no_error = false;
                                             } else {
-                                                document.getElementById("check_stock<?php echo $row['product_id'] ?>").innerHTML = "";
+                                                document.getElementById("check_stock<?php echo $row['promotion_id'] ?>").innerHTML = "";
                                             }
 
                                             // Submit if no errors
                                             if (no_error) {
-                                                document.getElementById("e_form<?php echo $row['product_id'] ?>").submit();
+                                                document.getElementById("e_form<?php echo $row['promotion_id'] ?>").submit();
                                             }
                                         }
                                     </script>
@@ -1016,14 +1017,14 @@ function add_check() {
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <!-- Modal Body -->
-                                                <form id="e_form<?php echo $row['variant_id']; ?>" name="e_form<?php echo $row['variant_id']; ?>" action="a_product.php" method="POST" enctype="multipart/form-data">
+                                                <form id="e_form<?php echo $row['variant_id']; ?>" name="e_form<?php echo $row['variant_id']; ?>" action="a_promotion.php" method="POST" enctype="multipart/form-data">
                                                     <div class="modal-body">
                                                         <div class="row">
                                                             <!-- Product Title -->
                                                             <div class="col-md-12">
                                                                 <div class="form-group mb-4">
                                                                     <label for="product_title">Product Name:</label>
-                                                                    <input type="text" class="form-control" name="product_name" placeholder="Enter product name" value="<?php echo $row["product_name"]; ?>">
+                                                                    <input type="text" class="form-control" name="product_name" placeholder="Enter product name" value="<?php echo $row["promotion_name"]; ?>">
                                                                 </div>
                                                             </div>
 
@@ -1083,7 +1084,7 @@ function add_check() {
                                                             <div class="col-md-6">
                                                                 <label for="product_price">Price:</label>
                                                                 <div class="input-group mb-3">
-                                                                    <span class="input-group-text">RM</span>
+                                                                    <span class="input-group-text">USD</span>
                                                                     <input type="text" class="form-control" name="price" value="<?php echo $row["price"]; ?>">
                                                                 </div>
                                                             </div>
@@ -1112,7 +1113,7 @@ function add_check() {
                                                     </div>
 
                                                     <!-- Hidden Inputs for variant and product identification -->
-                                                    <input type="hidden" name="product_id" value="<?php echo $row["product_id"]; ?>">
+                                                    <input type="hidden" name="promotion_id" value="<?php echo $row["promotion_id"]; ?>">
                                                     <input type="hidden" name="variant_id" value="<?php echo $row["variant_id"]; ?>">
                                                     <input type="hidden" name="edit_variant">
 
@@ -1133,7 +1134,7 @@ function add_check() {
                                         ?>
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
-                                            data-bs-target="#av<?php echo $row["product_id"]; ?>">
+                                            data-bs-target="#av<?php echo $row["promotion_id"]; ?>">
                                             <i class="lni lni-close"></i>
                                         </button>
                                         <?php
@@ -1141,7 +1142,7 @@ function add_check() {
                                         ?>
                                         <button type="button" class="btn btn-success" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
-                                            data-bs-target="#unav<?php echo $row["product_id"]; ?>">
+                                            data-bs-target="#unav<?php echo $row["promotion_id"]; ?>">
                                             <i class="lni lni-checkmark" style="margin-top:5px;"></i>
                                         </button>
                                         <?php
@@ -1149,7 +1150,7 @@ function add_check() {
                                     ?>
 
 
-                                    <div class="modal fade" id="av<?php echo $row["product_id"]; ?>">
+                                    <div class="modal fade" id="av<?php echo $row["promotion_id"]; ?>">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
@@ -1162,10 +1163,10 @@ function add_check() {
                                                 <div class="modal-body">
                                                     Set this product to status: <b style="color:red;">Unavailable</b>?<br>
                                                     <img src="../User/images/<?php echo $row["image"] ?>" alt="Product Image" class="img-fluid">
-                                                    <p><?php echo $row["product_name"] ?></p>
+                                                    <p><?php echo $row["promotion_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="a_product.php?action=unavailable&product_id=<?php echo $row["product_id"]; ?>">
+                                                    <a href="a_promotion.php?action=unavailable&promotion_id=<?php echo $row["promotion_id"]; ?>">
                                                         <button type="button" class="btn btn-primary">Yes</button>
                                                     </a>
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
@@ -1175,7 +1176,7 @@ function add_check() {
                                     </div>
 
                                     <!-- Modal for setting product to available -->
-                                    <div class="modal fade" id="unav<?php echo $row["product_id"]; ?>">
+                                    <div class="modal fade" id="unav<?php echo $row["promotion_id"]; ?>">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header">
@@ -1191,7 +1192,7 @@ function add_check() {
                                                     <p><?php echo $row["product_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="a_product.php?action=available&product_id=<?php echo $row["product_id"]; ?>">
+                                                    <a href="a_product.php?action=available&promotion_id=<?php echo $row["promotion_id"]; ?>">
                                                      <button type="button" class="btn btn-primary">Yes</button>
                                                     </a>
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
