@@ -355,20 +355,25 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
         
         <hr>
         <div class="card" style="width:100%;">
-            <div class="card-head" style="margin-bottom:30px;">
-                <button type="button" class="btn btn-success float-start" data-bs-toggle="modal"
-                    data-bs-target="#myModal">Generate Voucher</button>
+    <div class="card-head" style="margin-bottom:30px;">
+        <!-- Button Group (Export) and Generate Voucher Button -->
+        <div class="d-flex justify-content-start align-items-center">
+            <!-- Export Dropdown -->
+            <div class="btn-group me-3" style="background-color: #4CAF50;">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    Export:
+                </button>
+                <ul class="dropdown-menu">
+                    <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
+                    <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
+                </ul>
             </div>
-            <div class="btn-group" style="background-color: #4CAF50;">
 
-    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-        Export:
-    </button>
-    <ul class="dropdown-menu">
-        <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-        <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-    </ul>
-</div>
+            <!-- Generate Voucher Button -->
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#myModal">Generate Voucher</button>
+        </div>
+    </div>
+            
             <div class="mb-3">
                 <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control" placeholder="Search Vouchers by Code or Description">
             </div>
