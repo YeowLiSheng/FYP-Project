@@ -292,7 +292,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     const tableBody = document.getElementById("table-body");
     const pagination = document.getElementById("pagination");
 
-    const rowsPerPage = 10; 
+    const rowsPerPage = 1; 
     let currentPage = 1;
 
     const rows = Array.from(tableBody.rows); 
