@@ -67,17 +67,23 @@ if ($result->num_rows > 0) {
         $color = $row['color'];
         $category_name = $row['category_name'];
         $status = $row['product_status'];
-
-        // Calculate maximum height for row
+    
+        // Calculate individual cell heights
         $cell_height = 6;
         $promotion_name_lines = ceil($pdf->GetStringWidth($promotion_name) / 40);
-        $max_lines = max($promotion_name_lines, 1);
+        $tags_lines = ceil($pdf->GetStringWidth($tags) / 30);
+        $color_lines = ceil($pdf->GetStringWidth($color) / 30);
+        $category_name_lines = ceil($pdf->GetStringWidth($category_name) / 25);
+        $status_lines = ceil($pdf->GetStringWidth($status) / 25);
+    
+        // Determine the maximum number of lines in the row
+        $max_lines = max($promotion_name_lines, $tags_lines, $color_lines, $category_name_lines, $status_lines);
         $row_height = $cell_height * $max_lines;
-
+    
         // Set left margin for row data
         $pdf->SetX($left_margin);
-
-        // Output row data
+    
+        // Output row data with the calculated row height
         $pdf->Cell(30, $row_height, $promotion_id, 1, 0, 'C');
         $x = $pdf->GetX();
         $y = $pdf->GetY();
@@ -88,6 +94,7 @@ if ($result->num_rows > 0) {
         $pdf->Cell(25, $row_height, $category_name, 1, 0, 'C');
         $pdf->Cell(25, $row_height, $status, 1, 1, 'C');
     }
+    
 } else {
     $pdf->SetX($left_margin);
     $pdf->Cell(0, 10, 'No promotion products found.', 1, 1, 'C');
