@@ -108,6 +108,58 @@ include 'dataconnection.php';
     }
 });
 
+document.getElementById("export-pdf").addEventListener("click", exportPDF);
+        document.getElementById("export-excel").addEventListener("click", exportExcel);
+
+        function exportPDF() {
+            window.location.href = "generate_voucher.php";
+
+        }
+
+ 
+       function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Product List",
+        Author: "YLS Atelier",
+    };
+
+    // Select the table with product data
+    const table = document.querySelector(".table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        // Exclude the first (Product Image) and last (Actions) columns
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
+    });
+
+    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
+    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
+        // Exclude the first and last columns
+        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
+    }).filter(header => header !== null);
+
+    rows.unshift(headers);
+
+    // Create worksheet from the extracted data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Set appropriate column widths for the product data, excluding the first and last columns
+    ws['!cols'] = [
+        { wch: 30 }, // Product Name
+        { wch: 25 }, // Tags
+        { wch: 20 }, // Colors
+        { wch: 20 }, // Category
+        { wch: 15 }, // Price
+        { wch: 20 }, // Stock (QTY)
+        { wch: 15 }  // Status
+    ];
+
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+
+    // Save the workbook as an Excel file
+    XLSX.writeFile(wb, "Product_List.xlsx");
+}
 
 </script>
 
@@ -496,60 +548,3 @@ include 'dataconnection.php';
         </div><!-- end of card-->
     </div><!-- end of main-->
 </body>
-<script>
-document.getElementById("export-pdf").addEventListener("click", exportPDF);
-
-
-        function exportPDF() {
-            window.location.href = "generate_voucher.php";
-
-        }
-
- 
-      // Excel Export Function
-function exportExcel() {
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Voucher List",
-        Author: "YLS Atelier",
-    };
-
-    // Select the table with voucher data
-    const table = document.querySelector(".table");
-    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        // Exclude the first (Voucher Picture) and last (Actions) columns
-        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
-    });
-
-    // Extract headers from the table, excluding the first (Voucher Picture) and last (Actions) columns
-    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
-        // Exclude the first and last columns
-        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
-    }).filter(header => header !== null);
-
-    rows.unshift(headers);
-
-    // Create worksheet from the extracted data
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // Set appropriate column widths for the voucher data, excluding the first and last columns
-    ws['!cols'] = [
-        { wch: 30 }, // Voucher Code
-        { wch: 20 }, // Discount Rate
-        { wch: 20 }, // Usage Limit
-        { wch: 20 }, // Minimum Amount
-        { wch: 40 }, // Description
-        { wch: 15 }  // Status
-    ];
-
-    // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Vouchers");
-
-    // Save the workbook as an Excel file
-    XLSX.writeFile(wb, "Voucher_List.xlsx");
-}
-
-// Attach the exportExcel function to the button
-document.getElementById("export-excel").addEventListener("click", exportExcel);
-</script>
