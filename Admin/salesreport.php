@@ -440,13 +440,12 @@ $categorySalesJson = json_encode($categorySalesData);
 <script>
 
 function exportPDF() {
-        window.location.href = 'generate_sales.php'; // 跳转到 generate_sales.php
+        window.location.href = 'generate_sales.php'; 
     }
 
     function exportToExcel() {
-    // 准备表格数据
+
     const salesData = [
-        ['Metric', 'Value'], // 表头
         ['Total Orders', <?php echo $order_count; ?>],
         ['Total Customers', <?php echo $total_customers; ?>],
         ['Total Sales', '<?php echo number_format($totalSales, 2); ?>'],
@@ -481,10 +480,9 @@ function exportPDF() {
         <?php } ?>
     ];
 
-    // 创建工作簿
+
     const workbook = XLSX.utils.book_new();
     
-    // 添加表格到工作簿
     const salesSheet = XLSX.utils.aoa_to_sheet(salesData);
     XLSX.utils.book_append_sheet(workbook, salesSheet, 'Summary');
 
@@ -500,7 +498,7 @@ function exportPDF() {
     const yearlySalesSheet = XLSX.utils.aoa_to_sheet(yearlySalesData);
     XLSX.utils.book_append_sheet(workbook, yearlySalesSheet, 'Yearly Sales');
 
-    // 导出为Excel文件
+    
     XLSX.writeFile(workbook, 'Sales_Report.xlsx');
 }
 
