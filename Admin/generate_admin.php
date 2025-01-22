@@ -5,7 +5,6 @@ require("php_libs/fpdf.php");
 date_default_timezone_set("Asia/Kuching");
 $time = date("dmY");
 
-if (isset($_POST["admin_pdf"])) {
     $pdf = new FPDF("P", "mm", "A4");
 
     // Add Page and Logo
@@ -58,37 +57,7 @@ if (isset($_POST["admin_pdf"])) {
     $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
     $pdf->Output();
-}
 
-if (isset($_POST["admin_excel"])) {
-    $output = '';
-    $excel = mysqli_query($connect, "SELECT staff_id, admin_id, admin_name, admin_email FROM admin");
-    if ($excel->num_rows > 0) {
-        $output .= '
-            <table class="table" bordered="1">
-                <tr style="background-color: #e6e6e6;">
-                    <th>#</th>
-                    <th>Staff ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
-        ';
-        while ($row = mysqli_fetch_assoc($excel)) {
-            $output .= '
-                <tr>
-                    <td>' . $row["staff_id"] . '</td>
-                    <td>' . $row["admin_id"] . '</td>
-                    <td>' . $row["admin_name"] . '</td>
-                    <td>' . $row["admin_email"] . '</td>
-                </tr>
-            ';
-        }
-        $output .= '</table>';
-        header('Content-Type: application/xls');
-        header('Content-Disposition: attachment; filename="' . $time . '_admin_report.xls"');
-        echo $output;
-    } else {
-        echo "No record found :(";
-    }
-}
+
+
 ?>
