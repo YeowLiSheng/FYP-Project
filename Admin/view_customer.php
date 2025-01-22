@@ -132,10 +132,8 @@ include 'dataconnection.php';
         <hr>
         <div class="top">
             <form method="POST" action="" class="searchbar">
-            <div class="searchbar">
-                        <ion-icon class="magni" name="search-outline"></ion-icon>
-                        <input type="text" class="input" placeholder="Search with name" name="search" id="search">
-                    </div>
+                <ion-icon class="magni" name="search-outline"></ion-icon>
+                <input type="text" class="input" placeholder="Search with name" name="search" id="search">
             </form>
 
             <!-- Export Button and Dropdown -->
