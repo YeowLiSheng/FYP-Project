@@ -322,69 +322,83 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
 
-   document.addEventListener("DOMContentLoaded", function () {
-    const tableBody = document.getElementById("table-body");
-    const pagination = document.getElementById("pagination");
+    document.addEventListener("DOMContentLoaded", function () {
+        const tableBody = document.getElementById("table-body");
+        const pagination = document.getElementById("pagination");
 
-    const rowsPerPage = 10; // 每页显示的数据条数
-    let currentPage = 1;
+        const rowsPerPage = 10; // 每页显示的数据条数
+        let currentPage = 1;
+        let totalRows = tableBody.rows.length;
 
-    const rows = Array.from(tableBody.rows); // 缓存所有行
-    const totalRows = rows.length; // 总行数
+        // 初始化分页
+        function initPagination() {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            pagination.innerHTML = ""; // 清空分页按钮
 
-    // 初始化分页
-    function initPagination() {
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        pagination.innerHTML = "";
+            // 添加上一页按钮
+            const prevButton = document.createElement("button");
+            prevButton.textContent = "Previous";
+            prevButton.classList.add("page-btn");
+            prevButton.disabled = currentPage === 1; // 如果是第一页，禁用按钮
+            prevButton.addEventListener("click", function () {
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            });
+            pagination.appendChild(prevButton);
 
-        // 添加上一页按钮
-        const prevButton = document.createElement("button");
-        prevButton.textContent = "Previous";
-        prevButton.disabled = currentPage === 1;
-        prevButton.addEventListener("click", () => goToPage(currentPage - 1));
-        pagination.appendChild(prevButton);
+            // 添加页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement("button");
+                pageButton.textContent = i;
+                pageButton.classList.add("page-btn");
+                if (i === currentPage) {
+                    pageButton.classList.add("active");
+                }
+                pageButton.addEventListener("click", function () {
+                    goToPage(i);
+                });
+                pagination.appendChild(pageButton);
+            }
 
-        // 动态生成页码按钮（优化：只显示当前页周围的页码）
-        const maxPageButtons = 5; // 最多显示的页码按钮数量
-        const halfRange = Math.floor(maxPageButtons / 2);
-        const startPage = Math.max(1, currentPage - halfRange);
-        const endPage = Math.min(totalPages, currentPage + halfRange);
-
-        for (let i = startPage; i <= endPage; i++) {
-            const pageButton = document.createElement("button");
-            pageButton.textContent = i;
-            if (i === currentPage) pageButton.classList.add("active");
-            pageButton.addEventListener("click", () => goToPage(i));
-            pagination.appendChild(pageButton);
+            // 添加下一页按钮
+            const nextButton = document.createElement("button");
+            nextButton.textContent = "Next";
+            nextButton.classList.add("page-btn");
+            nextButton.disabled = currentPage === totalPages; // 如果是最后一页，禁用按钮
+            nextButton.addEventListener("click", function () {
+                if (currentPage < totalPages) {
+                    goToPage(currentPage + 1);
+                }
+            });
+            pagination.appendChild(nextButton);
         }
 
-        // 添加下一页按钮
-        const nextButton = document.createElement("button");
-        nextButton.textContent = "Next";
-        nextButton.disabled = currentPage === totalPages;
-        nextButton.addEventListener("click", () => goToPage(currentPage + 1));
-        pagination.appendChild(nextButton);
-    }
+        // 跳转到指定页面
+        function goToPage(pageNumber) {
+            const totalPages = Math.ceil(totalRows / rowsPerPage);
+            currentPage = Math.max(1, Math.min(pageNumber, totalPages)); // 保证页码在有效范围内
 
-    // 跳转到指定页面
-    function goToPage(pageNumber) {
-        currentPage = Math.max(1, Math.min(pageNumber, Math.ceil(totalRows / rowsPerPage)));
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
+            // 显示当前页数据
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
 
-        // 更新表格
-        rows.forEach((row, index) => {
-            row.style.display = index >= start && index < end ? "" : "none";
-        });
+            Array.from(tableBody.rows).forEach((row, index) => {
+                if (index >= start && index < end) {
+                    row.style.display = ""; // 显示行
+                } else {
+                    row.style.display = "none"; // 隐藏行
+                }
+            });
 
-        // 更新分页
+            // 更新分页按钮
+            initPagination();
+        }
+
+        // 初始化分页
         initPagination();
-    }
-
-    // 初始化分页
-    goToPage(1);
-});
-
+        goToPage(currentPage);
+    });
 </script>
 
 </body>
