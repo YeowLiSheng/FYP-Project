@@ -1309,4 +1309,72 @@ function add_check() {
         // Show the additional color section when the button is clicked
         document.getElementById('additional_color_section').style.display = 'block';
     });
+
+
+
+
+
+
+
+    document.getElementById("export-pdf").addEventListener("click", exportPDF);
+        document.getElementById("export-excel").addEventListener("click", exportExcel);
+
+        function exportPDF() {
+            window.location.href = "generate_product.php";
+
+        }
+
+ 
+        function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Order List",
+        Author: "YLS Atelier",
+    };
+
+    // Prepare data for the table with formatted dates
+    const table = document.querySelector(".table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        // Format the Order Time column (index 2)
+        const orderTimeIndex = 2;
+        if (cells[orderTimeIndex]) {
+            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
+            const formattedDate = rawDate.toLocaleString("en-GB", { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            }).replace(",", ""); // Remove comma for proper formatting
+            cells[orderTimeIndex].textContent = formattedDate;
+        }
+        return cells.map(cell => cell.textContent);
+    });
+
+    // Add headers
+    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
+    rows.unshift(headers);
+
+    // Create worksheet from updated data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 15 }, // Order# column
+        { wch: 20 }, // Customer Name column
+        { wch: 25 }, // Order Time column
+        { wch: 50 }, // Shipped To column
+        { wch: 15 }, // Total column
+        { wch: 20 }, // Order Status column
+    ];
+
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+
+    // Save the workbook
+    XLSX.writeFile(wb, "Order_List.xlsx");
+}
+
 </script>
