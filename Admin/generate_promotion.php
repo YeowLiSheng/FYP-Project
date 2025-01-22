@@ -27,7 +27,7 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background for the header
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Promotion ID', 25],
+    ['Promotion ID', 30],
     ['Promotion Name', 40],
     ['Tags', 30],
     ['Color', 30],
@@ -78,7 +78,7 @@ if ($result->num_rows > 0) {
         $pdf->SetX($left_margin);
 
         // Output row data
-        $pdf->Cell(25, $row_height, $promotion_id, 1, 0, 'C');
+        $pdf->Cell(30, $row_height, $promotion_id, 1, 0, 'C');
         $x = $pdf->GetX();
         $y = $pdf->GetY();
         $pdf->MultiCell(40, $cell_height, $promotion_name, 1, 'C');
