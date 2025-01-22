@@ -103,14 +103,22 @@ foreach ($data as $row) {
     // Set left margin for row data
     $pdf->SetX($left_margin);
 
-    // Output row data with the maximum row height
+    // Output row data with the maximum row height for non-wrapping cells
     $pdf->Cell(30, $max_row_height, $promotion_id, 1, 0, 'C');
 
-    // MultiCell for text wrapping
+    // MultiCell for text wrapping with manual height adjustment
     $x = $pdf->GetX();
     $y = $pdf->GetY();
     $pdf->MultiCell(40, $cell_height, $promotion_name, 1, 'C');
-    $pdf->SetXY($x + 40, $y); // Adjust to fixed width for the next cell
+
+    // Adjust the position back to align with the next cell
+    $pdf->SetXY($x + 40, $y);
+    
+    // Fill in the gap if the MultiCell doesn't use the full height
+    $current_height = $pdf->GetY() - $y;
+    if ($current_height < $max_row_height) {
+        $pdf->SetXY($x, $y + $max_row_height);
+    }
 
     // Output other cells with the same maximum height
     $pdf->Cell(30, $max_row_height, $tags, 1, 0, 'C');
