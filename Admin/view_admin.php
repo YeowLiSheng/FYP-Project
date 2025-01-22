@@ -286,7 +286,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
-<div id="pagination-controls" class="pagination-controls"></div>
+<div class="pagination-controls"></div>
 
             </div>
         </section>
@@ -320,84 +320,84 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         });
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-    const itemsPerPage = 1; // 每页显示的行数
-    const rows = document.querySelectorAll('.table-row');
-    const totalPages = Math.ceil(rows.length / itemsPerPage);
+ 
+        const itemsPerPage = 10; // 每页显示的数据条数
+        const totalPages = Math.ceil(data.length / itemsPerPage);
+        let currentPage = 1;
 
-    let currentPage = 1;
+        const tableBody = document.getElementById('table-body');
+        const paginationContainer = document.querySelector('.pagination-controls');
 
-    const renderPage = (page) => {
-        rows.forEach((row, index) => {
-            if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
-                row.style.display = ''; // 显示当前页的行
-            } else {
-                row.style.display = 'none'; // 隐藏其他行
-            }
-        });
-        updatePaginationControls(page);
-    };
+        // 渲染当前页的数据
+        const renderPage = (page) => {
+            tableBody.innerHTML = ''; // 清空表格内容
 
-    const createPaginationControls = () => {
-        const paginationContainer = document.getElementById('pagination-controls');
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
 
-        // 上一页按钮
-        const prevButton = document.createElement('button');
-        prevButton.textContent = 'Previous';
-        prevButton.classList.add('pagination-button');
-        prevButton.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
-            }
-        });
-        paginationContainer.appendChild(prevButton);
-
-        // 页码按钮
-        for (let i = 1; i <= totalPages; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            pageButton.classList.add('pagination-button');
-            pageButton.addEventListener('click', () => {
-                currentPage = i;
-                renderPage(currentPage);
+            data.slice(start, end).forEach(item => {
+                const row = `
+                    <tr>
+                        <td>${item.staff_id}</td>
+                        <td>${item.admin_id}</td>
+                        <td>${item.name}</td>
+                        <td>${item.email}</td>
+                        <td><button>View Details</button></td>
+                        <td>${item.status}</td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
             });
-            paginationContainer.appendChild(pageButton);
-        }
 
-        // 下一页按钮
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Next';
-        nextButton.classList.add('pagination-button');
-        nextButton.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
+            updatePaginationControls();
+        };
+
+        // 创建分页控件
+        const updatePaginationControls = () => {
+            paginationContainer.innerHTML = ''; // 清空分页控件
+
+            // 上一页按钮
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.classList.add('pagination-button');
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage(currentPage);
+                }
+            });
+            paginationContainer.appendChild(prevButton);
+
+            // 页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.classList.add('pagination-button');
+                if (i === currentPage) pageButton.classList.add('active');
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderPage(currentPage);
+                });
+                paginationContainer.appendChild(pageButton);
             }
-        });
-        paginationContainer.appendChild(nextButton);
-    };
 
-    const updatePaginationControls = (page) => {
-        const buttons = document.querySelectorAll('.pagination-button');
-        buttons.forEach((button, index) => {
-            if (index === 0) {
-                button.disabled = page === 1; // 上一页按钮
-            } else if (index === buttons.length - 1) {
-                button.disabled = page === totalPages; // 下一页按钮
-            } else {
-                button.classList.toggle('active', index === page);
-            }
-        });
-    };
+            // 下一页按钮
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.classList.add('pagination-button');
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPage(currentPage);
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+        };
 
-    if (rows.length > itemsPerPage) {
-        createPaginationControls();
+        // 初始化
         renderPage(currentPage);
-    } else {
-        rows.forEach(row => (row.style.display = '')); // 如果数据少于每页数，全部显示
-    }
-});
 
 </script>
 
