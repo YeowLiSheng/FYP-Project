@@ -223,7 +223,7 @@ mysqli_close($connect);
     cursor: pointer;
     position: absolute; /* Allows precise positioning */
     margin-top: -65px; /* Adjust top distance */
-    right: 480px; /* Align to the right */
+    right: 400px; /* Align to the right */
 }
 
 /* Hover effect */

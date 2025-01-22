@@ -99,7 +99,7 @@ include 'admin_sidebar.php';
             line-height: 40px;
             position: absolute;
             margin-top: -50px;
-            right: 580px;
+            right: 500px;
         }
         .close-btn:hover {
             background-color: #ff1a1a;
