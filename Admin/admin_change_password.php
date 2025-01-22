@@ -304,11 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
-
-        function checkNewPassword() {
-    const newPassword = document.getElementById('new_password').value;
-    const strengthBar = document.getElementById('newPasswordStrength');
-    const newPasswordError = document.getElementById('newPasswordError');
+        function calculatePasswordStrength(password) {
     const regexUppercase = /[A-Z]/;
     const regexLowercase = /[a-z]/;
     const regexNumber = /[0-9]/;
@@ -316,13 +312,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     const minLength = 8;
 
     let strength = 0;
-    if (newPassword.length >= minLength) strength++;
-    if (regexUppercase.test(newPassword)) strength++;
-    if (regexLowercase.test(newPassword)) strength++;
-    if (regexNumber.test(newPassword)) strength++;
-    if (regexSpecial.test(newPassword)) strength++;
+    if (password.length >= minLength) strength++;
+    if (regexUppercase.test(password)) strength++;
+    if (regexLowercase.test(password)) strength++;
+    if (regexNumber.test(password)) strength++;
+    if (regexSpecial.test(password)) strength++;
 
-    // Display Password Strength
+    return strength;
+}
+
+function updateStrengthBar(strengthBar, strength) {
     if (strength === 0) {
         strengthBar.style.width = '0%';
         strengthBar.style.backgroundColor = 'red';
@@ -335,17 +334,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else if (strength === 3) {
         strengthBar.style.width = '75%';
         strengthBar.style.backgroundColor = 'lightgreen';
-    } else if (strength === 8) {
+    } else if (strength === 4) {
         strengthBar.style.width = '100%';
         strengthBar.style.backgroundColor = 'green';
     }
+}
+
+function checkNewPassword() {
+    const newPassword = document.getElementById('new_password').value;
+    const strengthBar = document.getElementById('newPasswordStrength');
+    const newPasswordError = document.getElementById('newPasswordError');
+
+    const strength = calculatePasswordStrength(newPassword);
+
+    // Update Password Strength Bar
+    updateStrengthBar(strengthBar, strength);
 
     // Show or hide the error message based on password validity
-    if (strength < 4) {
-        newPasswordError.style.display = 'block';
-    } else {
-        newPasswordError.style.display = 'none';
-    }
+    newPasswordError.style.display = strength < 4 ? 'block' : 'none';
+    checkConfirmNewPassword(); // Ensure confirm password matches the new password
 }
 
 function checkConfirmNewPassword() {
@@ -354,44 +361,16 @@ function checkConfirmNewPassword() {
     const confirmPasswordError = document.getElementById('confirmPasswordError');
     const confirmPasswordStrengthBar = document.getElementById('confirmPasswordStrength');
 
-    let strength = 0;
-    const regexUppercase = /[A-Z]/;
-    const regexLowercase = /[a-z]/;
-    const regexNumber = /[0-9]/;
-    const regexSpecial = /[!@#$%^&*(),.?":{}|<>]/;
-    const minLength = 8;
+    // Use the same strength as the new password for confirm password
+    const strength = calculatePasswordStrength(confirmPassword);
 
-    if (confirmPassword.length >= minLength) strength++;
-    if (regexUppercase.test(confirmPassword)) strength++;
-    if (regexLowercase.test(confirmPassword)) strength++;
-    if (regexNumber.test(confirmPassword)) strength++;
-    if (regexSpecial.test(confirmPassword)) strength++;
-
-    // Display Confirm Password Strength
-    if (strength === 0) {
-        confirmPasswordStrengthBar.style.width = '0%';
-        confirmPasswordStrengthBar.style.backgroundColor = 'red';
-    } else if (strength === 1) {
-        confirmPasswordStrengthBar.style.width = '25%';
-        confirmPasswordStrengthBar.style.backgroundColor = 'orange';
-    } else if (strength === 2) {
-        confirmPasswordStrengthBar.style.width = '50%';
-        confirmPasswordStrengthBar.style.backgroundColor = 'yellow';
-    } else if (strength === 3) {
-        confirmPasswordStrengthBar.style.width = '75%';
-        confirmPasswordStrengthBar.style.backgroundColor = 'lightgreen';
-    } else if (strength === 4) {
-        confirmPasswordStrengthBar.style.width = '100%';
-        confirmPasswordStrengthBar.style.backgroundColor = 'green';
-    }
+    // Update Confirm Password Strength Bar
+    updateStrengthBar(confirmPasswordStrengthBar, strength);
 
     // Show or hide the error message if passwords don't match
-    if (confirmPassword !== newPassword) {
-        confirmPasswordError.style.display = 'block';
-    } else {
-        confirmPasswordError.style.display = 'none';
-    }
+    confirmPasswordError.style.display = confirmPassword !== newPassword ? 'block' : 'none';
 }
+
 
     </script>
 </body>

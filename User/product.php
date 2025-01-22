@@ -582,12 +582,13 @@ if (!empty($output)) {
 /* Close Button */
 .close-promo-modal {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 95px;
+    right: 810px;
     background: none;
     border: none;
     cursor: pointer;
     transition: transform 0.2s ease;
+    z-index: 9999; 
 }
 
 .close-promo-modal:hover {
@@ -1765,7 +1766,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 			</button>
 
 			<div class="row">
-				<div class="col-md-6 col-lg-7 p-b-30">
+				<div class="col-md-6 col-lg-7 p-b-30" style="margin-top: 100px">
 					<div class="p-l-25 p-r-30 p-lr-0-lg">
 						<div class="wrap-slick3 flex-sb flex-w">
 							<div class="wrap-slick3-dots"></div>
@@ -2658,7 +2659,7 @@ $(document).ready(function () {
                 console.log("Add to Cart Response for Promotion:", response);
                 if (response.success) {
                     Swal.fire({
-                        title: 'Promotion product has been added to your cart!',
+                        title: 'Product has been added to your cart!',
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then((result) => {
