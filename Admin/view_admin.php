@@ -162,27 +162,30 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             padding: 8px 10px;
         }
 
-        .pagination {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 10px;
-        }
-        .pagination button {
-            margin: 0 5px;
-            padding: 5px 10px;
-            background-color: #f4f4f4;
-            border: 1px solid #ddd;
-            cursor: pointer;
-        }
-        .pagination button.active {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-        }
-        .pagination button:disabled {
-            background-color: #ddd;
-            cursor: not-allowed;
-        }
+        .pagination-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.pagination-button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.pagination-button.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.pagination-button:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
     </style>
 </head>
 <body>
@@ -283,7 +286,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
 </tbody>
 
 </table>
-<div class="pagination" id="pagination"></div>
+<div id="pagination-controls" class="pagination-controls"></div>
 
             </div>
         </section>
@@ -317,50 +320,84 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         });
     });
 
-    const rowsPerPage = 1;
-        const tableBody = document.getElementById('table-body');
-        const rows = Array.from(tableBody.querySelectorAll('tr'));
-        const totalRows = rows.length;
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        const paginationContainer = document.getElementById('pagination');
-        let currentPage = 1;
+    document.addEventListener('DOMContentLoaded', () => {
+    const itemsPerPage = 10; // 每页显示的行数
+    const rows = document.querySelectorAll('.table-row');
+    const totalPages = Math.ceil(rows.length / itemsPerPage);
 
-        // Function to display rows for the current page
-        function displayPage(page) {
-            const start = (page - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
+    let currentPage = 1;
 
-            rows.forEach((row, index) => {
-                row.style.display = index >= start && index < end ? '' : 'none';
+    const renderPage = (page) => {
+        rows.forEach((row, index) => {
+            if (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) {
+                row.style.display = ''; // 显示当前页的行
+            } else {
+                row.style.display = 'none'; // 隐藏其他行
+            }
+        });
+        updatePaginationControls(page);
+    };
+
+    const createPaginationControls = () => {
+        const paginationContainer = document.getElementById('pagination-controls');
+
+        // 上一页按钮
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.classList.add('pagination-button');
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+        paginationContainer.appendChild(prevButton);
+
+        // 页码按钮
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('pagination-button');
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderPage(currentPage);
             });
-
-            // Highlight the current page button
-            Array.from(paginationContainer.children).forEach((btn, index) => {
-                btn.classList.toggle('active', index + 1 === page);
-            });
+            paginationContainer.appendChild(pageButton);
         }
 
-        // Function to create pagination buttons
-        function createPagination() {
-            for (let i = 1; i <= totalPages; i++) {
-                const button = document.createElement('button');
-                button.textContent = i;
-                button.addEventListener('click', () => {
-                    currentPage = i;
-                    displayPage(currentPage);
-                });
-                paginationContainer.appendChild(button);
+        // 下一页按钮
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.classList.add('pagination-button');
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
             }
+        });
+        paginationContainer.appendChild(nextButton);
+    };
 
-            // Set the first page as active
-            if (paginationContainer.children.length > 0) {
-                paginationContainer.children[0].classList.add('active');
+    const updatePaginationControls = (page) => {
+        const buttons = document.querySelectorAll('.pagination-button');
+        buttons.forEach((button, index) => {
+            if (index === 0) {
+                button.disabled = page === 1; // 上一页按钮
+            } else if (index === buttons.length - 1) {
+                button.disabled = page === totalPages; // 下一页按钮
+            } else {
+                button.classList.toggle('active', index === page);
             }
-        }
+        });
+    };
 
-        // Initialize the table display and pagination
-        createPagination();
-        displayPage(currentPage);
+    if (rows.length > itemsPerPage) {
+        createPaginationControls();
+        renderPage(currentPage);
+    } else {
+        rows.forEach(row => (row.style.display = '')); // 如果数据少于每页数，全部显示
+    }
+});
 
 </script>
 
