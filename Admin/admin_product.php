@@ -1325,55 +1325,67 @@ function add_check() {
 
         }
 
- 
+        var products = <?php echo json_encode($products); ?>;
+
+// 渲染数据到表格
+window.onload = function() {
+    var tableBody = document.querySelector("#myTable tbody");
+    products.forEach(function(product) {
+        var row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td><img src="../User/images/${product.Quick_view1}" style="max-height:100px; max-width:auto;" /></td>
+            <td>${product.product_name}</td>
+            <td>${product.tags}</td>
+            <td>${product.color}</td>
+            <td>${product.category_name.replace("_", " ")}</td>
+            <td>RM ${product.price}</td>
+            <td>${product.stock} <br><div style="font-size:80%; color:${product.stock < 1 ? 'red' : 'green'};">${product.stock < 1 ? 'Out of Stock' : 'In Stock'}</div></td>
+            <td style="color:${product.product_status === 'Available' ? '#0EAF09' : 'red'};">${product.product_status}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
         function exportExcel() {
-            fetch('admin_product.php') // 替换为实际的 PHP 文件路径
-        .then(response => response.json())
-        .then(data => {
             const wb = XLSX.utils.book_new();
-            wb.Props = {
-                Title: "Product List",
-                Author: "YLS Atelier",
-            };
+    wb.Props = {
+        Title: "Product List",
+        Author: "YLS Atelier",
+    };
 
-            // 准备数据行
-            const rows = data.map(row => [
-                row.product_name, 
-                row.tags, 
-                row.color, 
-                row.size, 
-                row.category_name, 
-                `RM ${row.price}`, 
-                row.stock,
-                row.product_status
-            ]);
+    // Prepare data for the table
+    const table = document.querySelector(".table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim()); // Excluding image and action columns
+    });
 
-            // 表头
-            const headers = ["Product Name", "Tags", "Colors", "Sizes", "Category", "Price", "Stock", "Status"];
-            rows.unshift(headers);
+    // Get table headers (excluding image and action columns)
+    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
+        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
+    }).filter(header => header !== null);
 
-            // 创建工作表
-            const ws = XLSX.utils.aoa_to_sheet(rows);
+    rows.unshift(headers);
 
-            // 设置列宽
-            ws['!cols'] = [
-                { wch: 30 }, // Product Name
-                { wch: 20 }, // Tags
-                { wch: 20 }, // Colors
-                { wch: 20 }, // Sizes
-                { wch: 20 }, // Category
-                { wch: 15 }, // Price
-                { wch: 20 }, // Stock
-                { wch: 15 }  // Status
-            ];
+    // Create worksheet from the extracted data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
 
-            // 将工作表添加到工作簿
-            XLSX.utils.book_append_sheet(wb, ws, "Products");
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 30 }, // Product Name
+        { wch: 25 }, // Tags
+        { wch: 20 }, // Colors
+        { wch: 20 }, // Category
+        { wch: 15 }, // Price
+        { wch: 20 }, // Stock (QTY)
+        { wch: 15 }  // Status
+    ];
 
-            // 保存文件
-            XLSX.writeFile(wb, "Product_List.xlsx");
-        })
-        .catch(error => console.error("Error fetching data: ", error));
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+
+    // Save the workbook as an Excel file
+    XLSX.writeFile(wb, "Product_List.xlsx");
 }
 
 
