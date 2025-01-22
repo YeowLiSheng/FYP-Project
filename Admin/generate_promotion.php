@@ -59,8 +59,8 @@ $query = "SELECT
 $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
-    // Step 1: Calculate maximum row height based on promotion_name column
-$max_promotion_name_height = 0; // Initialize the maximum height for promotion_name column
+    // Step 1: Calculate maximum row height
+$max_row_height = 0; // Initialize the maximum row height
 $cell_height = 6; // Base height per line
 
 $data = []; // Store all data rows for reuse
@@ -68,18 +68,31 @@ while ($row = $result->fetch_assoc()) {
     // Store row data
     $data[] = $row;
 
-    // Calculate the number of lines for promotion_name
+    // Fetch data for calculations
     $promotion_name = $row['promotion_name'];
-    $promotion_name_lines = ceil($pdf->GetStringWidth($promotion_name) / 40);
-    $promotion_name_height = $cell_height * $promotion_name_lines;
+    $tags = $row['tags'];
+    $color = $row['color'];
+    $category_name = $row['category_name'];
+    $status = $row['product_status'];
 
-    // Update maximum height for promotion_name column
-    if ($promotion_name_height > $max_promotion_name_height) {
-        $max_promotion_name_height = $promotion_name_height;
+    // Calculate the number of lines for each column
+    $promotion_name_lines = ceil($pdf->GetStringWidth($promotion_name) / 40);
+    $tags_lines = ceil($pdf->GetStringWidth($tags) / 30);
+    $color_lines = ceil($pdf->GetStringWidth($color) / 30);
+    $category_name_lines = ceil($pdf->GetStringWidth($category_name) / 25);
+    $status_lines = ceil($pdf->GetStringWidth($status) / 25);
+
+    // Determine the maximum number of lines for this row
+    $max_lines = max($promotion_name_lines, $tags_lines, $color_lines, $category_name_lines, $status_lines);
+
+    // Calculate row height and update maximum height
+    $row_height = $cell_height * $max_lines;
+    if ($row_height > $max_row_height) {
+        $max_row_height = $row_height;
     }
 }
 
-// Step 2: Render table with uniform row height based on promotion_name
+// Step 2: Render table with uniform row height
 foreach ($data as $row) {
     // Fetch data for each row
     $promotion_id = $row['promotion_id'];
@@ -92,16 +105,20 @@ foreach ($data as $row) {
     // Set left margin for row data
     $pdf->SetX($left_margin);
 
-    // Output row data with the maximum promotion_name height applied
-    $pdf->Cell(30, $max_promotion_name_height, $promotion_id, 1, 0, 'C');
+    // Output row data with the maximum row height
+    $pdf->Cell(30, $max_row_height, $promotion_id, 1, 0, 'C');
+
+    // MultiCell for text wrapping
     $x = $pdf->GetX();
     $y = $pdf->GetY();
     $pdf->MultiCell(40, $cell_height, $promotion_name, 1, 'C');
-    $pdf->SetXY($x + 40, $y); // Adjust to fixed width for next cell
-    $pdf->Cell(30, $max_promotion_name_height, $tags, 1, 0, 'C');
-    $pdf->Cell(30, $max_promotion_name_height, $color, 1, 0, 'C');
-    $pdf->Cell(25, $max_promotion_name_height, $category_name, 1, 0, 'C');
-    $pdf->Cell(25, $max_promotion_name_height, $status, 1, 1, 'C');
+    $pdf->SetXY($x + 40, $y); // Adjust to fixed width for the next cell
+
+    // Output other cells with the same maximum height
+    $pdf->Cell(30, $max_row_height, $tags, 1, 0, 'C');
+    $pdf->Cell(30, $max_row_height, $color, 1, 0, 'C');
+    $pdf->Cell(25, $max_row_height, $category_name, 1, 0, 'C');
+    $pdf->Cell(25, $max_row_height, $status, 1, 1, 'C'); // Move to the next line
 }
 } else {
     $pdf->SetX($left_margin);
