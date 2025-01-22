@@ -358,8 +358,13 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
     <div class="card-head" style="margin-bottom:30px;">
         <!-- Button Group (Export) and Generate Voucher Button -->
         <div class="d-flex justify-content-start align-items-center">
-            <!-- Export Dropdown -->
-            <div class="btn-group me-3" style="background-color: #4CAF50;">
+            
+
+            <!-- Generate Voucher Button -->
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#myModal">Generate Voucher</button>
+        
+        <!-- Export Dropdown -->
+        <div class="btn-group me-3" style="background-color: #4CAF50;">
                 <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     Export:
                 </button>
@@ -368,9 +373,6 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
                     <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
                 </ul>
             </div>
-
-            <!-- Generate Voucher Button -->
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#myModal">Generate Voucher</button>
         </div>
     </div>
             
