@@ -1325,28 +1325,8 @@ function add_check() {
 
         }
 
-        var products = <?php echo json_encode($products); ?>;
-
-// 渲染数据到表格
-window.onload = function() {
-    var tableBody = document.querySelector("#myTable tbody");
-    products.forEach(function(product) {
-        var row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td><img src="../User/images/${product.Quick_view1}" style="max-height:100px; max-width:auto;" /></td>
-            <td>${product.product_name}</td>
-            <td>${product.tags}</td>
-            <td>${product.color}</td>
-            <td>${product.category_name.replace("_", " ")}</td>
-            <td>RM ${product.price}</td>
-            <td>${product.stock} <br><div style="font-size:80%; color:${product.stock < 1 ? 'red' : 'green'};">${product.stock < 1 ? 'Out of Stock' : 'In Stock'}</div></td>
-            <td style="color:${product.product_status === 'Available' ? '#0EAF09' : 'red'};">${product.product_status}</td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-        function exportExcel() {
+ 
+       function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Product List",
