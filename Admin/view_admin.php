@@ -174,16 +174,19 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                         <ion-icon class="magni" name="search-outline"></ion-icon>
                         <input type="text" class="input" placeholder="Search with name" name="search" id="search">
                     </div>
+                    <form method="POST" action="generate_admin.php">
                         <div class="btn-group">
                             <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 Export:
                             </button>
                             <ul class="dropdown-menu">
-                            <li><button type="button" class="dropdown-item" name="admin_pdf" onclick="exportPDF()">PDF</button></li>
-                            <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
+                            <li>
+                <button type="button" class="dropdown-item" id="export_pdf">PDF</button>
+            </li>
+                                            <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
                             </ul>
                         </div>
-               
+                    </form>
                 </div>
 
                 <hr>
@@ -294,10 +297,18 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
 
-    function exportPDF() {
-            window.location.href = "generate_admin.php";
-
-        }
+    document.getElementById("export_pdf").addEventListener("click", function () {
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = ""; // Current page
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "generate_pdf";
+    input.value = "1";
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+});
 </script>
 
 </body>
