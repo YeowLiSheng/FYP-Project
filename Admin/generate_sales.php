@@ -98,6 +98,50 @@ if ($yearlySales_result->num_rows > 0) {
     $pdf->Cell(0, 10, 'No yearly sales data found.', 1, 1, 'C');
 }
 
+$pdf->Ln(10); // Space between sections
+
+// Add a section for Category Sales
+$pdf->SetFont('Arial', 'B', 14);
+$pdf->Cell(0, 10, 'Category Sales Summary', 0, 1, 'L');
+$pdf->Ln(5);
+
+// Category Sales Header
+$pdf->SetFont('Arial', 'B', 12);
+$categoryHeader = [
+    ['Category', 70],
+    ['Total Sales (RM)', 60]
+];
+foreach ($categoryHeader as $col) {
+    $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
+}
+$pdf->Ln();
+
+// Fetch Category Sales Data
+$categorySales_query = "
+    SELECT 
+        c.category_name, 
+        SUM(od.quantity) AS total_quantity
+    FROM order_details od
+    LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
+    LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+    LEFT JOIN category c 
+        ON p.category_id = c.category_id 
+        OR pp.category_id = c.category_id
+    GROUP BY c.category_id";
+$categorySales_result = $connect->query($categorySales_query);
+
+// Populate category data
+$pdf->SetFont('Arial', '', 10);
+if ($categorySales_result->num_rows > 0) {
+    while ($row = $categorySales_result->fetch_assoc()) {
+        $pdf->Cell(70, 10, $row['category_name'], 1, 0, 'C');
+        $pdf->Cell(60, 10, 'RM ' . number_format($row['category_sales'], 2), 1, 1, 'C');
+    }
+} else {
+    $pdf->Cell(0, 10, 'No category sales data found.', 1, 1, 'C');
+}
+
 $pdf->Ln(20); // Space before footer
 
 // Footer
