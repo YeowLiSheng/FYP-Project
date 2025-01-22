@@ -1327,47 +1327,53 @@ function add_check() {
 
  
         function exportExcel() {
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Product List",
-        Author: "YLS Atelier",
-    };
+            fetch('admin_product.php') // 替换为实际的 PHP 文件路径
+        .then(response => response.json())
+        .then(data => {
+            const wb = XLSX.utils.book_new();
+            wb.Props = {
+                Title: "Product List",
+                Author: "YLS Atelier",
+            };
 
-    // Select the table with product data
-    const table = document.querySelector(".table");
-    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        // Exclude the first (Product Image) and last (Actions) columns
-        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
-    });
+            // 准备数据行
+            const rows = data.map(row => [
+                row.product_name, 
+                row.tags, 
+                row.color, 
+                row.size, 
+                row.category_name, 
+                `RM ${row.price}`, 
+                row.stock,
+                row.product_status
+            ]);
 
-    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
-    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
-        // Exclude the first and last columns
-        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
-    }).filter(header => header !== null);
+            // 表头
+            const headers = ["Product Name", "Tags", "Colors", "Sizes", "Category", "Price", "Stock", "Status"];
+            rows.unshift(headers);
 
-    rows.unshift(headers);
+            // 创建工作表
+            const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Create worksheet from the extracted data
-    const ws = XLSX.utils.aoa_to_sheet(rows);
+            // 设置列宽
+            ws['!cols'] = [
+                { wch: 30 }, // Product Name
+                { wch: 20 }, // Tags
+                { wch: 20 }, // Colors
+                { wch: 20 }, // Sizes
+                { wch: 20 }, // Category
+                { wch: 15 }, // Price
+                { wch: 20 }, // Stock
+                { wch: 15 }  // Status
+            ];
 
-    // Set appropriate column widths for the product data, excluding the first and last columns
-    ws['!cols'] = [
-        { wch: 30 }, // Product Name
-        { wch: 25 }, // Tags
-        { wch: 20 }, // Colors
-        { wch: 20 }, // Category
-        { wch: 15 }, // Price
-        { wch: 20 }, // Stock (QTY)
-        { wch: 15 }  // Status
-    ];
+            // 将工作表添加到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, "Products");
 
-    // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Products");
-
-    // Save the workbook as an Excel file
-    XLSX.writeFile(wb, "Product_List.xlsx");
+            // 保存文件
+            XLSX.writeFile(wb, "Product_List.xlsx");
+        })
+        .catch(error => console.error("Error fetching data: ", error));
 }
 
 
