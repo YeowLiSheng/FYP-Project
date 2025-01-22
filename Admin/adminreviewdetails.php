@@ -328,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="table-body">
                 <?php if ($reviews->num_rows > 0): ?>
                     <?php while ($row = $reviews->fetch_assoc()): ?>
                         <tr>
@@ -371,10 +371,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php else: ?>
                     <tr><td colspan="7">No reviews found.</td></tr>
                 <?php endif; ?>
-                <div class="pagination" id="pagination"></div>
 
             </tbody>
         </table>
+        <div class="pagination" id="pagination"></div>
 
     </div>
 </div>
