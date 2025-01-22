@@ -1332,49 +1332,42 @@ function add_check() {
         Author: "YLS Atelier",
     };
 
-    // Prepare data for the table with formatted dates
+    // Select the table with product data
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
+        // Exclude the first (Product Image) and last (Actions) columns
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
     });
 
-    // Add headers
-    const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
+    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
+    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
+        // Exclude the first and last columns
+        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
+    }).filter(header => header !== null);
+
     rows.unshift(headers);
 
-    // Create worksheet from updated data
+    // Create worksheet from the extracted data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set column widths
+    // Set appropriate column widths for the product data, excluding the first and last columns
     ws['!cols'] = [
-        { wch: 15 }, // Order# column
-        { wch: 20 }, // Customer Name column
-        { wch: 25 }, // Order Time column
-        { wch: 50 }, // Shipped To column
-        { wch: 15 }, // Total column
-        { wch: 20 }, // Order Status column
+        { wch: 30 }, // Product Name
+        { wch: 25 }, // Tags
+        { wch: 20 }, // Colors
+        { wch: 20 }, // Category
+        { wch: 15 }, // Price
+        { wch: 20 }, // Stock (QTY)
+        { wch: 15 }  // Status
     ];
 
     // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
 
-    // Save the workbook
-    XLSX.writeFile(wb, "Order_List.xlsx");
+    // Save the workbook as an Excel file
+    XLSX.writeFile(wb, "Product_List.xlsx");
 }
+
 
 </script>
