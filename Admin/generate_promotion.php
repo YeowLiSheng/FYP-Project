@@ -87,9 +87,7 @@ while ($row = $result->fetch_assoc()) {
 
     // Calculate row height and update maximum height
     $row_height = $cell_height * $max_lines;
-    if ($row_height > $max_row_height) {
-        $max_row_height = $row_height;
-    }
+    $max_row_height = max($max_row_height, $row_height);
 }
 
 // Step 2: Render table with uniform row height
