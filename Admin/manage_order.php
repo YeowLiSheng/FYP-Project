@@ -340,6 +340,8 @@ include 'admin_sidebar.php';
                     <?php } ?>
                 </tbody>
             </table>
+            <div class="pagination" id="pagination"></div>
+
         </div>
     </div>
     <script>
@@ -415,7 +417,58 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
     XLSX.writeFile(wb, "Order_List.xlsx");
 }
 
-        
+document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.getElementById("table-body");
+    const pagination = document.getElementById("pagination");
+
+    const rows = Array.from(tableBody.rows);
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function initPagination() {
+        const totalRows = rows.length;
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        pagination.innerHTML = "";
+
+        // 添加 "Previous" 按钮
+        const prevButton = createPageButton("Previous", currentPage > 1, () => goToPage(currentPage - 1));
+        pagination.appendChild(prevButton);
+
+        // 添加页码按钮
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = createPageButton(i, true, () => goToPage(i), i === currentPage);
+            pagination.appendChild(pageButton);
+        }
+
+        // 添加 "Next" 按钮
+        const nextButton = createPageButton("Next", currentPage < totalPages, () => goToPage(currentPage + 1));
+        pagination.appendChild(nextButton);
+    }
+
+    function createPageButton(text, enabled, onClick, isActive = false) {
+        const button = document.createElement("button");
+        button.textContent = text;
+        button.disabled = !enabled;
+        button.className = `page-btn${isActive ? " active" : ""}`;
+        button.addEventListener("click", onClick);
+        return button;
+    }
+
+    function goToPage(pageNumber) {
+        currentPage = Math.max(1, Math.min(pageNumber, Math.ceil(rows.length / rowsPerPage)));
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            row.style.display = index >= start && index < end ? "" : "none";
+        });
+
+        initPagination();
+    }
+
+    goToPage(1);
+});
+
 
         function filterByDate() {
             const startDate = $("#start-date").val();
