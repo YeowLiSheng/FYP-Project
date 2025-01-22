@@ -144,7 +144,7 @@
     gap: 20px; /* Adjust space between boxes */
     padding: 20px;
 }
-/* 设置 Export 按钮的背景色 */
+
 .btn-primary {
         background-color: #4CAF50 !important;
         border-color: #4CAF50 !important;
@@ -161,7 +161,6 @@
         position: relative;
     }
 
-    /* 设置下拉菜单项颜色 */
     .dropdown-menu {
         display: none;
         position: absolute;
@@ -174,18 +173,18 @@
     }
 
     .dropdown-item {
-        background-color: #4CAF50; /* 按钮颜色 */
+        background-color: #4CAF50; 
         padding: 10px 15px;
         text-decoration: none;
-        color: #fff; /* 设置文字颜色为白色 */
+        color: #fff; 
         cursor: pointer;
         display: block;
         transition: background-color 0.2s;
     }
 
     .dropdown-item:hover {
-        background-color: #45a049; /* 悬停时的深绿色 */
-        color: white; /* 保持文字为白色 */
+        background-color: #45a049; 
+        color: white; 
     }
 .category-box {
     display: flex;
