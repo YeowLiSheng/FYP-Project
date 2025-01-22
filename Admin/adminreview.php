@@ -350,8 +350,9 @@ $review = "
             
 
         </div>
-        <div class="pagination" id="pagination"></div>
     </div>
+    <div class="pagination" id="pagination"></div>
+
     <script>
 
 
