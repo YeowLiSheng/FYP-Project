@@ -1328,7 +1328,7 @@ function add_check() {
         function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
-        Title: "Order List",
+        Title: "Product List",
         Author: "YLS Atelier",
     };
 
