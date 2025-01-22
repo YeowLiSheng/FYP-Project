@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const totalRows = rows.length;
 
     if (totalRows === 0) {
-        pagination.innerHTML = ""; // 没有数据时清空分页
+        pagination.innerHTML = ""; 
         return;
     }
 
@@ -384,7 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
         initPagination();
     }
 
-    goToPage(1); // 初始化第一页
+    goToPage(1); 
 });
 
 $(function () {
