@@ -27,12 +27,18 @@ $yearlySales_result = $connect->query($yearlySales_query);
 $yearlySales = $yearlySales_result->fetch_all(MYSQLI_ASSOC);
 
 // Fetch category-wise sales data (all categories)
-$categorySales_query = "SELECT c.category_name, SUM(od.quantity) AS total_quantity 
-                        FROM order_details od
-                        LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
-                        LEFT JOIN product p ON pv.product_id = p.product_id
-                        LEFT JOIN category c ON p.category_id = c.category_id
-                        GROUP BY c.category_id";
+$categorySales_query = "
+    SELECT 
+        c.category_name, 
+        SUM(od.quantity) AS total_quantity
+    FROM order_details od
+    LEFT JOIN product_variant pv ON od.variant_id = pv.variant_id
+    LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pp ON pv.promotion_id = pp.promotion_id
+    LEFT JOIN category c 
+        ON p.category_id = c.category_id 
+        OR pp.category_id = c.category_id
+    GROUP BY c.category_id";
 $categorySales_result = $connect->query($categorySales_query);
 $categorySales = $categorySales_result->fetch_all(MYSQLI_ASSOC);
 
