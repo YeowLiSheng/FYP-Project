@@ -117,24 +117,24 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
         }
 
  
-       function exportExcel() {
+        function exportVoucherExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
-        Title: "Product List",
+        Title: "Voucher List",
         Author: "YLS Atelier",
     };
 
-    // Select the table with product data
+    // Select the table with voucher data
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        // Exclude the first (Product Image) and last (Actions) columns
+        // Extract relevant columns from the table rows
         return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
     });
 
-    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
+    // Extract headers from the table
     const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
-        // Exclude the first and last columns
+        // Exclude the first and last columns (Voucher Image and Actions)
         return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
     }).filter(header => header !== null);
 
@@ -143,22 +143,21 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
     // Create worksheet from the extracted data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set appropriate column widths for the product data, excluding the first and last columns
+    // Set appropriate column widths for the voucher data
     ws['!cols'] = [
-        { wch: 30 }, // Product Name
-        { wch: 25 }, // Tags
-        { wch: 20 }, // Colors
-        { wch: 20 }, // Category
-        { wch: 15 }, // Price
-        { wch: 20 }, // Stock (QTY)
-        { wch: 15 }  // Status
+        { wch: 30 }, // Voucher Code
+        { wch: 20 }, // Discount Rate
+        { wch: 15 }, // Usage Limit
+        { wch: 15 }, // Minimum Amount
+        { wch: 40 }, // Description
+        { wch: 10 }, // Status
     ];
 
     // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Products");
+    XLSX.utils.book_append_sheet(wb, ws, "Vouchers");
 
     // Save the workbook as an Excel file
-    XLSX.writeFile(wb, "Product_List.xlsx");
+    XLSX.writeFile(wb, "Voucher_List.xlsx");
 }
 
 </script>
