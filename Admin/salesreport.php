@@ -467,6 +467,20 @@ function exportPDF() {
         <?php } ?>
     ];
 
+    const monthlySalesData = [
+        ['Month', 'Sales'],
+        <?php foreach ($monthlySales as $data) { ?>
+            ['<?php echo $data['month']; ?>', '<?php echo number_format($data['monthly_sales'], 2); ?>'],
+        <?php } ?>
+    ];
+
+    const yearlySalesData = [
+        ['Year', 'Sales'],
+        <?php foreach ($yearlySales as $data) { ?>
+            ['<?php echo $data['year']; ?>', '<?php echo number_format($data['yearly_sales'], 2); ?>'],
+        <?php } ?>
+    ];
+
     // 创建工作簿
     const workbook = XLSX.utils.book_new();
     
@@ -480,9 +494,16 @@ function exportPDF() {
     const categorySalesSheet = XLSX.utils.aoa_to_sheet(categorySalesData);
     XLSX.utils.book_append_sheet(workbook, categorySalesSheet, 'Category Sales');
 
+    const monthlySalesSheet = XLSX.utils.aoa_to_sheet(monthlySalesData);
+    XLSX.utils.book_append_sheet(workbook, monthlySalesSheet, 'Monthly Sales');
+
+    const yearlySalesSheet = XLSX.utils.aoa_to_sheet(yearlySalesData);
+    XLSX.utils.book_append_sheet(workbook, yearlySalesSheet, 'Yearly Sales');
+
     // 导出为Excel文件
     XLSX.writeFile(workbook, 'Sales_Report.xlsx');
 }
+
 
     function updateViewMode() {
         const viewMode = document.getElementById('view_mode').value;
