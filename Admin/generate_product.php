@@ -27,7 +27,7 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background for the header
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Product ID', 20],
+    ['Product ID', 30],
     ['Product Name', 40],
     ['Tags', 30],
     ['Color', 30],
