@@ -4,7 +4,6 @@ include 'dataconnection.php';
 
 <head>
 <script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
     function add_check(event) {
         event.preventDefault(); // Prevent form submission
