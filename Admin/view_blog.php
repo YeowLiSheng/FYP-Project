@@ -24,7 +24,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             background-color: #f4f4f4;
             color: #333;
             margin: 0;
-    height: 100vh; /* 确保填满整个视口高度 */
+    height: 100vh; 
     display: flex;
     flex-direction: column;
         }
@@ -32,8 +32,8 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             margin-top: 50px;
             margin-left: 78px;
     padding: 15px;
-    width: calc(100% - 78px); /* 动态调整宽度 */
-    min-height: 100vh; /* 确保高度填满页面 */
+    width: calc(100% - 78px);
+    min-height: 100vh; 
     background: white;
         }
         .admin-content {
