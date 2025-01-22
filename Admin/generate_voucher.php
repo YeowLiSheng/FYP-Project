@@ -27,11 +27,12 @@ $pdf->SetFillColor(230, 230, 230); // Light gray background
 $pdf->SetDrawColor(180, 180, 180); // Border color
 
 $header = [
-    ['Voucher Code', 40],
-    ['Discount Rate', 30],
-    ['Usage Limit', 30],
+    ['Voucher Code', 30],
+    ['Discount Rate', 25],
+    ['Usage Limit', 25],
     ['Min. Amount', 30],
-    ['Status', 30]
+    ['Status', 20],
+    ['Description', 60] // Wider column for description
 ];
 
 $left_margin = 10; 
@@ -53,13 +54,25 @@ if ($result->num_rows > 0) {
         $usage_limit = $row['usage_limit'];
         $min_amount = '$' . number_format($row['minimum_amount'], 2);
         $status = $row['voucher_status'];
+        $description = $row['voucher_des'];
 
         $pdf->SetX($left_margin);
-        $pdf->Cell(40, 6, $voucher_code, 1, 0, 'C');
-        $pdf->Cell(30, 6, $discount_rate, 1, 0, 'C');
-        $pdf->Cell(30, 6, $usage_limit, 1, 0, 'C');
+
+        // Add each column except description
+        $pdf->Cell(30, 6, $voucher_code, 1, 0, 'C');
+        $pdf->Cell(25, 6, $discount_rate, 1, 0, 'C');
+        $pdf->Cell(25, 6, $usage_limit, 1, 0, 'C');
         $pdf->Cell(30, 6, $min_amount, 1, 0, 'C');
-        $pdf->Cell(30, 6, $status, 1, 1, 'C');
+        $pdf->Cell(20, 6, $status, 1, 0, 'C');
+
+        // Add description with automatic line breaks
+        $x = $pdf->GetX(); // Get current X position
+        $y = $pdf->GetY(); // Get current Y position
+        $pdf->MultiCell(60, 6, $description, 1, 'L'); // Multiline cell for description
+
+        // Reset position to align other rows correctly
+        $pdf->SetXY($x + 60, $y);
+        $pdf->Ln(); // Move to the next row
     }
 } else {
     $pdf->SetX($left_margin);
