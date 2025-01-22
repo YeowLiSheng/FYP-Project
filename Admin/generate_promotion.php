@@ -59,42 +59,63 @@ $query = "SELECT
 $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        // Fetch data for each row
-        $promotion_id = $row['promotion_id'];
-        $promotion_name = $row['promotion_name'];
-        $tags = $row['tags'];
-        $color = $row['color'];
-        $category_name = $row['category_name'];
-        $status = $row['product_status'];
-    
-        // Calculate individual cell heights
-        $cell_height = 6;
-        $promotion_name_lines = ceil($pdf->GetStringWidth($promotion_name) / 40);
-        $tags_lines = ceil($pdf->GetStringWidth($tags) / 30);
-        $color_lines = ceil($pdf->GetStringWidth($color) / 30);
-        $category_name_lines = ceil($pdf->GetStringWidth($category_name) / 25);
-        $status_lines = ceil($pdf->GetStringWidth($status) / 25);
-    
-        // Determine the maximum number of lines in the row
-        $max_lines = max($promotion_name_lines, $tags_lines, $color_lines, $category_name_lines, $status_lines);
-        $row_height = $cell_height * $max_lines;
-    
-        // Set left margin for row data
-        $pdf->SetX($left_margin);
-    
-        // Output row data with the calculated row height
-        $pdf->Cell(30, $row_height, $promotion_id, 1, 0, 'C');
-        $x = $pdf->GetX();
-        $y = $pdf->GetY();
-        $pdf->MultiCell(40, $cell_height, $promotion_name, 1, 'C');
-        $pdf->SetXY($x + 40, $y); // Adjust to fixed width for next cell
-        $pdf->Cell(30, $row_height, $tags, 1, 0, 'C');
-        $pdf->Cell(30, $row_height, $color, 1, 0, 'C');
-        $pdf->Cell(25, $row_height, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, $row_height, $status, 1, 1, 'C');
+    // Step 1: Calculate maximum row height
+$max_row_height = 0; // Initialize the maximum row height
+$cell_height = 6; // Base height per line
+
+$data = []; // Store all data rows for reuse
+while ($row = $result->fetch_assoc()) {
+    // Store row data
+    $data[] = $row;
+
+    // Fetch data for calculations
+    $promotion_name = $row['promotion_name'];
+    $tags = $row['tags'];
+    $color = $row['color'];
+    $category_name = $row['category_name'];
+    $status = $row['product_status'];
+
+    // Calculate the number of lines for each column
+    $promotion_name_lines = ceil($pdf->GetStringWidth($promotion_name) / 40);
+    $tags_lines = ceil($pdf->GetStringWidth($tags) / 30);
+    $color_lines = ceil($pdf->GetStringWidth($color) / 30);
+    $category_name_lines = ceil($pdf->GetStringWidth($category_name) / 25);
+    $status_lines = ceil($pdf->GetStringWidth($status) / 25);
+
+    // Determine the maximum number of lines for this row
+    $max_lines = max($promotion_name_lines, $tags_lines, $color_lines, $category_name_lines, $status_lines);
+
+    // Calculate row height and update maximum height
+    $row_height = $cell_height * $max_lines;
+    if ($row_height > $max_row_height) {
+        $max_row_height = $row_height;
     }
-    
+}
+
+// Step 2: Render table with uniform row height
+foreach ($data as $row) {
+    // Fetch data for each row
+    $promotion_id = $row['promotion_id'];
+    $promotion_name = $row['promotion_name'];
+    $tags = $row['tags'];
+    $color = $row['color'];
+    $category_name = $row['category_name'];
+    $status = $row['product_status'];
+
+    // Set left margin for row data
+    $pdf->SetX($left_margin);
+
+    // Output row data with the maximum row height
+    $pdf->Cell(30, $max_row_height, $promotion_id, 1, 0, 'C');
+    $x = $pdf->GetX();
+    $y = $pdf->GetY();
+    $pdf->MultiCell(40, $cell_height, $promotion_name, 1, 'C');
+    $pdf->SetXY($x + 40, $y); // Adjust to fixed width for next cell
+    $pdf->Cell(30, $max_row_height, $tags, 1, 0, 'C');
+    $pdf->Cell(30, $max_row_height, $color, 1, 0, 'C');
+    $pdf->Cell(25, $max_row_height, $category_name, 1, 0, 'C');
+    $pdf->Cell(25, $max_row_height, $status, 1, 1, 'C');
+}
 } else {
     $pdf->SetX($left_margin);
     $pdf->Cell(0, 10, 'No promotion products found.', 1, 1, 'C');
