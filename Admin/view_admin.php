@@ -163,45 +163,31 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
         }
 
         .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    gap: 10px; /* 调整间距，让按钮显得更宽松 */
-}
-
-.pagination .page-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 5px;
+    }
+    .pagination .page-btn {
     margin: 0;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    color: #333;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
     cursor: pointer;
-    border-radius: 8px; /* 圆角效果 */
-    font-size: 14px;
-    transition: all 0.3s ease; /* 添加平滑过渡效果 */
-}
-
-.pagination .page-btn:hover {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff; /* 鼠标悬停样式 */
+    border-radius: 5px;
 }
 
 .pagination .page-btn.active {
     background-color: #007bff;
     color: white;
     border-color: #007bff;
-    font-weight: bold; /* 突出当前页 */
-    pointer-events: none; /* 禁用点击 */
 }
 
 .pagination .page-btn:disabled {
-    background-color: #f5f5f5;
+    background-color: #ddd;
     color: #aaa;
     cursor: not-allowed;
-    border-color: #ddd; /* 禁用样式 */
-    pointer-events: none;
 }
     </style>
 </head>
@@ -351,37 +337,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 初始化分页
     function initPagination() {
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        pagination.innerHTML = "";
+    const totalPages = Math.ceil(totalRows / rowsPerPage);
+    pagination.innerHTML = "";
 
-        // 添加上一页按钮
-        const prevButton = document.createElement("button");
-        prevButton.textContent = "Previous";
-        prevButton.disabled = currentPage === 1;
-        prevButton.addEventListener("click", () => goToPage(currentPage - 1));
-        pagination.appendChild(prevButton);
+    // 添加上一页按钮
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "Previous";
+    prevButton.disabled = currentPage === 1;
+    prevButton.classList.add("page-btn"); // 添加样式类
+    prevButton.addEventListener("click", () => goToPage(currentPage - 1));
+    pagination.appendChild(prevButton);
 
-        // 动态生成页码按钮（优化：只显示当前页周围的页码）
-        const maxPageButtons = 5; // 最多显示的页码按钮数量
-        const halfRange = Math.floor(maxPageButtons / 2);
-        const startPage = Math.max(1, currentPage - halfRange);
-        const endPage = Math.min(totalPages, currentPage + halfRange);
+    // 动态生成页码按钮
+    const maxPageButtons = 5;
+    const halfRange = Math.floor(maxPageButtons / 2);
+    const startPage = Math.max(1, currentPage - halfRange);
+    const endPage = Math.min(totalPages, currentPage + halfRange);
 
-        for (let i = startPage; i <= endPage; i++) {
-            const pageButton = document.createElement("button");
-            pageButton.textContent = i;
-            if (i === currentPage) pageButton.classList.add("active");
-            pageButton.addEventListener("click", () => goToPage(i));
-            pagination.appendChild(pageButton);
-        }
-
-        // 添加下一页按钮
-        const nextButton = document.createElement("button");
-        nextButton.textContent = "Next";
-        nextButton.disabled = currentPage === totalPages;
-        nextButton.addEventListener("click", () => goToPage(currentPage + 1));
-        pagination.appendChild(nextButton);
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement("button");
+        pageButton.textContent = i;
+        pageButton.classList.add("page-btn"); // 添加样式类
+        if (i === currentPage) pageButton.classList.add("active");
+        pageButton.addEventListener("click", () => goToPage(i));
+        pagination.appendChild(pageButton);
     }
+
+    // 添加下一页按钮
+    const nextButton = document.createElement("button");
+    nextButton.textContent = "Next";
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.classList.add("page-btn"); // 添加样式类
+    nextButton.addEventListener("click", () => goToPage(currentPage + 1));
+    pagination.appendChild(nextButton);
+}
+
 
     // 跳转到指定页面
     function goToPage(pageNumber) {
