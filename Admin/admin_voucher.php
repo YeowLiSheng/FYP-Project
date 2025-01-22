@@ -358,7 +358,10 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
             <div class="card-head" style="margin-bottom:30px;">
                 <button type="button" class="btn btn-success float-start" data-bs-toggle="modal"
                     data-bs-target="#myModal">Generate Voucher</button>
-                    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            </div>
+            <div class="btn-group" style="background-color: #4CAF50;">
+
+    <button type="button" class="btn-btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Export:
     </button>
     <ul class="dropdown-menu">
@@ -366,10 +369,6 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
         <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
     </ul>
 </div>
-            </div>
-            <div class="btn-group" style="background-color: #4CAF50;">
-
-    
             <div class="mb-3">
                 <input type="text" id="searchInput" onkeyup="filterTable()" class="form-control" placeholder="Search Vouchers by Code or Description">
             </div>
