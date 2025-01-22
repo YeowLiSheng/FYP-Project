@@ -1311,7 +1311,7 @@ function add_check() {
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_product.php";
+            window.location.href = "generate_promotion.php";
 
         }
 
