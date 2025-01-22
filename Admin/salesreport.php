@@ -289,15 +289,7 @@ $categorySalesJson = json_encode($categorySalesData);
             <p class="name">Total item Sold</p>
         </div>
     </div>
-    <div class="btn-group" style="background-color: #28a745;">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                Export:
-            </button>
-            <ul class="dropdown-menu">
-                <li><button type="button" class="dropdown-item" onclick="exportPDF()">PDF</button></li>
-                <li><button type="button" class="dropdown-item" onclick="exportExcel()">Excel</button></li>
-            </ul>
-        </div>
+
     <!-- View Mode Selector -->
 <form method="POST" id="viewForm">
     <div class="row g-3 align-items-center">
