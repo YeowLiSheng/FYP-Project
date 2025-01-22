@@ -237,9 +237,7 @@ $connect->close(); // Close the database connection
 					</div>
 
 					<div class="right-top-bar flex-w h-full">
-						<a href="faq.php" class="flex-c-m trans-04 p-lr-25">
-							Help & FAQs
-						</a>
+						
 
 						
 
@@ -283,7 +281,7 @@ $connect->close(); // Close the database connection
 							</li>
 
 							<li>
-								<a href="package.php">Packages</a>
+								<a href="promotion.php">Promotion</a>
 							</li>
 
 							<li class="label1" data-label1="hot">
