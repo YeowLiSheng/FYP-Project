@@ -16,7 +16,8 @@
 <?php include 'admin_sidebar.php' ?>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css" />
-  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
 <script src="https://cdn.datatables.net/2.1.3/js/dataTables.js"></script>
 
 <script>
@@ -66,6 +67,8 @@
         width: 1040px;
         height: 50px;
         border-radius: 10px;
+        text-indent: 40px;
+
     }
 
    
@@ -1311,7 +1314,7 @@ function add_check() {
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_product.php";
+            window.location.href = "generate_promotion.php";
 
         }
 
