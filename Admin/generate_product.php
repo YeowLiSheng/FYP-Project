@@ -73,7 +73,8 @@ if ($result->num_rows > 0) {
 
         // Output row data
         $pdf->Cell(25, 10, $product_id, 1, 0, 'C');
-        $pdf->Cell(40, 10, $product_name, 1, 0, 'C');
+        $pdf->MultiCell($cell_width, $cell_height, $promotion_name, 1, 'C');
+        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
         $pdf->Cell(30, 10, $tags, 1, 0, 'C');
         $pdf->Cell(30, 10, $color, 1, 0, 'C');
         $pdf->Cell(25, 10, $category_name, 1, 0, 'C');
