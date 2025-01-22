@@ -171,23 +171,32 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     }
     .pagination .page-btn {
     margin: 0;
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
+    padding: 10px 15px; /* 增加按钮内边距 */
+    border: 1px solid #007bff; /* 使用蓝色边框 */
+    background-color: #f8f9fa; /* 使用浅灰色背景 */
+    color: #007bff; /* 蓝色文字 */
     cursor: pointer;
     border-radius: 5px;
+    font-size: 1em; /* 调整字体大小 */
+    transition: background-color 0.3s, color 0.3s; /* 添加交互动画 */
 }
 
 .pagination .page-btn.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
+    background-color: #007bff; /* 蓝色背景 */
+    color: white; /* 白色文字 */
+    font-weight: bold; /* 加粗文字 */
+}
+
+.pagination .page-btn:hover {
+    background-color: #0056b3; /* 深蓝色背景 */
+    color: white; /* 白色文字 */
 }
 
 .pagination .page-btn:disabled {
-    background-color: #ddd;
-    color: #aaa;
-    cursor: not-allowed;
+    background-color: #e9ecef; /* 浅灰色背景 */
+    color: #6c757d; /* 深灰色文字 */
+    cursor: not-allowed; /* 不允许点击 */
+    border-color: #ced4da; /* 浅灰色边框 */
 }
     </style>
 </head>
