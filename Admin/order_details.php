@@ -252,8 +252,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <td><?= $row['name'] ?></td>
                         <td><?= $row['color']?></td>
                         <td><?= $row['quantity'] ?></td>
-                        <td>RM <?= number_format($row['unit_price'], 2) ?></td>
-                        <td>RM <?= number_format($row['total_price'], 2) ?></td>
+                        <td>$ <?= number_format($row['unit_price'], 2) ?></td>
+                        <td>$ <?= number_format($row['total_price'], 2) ?></td>
                     </tr>
                 <?php endwhile; ?>
             </table>
@@ -262,9 +262,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       
         <div class="order-summary">
             <h4><i class="fas fa-calculator icon"></i>Order Summary</h4>
-            <div class="summary-item"><span>Grand Total:</span><span class="value">RM <?= number_format($order_data['Grand_total'], 2) ?></span></div>
-            <div class="summary-item"><span>Discount:</span><span class="value">- RM <?= number_format($order_data['discount_amount'], 2) ?></span></div>
-            <div class="summary-item"><span>Total Payment:</span><span class="value">RM <?= number_format($order_data['final_amount'], 2) ?></span></div>
+            <div class="summary-item"><span>Grand Total:</span><span class="value">$ <?= number_format($order_data['Grand_total'], 2) ?></span></div>
+            <div class="summary-item"><span>Discount:</span><span class="value">- $ <?= number_format($order_data['discount_amount'], 2) ?></span></div>
+            <div class="summary-item"><span>Total Payment:</span><span class="value">$ <?= number_format($order_data['final_amount'], 2) ?></span></div>
         </div>
 
        

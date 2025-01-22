@@ -1061,9 +1061,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 									alt="<?php echo htmlspecialchars($item_name); ?>">
 								<div>
 								<p><?php echo htmlspecialchars($item_name); ?> (<?php echo htmlspecialchars($color); ?>)</p>
-									<span>Price: RM<?php echo number_format($item_price, 2); ?></span><br>
+									<span>Price: $<?php echo number_format($item_price, 2); ?></span><br>
 									<span>Quantity: <?php echo $total_qty; ?></span><br>
-									<span>Subtotal: RM<?php echo number_format($item_total_price, 2); ?></span>
+									<span>Subtotal: $<?php echo number_format($item_total_price, 2); ?></span>
 								</div>
 							</div>
 						<?php endwhile; ?>
@@ -1074,10 +1074,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 							// Assuming $discount is calculated elsewhere or based on some logic
 							$total_payment = $grand_total - $discount_amount ;
 							?>
-							<p>Grand total: <span>RM<?php echo number_format($grand_total, 2); ?></span></p>
-							<p>Discount: <span>-RM<?php echo number_format($discount_amount, 2); ?></span></p>
+							<p>Grand total: <span>$<?php echo number_format($grand_total, 2); ?></span></p>
+							<p>Discount: <span>-$<?php echo number_format($discount_amount, 2); ?></span></p>
 							<p class="checkout-total">Total Payment:
-								<span>RM<?php echo number_format($total_payment, 2); ?></span>
+								<span>$<?php echo number_format($total_payment, 2); ?></span>
 							</p>
 						</div>
 							

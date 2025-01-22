@@ -401,8 +401,7 @@ function closeImageModal() {
             cancelButtonText: 'No, keep it'
         }).then((result) => {
             if (result.isConfirmed) {
-                // 当用户点击 "Yes, delete it!" 时，提交表单并触发删除逻辑
-                // 将删除按钮的值传递到后端
+
                 const form = document.getElementById('replyForm');
                 const deleteReplyInput = document.createElement('input');
                 deleteReplyInput.type = 'hidden';
