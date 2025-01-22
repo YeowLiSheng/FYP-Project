@@ -295,7 +295,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     });
 
     function exportPDF() {
-            window.location.href = "generate_review.php";
+            window.location.href = "generate_admin.php";
 
         }
 </script>
