@@ -217,6 +217,43 @@ include 'admin_sidebar.php';
                 font-size: 12px;
             }
         }
+
+        .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 5px;
+    }
+    .pagination .page-btn {
+    margin: 0;
+    padding: 10px 15px; 
+    border: 1px solid #007bff; 
+    background-color: #f8f9fa; 
+    color: #007bff; 
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1em; 
+    transition: background-color 0.3s, color 0.3s; 
+}
+
+.pagination .page-btn.active {
+    background-color: #007bff; 
+    color: white; 
+    font-weight: bold; 
+}
+
+.pagination .page-btn:hover {
+    background-color: #0056b3; 
+    color: white; 
+}
+
+.pagination .page-btn:disabled {
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed;
+    border-color: #ced4da; 
+}
     </style>
 </head>
 <body>
@@ -281,10 +318,74 @@ include 'admin_sidebar.php';
                     <?php } ?>
                 </tbody>
             </table>
+            <div class="pagination" id="pagination"></div>
+
         </div>
     </div>
     <script>
 
+document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.getElementById("table-body");
+    const pagination = document.getElementById("pagination");
+
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    const rows = Array.from(tableBody.rows).filter(row => !row.classList.contains("no-data"));
+    const totalRows = rows.length;
+
+    if (totalRows === 0) {
+        pagination.innerHTML = ""; // 没有数据时清空分页
+        return;
+    }
+
+    function initPagination() {
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        pagination.innerHTML = "";
+
+        const prevButton = document.createElement("button");
+        prevButton.textContent = "Previous";
+        prevButton.disabled = currentPage === 1;
+        prevButton.classList.add("page-btn");
+        prevButton.addEventListener("click", () => goToPage(currentPage - 1));
+        pagination.appendChild(prevButton);
+
+        const maxPageButtons = 5;
+        const halfRange = Math.floor(maxPageButtons / 2);
+        const startPage = Math.max(1, currentPage - halfRange);
+        const endPage = Math.min(totalPages, currentPage + halfRange);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement("button");
+            pageButton.textContent = i;
+            pageButton.classList.add("page-btn");
+            if (i === currentPage) pageButton.classList.add("active");
+            pageButton.addEventListener("click", () => goToPage(i));
+            pagination.appendChild(pageButton);
+        }
+
+        const nextButton = document.createElement("button");
+        nextButton.textContent = "Next";
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.classList.add("page-btn");
+        nextButton.addEventListener("click", () => goToPage(currentPage + 1));
+        pagination.appendChild(nextButton);
+    }
+
+    function goToPage(pageNumber) {
+        currentPage = Math.max(1, Math.min(pageNumber, Math.ceil(totalRows / rowsPerPage)));
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            row.style.display = index >= start && index < end ? "" : "none";
+        });
+
+        initPagination();
+    }
+
+    goToPage(1); // 初始化第一页
+});
 
 $(function () {
     
