@@ -440,7 +440,7 @@ document.getElementById("export-pdf").addEventListener("click", exportPDF);
         document.getElementById("export-excel").addEventListener("click", exportExcel);
 
         function exportPDF() {
-            window.location.href = "generate_transaction.php";
+            window.location.href = "generate_sales.php";
 
         }
 
