@@ -347,11 +347,11 @@ $review = "
                 </tbody>
             </table>
 
-            
+            <div class="pagination" id="pagination"></div>
 
         </div>
     </div>
-    <div class="pagination" id="pagination"></div>
+
 
     <script>
 
