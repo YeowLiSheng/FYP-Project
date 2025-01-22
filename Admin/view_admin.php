@@ -30,7 +30,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
     
         }
         main {
-            padding-top: 50px;
+            padding-top: 1000px;
             margin-left: 78px;
     padding: 15px;
     width: calc(100% - 78px); /* 动态调整宽度 */
