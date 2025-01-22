@@ -57,7 +57,8 @@ if (isset($_POST["admin_pdf"])) {
     $pdf->SetY(-15);
     $pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
 
-    $pdf->Output();
+
+    $pdf->Output('D', 'Admin_List.pdf'); // 自动下载文件
 }
 
 if (isset($_POST["admin_excel"])) {
