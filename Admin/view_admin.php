@@ -174,7 +174,6 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                         <ion-icon class="magni" name="search-outline"></ion-icon>
                         <input type="text" class="input" placeholder="Search with name" name="search" id="search">
                     </div>
-                    <form method="POST" action="generate_admin.php">
                         <div class="btn-group">
                             <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 Export:
@@ -184,7 +183,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
                                 <li><button type="submit" class="dropdown-item" name="admin_excel">CSV</button></li>
                             </ul>
                         </div>
-                    </form>
+               
                 </div>
 
                 <hr>
@@ -293,6 +292,7 @@ $admin_id = $_SESSION['admin_id']; // Get the admin ID from the session
             }
         });
     });
+
 
     function exportPDF() {
             window.location.href = "generate_admin.php";
