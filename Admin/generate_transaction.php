@@ -53,7 +53,7 @@ if ($result->num_rows > 0) {
         $transaction_id = $row['payment_id'];
         $customer_name = $row['user_name'];
         $order_id = $row['order_id'];
-        $transaction_amount = 'RM ' . number_format($row['payment_amount'], 2);
+        $transaction_amount = '$ ' . number_format($row['payment_amount'], 2);
         $payment_date = date('d/m/Y H:i:s', strtotime($row['payment_date']));
 
         // Set left margin for row data
