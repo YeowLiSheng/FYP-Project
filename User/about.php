@@ -90,6 +90,8 @@ if ($distinct_items_result) {
     $row = $distinct_items_result->fetch_assoc();
     $distinct_count = $row['distinct_count'] ?? 0;
 }
+
+
 ?>
 
 
