@@ -38,7 +38,7 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
 
     $address = null;
 }
-
+d
 $cart_items_query = "
     SELECT 
         sc.variant_id,
