@@ -239,7 +239,7 @@ if (isset($_POST['submitbtn'])) {
 
         <div class="form-group">
             <label for="address">Address</label>
-            <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($address_row['address'] ?? ''); ?>" >
+            <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($address_row['address'] ?? ''); ?>" require>
             <div class="error-message" id="address-error">Please enter your address.</div>
         </div>
 
@@ -269,13 +269,13 @@ if (isset($_POST['submitbtn'])) {
 
         <div class="form-group">
             <label for="city">City</label>
-            <input type="text" id="city" name="city" value="<?php echo htmlspecialchars($address_row['city'] ?? ''); ?>" >
+            <input type="text" id="city" name="city" value="<?php echo htmlspecialchars($address_row['city'] ?? ''); ?>" require>
             <div class="error-message" id="city-error">Please enter your city.</div>
         </div>
 
         <div class="form-group">
             <label for="postcode">Postcode</label>
-            <input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars($address_row['postcode'] ?? ''); ?>">
+            <input type="text" id="postcode" name="postcode" value="<?php echo htmlspecialchars($address_row['postcode'] ?? ''); ?>"require>
             <div class="error-message" id="postcode-error">Postcode must be 5 digits.</div>
         </div>
 
