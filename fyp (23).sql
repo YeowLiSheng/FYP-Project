@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 23, 2025 at 03:13 PM
+-- Generation Time: Jan 23, 2025 at 04:47 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -621,7 +621,10 @@ CREATE TABLE `voucher` (
 INSERT INTO `voucher` (`voucher_id`, `voucher_code`, `discount_rate`, `voucher_status`, `usage_limit`, `minimum_amount`, `voucher_des`, `voucher_pic`) VALUES
 (1, 'NEWUSER01', 10.00, 'Active', 1, 0.00, '10% discount for all new user with no minimum spend!!!', 'New-user-discount.png'),
 (2, 'DIS4FIVET', 5.00, 'Active', 3, 5000.00, '5% discount for all purchasement above $5000', '5-discount.png'),
-(3, 'DIS4THREET', 3.00, 'Active', 2, 3000.00, '3% discount for all purchasement above $3000', '3-dis.jpg');
+(3, 'DIS4THREET', 3.00, 'Active', 2, 3000.00, '3% discount for all purchasement above $3000', '3-dis.jpg'),
+(4, 'TIMESALES22', 15.00, 'Active', 1, 1000.00, 'Limited time sales!!!', 'LMtime.png'),
+(5, 'AMZDIS10', 10.00, 'Active', 5, 2500.00, 'Amazing discount for all users!!!', 'AMZ.webp'),
+(6, 'NSESON8', 8.00, 'Active', 5, 3000.00, 'New season sales!!!', 'SAL.png');
 
 -- --------------------------------------------------------
 
@@ -675,7 +678,8 @@ ALTER TABLE `category`
 -- Indexes for table `contact_us`
 --
 ALTER TABLE `contact_us`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_id` (`user_id`);
 
 --
 -- Indexes for table `orders`
@@ -883,7 +887,7 @@ ALTER TABLE `user_address`
 -- AUTO_INCREMENT for table `voucher`
 --
 ALTER TABLE `voucher`
-  MODIFY `voucher_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `voucher_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `voucher_usage`
