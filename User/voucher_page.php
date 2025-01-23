@@ -194,7 +194,7 @@ $distinct_count = 0;
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
@@ -202,7 +202,7 @@ $distinct_count = 0;
 								<a href="promotion.php">Promotion</a>
 							</li>
 
-							<li class="label1" data-label1="hot">
+							<li class="label1 active-menu" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 

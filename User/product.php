@@ -433,26 +433,21 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                                 <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
                                 ' . $message . '
                             </div>
-                            <div class="block2-txt-child2 flex-r p-t-3">
-                                <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
-                                    <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                    <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="block2-txt-child2 flex-r p-t-3">';
                     
-        // Display color circles
-        foreach ($colors as $index => $color) {
-            $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
-            $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
-            echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
-                    data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
-                    <i class="zmdi ' . $iconClass . '"></i>
-                </span>';
-        }
+                            <div class="block2-txt-child2 flex-r p-t-3">';
+                    
+                            // Display color circles
+                            foreach ($colors as $index => $color) {
+                                $iconClass = strtolower($color['color']) === 'white' ? 'zmdi-circle-o' : 'zmdi-circle';
+                                $styleColor = strtolower($color['color']) === 'white' ? '#aaa' : $color['color'];
+                                echo '<span class="fs-15 lh-12 m-r-6 color-circle" style="color: ' . $styleColor . '; cursor: pointer;" 
+                                        data-image="images/' . $color['image'] . '" data-product-id="' . $product_id . '">
+                                        <i class="zmdi ' . $iconClass . '"></i>
+                                    </span>';
+                            }
 
         echo '      </div>
+                    </div>
                     </div>
                   </div>';
     }
@@ -514,6 +509,11 @@ if (!empty($output)) {
 
 
 <style>
+    .underline {
+        text-decoration: none; /* Remove default underline */
+    border-bottom: 3px solid black; /* Add a thick black underline */
+    padding-bottom: 2px; /* Adjust spacing between the text and underline */
+}
 .pagination {
     display: flex;
     justify-content: center;
@@ -864,7 +864,9 @@ a.disabled-link {
     position: relative;
     overflow: hidden; /* Prevent overflow issues */
 }
-
+.isotope-item{
+    margin-right: -10px;
+}
 .footer {
     position: relative;
     z-index: 10; /* Ensure footer stays below content */
@@ -1466,7 +1468,16 @@ h5 a:hover {
 									</span>
 
 									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="beige">
-										Beige
+										Wheat
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Green;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Green">
+										Green
 									</a>
 								</li>
 
@@ -1477,6 +1488,51 @@ h5 a:hover {
 
 									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="white">
 										White
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Lightblue;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Lightblue">
+                                        Light Blue
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Darkblue;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Darkblue">
+                                        Dark Blue
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Yellow;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Yellow">
+                                        Yellow
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Pink;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Pink">
+                                        Pink
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Purple;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Purple">
+                                        Purple
 									</a>
 								</li>
 							</ul>
@@ -1548,7 +1604,7 @@ h5 a:hover {
 
 
                     // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -10px;">
+                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -30px;">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -1565,13 +1621,7 @@ h5 a:hover {
                                         <span class="stext-105 cl3">$' . $product['product_price'] . '</span>
                                         ' . $message . '
                                     </div>
-                                    <div class="block2-txt-child2 flex-r p-t-3">
-                                        <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>
-                                            <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                            <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                                        </a>
-                                    </div>
-                                </div>
+                                
                                 <div class="block2-txt-child2 flex-r p-t-3">';
                     
                                     // Display color circles
@@ -1586,6 +1636,7 @@ h5 a:hover {
                             
 
                 echo '      </div>
+                            </div>
                             </div>
                           </div>';
                 }
@@ -3008,6 +3059,7 @@ document.addEventListener("click", function (event) {
     // Check if the clicked element or its parent has the class "color-circle"
     if (event.target.closest(".color-circle")) {
         var circle = event.target.closest(".color-circle");
+        var selectedIcon = circle.querySelector("i");
 
         // Retrieve necessary attributes
         var newImage = circle.getAttribute("data-image");
@@ -3028,6 +3080,12 @@ document.addEventListener("click", function (event) {
         } else {
             console.log("Product image element not found or new image path missing.");
         }
+        // Underline the selected icon
+        var allIcons = circle.parentElement.querySelectorAll(".color-circle i");
+        allIcons.forEach(function (icon) {
+            icon.classList.remove("underline");
+        });
+        selectedIcon.classList.add("underline");
     }
 });
 

@@ -503,11 +503,11 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
-                            <li>
+                            <li class="active-menu">
 								<a href="promotion.php">Promotion</a>
 							</li>
 
@@ -853,10 +853,10 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
                             }
                 
-                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '"style="margin-right: -30px;">
                                     <div class="block2 ' . $productStyle . '">
                                         <div class="block2-pic hov-img0" >
-                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '"style="margin-right: -30px;">
+                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
                                             <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                                 data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
                                             </a>
@@ -960,10 +960,10 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
                                 }
                     
-                                echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '" style="margin-right: -30px;">
                                         <div class="block2 ' . $productStyle . '">
                                             <div class="block2-pic hov-img0" >
-                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '"style="margin-right: -30px;">
+                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
                                                 <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                                     data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
                                                 </a>
@@ -1645,97 +1645,6 @@ $(document).on('click', '.js-addcart-detail', function (event) {
 			$(this).attr('data-thumb', '');
 		});
 	});
-</script>
-<script>
-    // Add click event listener to cart item images
-    document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.delete-item').forEach(function (item) {
-        item.addEventListener('click', function () {
-            const id = this.dataset.id;
-            const type = this.dataset.type;
-
-            let body = `delete_item=1&id=${id}&type=${type}`;
-
-            // Append additional data based on the type
-            if (type === 'product') {
-                const color = this.dataset.color;
-                const size = this.dataset.size;
-                body += `&color=${color}&size=${size}`;
-                console.log('Deleting product:', { id, color, size });
-            } else if (type === 'package') {
-                const product1_color = this.dataset.product1Color;
-                const product1_size = this.dataset.product1Size;
-                const product2_color = this.dataset.product2Color;
-                const product2_size = this.dataset.product2Size;
-                const product3_color = this.dataset.product3Color;
-                const product3_size = this.dataset.product3Size;
-
-                body += `&product1_color=${product1_color}&product1_size=${product1_size}`;
-                body += `&product2_color=${product2_color}&product2_size=${product2_size}`;
-                body += `&product3_color=${product3_color}&product3_size=${product3_size}`;
-                console.log('Deleting package:', { id, product1_color, product1_size, product2_color, product2_size, product3_color, product3_size });
-            }
-
-            // Confirm deletion
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'Do you want to delete this item from your cart?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'No, keep it',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Send AJAX request to delete the item
-                    fetch(location.href, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: body,
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Response:', data); // Log response for debugging
-                        if (data.success) {
-                            // Remove the item from the DOM
-                            document.querySelector('.header-cart-item').remove();
-                            // Update the total price
-                            document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
-                            Swal.fire({
-                                title: 'Item removed!',
-                                text: 'The item has been removed from your cart.',
-                                icon: 'success',
-                                confirmButtonText: 'OK',
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: data.message || 'Failed to remove the item. Please try again.',
-                                icon: 'error',
-                                confirmButtonText: 'OK',
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Something went wrong. Please try again later.',
-                            icon: 'error',
-                            confirmButtonText: 'OK',
-                        });
-                    });
-                }
-            });
-
-        });
-    });
-});
 </script>
 <script>
 // Delegate event to dynamically loaded elements
