@@ -70,6 +70,26 @@ $cart_result = mysqli_query($conn, $cart_query);
 $cart_result_order = mysqli_query($conn, $cart_query);
 
 
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $conn->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+
 if (mysqli_num_rows($cart_result) === 0) {
 
     echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
@@ -767,7 +787,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			</div>
 		</div>
 	</header>
-	
+
 	<!-- Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
