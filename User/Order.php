@@ -831,7 +831,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 					<img src="images/' . $order['product_image'] . '" alt="Product Image">
 					<div>
 						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d", strtotime($order['order_date'])) . '</p>
+						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d H:i:s", strtotime($order['order_date'])) . '</p>
 						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
 						<p><i class="fa fa-dollar-sign"></i> Total Price: $ ' . $order['final_amount'] . '</p>';
 						

@@ -1702,14 +1702,21 @@ document.getElementById('expiry-date').addEventListener('input', function () {
 
 			const datePattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
 			if (!datePattern.test(expiryDate.value)) {
-        alert('Please enter a valid expiration date (format: MM/YY).');
-        return false;
+				Swal.fire({
+  icon: 'error',
+  title: 'Invalid Expiration Date',
+  text: 'Please enter a valid expiration date (format: MM/YY).',
+});        return false;
     } else {
         const [month, year] = expiryDate.value.split('/').map(Number);
         const currentYear = new Date().getFullYear() % 100;
         const currentMonth = new Date().getMonth() + 1;
         if (year < currentYear || (year === currentYear && month < currentMonth)) {
-            alert('Please enter a valid, non-expired expiration date.');
+            Swal.fire({
+  icon: 'error',
+  title: 'Invalid Expiration Date',
+  text: 'Please enter a valid expiration date (format: MM/YY).',
+});
             return false;
         }
     }
