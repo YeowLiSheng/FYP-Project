@@ -203,7 +203,7 @@ if ($cart_items_result && $cart_items_result->num_rows > 0) {
             if ($cart_item['product_status'] == 2 || $cart_item['product_stock'] <= 0) {
                 $cart_item['unavailable'] = true;
                 $checkout_locked = true;
-            }else if($cart_item['promotion_status'] == 2 || $cart_item['product_stock'] <= 0) {
+            }else if($cart_item['promotion_status'] == 2 || $cart_item['total_qty'] > $cart_item['product_stock']) {
                 $cart_item['unavailable'] = true;
                 $checkout_locked = true;
             }
