@@ -763,7 +763,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 													<img src="images/' . $quick_view_image . '" alt="IMG">
 												</div>
 											</td>
-											<td class="column-2">' . $cart_item['promotion_name'] . '</td>
+											<td class="column-2">' . $cart_item['promotion_name'] . ' <br> Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '</td>
 											<td class="column-3">$' . number_format($cart_item['promotion_price'], 2) . '</td>
 											<td class="column-4">
 												<div class="wrap-num-product flex-w m-l-auto m-r-0">
@@ -789,7 +789,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 													<img src="images/' . $quick_view_image . '" alt="IMG">
 												</div>
 											</td>
-											<td class="column-2">' . $cart_item['product_name'] . '</td>
+											<td class="column-2">' . $cart_item['product_name'] . ' <br> Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '</td>
 											<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
 											<td class="column-4">
 												<div class="wrap-num-product flex-w m-l-auto m-r-0">
