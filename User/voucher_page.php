@@ -55,7 +55,7 @@ $cart_items_query = "
     GROUP BY 
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
-$items_per_page = 2;
+$items_per_page = 5;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($current_page < 1) {
     $current_page = 1;
