@@ -769,7 +769,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 	<!-- Cart -->
 	<!-- Cart -->
-<div class="wrap-header-cart js-panel-cart">
+	<div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
     <div class="header-cart flex-col-l p-l-65 p-r-25">
@@ -782,82 +782,48 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <i class="zmdi zmdi-close"></i>
             </div>
         </div>
-        
+
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
                 $total_price = 0;
 
-                if ($cart_items_result->num_rows > 0) {
-                    while ($cart_item = $cart_items_result->fetch_assoc()) {
-                        $total_price += $cart_item['total_price'];
-                        $quick_view_image = '';
-                        
-                        // Find the appropriate image based on the product or promotion
-                        foreach ($product_variants as $variant) {
-                            // Check if the item is a promotion
-                            if (!empty($cart_item['promotion_id'])) {
-                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
-                                    $quick_view_image = $variant['Quick_View1'];
-                                    break;
-                                }
-                            } else {
-                                // Check if the item is a regular product
-                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
-                                    $quick_view_image = $variant['Quick_View1'];
-                                    break;
-                                }
-                            }
-                        }                        
+                if ($cart_result && $cart_result->num_rows > 0) {
+                    while ($cart_item = $cart_result->fetch_assoc()) {
+                        $total_price += $cart_item['item_total_price'];
+                        $product_image = htmlspecialchars($cart_item['product_image']);
+                        $item_name = htmlspecialchars($cart_item['item_name']);
+                        $item_price = number_format($cart_item['item_price'], 2);
+                        $total_qty = $cart_item['total_qty'];
+                        $item_total_price = number_format($cart_item['item_total_price'], 2);
+                        $color = htmlspecialchars($cart_item['color']);
+                        $size = htmlspecialchars($cart_item['size']);
+                        $item_link = "product-detail.php?id=" . $cart_item['item_id'];
 
-                        // Check if the item is a promotion
-                        if (!empty($cart_item['promotion_id'])) {
-                            // Render promotion details
-                            echo '
-                            <li class="header-cart-item flex-w flex-t m-b-12">
-                                <div class="header-cart-item-img">
-                                    <img src="images/' . $quick_view_image . '" alt="IMG">
-                                </div>
-                                <div class="header-cart-item-txt p-t-8">
-                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                        ' . $cart_item['promotion_name'] . '
-                                    </a>
-                                    <span class="header-cart-item-info">
-                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
-                                    </span>
-                                    <span class="header-cart-item-info">
-                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                    </span>
-                                </div>
-                            </li>';
-                        } else {
-                            // Render product details
-                            echo '
-                            <li class="header-cart-item flex-w flex-t m-b-12">
-                                <div class="header-cart-item-img">
-                                    <img src="images/' . $quick_view_image . '" alt="IMG">
-                                </div>
-                                <div class="header-cart-item-txt p-t-8">
-                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                        ' . $cart_item['product_name'] . '
-                                    </a>
-                                    <span class="header-cart-item-info">
-                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                    </span>
-                                    <span class="header-cart-item-info">
-                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                    </span>
-                                </div>
-                            </li>';
-                        }
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $product_image . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="' . $item_link . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $item_name . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $total_qty . ' x $' . $item_price . ' = $' . $item_total_price . '
+                                </span>
+                                <span class="header-cart-item-info">
+                                    Color: ' . $color . ' | Size: ' . $size . '
+                                </span>
+                            </div>
+                        </li>';
                     }
                 } else {
                     echo '<p>Your cart is empty.</p>';
                 }
                 ?>
-
             </ul>
-            
+
             <div class="w-full">
                 <div class="header-cart-total w-full p-tb-40">
                     Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
@@ -868,7 +834,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>
