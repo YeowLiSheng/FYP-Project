@@ -67,6 +67,7 @@ $cart_query = "
 
 
 $cart_result = mysqli_query($conn, $cart_query);
+$cart_result_order = mysqli_query($conn, $cart_query);
 
 
 if (mysqli_num_rows($cart_result) === 0) {
@@ -1044,7 +1045,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						$grand_total = 0;
 							
-						while ($row = mysqli_fetch_assoc($cart_result)):
+						while ($row = mysqli_fetch_assoc($cart_result_order)):
 							$item_name = $row['item_name']; 
 							$item_price = $row['item_price'];
 							$product_image = $row['product_image']; 
