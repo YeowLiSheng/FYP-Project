@@ -67,7 +67,28 @@ $cart_query = "
 
 
 $cart_result = mysqli_query($conn, $cart_query);
+$cart_result_order = mysqli_query($conn, $cart_query);
 
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $conn->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
 
 if (mysqli_num_rows($cart_result) === 0) {
 
@@ -768,7 +789,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</header>
 
 	<!-- Cart -->
-	<!-- Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
@@ -782,93 +802,62 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <i class="zmdi zmdi-close"></i>
             </div>
         </div>
-        
+
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                $total_price = 0;
+                // Initialize grand total
+                $grand_total = 0;
 
-                if ($cart_items_result->num_rows > 0) {
-                    while ($cart_item = $cart_items_result->fetch_assoc()) {
-                        $total_price += $cart_item['total_price'];
-                        $quick_view_image = '';
-                        
-                        // Find the appropriate image based on the product or promotion
-                        foreach ($product_variants as $variant) {
-                            // Check if the item is a promotion
-                            if (!empty($cart_item['promotion_id'])) {
-                                if ($variant['promotion_id'] == $cart_item['promotion_id'] && $variant['color'] == $cart_item['color']) {
-                                    $quick_view_image = $variant['Quick_View1'];
-                                    break;
-                                }
-                            } else {
-                                // Check if the item is a regular product
-                                if ($variant['product_id'] == $cart_item['product_id'] && $variant['color'] == $cart_item['color']) {
-                                    $quick_view_image = $variant['Quick_View1'];
-                                    break;
-                                }
-                            }
-                        }                        
+                // Check if there are items in the cart
+                if (mysqli_num_rows($cart_result) > 0) {
+                    while ($row = mysqli_fetch_assoc($cart_result)) {
+                        $item_name = htmlspecialchars($row['item_name']);
+                        $item_price = number_format($row['item_price'], 2);
+                        $product_image = htmlspecialchars($row['product_image']);
+                        $color = htmlspecialchars($row['color']);
+                        $total_qty = $row['total_qty'];
+                        $item_total_price = number_format($row['item_total_price'], 2);
 
-                        // Check if the item is a promotion
-                        if (!empty($cart_item['promotion_id'])) {
-                            // Render promotion details
-                            echo '
-                            <li class="header-cart-item flex-w flex-t m-b-12">
-                                <div class="header-cart-item-img">
-                                    <img src="images/' . $quick_view_image . '" alt="IMG">
-                                </div>
-                                <div class="header-cart-item-txt p-t-8">
-                                    <a href="promotion-detail.php?id=' . $cart_item['promotion_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                        ' . $cart_item['promotion_name'] . '
-                                    </a>
-                                    <span class="header-cart-item-info">
-                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['promotion_price'], 2) . '
-                                    </span>
-                                    <span class="header-cart-item-info">
-                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                    </span>
-                                </div>
-                            </li>';
-                        } else {
-                            // Render product details
-                            echo '
-                            <li class="header-cart-item flex-w flex-t m-b-12">
-                                <div class="header-cart-item-img">
-                                    <img src="images/' . $quick_view_image . '" alt="IMG">
-                                </div>
-                                <div class="header-cart-item-txt p-t-8">
-                                    <a href="product-detail.php?id=' . $cart_item['product_id'] . '" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                        ' . $cart_item['product_name'] . '
-                                    </a>
-                                    <span class="header-cart-item-info">
-                                        ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
-                                    </span>
-                                    <span class="header-cart-item-info">
-                                        Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '
-                                    </span>
-                                </div>
-                            </li>';
-                        }
+                        // Accumulate the grand total
+                        $grand_total += $row['item_total_price'];
+
+                        // Render each cart item
+                        echo '
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="images/' . $product_image . '" alt="IMG">
+                            </div>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    ' . $item_name . '
+                                </a>
+                                <span class="header-cart-item-info">
+                                    ' . $total_qty . ' x $' . $item_price . '
+                                </span>
+                                <span class="header-cart-item-color">Color: ' . $color . '</span>
+                            </div>
+                        </li>';
                     }
                 } else {
                     echo '<p>Your cart is empty.</p>';
                 }
                 ?>
-
             </ul>
-            
+
             <div class="w-full">
                 <div class="header-cart-total w-full p-tb-40">
-                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                    Total: $<span id="cart-total"><?php echo number_format($grand_total, 2); ?></span>
                 </div>
 
                 <div class="header-cart-buttons flex-w w-full">
-                    <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                    <a href="shoping-cart.php"
+                        class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php"
+                        class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>
@@ -876,6 +865,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </div>
 </div>
+
 
 					
 	<body class="checkout-root checkout-reset">
@@ -993,7 +983,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 						$grand_total = 0;
 							
-						while ($row = mysqli_fetch_assoc($cart_result)):
+						while ($row = mysqli_fetch_assoc($cart_result_order)):
 							$item_name = $row['item_name']; 
 							$item_price = $row['item_price'];
 							$product_image = $row['product_image']; 
