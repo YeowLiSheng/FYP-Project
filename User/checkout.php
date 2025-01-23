@@ -768,6 +768,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</header>
 
 	<!-- Cart -->
+	<!-- Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
@@ -875,7 +876,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </div>
 </div>
-
 
 					
 	<body class="checkout-root checkout-reset">
