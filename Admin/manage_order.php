@@ -545,6 +545,7 @@ document.getElementById("sort-order").addEventListener("change", sortTable);
         const orderStatus = row.cells[5].textContent.trim(); 
         row.style.display = (orderStatus.includes(status) || status === "") ? "" : "none";
     });
+    goToPage(1);
 }
 
 function sortTable() {
