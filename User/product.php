@@ -456,12 +456,18 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                     </div>
                   </div>';
     }
-    echo ob_get_clean();
-    exit;
 } else {
 	echo "<p>No products found.</p>";
 }
+$products_html = ob_get_clean();
+    $response = [
+        'products_html' => $products_html,
+        'total_pages' => $total_pages
+    ];
 
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
 }
 $output = ob_get_clean(); // Get any unexpected output
 if (!empty($output)) {
@@ -525,9 +531,22 @@ if (!empty($output)) {
 }
 
 .pagination a.active {
-    background-color: #333;
-    color: #fff;
+    background-color: #333; /* Black background */
+    color: #fff; /* White text */
+    font-weight: bold; /* Optional: Highlight the active page */
 }
+
+a.disabled-link {
+    pointer-events: none; /* Disable clicks */
+    cursor: not-allowed;  /* Change cursor to prohibited sign */
+    text-decoration: none; /* Remove underline */
+    background-color: #f9f9f9; /* Button-like background */
+    padding: 5px 10px; /* Button-like padding */
+    border-radius: 3px; /* Rounded corners */
+    border: 1px solid #ccc; /* Button-like border */
+    display: inline-block;
+}
+
 
 /* Modal Wrapper */
 .wrap-promo-modal {
@@ -1576,11 +1595,43 @@ h5 a:hover {
             ?>
         	</div>
             <div class="pagination">
-                 <?php
-                    for ($i = 1; $i <= $total_pages; $i++) {
-                        echo '<a href="#" class="page-link" data-page="' . $i . '">' . $i . '</a>';
+                <?php if ($total_pages > 1): ?>
+                    <!-- Previous Button -->
+                    <a href="#" class="page-link prev-link" data-page="<?php echo max(1, $current_page - 1); ?>"><</a>
+
+                    <!-- Page Numbers -->
+                    <?php
+                    // Display first page
+                    if ($current_page > 2) {
+                        echo '<a href="#" class="page-link" data-page="1">1</a>';
                     }
-                ?>
+
+                    // Display "..." before the current page block if needed
+                    if ($current_page > 3) {
+                        echo '<a href="#" class="page-link disabled-link" tabindex="-1">...</a>';
+                    }
+
+                    // Display current page and its neighbors
+                    $start_page = max(1, $current_page - 1);
+                    $end_page = min($total_pages, $current_page + 1);
+                    for ($i = $start_page; $i <= $end_page; $i++) {
+                        echo '<a href="#" class="page-link" data-page="' . $i . '"' . ($i == $current_page ? ' style="font-weight:bold;"' : '') . '>' . $i . '</a>';
+                    }
+
+                    // Display "..." after the current page block if needed
+                    if ($current_page < $total_pages - 2) {
+                        echo '<a href="#" class="page-link disabled-link" tabindex="-1">...</a>';
+                    }
+
+                    // Display last page
+                    if ($current_page < $total_pages - 1) {
+                        echo '<a href="#" class="page-link" data-page="' . $total_pages . '">' . $total_pages . '</a>';
+                    }
+                    ?>
+
+                    <!-- Next Button -->
+                    <a href="#" class="page-link next-link" data-page="<?php echo min($total_pages, $current_page + 1); ?>">></a>
+                <?php endif; ?>
             </div>
 		</div>
 	</div>
@@ -2695,7 +2746,12 @@ $(document).ready(function () {
 let filters = { price: 'all', color: 'all', tag: 'all', category: 'all' };
 let page = 1;
 // Function to update product display based on selected filters
-function updateProducts() {
+function updateProducts(resetPage = true) {
+
+    if (resetPage) {
+        page = 1;
+    }
+
     $.ajax({
     url: '', 
     type: 'GET',
@@ -2709,17 +2765,52 @@ function updateProducts() {
     success: function(response) {
         // Check if the response contains error
         if (response.error) {
-            alert('Error: ' + response.error);
-            return;
-        }
-        // Proceed with normal filtering process
-        if (response.trim() === '' || response.includes('No products found')) {
-            $('.isotope-grid').html('<p>No products found for the selected filters.</p>');
-        } else {
-            $('.isotope-grid').html(response);
-        }
+                alert('Error: ' + response.error);
+                return;
+            }
 
-        adjustLayoutAfterFiltering();
+            // Update products and pagination dynamically
+            $('.isotope-grid').html(response.products_html);
+
+            // Update pagination
+            let paginationHtml = '';
+            if (response.total_pages > 1) {
+            
+                paginationHtml += `<a href="#" class="page-link prev-link" data-page="${page - 1}"><</a>`;
+            
+
+                if (page > 2) {
+                    paginationHtml += `<a href="#" class="page-link" data-page="1">1</a>`;
+                }
+
+                // Dots before current page
+                if (page > 3) {
+                    paginationHtml += `<a href="#" class="page-link disabled-link" tabindex="-1">...</a>`;
+                }
+
+                // Current page and neighbors
+                const startPage = Math.max(1, page - 1);
+                const endPage = Math.min(response.total_pages, page + 1);
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<a href="#" class="page-link" data-page="${i}" ${i === page ? 'style="font-weight:bold;"' : ''}>${i}</a>`;
+                }
+
+                // Dots after current page
+                if (page < response.total_pages - 2) {
+                    paginationHtml += `<a href="#" class="page-link disabled-link" tabindex="-1">...</a>`;
+                }
+
+                // Last Page
+                if (page < response.total_pages - 1) {
+                    paginationHtml += `<a href="#" class="page-link" data-page="${response.total_pages}">${response.total_pages}</a>`;
+                }
+
+                paginationHtml += `<a href="#" class="page-link next-link" data-page="${page + 1}">></a>`;
+            }
+            $('.pagination').html(paginationHtml);
+
+            // Adjust layout after filtering (if needed)
+            adjustLayoutAfterFiltering();
     },
     error: function(xhr, status, error) {
         // This handles other AJAX errors
@@ -2730,8 +2821,11 @@ function updateProducts() {
 }
 $(document).on('click', '.page-link', function(e) {
     e.preventDefault();
-    page = $(this).data('page'); // Update the current page based on the clicked link
-    updateProducts(); // Fetch products for the selected page
+    const newPage = $(this).data('page');
+    if (newPage) {
+        page = newPage;
+        updateProducts(false);
+    }
 });
 
 // Function to adjust the layout and avoid overflow issues
