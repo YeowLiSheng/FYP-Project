@@ -863,6 +863,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</header>
 
 	<!-- Cart -->
+
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
@@ -880,24 +881,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="cart-items">
                 <?php
-                $total_price = 0; // Initialize total price
+                // Initialize grand total
+                $grand_total = 0;
 
-                // Fetch cart items using the updated query
-                if ($cart_result->num_rows > 0) {
-                    while ($cart_item = mysqli_fetch_assoc($cart_result)) {
-                        $total_price += $cart_item['item_total_price'];
+                // Check if there are items in the cart
+                if (mysqli_num_rows($cart_result) > 0) {
+                    while ($row = mysqli_fetch_assoc($cart_result)) {
+                        $item_name = htmlspecialchars($row['item_name']);
+                        $item_price = number_format($row['item_price'], 2);
+                        $product_image = htmlspecialchars($row['product_image']);
+                        $color = htmlspecialchars($row['color']);
+                        $total_qty = $row['total_qty'];
+                        $item_total_price = number_format($row['item_total_price'], 2);
+
+                        // Accumulate the grand total
+                        $grand_total += $row['item_total_price'];
+
+                        // Render each cart item
                         echo '
                         <li class="header-cart-item flex-w flex-t m-b-12">
                             <div class="header-cart-item-img">
-                                <img src="images/' . htmlspecialchars($cart_item['product_image']) . '" alt="IMG">
+                                <img src="images/' . $product_image . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
                                 <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . htmlspecialchars($cart_item['item_name']) . '
+                                    ' . $item_name . '
                                 </a>
                                 <span class="header-cart-item-info">
-                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['item_price'], 2) . '
+                                    ' . $total_qty . ' x $' . $item_price . '
                                 </span>
+                                <span class="header-cart-item-color">Color: ' . $color . '</span>
                             </div>
                         </li>';
                     }
@@ -909,7 +922,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <div class="w-full">
                 <div class="header-cart-total w-full p-tb-40">
-                    Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+                    Total: $<span id="cart-total"><?php echo number_format($grand_total, 2); ?></span>
                 </div>
 
                 <div class="header-cart-buttons flex-w w-full">
@@ -918,7 +931,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         View Cart
                     </a>
 
-                    <a href="checkout.php"
+                    <a href="shoping-cart.html"
                         class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
@@ -927,6 +940,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </div>
 </div>
+
 
 
 					
