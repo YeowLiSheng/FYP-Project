@@ -40,7 +40,7 @@ if ($user_result && $user_result->num_rows > 0) {
     exit;
 }
 
-
+dd
 $current_user_id = $_SESSION['id']; 
 $current_user_query = $conn->prepare("SELECT user_name, user_image FROM user WHERE user_id = ?");
 $current_user_query->bind_param("i", $current_user_id);
