@@ -613,11 +613,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
-							<li>
+							<li class="active-menu">
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 

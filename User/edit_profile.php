@@ -306,11 +306,11 @@ if (isset($_POST['submitbtn'])) {
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
-							<li>
+							<li class="active-menu">
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 

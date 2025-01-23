@@ -1250,7 +1250,15 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         dataType: 'json',
         success: function (response) {
             if (response.success) {
-                swal(`Peoduct has been added to your cart!`, "", "success");
+                Swal.fire({
+                    title: 'Product has been added to your cart!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.reload(); // Reload page to update cart
+                    }
+                });
                 clearStockWarning();
             } else {
                 showStockWarning(response.error || "Failed to add product to cart.");
