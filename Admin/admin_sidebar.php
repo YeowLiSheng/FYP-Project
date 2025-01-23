@@ -346,6 +346,13 @@ a.sidebar-link:hover {
                 </li>
 
                 <li class="sidebar-item">
+                    <a href="admin_promotion.php" class="sidebar-link">
+                        <i class="lni lni-tag"></i>
+                        <span>Promotion</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
                     <a href="manage_order.php" class="sidebar-link">
                         <i class="lni lni-list"></i>
                         <span>Order</span>

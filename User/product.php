@@ -313,13 +313,9 @@ $size_filter = isset($_GET['size']) ? explode(',', $_GET['size']) : [];
 $tag_filter = isset($_GET['tag']) ? explode(',', $_GET['tag']) : [];
 $category_filter = isset($_GET['category']) && $_GET['category'] !== 'all' ? intval($_GET['category']) : null;
 
-$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-
-// Define the number of products to display per page
-$products_per_page = 10;
-
-// Calculate the offset for the SQL query
-$offset = ($current_page - 1) * $products_per_page;
+$current_page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+$items_per_page = 8; // Number of products per page
+$offset = ($current_page - 1) * $items_per_page;
 
 // Base query to fetch products
 $product_query = "SELECT DISTINCT p.* FROM product p
@@ -376,19 +372,15 @@ if (!empty($tag_filter) && $tag_filter[0] !== 'all') {
     }, $tag_filter);
     $product_query .= " AND (" . implode(" OR ", $tag_conditions) . ")";
 }
+// Add pagination
+$total_products_result = $connect->query($product_query);
+$total_products = $total_products_result->num_rows;
 
-$product_query .= " GROUP BY p.product_id LIMIT $products_per_page OFFSET $offset";
+$product_query .= " GROUP BY p.product_id LIMIT $items_per_page OFFSET $offset";
 
 $product_result = $connect->query($product_query);
+$total_pages = ceil($total_products / $items_per_page);
 
-// Calculate the total number of pages
-$total_products_query = "SELECT COUNT(DISTINCT p.product_id) AS total FROM product p
-                         JOIN product_variant pv ON p.product_id = pv.product_id
-                         WHERE p.product_name LIKE '%$search_query%'";
-
-$total_products_result = $connect->query($total_products_query);
-$total_products = $total_products_result->fetch_assoc()['total'];
-$total_pages = ceil($total_products / $products_per_page);
 
 // Render filtered products as HTML for AJAX response
 if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || isset($_GET['category'])) {
@@ -426,7 +418,7 @@ if (isset($_GET['price']) || isset($_GET['color']) || isset($_GET['tag']) || iss
                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
             }
 
-            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: -30px;">
+            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '" style="margin-right: -10px;">
                     <div class="block2 ' . $productStyle . '">
                         <div class="block2-pic hov-img0" >
                             <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -519,27 +511,22 @@ if (!empty($output)) {
 .pagination {
     display: flex;
     justify-content: center;
-    margin: 20px 0;
+    margin-top: 20px;
 }
 
 .pagination a {
-    color: #333;
-    text-decoration: none;
-    border: 1px solid #ddd;
-    padding: 10px 15px;
     margin: 0 5px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.pagination a:hover {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
     background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .pagination a.active {
     background-color: #333;
-    color: white;
-    pointer-events: none;
+    color: #fff;
 }
 
 /* Modal Wrapper */
@@ -1542,7 +1529,7 @@ h5 a:hover {
 
 
                     // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -30px;">
+                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -10px;">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -1589,13 +1576,10 @@ h5 a:hover {
             ?>
         	</div>
             <div class="pagination">
-                <?php
-                if ($current_page > 1) {
-                    echo '<a href="?page=' . ($current_page - 1) . '">Previous</a>';
-                }
-                if ($current_page < $total_pages) {
-                    echo '<a href="?page=' . ($current_page + 1) . '">Next</a>';
-                }
+                 <?php
+                    for ($i = 1; $i <= $total_pages; $i++) {
+                        echo '<a href="#" class="page-link" data-page="' . $i . '">' . $i . '</a>';
+                    }
                 ?>
             </div>
 		</div>
@@ -2709,7 +2693,7 @@ $(document).ready(function () {
 <script>
 // Initialize filters with 'all' default values for price, color, tag, and category.
 let filters = { price: 'all', color: 'all', tag: 'all', category: 'all' };
-
+let page = 1;
 // Function to update product display based on selected filters
 function updateProducts() {
     $.ajax({
@@ -2719,7 +2703,8 @@ function updateProducts() {
         price: filters.price,
         color: filters.color,
         tag: filters.tag,
-        category: filters.category
+        category: filters.category,
+        page: page
     },
     success: function(response) {
         // Check if the response contains error
@@ -2743,7 +2728,11 @@ function updateProducts() {
 });
 
 }
-
+$(document).on('click', '.page-link', function(e) {
+    e.preventDefault();
+    page = $(this).data('page'); // Update the current page based on the clicked link
+    updateProducts(); // Fetch products for the selected page
+});
 
 // Function to adjust the layout and avoid overflow issues
 function adjustLayoutAfterFiltering() {
@@ -2947,7 +2936,10 @@ document.addEventListener("click", function (event) {
         }
     }
 });
+
+
 </script>
+
 <script src="js/main.js"></script>
 
 </body>

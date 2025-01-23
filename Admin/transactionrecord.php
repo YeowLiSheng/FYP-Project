@@ -217,6 +217,43 @@ include 'admin_sidebar.php';
                 font-size: 12px;
             }
         }
+
+        .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 5px;
+    }
+    .pagination .page-btn {
+    margin: 0;
+    padding: 10px 15px; 
+    border: 1px solid #007bff; 
+    background-color: #f8f9fa; 
+    color: #007bff; 
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1em; 
+    transition: background-color 0.3s, color 0.3s; 
+}
+
+.pagination .page-btn.active {
+    background-color: #007bff; 
+    color: white; 
+    font-weight: bold; 
+}
+
+.pagination .page-btn:hover {
+    background-color: #0056b3; 
+    color: white; 
+}
+
+.pagination .page-btn:disabled {
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed;
+    border-color: #ced4da; 
+}
     </style>
 </head>
 <body>
@@ -276,15 +313,79 @@ include 'admin_sidebar.php';
                         <?php }
                     } else { ?>
                         <tr>
-                            <td colspan="5">No orders found.</td>
+                            <td colspan="5">No transaction found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
             </table>
+            <div class="pagination" id="pagination"></div>
+
         </div>
     </div>
     <script>
 
+document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.getElementById("table-body");
+    const pagination = document.getElementById("pagination");
+
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    const rows = Array.from(tableBody.rows).filter(row => !row.classList.contains("no-data"));
+    const totalRows = rows.length;
+
+    if (totalRows === 0) {
+        pagination.innerHTML = ""; 
+        return;
+    }
+
+    function initPagination() {
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        pagination.innerHTML = "";
+
+        const prevButton = document.createElement("button");
+        prevButton.textContent = "Previous";
+        prevButton.disabled = currentPage === 1;
+        prevButton.classList.add("page-btn");
+        prevButton.addEventListener("click", () => goToPage(currentPage - 1));
+        pagination.appendChild(prevButton);
+
+        const maxPageButtons = 5;
+        const halfRange = Math.floor(maxPageButtons / 2);
+        const startPage = Math.max(1, currentPage - halfRange);
+        const endPage = Math.min(totalPages, currentPage + halfRange);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement("button");
+            pageButton.textContent = i;
+            pageButton.classList.add("page-btn");
+            if (i === currentPage) pageButton.classList.add("active");
+            pageButton.addEventListener("click", () => goToPage(i));
+            pagination.appendChild(pageButton);
+        }
+
+        const nextButton = document.createElement("button");
+        nextButton.textContent = "Next";
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.classList.add("page-btn");
+        nextButton.addEventListener("click", () => goToPage(currentPage + 1));
+        pagination.appendChild(nextButton);
+    }
+
+    function goToPage(pageNumber) {
+        currentPage = Math.max(1, Math.min(pageNumber, Math.ceil(totalRows / rowsPerPage)));
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            row.style.display = index >= start && index < end ? "" : "none";
+        });
+
+        initPagination();
+    }
+
+    goToPage(1); 
+});
 
 $(function () {
     
@@ -315,54 +416,59 @@ $(function () {
         }
 
  
-        function exportExcel() {
+        function exportExcel() { 
+    // Create a new workbook
     const wb = XLSX.utils.book_new();
     wb.Props = {
-        Title: "Order List",
+        Title: "Transaction Record",
         Author: "YLS Atelier",
     };
 
-    // Prepare data for the table with formatted dates
+    // Select the table and prepare data
     const table = document.querySelector(".table");
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        // Format the Order Time column (index 2)
-        const orderTimeIndex = 2;
-        if (cells[orderTimeIndex]) {
-            const rawDate = new Date(cells[orderTimeIndex].textContent.trim());
-            const formattedDate = rawDate.toLocaleString("en-GB", { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
-            }).replace(",", ""); // Remove comma for proper formatting
-            cells[orderTimeIndex].textContent = formattedDate;
-        }
-        return cells.map(cell => cell.textContent);
+        return cells.map(cell => cell.textContent.trim());
     });
 
-    // Add headers
+    // Add headers from the table
     const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
     rows.unshift(headers);
 
-    // Create worksheet from updated data
+    // Format the date column (index 4 in this case)
+    const dateColumnIndex = 4; 
+    rows.forEach((row, index) => {
+        if (index > 0 && row[dateColumnIndex]) { // Skip the header row
+            const rawDate = new Date(row[dateColumnIndex]);
+            if (!isNaN(rawDate)) { // Check if the date is valid
+                row[dateColumnIndex] = rawDate.toLocaleString("en-GB", { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                }).replace(",", ""); // Remove comma for proper formatting
+            }
+        }
+    });
+
+    // Create a worksheet from the prepared data
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set column widths
+    // Set column widths for better readability
     ws['!cols'] = [
-        { wch: 15 }, // Order# column
+        { wch: 15 }, // Transaction# column
         { wch: 20 }, // Customer Name column
-        { wch: 25 }, // Order Time column
-        { wch: 50 }, // Shipped To column
-        { wch: 15 }, // Total column
+        { wch: 15 }, // Order ID column
+        { wch: 20 }, // Transaction Amount column
+        { wch: 25 }, // Date column
     ];
 
-    // Append the sheet to the workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Transaction");
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Transaction Record");
 
-    // Save the workbook
+    // Trigger the file download
     XLSX.writeFile(wb, "Transaction Record.xlsx");
 }
 
