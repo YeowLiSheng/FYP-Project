@@ -1468,7 +1468,16 @@ h5 a:hover {
 									</span>
 
 									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="beige">
-										Beige
+										Wheat
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Green;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Green">
+										Green
 									</a>
 								</li>
 
@@ -1479,6 +1488,51 @@ h5 a:hover {
 
 									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="white">
 										White
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Lightblue;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Lightblue">
+                                        Light Blue
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Darkblue;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Darkblue">
+                                        Dark Blue
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Yellow;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Yellow">
+                                        Yellow
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Pink;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Pink">
+                                        Pink
+									</a>
+								</li>
+                                <li class="p-b-6">
+									<span class="fs-15 lh-12 m-r-6" style="color: Purple;">
+										<i class="zmdi zmdi-circle"></i>
+									</span>
+
+									<a href="#" class="filter-link stext-106 trans-04" data-filter="color" data-value="Purple">
+                                        Purple
 									</a>
 								</li>
 							</ul>
