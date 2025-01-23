@@ -379,7 +379,10 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 .filter-item:hover .filter-img {
   transform: scale(1.05);
 }
-
+.stock-warning{
+    text-align: center;
+    display: block;
+}
 </style>
 </head>
 <body class="animsition">
@@ -1199,8 +1202,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 										Add to cart
 									</button>
 								</div>
-								<p class="stock-warning" style="color: red; display: none;">Quantity exceeds available stock.</p>
 							</div>	
+                            <p class="stock-warning" style="color: red; display: none;"></p>
 						</div>
 
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">

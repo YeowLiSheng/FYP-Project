@@ -39,35 +39,50 @@ if ($address_result && mysqli_num_rows($address_result) > 0) {
     $address = null;
 }
 
-// Retrieve unique products with total quantity and price in the cart for the logged-in user
-$cart_query = "
+$cart_items_query = "
     SELECT 
-        COALESCE(p.product_id, pp.promotion_id) AS item_id,
-        COALESCE(p.product_name, pp.promotion_name) AS item_name,
-        COALESCE(p.product_price, pp.promotion_price) AS item_price,
-        pv.variant_id,
+        sc.variant_id,
+		pv.product_id,
+        pv.promotion_id, 
         pv.color, 
         pv.size, 
-        pv.Quick_View1 AS product_image,
+        p.product_name, 
+        p.product_price,
+		p.product_status,
+        pm.promotion_name,
+        pm.promotion_price,
+        pm.promotion_status,
+		pv.stock AS product_stock,
         SUM(sc.qty) AS total_qty, 
-        (COALESCE(p.product_price, pp.promotion_price) * SUM(sc.qty)) AS item_total_price
-    FROM 
-        shopping_cart AS sc
-    JOIN 
-        product_variant AS pv ON sc.variant_id = pv.variant_id
-    LEFT JOIN 
-        product AS p ON pv.product_id = p.product_id
-    LEFT JOIN 
-        promotion_product AS pp ON pv.promotion_id = pp.promotion_id
-    WHERE 
-        sc.user_id = '$user_id'
+        SUM(sc.total_price) AS total_price
+    FROM shopping_cart sc
+    LEFT JOIN product_variant pv ON sc.variant_id = pv.variant_id
+	LEFT JOIN product p ON pv.product_id = p.product_id
+    LEFT JOIN promotion_product pm ON pv.promotion_id = pm.promotion_id
+    WHERE sc.user_id = $user_id
     GROUP BY 
-        pv.variant_id
-";
+        sc.variant_id";
+$cart_items_result = $conn->query($cart_items_query);
+// Handle AJAX request to delete item
 
+$query = "SELECT * FROM product_variant";
+$result = mysqli_query($conn, $query);
+$product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-$cart_result = mysqli_query($conn, $cart_query);
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
 
+$distinct_items_result = $conn->query($distinct_items_query);
+$distinct_count = 0;
 
 if (mysqli_num_rows($cart_result) === 0) {
 
@@ -769,7 +784,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 	<!-- Cart -->
 	<!-- Cart -->
-<div class="wrap-header-cart js-panel-cart">
+	<div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
 
     <div class="header-cart flex-col-l p-l-65 p-r-25">
@@ -876,6 +891,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
     </div>
 </div>
+
 
 					
 	<body class="checkout-root checkout-reset">
