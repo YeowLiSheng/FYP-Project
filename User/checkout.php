@@ -863,84 +863,69 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	</header>
 
 	<!-- Cart -->
+	<div class="wrap-header-cart js-panel-cart">
+		<div class="s-full js-hide-cart"></div>
 
-<div class="wrap-header-cart js-panel-cart">
-    <div class="s-full js-hide-cart"></div>
+		<div class="header-cart flex-col-l p-l-65 p-r-25">
+			<div class="header-cart-title flex-w flex-sb-m p-b-8">
+				<span class="mtext-103 cl2">
+					Your Cart
+				</span>
 
-    <div class="header-cart flex-col-l p-l-65 p-r-25">
-        <div class="header-cart-title flex-w flex-sb-m p-b-8">
-            <span class="mtext-103 cl2">
-                Your Cart
-            </span>
+				<div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
+					<i class="zmdi zmdi-close"></i>
+				</div>
+			</div>
 
-            <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-                <i class="zmdi zmdi-close"></i>
-            </div>
-        </div>
-
-        <div class="header-cart-content flex-w js-pscroll">
-            <ul class="header-cart-wrapitem w-full" id="cart-items">
-                <?php
-                // Initialize grand total
-                $grand_total = 0;
-
-                // Check if there are items in the cart
-                if (mysqli_num_rows($cart_result) > 0) {
-                    while ($row = mysqli_fetch_assoc($cart_result)) {
-                        $item_name = htmlspecialchars($row['item_name']);
-                        $item_price = number_format($row['item_price'], 2);
-                        $product_image = htmlspecialchars($row['product_image']);
-                        $color = htmlspecialchars($row['color']);
-                        $total_qty = $row['total_qty'];
-                        $item_total_price = number_format($row['item_total_price'], 2);
-
-                        // Accumulate the grand total
-                        $grand_total += $row['item_total_price'];
-
-                        // Render each cart item
-                        echo '
+			<div class="header-cart-content flex-w js-pscroll">
+				<ul class="header-cart-wrapitem w-full" id="cart-items">
+					<?php
+					// Display combined cart items
+					$total_price = 0;
+					if ($cart_items_result->num_rows > 0) {
+						while ($cart_item = $cart_items_result->fetch_assoc()) {
+							$total_price += $cart_item['total_price'];
+							echo '
                         <li class="header-cart-item flex-w flex-t m-b-12">
                             <div class="header-cart-item-img">
-                                <img src="images/' . $product_image . '" alt="IMG">
+                                <img src="images/' . $cart_item['product_image'] . '" alt="IMG">
                             </div>
                             <div class="header-cart-item-txt p-t-8">
                                 <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                    ' . $item_name . '
+                                    ' . $cart_item['product_name'] . '
                                 </a>
                                 <span class="header-cart-item-info">
-                                    ' . $total_qty . ' x $' . $item_price . '
+                                    ' . $cart_item['total_qty'] . ' x $' . number_format($cart_item['product_price'], 2) . '
                                 </span>
-                                <span class="header-cart-item-color">Color: ' . $color . '</span>
                             </div>
                         </li>';
-                    }
-                } else {
-                    echo '<p>Your cart is empty.</p>';
-                }
-                ?>
-            </ul>
+						}
+					} else {
+						echo '<p>Your cart is empty.</p>';
+					}
+					?>
+				</ul>
 
-            <div class="w-full">
-                <div class="header-cart-total w-full p-tb-40">
-                    Total: $<span id="cart-total"><?php echo number_format($grand_total, 2); ?></span>
-                </div>
+				<div class="w-full">
+					<div class="header-cart-total w-full p-tb-40">
+						Total: $<span id="cart-total"><?php echo number_format($total_price, 2); ?></span>
+					</div>
 
-                <div class="header-cart-buttons flex-w w-full">
-                    <a href="shoping-cart.php"
-                        class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        View Cart
-                    </a>
+					<div class="header-cart-buttons flex-w w-full">
+						<a href="shoping-cart.php"
+							class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+							View Cart
+						</a>
 
-                    <a href="shoping-cart.html"
-                        class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+						<a href="shoping-cart.html"
+							class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+							Check Out
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
 
 					
