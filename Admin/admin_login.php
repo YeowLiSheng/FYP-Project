@@ -3,7 +3,10 @@ session_start(); // Start the session at the beginning of the script
 
 // Include your database connection file
 include 'dataconnection.php'; 
-
+if (isset($_SESSION['admin_id'])) {
+    session_unset();
+    session_destroy();
+}
 // Handle admin login
 if (isset($_POST["admin_login"])) {
     $id = $_POST["id"];
