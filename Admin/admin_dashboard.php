@@ -2,6 +2,10 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 $product= "SELECT COUNT(*) AS product_count FROM product";
 $product_result = $connect->query($product);
 
