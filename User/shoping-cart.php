@@ -161,7 +161,7 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items for the logged-in user where the product_id is the sam
 // Fetch and combine cart items with stock information
 $cart_items_query = "
     SELECT 
