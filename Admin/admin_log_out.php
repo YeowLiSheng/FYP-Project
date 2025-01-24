@@ -3,6 +3,8 @@ session_start(); // Start the session
 include("dataconnection.php");
 
 session_destroy(); // Destroy the session
+header("Location: admin_login.php");
+
 
 echo "<!DOCTYPE html>
 <html>
