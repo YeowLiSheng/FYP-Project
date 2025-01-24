@@ -10,7 +10,7 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// Check if the database connection exists
+// Check if the database connection exist
 if (!isset($connect) || !$connect) { 
     die("Database connection failed.");
 }
