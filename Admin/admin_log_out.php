@@ -1,12 +1,8 @@
 <?php
 session_start(); // Start the session
 include("dataconnection.php");
-
-session_destroy();
-
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+d
+session_destroy(); // Destroy the session
 
 echo "<!DOCTYPE html>
 <html>
