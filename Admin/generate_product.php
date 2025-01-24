@@ -4,25 +4,6 @@ require('../User/fpdf/fpdf.php');
 // Database connection
 include 'dataconnection.php';
 
-
-if (!isset($_SESSION["admin_id"])) {
-    ?>
-    <script>
-        Swal.fire({
-            position: "middle",
-            icon: "warning",
-            title: "You are required to login first",
-            showConfirmButton: false,
-            timer: 2000,
-            timerProgressBar: true,
-        });
-        setTimeout(function () {
-            window.location.href = "admin_login.php";
-        }, 2200);
-    </script>
-    <?php
-    exit();
-}
 // Check connection
 if ($connect->connect_error) {
     die("Connection failed: " . $connect->connect_error);
