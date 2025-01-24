@@ -1,5 +1,4 @@
 <?php session_start(); ?>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php
 require('../User/fpdf/fpdf.php');
@@ -8,9 +7,9 @@ require('../User/fpdf/fpdf.php');
 include 'dataconnection.php';
 
 
-if (!isset($_SESSION["admin_id"])) {
-    ?>
-    <script>
+if (!isset($_SESSION["admin_id"])) if (!isset($_SESSION["admin_id"])) {
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+    echo '<script>
         Swal.fire({
             position: "middle",
             icon: "warning",
@@ -22,9 +21,8 @@ if (!isset($_SESSION["admin_id"])) {
         setTimeout(function () {
             window.location.href = "admin_login.php";
         }, 2200);
-    </script>
-    <?php
-    exit();
+    </script>';
+    exit(); // 停止代码执行
 }
 // Check connection
 if ($connect->connect_error) {
