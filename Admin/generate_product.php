@@ -1,4 +1,5 @@
 <?php
+include 'admin_sidebar.php';
 require('../User/fpdf/fpdf.php');
 
 // Database connection
