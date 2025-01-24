@@ -1,4 +1,5 @@
 <?php session_start(); ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php
 require('../User/fpdf/fpdf.php');
