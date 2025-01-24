@@ -1604,7 +1604,7 @@ h5 a:hover {
 
 
                     // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -30px;">
+                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -10px;">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
