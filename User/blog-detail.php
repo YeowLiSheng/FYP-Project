@@ -398,7 +398,7 @@ if ($distinct_items_result) {
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
@@ -410,7 +410,7 @@ if ($distinct_items_result) {
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
-							<li>
+							<li class="active-menu">
 								<a href="blog.php">Blog</a>
 							</li>
 
@@ -553,7 +553,7 @@ if ($distinct_items_result) {
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>

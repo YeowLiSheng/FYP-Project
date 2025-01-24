@@ -606,11 +606,11 @@ textarea {
 					<!-- Menu desktop -->
 					<div class="menu-desktop">
 						<ul class="main-menu">
-							<li>
+							<li class="active-menu">
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
@@ -766,7 +766,7 @@ textarea {
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>

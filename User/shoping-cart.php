@@ -161,7 +161,7 @@ function recalculateFinalTotalAndVoucher($connect, $user_id) {
 // Initialize total_price before fetching cart items
 $total_price = 0;
 
-// Fetch and combine cart items for the logged-in user where the product_id is the same
+// Fetch and combine cart items for the logged-in user where the product_id is the sam
 // Fetch and combine cart items with stock information
 $cart_items_query = "
     SELECT 
@@ -203,7 +203,7 @@ if ($cart_items_result && $cart_items_result->num_rows > 0) {
             if ($cart_item['product_status'] == 2 || $cart_item['product_stock'] <= 0) {
                 $cart_item['unavailable'] = true;
                 $checkout_locked = true;
-            }else if($cart_item['promotion_status'] == 2 || $cart_item['product_stock'] <= 0) {
+            }else if($cart_item['promotion_status'] == 2 || $cart_item['total_qty'] > $cart_item['product_stock']) {
                 $cart_item['unavailable'] = true;
                 $checkout_locked = true;
             }
@@ -686,7 +686,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>
@@ -763,7 +763,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 													<img src="images/' . $quick_view_image . '" alt="IMG">
 												</div>
 											</td>
-											<td class="column-2">' . $cart_item['promotion_name'] . '</td>
+											<td class="column-2">' . $cart_item['promotion_name'] . ' <br> Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '</td>
 											<td class="column-3">$' . number_format($cart_item['promotion_price'], 2) . '</td>
 											<td class="column-4">
 												<div class="wrap-num-product flex-w m-l-auto m-r-0">
@@ -789,7 +789,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 													<img src="images/' . $quick_view_image . '" alt="IMG">
 												</div>
 											</td>
-											<td class="column-2">' . $cart_item['product_name'] . '</td>
+											<td class="column-2">' . $cart_item['product_name'] . ' <br> Color: ' . $cart_item['color'] . ' | Size: ' . $cart_item['size'] . '</td>
 											<td class="column-3">$' . number_format($cart_item['product_price'], 2) . '</td>
 											<td class="column-4">
 												<div class="wrap-num-product flex-w m-l-auto m-r-0">

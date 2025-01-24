@@ -10,8 +10,8 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-// Check if the database connection exists
-if (!isset($connect) || !$connect) { // Changed $connect to $conn
+// Check if the database connection exist
+if (!isset($connect) || !$connect) { 
     die("Database connection failed.");
 }
 
@@ -287,11 +287,11 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
     cursor: pointer;
 }
 .slick-prev {
-    left: -50px; /* Position to the left of the slider */
+    left: -30px; /* Position to the left of the slider */
 }
 
 .slick-next {
-    right: -50px; /* Position to the right of the slider */
+    right: -10px; /* Position to the right of the slider */
 }
 
 /* Hover effects */
@@ -379,7 +379,53 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 .filter-item:hover .filter-img {
   transform: scale(1.05);
 }
+.stock-warning{
+    text-align: center;
+    display: block;
+}
+.size-display{
+    font-size: 1.5rem; /* Larger font size */
+    font-family: 'Arial Black', sans-serif; /* Different font */
+    color: #333; /* Slightly darker color for emphasis */
+    margin-top: 20px;
+    margin-bottom: 30px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
 
+}
+.unavailable-product{
+    background-color: lightgrey; /* Soft grey background */
+    border: 1px solid #d9d9d9; /* Light border for separation */
+    border-radius: 8px; /* Rounded corners */
+    padding: 10px;
+    transition: all 0.3s ease; /* Smooth hover effect */
+    opacity: 0.8; /* Slight transparency */
+}
+.unavailable-product:hover {
+    opacity: 1; /* Bring back full opacity on hover */
+}
+.unavailable-product .block2-pic img {
+    filter: grayscale(30%);
+    opacity: 0.7; /* Slightly dim the image */
+    transition: all 0.3s ease; /* Smooth transition for hover */
+}
+.unavailable-product:hover .block2-pic img {
+    filter: grayscale(30%); /* Lessen greyscale on hover */
+    opacity: 1; /* Full visibility on hover */
+}
+
+/* Message Styling */
+.unavailable-message {
+    color: #d9534f; /* Bright red */
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 5px;
+}
+.swal2-container {
+    z-index: 99999 !important; /* Ensure it appears above all other elements */
+}
 </style>
 </head>
 <body class="animsition">
@@ -457,11 +503,11 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
-                            <li>
+                            <li class="active-menu">
 								<a href="promotion.php">Promotion</a>
 							</li>
 
@@ -612,7 +658,7 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>
@@ -807,10 +853,10 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                 $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
                             }
                 
-                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                            echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '"style="margin-right: -30px;">
                                     <div class="block2 ' . $productStyle . '">
                                         <div class="block2-pic hov-img0" >
-                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '"style="margin-right: -30px;">
+                                            <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
                                             <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                                 data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
                                             </a>
@@ -914,10 +960,10 @@ $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
                                     $message = '<p style="color: red; font-weight: bold;">Product is out of stock</p>';
                                 }
                     
-                                echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '">
+                                echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $promotion['category_id'] . '" style="margin-right: -30px;">
                                         <div class="block2 ' . $productStyle . '">
                                             <div class="block2-pic hov-img0" >
-                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '"style="margin-right: -30px;">
+                                                <img src="images/' . $promotion['promotion_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $promotion_id . '">
                                                 <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
                                                     data-id="' . $promotion['promotion_id'] . '"' . ($isUnavailable || $isOutOfStock ? 'style="pointer-events: none; opacity: 0.5;"' : '') . '>Quick View
                                                 </a>
@@ -1168,19 +1214,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 									</div>
 								</div>
 							</div>
-
-							<div id="packageBox" style="margin-top: 20px;">
-								
-							</div>
-
-							<div id="packageFormPopup" class="popup-overlay">
-								<div class="popup-content">
-									<span class="close-popup">&times;</span>
-									<div id="packageFormContainer">
-										<!-- Dynamic form content will be injected here -->
-									</div>
-								</div>
-							</div>
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-204 flex-w flex-m respon6-next">
 									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
@@ -1199,8 +1232,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 										Add to cart
 									</button>
 								</div>
-								<p class="stock-warning" style="color: red; display: none;">Quantity exceeds available stock.</p>
 							</div>	
+                            <p class="stock-warning" style="color: red; display: none;"></p>
 						</div>
 
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
@@ -1612,220 +1645,6 @@ $(document).on('click', '.js-addcart-detail', function (event) {
 			$(this).attr('data-thumb', '');
 		});
 	});
-</script>
-
-<script>
-// Initialize filters with 'all' default values for price, color, tag, and category.
-let filters = { price: 'all', color: 'all', tag: 'all', category: 'all' };
-
-// Function to update product display based on selected filters
-function updateProducts() {
-    $.ajax({
-    url: '', 
-    type: 'GET',
-    data: {
-        price: filters.price,
-        color: filters.color,
-        tag: filters.tag,
-        category: filters.category
-    },
-    success: function(response) {
-        // Check if the response contains error
-        if (response.error) {
-            alert('Error: ' + response.error);
-            return;
-        }
-        // Proceed with normal filtering process
-        if (response.trim() === '' || response.includes('No products found')) {
-            $('.isotope-grid').html('<p>No products found for the selected filters.</p>');
-        } else {
-            $('.isotope-grid').html(response);
-        }
-
-        adjustLayoutAfterFiltering();
-    },
-    error: function(xhr, status, error) {
-        // This handles other AJAX errors
-        alert('An error occurred while fetching products: ' + error);
-    }
-});
-
-}
-
-
-// Function to adjust the layout and avoid overflow issues
-function adjustLayoutAfterFiltering() {
-    // Ensure that the container adjusts after filtering
-    var container = $('.isotope-grid');
-    
-    // Reset any unnecessary inline styles from previous content
-    container.css('height', 'auto'); 
-
-    // If the container's height is too small, adjust it to avoid overlap with footer
-    if (container.outerHeight() < $(window).height()) {
-        container.css('min-height', $(window).height() - $('.footer').outerHeight());
-    }
-
-    // Optional: Trigger a reflow if necessary
-    setTimeout(function() {
-        container.css('visibility', 'visible'); // Ensure visibility if hidden for animation
-    }, 10);
-}
-// Function to adjust the footer position dynamically based on content height
-function adjustFooterPosition() {
-    var container = $('.isotope-grid');
-    var footer = $('.footer');
-    var windowHeight = $(window).height();
-
-    // Get the current height of the product container
-    var contentHeight = container.outerHeight(true); // Includes margin/padding
-
-    // Get the footer height
-    var footerHeight = footer.outerHeight(true);
-
-    // Calculate total height of the page (content + footer)
-    var totalHeight = contentHeight + footerHeight;
-
-    // If content height is smaller than the window height, adjust i
-    if (totalHeight < windowHeight) {
-        // Set the container's height to fill the remaining space
-        container.css('min-height', windowHeight - footerHeight);
-    } else {
-        // Reset container min-height if the content is enough
-        container.css('min-height', 'auto');
-    }
-
-    // Optional: Add a smooth transition to avoid sudden shifts
-    container.css('transition', 'min-height 0.3s ease-in-out');
-}
-
-// Handle filter clicks for price, color, and tag
-$(document).on('click', '.filter-link', function(event) {
-    event.preventDefault();
-    let filterType = $(this).data('filter');
-    let filterValue = $(this).data('value');
-
-    // Toggle filter - if clicked again, deselect by setting to 'all'
-    if (filters[filterType] === filterValue) {
-        filters[filterType] = 'all'; // Deselect if already selected
-        $(this).removeClass('selected'); // Remove blue highlight
-    } else {
-        filters[filterType] = filterValue; // Apply selected filter value
-        $(`.filter-link[data-filter=${filterType}]`).removeClass('selected'); // Remove highlight from other options
-        $(this).addClass('selected'); // Highlight the selected option
-    }
-
-    // Fetch and update the product list based on the selected filters
-    updateProducts();
-});
-
-// Handle category button clicks
-$(document).on('click', '.filter-tope-group button', function(event) {
-    event.preventDefault();
-    let categoryValue = $(this).data('filter').replace('.category-', '');
-
-    // Toggle category - if clicked again, deselect by setting to 'all'
-    if (filters.category === categoryValue) {
-        filters.category = 'all'; // Deselect if already selected
-    } else {
-        filters.category = categoryValue; // Apply selected category value
-        $('.filter-tope-group button').removeClass('selected'); // Remove highlight from other options
-    }
-
-    // Fetch and update the product list based on the selected filters
-    updateProducts();
-});
-</script>
-<script>
-    // Add click event listener to cart item images
-    document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.delete-item').forEach(function (item) {
-        item.addEventListener('click', function () {
-            const id = this.dataset.id;
-            const type = this.dataset.type;
-
-            let body = `delete_item=1&id=${id}&type=${type}`;
-
-            // Append additional data based on the type
-            if (type === 'product') {
-                const color = this.dataset.color;
-                const size = this.dataset.size;
-                body += `&color=${color}&size=${size}`;
-                console.log('Deleting product:', { id, color, size });
-            } else if (type === 'package') {
-                const product1_color = this.dataset.product1Color;
-                const product1_size = this.dataset.product1Size;
-                const product2_color = this.dataset.product2Color;
-                const product2_size = this.dataset.product2Size;
-                const product3_color = this.dataset.product3Color;
-                const product3_size = this.dataset.product3Size;
-
-                body += `&product1_color=${product1_color}&product1_size=${product1_size}`;
-                body += `&product2_color=${product2_color}&product2_size=${product2_size}`;
-                body += `&product3_color=${product3_color}&product3_size=${product3_size}`;
-                console.log('Deleting package:', { id, product1_color, product1_size, product2_color, product2_size, product3_color, product3_size });
-            }
-
-            // Confirm deletion
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'Do you want to delete this item from your cart?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'No, keep it',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Send AJAX request to delete the item
-                    fetch(location.href, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: body,
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Response:', data); // Log response for debugging
-                        if (data.success) {
-                            // Remove the item from the DOM
-                            document.querySelector('.header-cart-item').remove();
-                            // Update the total price
-                            document.getElementById('cart-total').textContent = data.new_total.toFixed(2);
-                            Swal.fire({
-                                title: 'Item removed!',
-                                text: 'The item has been removed from your cart.',
-                                icon: 'success',
-                                confirmButtonText: 'OK',
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: data.message || 'Failed to remove the item. Please try again.',
-                                icon: 'error',
-                                confirmButtonText: 'OK',
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Something went wrong. Please try again later.',
-                            icon: 'error',
-                            confirmButtonText: 'OK',
-                        });
-                    });
-                }
-            });
-
-        });
-    });
-});
 </script>
 <script>
 // Delegate event to dynamically loaded elements

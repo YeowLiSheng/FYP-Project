@@ -55,7 +55,12 @@ $cart_items_query = "
     GROUP BY 
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
-
+$items_per_page = 5;
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) {
+    $current_page = 1;
+}
+$offset = ($current_page - 1) * $items_per_page;
 $query = "SELECT * FROM product_variant";
 $result = mysqli_query($connect, $query);
 $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -69,8 +74,21 @@ $voucher_query = "
     FROM voucher v
     LEFT JOIN voucher_usage vu ON v.voucher_id = vu.voucher_id AND vu.user_id = $user_id
     WHERE v.voucher_status = 'active'
+	LIMIT $items_per_page OFFSET $offset
 ";
 $voucher_result = $connect->query($voucher_query);
+
+$total_query = "
+    SELECT COUNT(*) AS total
+    FROM voucher v
+    LEFT JOIN voucher_usage vu ON v.voucher_id = vu.voucher_id AND vu.user_id = $user_id
+    WHERE v.voucher_status = 'active'
+";
+$total_result = $connect->query($total_query);
+$total_row = $total_result->fetch_assoc();
+$total_vouchers = $total_row['total'];
+$total_pages = ceil($total_vouchers / $items_per_page);
+
 
 // Count distinct product IDs in the shopping cart for the logged-in user
 $distinct_items_query = "
@@ -118,6 +136,40 @@ $distinct_count = 0;
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
+<style>
+.pagination {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.pagination-list {
+    list-style: none;
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination-list li {
+    display: inline;
+    margin: 0 5px;
+}
+
+.pagination-list li a {
+    text-decoration: none;
+    color: #007bff;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.pagination-list li a:hover,
+.pagination-list li.active a {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+</style>
 </head>
 <body class="animsition">
 	
@@ -194,7 +246,7 @@ $distinct_count = 0;
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
@@ -202,7 +254,7 @@ $distinct_count = 0;
 								<a href="promotion.php">Promotion</a>
 							</li>
 
-							<li class="label1" data-label1="hot">
+							<li class="label1 active-menu" data-label1="hot">
 								<a href="voucher_page.php">Voucher</a>
 							</li>
 
@@ -349,7 +401,7 @@ $distinct_count = 0;
                         View Cart
                     </a>
 
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
                         Check Out
                     </a>
                 </div>
@@ -395,11 +447,30 @@ $distinct_count = 0;
                             ?>
                         </table>
                     </div>
+						<div class="pagination">
+							<ul class="pagination-list">
+								<?php if ($current_page > 1): ?>
+									<li><a href="?page=<?php echo $current_page - 1; ?>">&laquo; Previous</a></li>
+								<?php endif; ?>
+
+								<?php for ($i = 1; $i <= $total_pages; $i++): ?>
+									<li class="<?php echo ($i == $current_page) ? 'active' : ''; ?>">
+										<a href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+									</li>
+								<?php endfor; ?>
+
+								<?php if ($current_page < $total_pages): ?>
+									<li><a href="?page=<?php echo $current_page + 1; ?>">Next &raquo;</a></li>
+								<?php endif; ?>
+							</ul>
+						</div>
                 </div>
             </div>
+			
         </div>
     </div>
 </form>
+
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
