@@ -2,6 +2,9 @@
 include 'dataconnection.php';
 include 'admin_sidebar.php';
 
+
+
+
 $product= "SELECT COUNT(*) AS product_count FROM product";
 $product_result = $connect->query($product);
 
