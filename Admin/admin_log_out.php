@@ -1,6 +1,7 @@
 <?php
 session_start(); // Start the session
 include("dataconnection.php");
+session_destroy(); // Destroy the session
 
 echo "<!DOCTYPE html>
 <html>
