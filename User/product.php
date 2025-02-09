@@ -244,18 +244,48 @@ if (isset($_GET['fetch_promotion_variants']) && isset($_GET['promotion_id'])) {
 if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     // Retrieve POST data
     $variant_id = intval($_POST['variant_id']); // Use variant_id directly from POST
-    $qty = intval($_POST['qty']);
+    $qty_to_add = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
 
-    // Insert data into the shopping_cart table, including the user_id and variant_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) 
-                   VALUES ($user_id, $variant_id, $qty, $total_price)";
+    // Get current cart quantity
+    $cart_query = "SELECT SUM(qty) AS current_qty FROM shopping_cart WHERE user_id = ? AND variant_id = ?";
+    $stmt = $connect->prepare($cart_query);
+    $stmt->bind_param("ii", $user_id, $variant_id);
+    $stmt->execute();
+    $cart_result = $stmt->get_result()->fetch_assoc();
+    $current_cart_qty = intval($cart_result['current_qty'] ?? 0);
 
-    // Execute the query and return the response
-    if ($connect->query($cart_query) === TRUE) {
-        echo json_encode(['success' => true]);
+    // Get available stock for the variant
+    $stock_query = "SELECT stock FROM product_variant WHERE variant_id = ?";
+    $stmt = $connect->prepare($stock_query);
+    $stmt->bind_param("i", $variant_id);
+    $stmt->execute();
+    $stock_result = $stmt->get_result()->fetch_assoc();
+    $available_stock = intval($stock_result['stock'] ?? 0);
+
+    $new_total_qty = $current_cart_qty + $qty_to_add;
+
+    // Check if adding more exceeds stock
+    if ($new_total_qty > $available_stock) {
+        echo json_encode([
+            'success' => false,
+            'error' => "You already have $current_cart_qty in your cart. Only $available_stock items are available.",
+        ]);
+        exit;
+    }
+
+    // Insert into cart if stock check passes
+    $add_cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) 
+                        VALUES (?, ?, ?, ?) 
+                        ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty), total_price = total_price + VALUES(total_price)";
+
+    $stmt = $connect->prepare($add_cart_query);
+    $stmt->bind_param("iiid", $user_id, $variant_id, $qty_to_add, $total_price);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Product added to cart!']);
     } else {
-        echo json_encode(['success' => false, 'error' => $connect->error]);
+        echo json_encode(['success' => false, 'error' => 'Failed to add to cart']);
     }
     exit;
 }
@@ -2565,8 +2595,12 @@ $(document).ready(function () {
                         }
                     });
                 } else {
-                    console.error("Add to Cart failed:", response.error); // Debug
-                    alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                    Swal.fire({
+                        title: 'Cannot Add More!',
+                        text: response.error,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 }
                 updateCart();
                 $('.js-modal1').removeClass('show-modal1');
