@@ -2,6 +2,8 @@
 include 'dataconnection.php';
 session_start();
 
+
+
 //add promotion product
 if (isset($_POST["save_product"])) {
     $pd = $_POST["product_name"];
