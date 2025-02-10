@@ -804,8 +804,8 @@ function add_check() {
                     $p2 = explode('_', $filter2);
                     $filter_type = $p2[0];
                     $filter_value = $p2[1]; // String for color or status
-                    if ($filter_type == 'color') { // Color filter
-                        $query .= " AND (product_variant.color = '$filter_value'";
+                    if ($filter_type == 'color') { // Color filter fix
+                        $query .= " AND product_variant.color = '$filter_value'";
                     } else if ($filter_type == 'status') { // Product status filter
                         $status = intval($filter_value);
                         $query .= " AND promotion_product.promotion_status = $status";
@@ -824,10 +824,10 @@ function add_check() {
                     $query .= ", promotion_product.promotion_name DESC";
                 }
                 if ($sort_p == 'c') {
-                    $query .= ", promotion_product.price DESC";
+                    $query .= ", price DESC";
                 }
                 if ($sort_p == 'd') {
-                    $query .= ", promotion_product.price";
+                    $query .= ", price";
                 }
             }
         } else {
@@ -1183,7 +1183,7 @@ function add_check() {
 
 
                                     <?php
-                                    if ($row["product_status"] == "Available") { // 1 = Available, 0 = Unavailable
+                                    if ($row["product_status"] == "Available") {
                                         ?>
                                         <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                             style="border-left: 1.25px solid white;"
@@ -1242,10 +1242,10 @@ function add_check() {
                                                 <div class="modal-body">
                                                     Set this product to status: <b style="color:#0EAF09;">Available</b>?<br>
                                                     <img src="../User/images/<?php echo $row["image"] ?>" alt="Product Image" class="img-fluid">
-                                                    <p><?php echo $row["product_name"] ?></p>
+                                                    <p><?php echo $row["promotion_name"] ?></p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <a href="a_product.php?action=available&promotion_id=<?php echo $row["promotion_id"]; ?>">
+                                                    <a href="a_promotion.php?action=available&promotion_id=<?php echo $row["promotion_id"]; ?>">
                                                      <button type="button" class="btn btn-primary">Yes</button>
                                                     </a>
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
