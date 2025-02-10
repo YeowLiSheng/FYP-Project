@@ -3018,6 +3018,53 @@ document.addEventListener("click", function (event) {
 
 
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let url = new URL(window.location.href);
+    let categoryId = url.searchParams.get("category_id");
+
+    function resetURL() {
+        if (categoryId) {
+            // Remove category_id from URL and update history
+            history.replaceState(null, "", "product.php");
+        }
+    }
+
+    function filterProducts(category) {
+        let items = document.querySelectorAll(".isotope-item");
+
+        items.forEach(item => {
+            if (category === "*" || item.classList.contains("category-" + category)) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    }
+
+    document.querySelectorAll(".filter-tope-group button").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent page reload
+
+            let selectedCategory = this.getAttribute("data-filter").replace(".category-", "");
+
+            if (categoryId) {
+                resetURL(); // Reset the URL only once if it contains category_id
+            }
+
+            filterProducts(selectedCategory); // Apply filter dynamically
+        });
+    });
+
+    // Auto-filter products on page load if category_id exists
+    if (categoryId) {
+        filterProducts(categoryId);
+    }
+});
+</script>
+
+
+
 
 <script src="js/main.js"></script>
 
