@@ -748,7 +748,6 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
                                 	</div>
 
                                 	<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
-                                    <input type="hidden" id="selected-variant-id" value="">
 
 
                                 	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
@@ -757,6 +756,7 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
                             	</div>
 
                             	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                                    <input type="hidden" id="selected-variant-id" value="">
 									Add to cart
 								</button>
                         	</div>
@@ -1133,12 +1133,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const $input = $(this).siblings('.num-product');
         const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0;
 
-        const exceedsStock = await checkCartQuantity(productStock);
-
             let currentVal = parseInt($input.val()) || 0;
 
             if (currentVal < productStock) {
-                $input.val(currentVal++);
+                $input.val(currentVal ++);
                 clearStockWarning();
             } else {
                 showStockWarning(`Only ${productStock} items are available in stock.`);
@@ -1152,7 +1150,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         let currentVal = parseInt($input.val()) || 0;
 
         if (currentVal > 1) {
-            $input.val(currentVal - 1);
+            $input.val(currentVal --);
             clearStockWarning();
         }
     });
@@ -1167,12 +1165,12 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     const productQuantity = parseInt($('.num-product').val());
     const productStock = parseInt($(this).data('stock')) || 0;
 
-    console.log('🛒 Adding to Cart:');
-    console.log('✅ Variant ID:', variantId);
-    console.log('✅ Product Name:', productName);
-    console.log('✅ Product Price:', productPrice);
-    console.log('✅ Product Quantity:', productQuantity);
-    console.log('✅ Available Stock:', productStock);
+    console.log('Adding to Cart:');
+    console.log('Variant ID:', variantId);
+    console.log('Product Name:', productName);
+    console.log('Product Price:', productPrice);
+    console.log('Product Quantity:', productQuantity);
+    console.log('Available Stock:', productStock);
 
     if (!variantId) {
         Swal.fire({
@@ -1325,7 +1323,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						
                         $('.js-name-promotion').text(response.promotion_name);
                         $('.mtext-106').text('$' + response.promotion_price);
-                        $('#selected-variant-id').val(response.variant_id); 
+                        $('#selected-variant-id').val(response.variant_id);
+                        if (!response || !response.variant_id) {
+                            console.error('❌ Variant ID is missing in the response!');
+                            return;
+                        }
+
+                        console.log('✅ Variant ID Received:', response.variant_id);
+                        console.log('✅ Stored Variant ID:', $('#selected-variant-id').val()); 
 
 						$('.gallery-lb .item-slick3').each(function(index) {
                             var imagePath = 'images/' + response['Quick_View' + (index + 1)];
