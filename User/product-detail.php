@@ -53,7 +53,24 @@ $cart_items_query = "
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
 // Handle AJAX request to delete item
+if (isset($_GET['check_cart_qty']) && isset($_GET['variant_id'])) {
+    $user_id = $_SESSION['id']; // Get the logged-in user ID
+    $variant_id = intval($_GET['variant_id']);
 
+    $query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = ? AND variant_id = ?";
+    $stmt = $connect->prepare($query);
+    $stmt->bind_param("ii", $user_id, $variant_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    $total_qty = 0;
+    if ($row = $result->fetch_assoc()) {
+        $total_qty = $row['total_qty'] ?? 0;
+    }
+
+    echo json_encode(['total_qty' => $total_qty]);
+    exit;
+}
 $query = "SELECT * FROM product_variant";
 $result = mysqli_query($connect, $query);
 $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -1182,59 +1199,98 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         return;
     }
 
-    const exceedsStock = await checkCartQuantity(variantId, productStock);
+    try {
+        const cartQuantity = await getCartQuantity(variantId);
 
-    if (exceedsStock) {
-        showStockWarning("Your quantity in the cart for this product already reached the maximum.");
-        lockQuantityInput();
-        return;
-    }
-
-    if (productQuantity > productStock) {
-        showStockWarning(`Cannot add more than ${productStock} items.`);
-        return;
-    } else if (productQuantity === 0) {
-        showStockWarning('Quantity cannot be zero.');
-        return;
-    }
-
-    const totalPrice = productPrice * productQuantity;
-
-    // Send data to the server via AJAX
-    $.ajax({
-        url: '', // Replace with your PHP URL to handle adding to the cart
-        type: 'POST',
-        data: {
-            add_to_cart: true,
-            variant_id: variantId, // Send the variant ID instead of the product ID
-            qty: productQuantity,
-            total_price: totalPrice
-        },
-        dataType: 'json',
-        success: function (response) {
-            if (response.success) {
-                Swal.fire({
-                    title: 'Product has been added to your cart!',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.reload(); // Reload page to update cart
-                    }
-                });
-                clearStockWarning();
-            } else {
-                showStockWarning(response.error || "Failed to add product to cart.");
-            }
-        },
-        error: function () {
-            showStockWarning("An error occurred while adding to the cart.");
+        if (cartQuantity >= productStock) {
+            Swal.fire({
+                title: 'Stock Limit Reached!',
+                text: `You already have ${cartQuantity} of this product in your cart, which is the maximum available.`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
         }
+
+        if (productQuantity + cartQuantity > productStock) {
+            Swal.fire({
+                title: 'Insufficient Stock!',
+                text: `You can only add ${productStock - cartQuantity} more items to your cart.`,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        const totalPrice = productPrice * productQuantity;
+
+        $.ajax({
+            url: '', // Replace with your PHP URL to handle adding to the cart
+            type: 'POST',
+            data: {
+                add_to_cart: true,
+                variant_id: variantId,
+                qty: productQuantity,
+                total_price: totalPrice
+            },
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Added to Cart!',
+                        text: 'Product has been added successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.error || "Failed to add product to cart.",
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred while adding to the cart.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+
+    } catch (error) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Failed to check cart quantity.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
     });
 });
-
-});
-
+function getCartQuantity(variantId) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: '', // Replace with your PHP URL to fetch the cart quantity
+            type: 'GET',
+            data: { check_cart_qty: true, variant_id: variantId },
+            dataType: 'json',
+            success: function (response) {
+                if (response && response.total_qty !== undefined) {
+                    resolve(parseInt(response.total_qty) || 0);
+                } else {
+                    resolve(0);
+                }
+            },
+            error: function () {
+                reject();
+            }
+        });
+    });
+}
 
 
 </script>

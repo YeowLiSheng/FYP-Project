@@ -358,9 +358,7 @@ function exportExcel() {
     transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
   }
 
-  .btn-btn-warning:hover {
-   
-}
+
 
 .btn-btn-danger
 {
