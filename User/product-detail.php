@@ -78,50 +78,6 @@ if ($distinct_items_result) {
     $distinct_count = $row['distinct_count'] ?? 0;
 }
 
-// Handle AJAX request to fetch product details
-if (isset($_GET['fetch_product']) && isset($_GET['id']) && isset($_GET['type'])) {
-    $id = intval($_GET['id']); // Fetch the ID from the request
-    $type = $_GET['type'];     // Fetch the type (product or promotion)
-
-    // Prepare the query based on the type
-    if ($type === 'product') {
-        $query = "SELECT * FROM product WHERE product_id = $id";
-    } elseif ($type === 'promotion') {
-        $query = "SELECT * FROM promotion_product WHERE promotion_id = $id";
-    } else {
-        // Invalid type
-        echo json_encode(null);
-        exit;
-    }
-
-    // Execute the query
-    $result = $connect->query($query);
-
-    if ($result && $result->num_rows > 0) {
-        $details = $result->fetch_assoc(); // Fetch the row as an associative array
-        echo json_encode($details);
-    } else {
-        echo json_encode(null); // Return null if no data is found
-    }
-    exit;
-}
-
-if (isset($_GET['check_cart_qty']) && isset($_GET['product_id'])) {
-    $product_id = intval($_GET['product_id']);
-    $user_id = $_SESSION['id'];
-
-    $query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-    $result = $connect->query($query);
-
-    if ($result) {
-        $row = $result->fetch_assoc();
-        $total_qty = $row['total_qty'] ?? 0;
-        echo json_encode(['total_qty' => $total_qty]);
-    } else {
-        echo json_encode(['total_qty' => 0]);
-    }
-    exit;
-}
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $variant_id = intval($_POST['variant_id']);
@@ -793,12 +749,14 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
 
                                 	<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
 
+
                                 	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
                                     	<i class="fs-16 zmdi zmdi-plus"></i>
                                 	</div>
                             	</div>
 
                             	<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                                    <input type="hidden" id="selected-variant-id" value="">
 									Add to cart
 								</button>
                         	</div>
@@ -1147,7 +1105,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         $('.btn-num-product-up, .btn-num-product-down').prop('disabled', true); // Disable buttons
     }
 
-    // Fetch total quantity in cart for the product
+    // Fetch total quantity in cart for the produc
     function checkCartQuantity(productId, productStock) {
         return new Promise((resolve) => {
             $.ajax({
@@ -1175,12 +1133,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const $input = $(this).siblings('.num-product');
         const productStock = parseInt($('.js-addcart-detail').data('stock')) || 0;
 
-        const exceedsStock = await checkCartQuantity(productStock);
-
             let currentVal = parseInt($input.val()) || 0;
 
             if (currentVal < productStock) {
-                $input.val(currentVal++);
+                $input.val(currentVal ++);
                 clearStockWarning();
             } else {
                 showStockWarning(`Only ${productStock} items are available in stock.`);
@@ -1194,7 +1150,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         let currentVal = parseInt($input.val()) || 0;
 
         if (currentVal > 1) {
-            $input.val(currentVal - 1);
+            $input.val(currentVal --);
             clearStockWarning();
         }
     });
@@ -1203,11 +1159,18 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     $(document).on('click', '.js-addcart-detail', async function (event) {
     event.preventDefault();
 
-    const variantId = $('#color-select').find(':selected').data('variant-id'); // Get the selected variant ID
+    const variantId = $('#selected-variant-id').val(); // Get the selected variant ID
     const productName = $('.js-name-detail').text();
     const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
     const productQuantity = parseInt($('.num-product').val());
     const productStock = parseInt($(this).data('stock')) || 0;
+
+    console.log('Adding to Cart:');
+    console.log('Variant ID:', variantId);
+    console.log('Product Name:', productName);
+    console.log('Product Price:', productPrice);
+    console.log('Product Quantity:', productQuantity);
+    console.log('Available Stock:', productStock);
 
     if (!variantId) {
         Swal.fire({
@@ -1298,6 +1261,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         // Update product details
                         $('.js-name-detail').text(response.product_name);
                         $('.mtext-106').text('$' + response.product_price);
+                        $('#selected-variant-id').val(response.variant_id);
+                        if (!response || !response.variant_id) {
+                            console.error('❌ Variant ID is missing in the response!');
+                            return;
+                        }
+
+                        console.log('✅ Variant ID Received:', response.variant_id);
+                        console.log('✅ Stored Variant ID:', $('#selected-variant-id').val()); 
 
                         // Update Quick View images
                         $('.gallery-lb .item-slick3').each(function(index) {
@@ -1352,6 +1323,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						
                         $('.js-name-promotion').text(response.promotion_name);
                         $('.mtext-106').text('$' + response.promotion_price);
+                        $('#selected-variant-id').val(response.variant_id);
+                        if (!response || !response.variant_id) {
+                            console.error('❌ Variant ID is missing in the response!');
+                            return;
+                        }
+
+                        console.log('✅ Variant ID Received:', response.variant_id);
+                        console.log('✅ Stored Variant ID:', $('#selected-variant-id').val()); 
 
 						$('.gallery-lb .item-slick3').each(function(index) {
                             var imagePath = 'images/' + response['Quick_View' + (index + 1)];

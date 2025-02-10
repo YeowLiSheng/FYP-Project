@@ -51,53 +51,7 @@ $cart_items_query = "
     GROUP BY 
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
-// Handle AJAX request to delete item
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
-    $id = intval($_POST['id']); // Ensure ID is an integer
-    $type = $_POST['type'];     // Either 'product' or 'package'
 
-    $response = ['success' => false];
-
-    // Debug: Log incoming POST data
-    file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
-
-    if ($type === 'product') {
-        $color = $_POST['color'];
-        $size = $_POST['size'];
-
-        // Delete the specific product with matching attributes
-        $stmt = $connect->prepare("
-            DELETE FROM shopping_cart 
-            WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
-        ");
-        $stmt->bind_param('issi', $id, $color, $size, $user_id);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid type']);
-        exit;
-    }
-
-    // Execute the query and check if it was successful
-    if ($stmt->execute()) {
-        // Check affected rows to confirm deletion
-        if ($stmt->affected_rows > 0) {
-            // Recalculate the new total price
-            $result = $connect->query("SELECT SUM(total_price) AS new_total FROM shopping_cart WHERE user_id = $user_id");
-            $row = $result->fetch_assoc();
-            $response['new_total'] = $row['new_total'] ?? 0;
-            $response['success'] = true;
-        } else {
-            $response['message'] = 'No matching row found for deletion.';
-        }
-    } else {
-        // Debug: Log SQL errors
-        $response['message'] = 'Query failed: ' . $connect->error;
-        file_put_contents('debug.log', "SQL Error: " . $connect->error . "\n", FILE_APPEND);
-    }
-
-    $stmt->close();
-    echo json_encode($response);
-    exit;
-}
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_promotion']) && isset($_GET['id'])) {
     $promotion_id = intval($_GET['id']);
@@ -190,18 +144,48 @@ if (isset($_GET['fetch_variants']) && $_GET['fetch_variants'] === 'true') {
 if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     // Retrieve POST data
     $variant_id = intval($_POST['variant_id']); // Use variant_id directly from POST
-    $qty = intval($_POST['qty']);
+    $qty_to_add = intval($_POST['qty']);
     $total_price = doubleval($_POST['total_price']);
 
-    // Insert data into the shopping_cart table, including the user_id and variant_id
-    $cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) 
-                   VALUES ($user_id, $variant_id, $qty, $total_price)";
+    // Check current cart quantity for the variant
+    $cart_query = "SELECT SUM(qty) AS current_qty FROM shopping_cart WHERE user_id = ? AND variant_id = ?";
+    $stmt = $connect->prepare($cart_query);
+    $stmt->bind_param("ii", $user_id, $variant_id);
+    $stmt->execute();
+    $cart_result = $stmt->get_result()->fetch_assoc();
+    $current_cart_qty = intval($cart_result['current_qty'] ?? 0);
 
-    // Execute the query and return the response
-    if ($connect->query($cart_query) === TRUE) {
-        echo json_encode(['success' => true]);
+    // Check available stock
+    $stock_query = "SELECT stock FROM product_variant WHERE variant_id = ?";
+    $stmt = $connect->prepare($stock_query);
+    $stmt->bind_param("i", $variant_id);
+    $stmt->execute();
+    $stock_result = $stmt->get_result()->fetch_assoc();
+    $available_stock = intval($stock_result['stock'] ?? 0);
+
+    $new_total_qty = $current_cart_qty + $qty_to_add;
+
+    // Validate stock limit
+    if ($new_total_qty > $available_stock) {
+        echo json_encode([
+            'success' => false,
+            'error' => "You already have $current_cart_qty in your cart. Only $available_stock items are available.",
+        ]);
+        exit;
+    }
+
+    // Add product to the cart or update quantity
+    $add_cart_query = "INSERT INTO shopping_cart (user_id, variant_id, qty, total_price) 
+                        VALUES (?, ?, ?, ?) 
+                        ON DUPLICATE KEY UPDATE qty = qty + VALUES(qty), total_price = total_price + VALUES(total_price)";
+
+    $stmt = $connect->prepare($add_cart_query);
+    $stmt->bind_param("iiid", $user_id, $variant_id, $qty_to_add, $total_price);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true, 'message' => 'Promotion product added to cart!']);
     } else {
-        echo json_encode(['success' => false, 'error' => $connect->error]);
+        echo json_encode(['success' => false, 'error' => 'Failed to add promotion product to cart']);
     }
     exit;
 }
@@ -1608,7 +1592,12 @@ $(document).on('click', '.js-addcart-detail', function (event) {
                     location.reload();
                 });
             } else {
-                alert('Failed to add product to cart: ' + (response.error || 'unknown error'));
+                Swal.fire({
+                        title: 'Cannot Add More!',
+                        text: response.error,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                });
             }
 
             // Reset modal state
