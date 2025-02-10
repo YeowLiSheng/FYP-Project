@@ -57,56 +57,6 @@ $query = "SELECT * FROM product_variant";
 $result = mysqli_query($connect, $query);
 $product_variants = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-
-// Handle AJAX request to delete item
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_item'])) {
-    $id = intval($_POST['id']); // Ensure ID is an integer
-    $type = $_POST['type'];     // Either 'product' or 'package'
-
-    $response = ['success' => false];
-
-    // Debug: Log incoming POST data
-    file_put_contents('debug.log', print_r($_POST, true), FILE_APPEND);
-
-    if ($type === 'product') {
-        $color = $_POST['color'];
-        $size = $_POST['size'];
-
-        // Delete the specific product with matching attributes
-        $stmt = $connect->prepare("
-            DELETE FROM shopping_cart 
-            WHERE product_id = ? AND color = ? AND size = ? AND user_id = ?
-        ");
-        $stmt->bind_param('issi', $id, $color, $size, $user_id);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Invalid type']);
-        exit;
-    }
-
-    // Execute the query and check if it was successful
-    if ($stmt->execute()) {
-        // Check affected rows to confirm deletion
-        if ($stmt->affected_rows > 0) {
-            // Recalculate the new total price
-            $result = $connect->query("SELECT SUM(total_price) AS new_total FROM shopping_cart WHERE user_id = $user_id");
-            $row = $result->fetch_assoc();
-            $response['new_total'] = $row['new_total'] ?? 0;
-            $response['success'] = true;
-        } else {
-            $response['message'] = 'No matching row found for deletion.';
-        }
-    } else {
-        // Debug: Log SQL errors
-        $response['message'] = 'Query failed: ' . $connect->error;
-        file_put_contents('debug.log', "SQL Error: " . $connect->error . "\n", FILE_APPEND);
-    }
-
-    $stmt->close();
-    echo json_encode($response);
-    exit;
-}
-
-
 // Handle AJAX request to fetch product details
 if (isset($_GET['fetch_product']) && isset($_GET['id'])) {
     $product_id = intval($_GET['id']);

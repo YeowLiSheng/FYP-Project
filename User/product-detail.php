@@ -78,50 +78,6 @@ if ($distinct_items_result) {
     $distinct_count = $row['distinct_count'] ?? 0;
 }
 
-// Handle AJAX request to fetch product details
-if (isset($_GET['fetch_product']) && isset($_GET['id']) && isset($_GET['type'])) {
-    $id = intval($_GET['id']); // Fetch the ID from the request
-    $type = $_GET['type'];     // Fetch the type (product or promotion)
-
-    // Prepare the query based on the type
-    if ($type === 'product') {
-        $query = "SELECT * FROM product WHERE product_id = $id";
-    } elseif ($type === 'promotion') {
-        $query = "SELECT * FROM promotion_product WHERE promotion_id = $id";
-    } else {
-        // Invalid type
-        echo json_encode(null);
-        exit;
-    }
-
-    // Execute the query
-    $result = $connect->query($query);
-
-    if ($result && $result->num_rows > 0) {
-        $details = $result->fetch_assoc(); // Fetch the row as an associative array
-        echo json_encode($details);
-    } else {
-        echo json_encode(null); // Return null if no data is found
-    }
-    exit;
-}
-
-if (isset($_GET['check_cart_qty']) && isset($_GET['product_id'])) {
-    $product_id = intval($_GET['product_id']);
-    $user_id = $_SESSION['id'];
-
-    $query = "SELECT SUM(qty) AS total_qty FROM shopping_cart WHERE user_id = $user_id AND product_id = $product_id";
-    $result = $connect->query($query);
-
-    if ($result) {
-        $row = $result->fetch_assoc();
-        $total_qty = $row['total_qty'] ?? 0;
-        echo json_encode(['total_qty' => $total_qty]);
-    } else {
-        echo json_encode(['total_qty' => 0]);
-    }
-    exit;
-}
 // Handle AJAX request to add product to shopping cart
 if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST['qty']) && isset($_POST['total_price'])) {
     $variant_id = intval($_POST['variant_id']);
