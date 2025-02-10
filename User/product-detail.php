@@ -748,6 +748,8 @@ $review_count = $review_count_result->fetch_assoc()['review_count'] ?? 0;
                                 	</div>
 
                                 	<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" value="1">
+                                    <input type="hidden" id="selected-variant-id" value="">
+
 
                                 	<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
                                     	<i class="fs-16 zmdi zmdi-plus"></i>
@@ -1159,11 +1161,18 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     $(document).on('click', '.js-addcart-detail', async function (event) {
     event.preventDefault();
 
-    const variantId = $('#color-select').find(':selected').data('variant-id'); // Get the selected variant ID
+    const variantId = $('#selected-variant-id').val(); // Get the selected variant ID
     const productName = $('.js-name-detail').text();
     const productPrice = parseFloat($('.mtext-106').text().replace('$', ''));
     const productQuantity = parseInt($('.num-product').val());
     const productStock = parseInt($(this).data('stock')) || 0;
+
+    console.log('🛒 Adding to Cart:');
+    console.log('✅ Variant ID:', variantId);
+    console.log('✅ Product Name:', productName);
+    console.log('✅ Product Price:', productPrice);
+    console.log('✅ Product Quantity:', productQuantity);
+    console.log('✅ Available Stock:', productStock);
 
     if (!variantId) {
         Swal.fire({
@@ -1254,6 +1263,14 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                         // Update product details
                         $('.js-name-detail').text(response.product_name);
                         $('.mtext-106').text('$' + response.product_price);
+                        $('#selected-variant-id').val(response.variant_id);
+                        if (!response || !response.variant_id) {
+                            console.error('❌ Variant ID is missing in the response!');
+                            return;
+                        }
+
+                        console.log('✅ Variant ID Received:', response.variant_id);
+                        console.log('✅ Stored Variant ID:', $('#selected-variant-id').val()); 
 
                         // Update Quick View images
                         $('.gallery-lb .item-slick3').each(function(index) {
@@ -1308,6 +1325,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
 						
                         $('.js-name-promotion').text(response.promotion_name);
                         $('.mtext-106').text('$' + response.promotion_price);
+                        $('#selected-variant-id').val(response.variant_id); 
 
 						$('.gallery-lb .item-slick3').each(function(index) {
                             var imagePath = 'images/' + response['Quick_View' + (index + 1)];
