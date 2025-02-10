@@ -1205,7 +1205,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         if (cartQuantity >= productStock) {
             Swal.fire({
                 title: 'Stock Limit Reached!',
-                text: `You already have ${cartQuantity} of this product in your cart, which is the maximum available.`,
+                text: `You already have ${cartQuantity} of this product in your cart. Only ${productStock} items are available.`,
                 icon: 'error',
                 confirmButtonText: 'OK'
             });

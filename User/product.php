@@ -219,7 +219,7 @@ if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST[
     if ($new_total_qty > $available_stock) {
         echo json_encode([
             'success' => false,
-            'error' => "You already have $current_cart_qty in your cart. Only $available_stock items are available.",
+            'error' => "You already have $current_cart_qty of this product in your cart. Only $available_stock items are available.",
         ]);
         exit;
     }
@@ -268,7 +268,7 @@ if (isset($_POST['add_promo_to_cart']) && isset($_POST['promotion_variant_id']) 
     if ($new_total_qty > $available_stock) {
         echo json_encode([
             'success' => false,
-            'error' => "You already have $current_cart_qty in your cart. Only $available_stock items are available for this promotion.",
+            'error' => "You already have $current_cart_qty of this promotion product in your cart. Only $available_stock items are available for this promotion.",
         ]);
         exit;
     }
