@@ -1105,7 +1105,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         $('.btn-num-product-up, .btn-num-product-down').prop('disabled', true); // Disable buttons
     }
 
-    // Fetch total quantity in cart for the product
+    // Fetch total quantity in cart for the produc
     function checkCartQuantity(productId, productStock) {
         return new Promise((resolve) => {
             $.ajax({
