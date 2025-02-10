@@ -487,14 +487,13 @@ if (isset($_POST['submitbtn'])) {
         <input type="file" id="profile_image" name="profile_image" accept="image/*" style="display: none;" onchange="previewImage(event)">
     </div>
 
-      <!-- Email -->
-      <div class="form-group" style="margin-bottom: 15px;">
+    <!-- Email -->
+    <div class="form-group" style="margin-bottom: 15px;">
         <label for="email" style="font-weight: bold; color: #333;">Email</label>
         <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user_data['user_email']); ?>" required oninput="validateEmail()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" readonly>
     </div>
 
-
-     <!-- Contact Number -->
+    <!-- Contact Number -->
     <div class="form-group" style="margin-bottom: 15px;">
         <label for="contact" style="font-weight: bold; color: #333;">Contact Number</label>
         <input type="text" id="contact" name="contact" value="<?php echo htmlspecialchars($user_data['user_contact_number']); ?>" required oninput="validateContact()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" readonly>
@@ -507,20 +506,12 @@ if (isset($_POST['submitbtn'])) {
         <small class="error-message" id="nameError" style="display: none; color: red;">Name must be at least 6 characters long.</small>
     </div>
 
+   <!-- Gender -->
+<div class="form-group" style="margin-bottom: 15px;">
+    <label for="gender" style="font-weight: bold; color: #333;">Gender</label>
+    <input type="text" id="gender" name="gender" value="<?php echo htmlspecialchars($user_data['user_gender']); ?>" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f5f5f5;">
+</div>
 
-
-   
-
-
-    <!-- Gender -->
-    <div class="form-group" style="margin-bottom: 15px;">
-        <label for="gender" style="font-weight: bold; color: #333;">Gender</label>
-        <select id="gender" name="gender" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-            <option value="male" <?php if ($user_data['user_gender'] === 'male') echo 'selected'; ?>>Male</option>
-            <option value="female" <?php if ($user_data['user_gender'] === 'female') echo 'selected'; ?>>Female</option>
-         
-        </select>
-    </div>
 
     <!-- Address -->
     <div class="form-group" style="margin-bottom: 15px;">
@@ -555,13 +546,12 @@ if (isset($_POST['submitbtn'])) {
     <!-- Date of Birth -->
     <div class="form-group" style="margin-bottom: 15px;">
         <label for="dob" style="font-weight: bold; color: #333;">Date of Birth</label>
-        <input type="date" id="dob" name="dob" value="<?php echo htmlspecialchars($user_data['user_date_of_birth']); ?>" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="date" id="dob" name="dob" value="<?php echo htmlspecialchars($user_data['user_date_of_birth']); ?>" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" readonly>
     </div>
 
     <!-- Submit Button -->
     <input type="submit" name="submitbtn" value="Save Changes" class="submit-btn" style="width: 100%; padding: 12px 0; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
 </form>
-
 
 <script>
     // Image preview function

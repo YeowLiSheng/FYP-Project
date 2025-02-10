@@ -117,46 +117,60 @@ include 'admin_sidebar.php';
         <h2>Add Staff</h2>
         <a href="view_admin.php" class="close-btn" aria-label="Close">&times;</a>
         <form action="add_staff.php" method="POST" id="addStaffForm">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="adminId" class="form-label">Admin ID</label>
-                    <input type="text" class="form-control" id="adminId" name="adminId" required >
-                    <div id="check_id" class="text-danger">Admin ID is required</div>
-                </div>
-                <div class="col-md-6">
-                    <label for="fullName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="fullName" name="fullName" required >
-                    <div id="check_full" class="text-danger">Full Name must be at least 5 characters</div>
-                </div>
-            </div>
-            <div class="row mb-3">
-            <div class="col-md-6 position-relative">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required oninput="checkPassword()">
-                <span id="passwordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('password')"></span>
-                <div id="passwordStrength" class="strength-bar"></div> <!-- Password Strength Indicator -->
-                
-            </div>
-            <div class="col-md-6 position-relative">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
-                <span id="confirmPasswordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('confirmPassword')"></span>
-                <div id="confirmPasswordStrength" class="strength-bar"></div> <!-- Confirm Password Strength Indicator -->
-            </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="adminId" class="form-label">Admin ID</label>
+            <input type="text" class="form-control" id="adminId" name="adminId" required>
+            <div id="check_id" class="text-danger">Admin ID is required</div>
         </div>
+        <div class="col-md-6">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="fullName" name="fullName" required>
+            <div id="check_full" class="text-danger">Full Name must be at least 5 characters</div>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-md-6 position-relative">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required oninput="checkPassword()">
+            <span id="passwordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('password')"></span>
+            <div id="passwordStrength" class="strength-bar"></div> <!-- Password Strength Indicator -->
+        </div>
+        <div class="col-md-6 position-relative">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required oninput="checkConfirmPassword()">
+            <span id="confirmPasswordEye" class="eye-icon fas fa-eye" onclick="togglePasswordVisibility('confirmPassword')"></span>
+            <div id="confirmPasswordStrength" class="strength-bar"></div> <!-- Confirm Password Strength Indicator -->
+        </div>
+    </div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-                <div id="check_e" class="text-danger">Enter a valid email address</div>
-            </div>
-            <div class="mb-3">
-                <label for="contactNumber" class="form-label">Contact Number</label>
-                <input type="text" class="form-control" id="contactNumber" name="contactNumber" required>
-                <div id="check_num" class="text-danger">Enter a valid contact number</div>
-            </div>
-            <input type="submit" class="btn btn-primary" name="addstaff" value="Add Staff">
-        </form>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+        <div id="check_e" class="text-danger">Enter a valid email address</div>
+    </div>
+    
+    <div class="mb-3">
+        <label for="contactNumber" class="form-label">Contact Number</label>
+        <input type="text" class="form-control" id="contactNumber" name="contactNumber" required>
+        <div id="check_num" class="text-danger">Enter a valid contact number</div>
+    </div>
+
+    <!-- Gender Selection -->
+    <div class="mb-3">
+        <label for="gender" class="form-label">Gender</label>
+        <select class="form-control" id="gender" name="gender" required>
+            <option value="" disabled selected>Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+           
+        </select>
+    </div>
+
+    <input type="submit" class="btn btn-primary" name="addstaff" value="Add Staff">
+</form>
+
     </div>
     <script>
         function togglePasswordVisibility(inputId) {
@@ -289,6 +303,7 @@ if (isset($_POST["addstaff"])) {
     $confirmPassword = $_POST["confirmPassword"];
     $email = $_POST["email"];  
     $contact = $_POST["contactNumber"];  
+    $gender = $_POST["gender"];  
 
     $now = new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur'));
     $currentDateTime = $now->format('Y-m-d H:i:s');
@@ -347,8 +362,8 @@ if (isset($_POST["addstaff"])) {
                 </script>";
             } else {
                 // Insert data into the database with admin_status set to 0
-                $insert_query = mysqli_query($connect, "INSERT INTO admin (admin_id, admin_name, admin_contact_number, admin_password, admin_email, admin_joined_date, admin_status) 
-                VALUES ('$id', '$name', '$contact', '$password', '$email', '$currentDateTime', 0)");
+                $insert_query = mysqli_query($connect, "INSERT INTO admin (admin_id, admin_name, admin_contact_number, admin_gender, admin_password, admin_email, admin_joined_date, admin_status) 
+                VALUES ('$id', '$name', '$contact', '$gender', '$password', '$email', '$currentDateTime', 0)");
                 
                 if ($insert_query) {
                     // Update admin_status to 1

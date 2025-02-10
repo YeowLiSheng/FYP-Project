@@ -385,15 +385,12 @@ body {
 
 
 
-    <!-- Gender -->
-    <div class="form-group">
-        <label for="admin_gender">Gender</label>
-        <select id="admin_gender" name="admin_gender">
-            <option value="" <?php if (empty($admin_row['admin_gender'])) echo 'selected'; ?>>Not specified</option>
-            <option value="male" <?php if ($admin_row['admin_gender'] === 'male') echo 'selected'; ?>>Male</option>
-            <option value="female" <?php if ($admin_row['admin_gender'] === 'female') echo 'selected'; ?>>Female</option>
-        </select>
-    </div>
+   <!-- Gender -->
+<div class="form-group">
+    <label for="admin_gender">Gender</label>
+    <input type="text" id="admin_gender" name="admin_gender" value="<?php echo htmlspecialchars($admin_row['admin_gender']); ?>" required readonly>
+</div>
+
 
 
           <!-- Password -->
