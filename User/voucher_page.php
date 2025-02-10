@@ -55,6 +55,27 @@ $cart_items_query = "
     GROUP BY 
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $connect->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+
 $items_per_page = 5;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($current_page < 1) {
@@ -89,21 +110,6 @@ $total_row = $total_result->fetch_assoc();
 $total_vouchers = $total_row['total'];
 $total_pages = ceil($total_vouchers / $items_per_page);
 
-
-// Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_items_query = "
-    SELECT COUNT(*) AS distinct_count
-    FROM (
-        SELECT 
-            sc.variant_id
-        FROM shopping_cart sc
-        WHERE sc.user_id = $user_id
-        GROUP BY 
-            sc.variant_id
-    ) AS distinct_items";
-
-$distinct_items_result = $connect->query($distinct_items_query);
-$distinct_count = 0;
 
 ?>
 <!DOCTYPE html>
