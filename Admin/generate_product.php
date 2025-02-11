@@ -80,7 +80,9 @@ if ($result->num_rows > 0) {
         $pdf->Cell(30, $cell_height * $line_count, $product_id, 1, 0, 'C');
         $x = $pdf->GetX(); // Save x position
         $y = $pdf->GetY(); // Save y position
-        $pdf->MultiCell($cell_width, $cell_height, $product_name, 1, 'C');
+        $pdf->MultiCell($cell_width, $cell_height, $product_name, 1, 'C'); 
+        $y_new = $pdf->GetY(); // 获取 MultiCell 结束后的 Y 位置
+        
         $pdf->SetXY($x + $cell_width, $y); // Move to next cell
         $pdf->Cell(30, $cell_height * $line_count, $tags, 1, 0, 'C');
         $pdf->Cell(30, $cell_height * $line_count, $color, 1, 0, 'C');
