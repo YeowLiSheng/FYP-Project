@@ -32,11 +32,11 @@ $header = [
     ['Tags', 30],
     ['Color', 30],
     ['Category', 25],
-    ['Status', 25] // Adjusted widths for table columns
+    ['Status', 25]
 ];
 
 // Adjust left margin
-$left_margin = 10; 
+$left_margin = 10;
 $pdf->SetX($left_margin); // Set initial left margin
 foreach ($header as $col) {
     $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
@@ -70,31 +70,24 @@ if ($result->num_rows > 0) {
 
         // Set column widths
         $col_widths = [30, 40, 30, 30, 25, 25];
-        $cell_height = 8; // Default row height
+        $cell_height = 6; // Height of each wrapped line
 
-        // Store X and Y position
-        $x_start = $pdf->GetX();
-        $y_start = $pdf->GetY();
+        // Calculate line count for Product Name
+        $line_count = ceil($pdf->GetStringWidth($product_name) / $col_widths[1]);
 
-        // Product Name MultiCell
+        // Set left margin for row data
+        $pdf->SetX($left_margin);
+
+        // Output row data with consistent height
+        $pdf->Cell($col_widths[0], $cell_height * $line_count, $product_id, 1, 0, 'C');
+        $x = $pdf->GetX(); // Save x position
+        $y = $pdf->GetY(); // Save y position
         $pdf->MultiCell($col_widths[1], $cell_height, $product_name, 1, 'C');
-
-        // Get the height of MultiCell
-        $y_end = $pdf->GetY();
-        $row_height = $y_end - $y_start;
-
-        // Reset X position for next cells
-        $pdf->SetXY($x_start, $y_start);
-
-        // Print the remaining columns with same row height
-        $pdf->Cell($col_widths[0], $row_height, $product_id, 1, 0, 'C');
-        $pdf->SetXY($x_start + $col_widths[0], $y_start);
-        $pdf->Cell($col_widths[1], $row_height, '', 1, 0); // Empty cell for Product Name
-        $pdf->SetXY($x_start + $col_widths[0] + $col_widths[1], $y_start);
-        $pdf->Cell($col_widths[2], $row_height, $tags, 1, 0, 'C');
-        $pdf->Cell($col_widths[3], $row_height, $color, 1, 0, 'C');
-        $pdf->Cell($col_widths[4], $row_height, $category_name, 1, 0, 'C');
-        $pdf->Cell($col_widths[5], $row_height, $status, 1, 1, 'C');
+        $pdf->SetXY($x + $col_widths[1], $y); // Move to next cell
+        $pdf->Cell($col_widths[2], $cell_height * $line_count, $tags, 1, 0, 'C');
+        $pdf->Cell($col_widths[3], $cell_height * $line_count, $color, 1, 0, 'C');
+        $pdf->Cell($col_widths[4], $cell_height * $line_count, $category_name, 1, 0, 'C');
+        $pdf->Cell($col_widths[5], $cell_height * $line_count, $status, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
