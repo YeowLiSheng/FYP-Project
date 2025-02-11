@@ -489,26 +489,20 @@ $total_pages = ceil($total_vouchers / $items_per_page);
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Women
+							<a href="product.php?category_id=1" class="stext-107 cl7 hov-cl1 trans-04">
+								Women's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Men
+							<a href="product.php?category_id=2" class="stext-107 cl7 hov-cl1 trans-04">
+								Men's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Shoes
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Watches
+							<a href="product.php?category_id=3" class="stext-107 cl7 hov-cl1 trans-04">
+								Accessories
 							</a>
 						</li>
 					</ul>
@@ -521,7 +515,7 @@ $total_pages = ceil($total_vouchers / $items_per_page);
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="Order.php?user=<?php echo $user_id; ?>" class="stext-107 cl7 hov-cl1 trans-04">
 								Track Order
 							</a>
 						</li>
@@ -539,7 +533,7 @@ $total_pages = ceil($total_vouchers / $items_per_page);
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="faq.php" class="stext-107 cl7 hov-cl1 trans-04">
 								FAQs
 							</a>
 						</li>
