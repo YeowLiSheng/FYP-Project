@@ -1325,33 +1325,33 @@ function add_check() {
         }
 
  
-       function exportExcel() {
+        function exportExcel() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
         Title: "Product List",
         Author: "YLS Atelier",
     };
 
-    // Select the table with product data
+    // 选择整个表格
     const table = document.querySelector(".table");
+    
+    // **改进点：获取所有行，包括分页隐藏的**
     const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
         const cells = Array.from(row.querySelectorAll("td"));
-        // Exclude the first (Product Image) and last (Actions) columns
-        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim()); // 去掉图片和操作列
     });
 
-    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
-    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
-        // Exclude the first and last columns
-        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
-    }).filter(header => header !== null);
+    // 提取表头
+    const headers = Array.from(table.querySelectorAll("thead th"))
+        .map((header, index) => (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null)
+        .filter(header => header !== null);
 
     rows.unshift(headers);
 
-    // Create worksheet from the extracted data
+    // 创建 Excel 工作表
     const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // Set appropriate column widths for the product data, excluding the first and last columns
+    // 设置列宽
     ws['!cols'] = [
         { wch: 30 }, // Product Name
         { wch: 25 }, // Tags
@@ -1362,10 +1362,10 @@ function add_check() {
         { wch: 15 }  // Status
     ];
 
-    // Append the sheet to the workbook
+    // 添加工作表到 Excel 文件
     XLSX.utils.book_append_sheet(wb, ws, "Products");
 
-    // Save the workbook as an Excel file
+    // 生成 Excel 文件
     XLSX.writeFile(wb, "Product_List.xlsx");
 }
 
