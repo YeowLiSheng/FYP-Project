@@ -68,26 +68,30 @@ if ($result->num_rows > 0) {
         $category_name = $row['category_name'];
         $status = $row['product_status'];
 
-        // Handle word wrapping for the 'Promotion Name' column
-        $cell_width = 40; // Width of 'Promotion Name'
-        $cell_height = 8; // Height of each wrapped line
-        $line_count = ceil($pdf->GetStringWidth($product_name) / $cell_width);
+        // Set column widths
+        $col_widths = [30, 40, 30, 30, 25, 25];
+        $cell_height = 8; // Default row height
 
-        // Set left margin for row data
-        $pdf->SetX($left_margin);
+        // Calculate maximum height for this row based on Product Name
+        $x_start = $pdf->GetX(); // Store X position
+        $y_start = $pdf->GetY(); // Store Y position
 
-        // Output row data
-        $pdf->Cell(30, $cell_height * $line_count, $product_id, 1, 0, 'C');
-        $x = $pdf->GetX(); // Save x position
-        $y = $pdf->GetY(); // Save y position
-        $pdf->MultiCell($cell_width, $cell_height, $product_name, 1, 'C'); 
-        $y_new = $pdf->GetY(); // 获取 MultiCell 结束后的 Y 位置
-        
-        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
-        $pdf->Cell(30, $cell_height * $line_count, $tags, 1, 0, 'C');
-        $pdf->Cell(30, $cell_height * $line_count, $color, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $status, 1, 1, 'C');
+        // Product Name MultiCell (auto-wrap)
+        $pdf->MultiCell($col_widths[1], $cell_height, $product_name, 1, 'C');
+
+        // Get the height of the MultiCell
+        $y_end = $pdf->GetY(); 
+        $row_height = $y_end - $y_start; // Calculate the height of this row
+
+        // Set X back to start for alignment of other cells
+        $pdf->SetXY($x_start + $col_widths[1], $y_start);
+
+        // Output other columns with the same height as Product Name
+        $pdf->Cell($col_widths[0], $row_height, $product_id, 1, 0, 'C');
+        $pdf->Cell($col_widths[2], $row_height, $tags, 1, 0, 'C');
+        $pdf->Cell($col_widths[3], $row_height, $color, 1, 0, 'C');
+        $pdf->Cell($col_widths[4], $row_height, $category_name, 1, 0, 'C');
+        $pdf->Cell($col_widths[5], $row_height, $status, 1, 1, 'C');
     }
 } else {
     $pdf->SetX($left_margin);
