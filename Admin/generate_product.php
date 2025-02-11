@@ -67,22 +67,21 @@ if ($result->num_rows > 0) {
         $category_name = $row['category_name'];
         $status = $row['product_status'];
     
-        $cell_width = 40; // 'Product Name' 列宽
-        $cell_height = 8; // 每行高度
+        $cell_width = 40; 
+        $cell_height = 8; 
         $line_count = max(1, ceil($pdf->GetStringWidth($product_name) / ($cell_width - 2))); // 计算行数
     
-        // 计算整行的高度，确保所有列对齐
+
         $row_height = $cell_height * $line_count;
     
         $pdf->SetX($left_margin);
         $pdf->Cell(30, $row_height, $product_id, 1, 0, 'C');
     
-        // 处理 'Product Name' 列，允许多行
+
         $x = $pdf->GetX();
         $y = $pdf->GetY();
         $pdf->MultiCell($cell_width, $cell_height, $product_name, 1, 'C');
-        
-        // 重新对齐剩余的列
+
         $pdf->SetXY($x + $cell_width, $y);
         $pdf->Cell(30, $row_height, $tags, 1, 0, 'C');
         $pdf->Cell(30, $row_height, $color, 1, 0, 'C');
