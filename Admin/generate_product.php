@@ -60,35 +60,41 @@ $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Fetch data for each row
+        // 数据获取
         $product_id = $row['product_id'];
         $product_name = $row['product_name'];
         $tags = $row['tags'];
         $color = $row['color'];
         $category_name = $row['category_name'];
         $status = $row['product_status'];
-
-        // Set column widths
+    
+        // 定义列宽
         $col_widths = [30, 40, 30, 30, 25, 25];
-        $cell_height = 6; // Height of each wrapped line
-
-        // Calculate line count for Product Name
-        $line_count = ceil($pdf->GetStringWidth($product_name) / $col_widths[1]);
-
-        // Set left margin for row data
+        $cell_height = 6; // 单行高度
+    
+        // 计算 Product Name 需要的行数
+        $line_count = max(
+            ceil($pdf->GetStringWidth($product_name) / $col_widths[1]), // 计算 Product Name 需要的行数
+            1 // 最少占用 1 行
+        );
+    
+        // **输出数据**
         $pdf->SetX($left_margin);
-
-        // Output row data with consistent height
-        $pdf->Cell($col_widths[0], $cell_height * $line_count, $product_id, 1, 0, 'C');
-        $x = $pdf->GetX(); // Save x position
-        $y = $pdf->GetY(); // Save y position
+        $pdf->Cell($col_widths[0], $cell_height * $line_count, $product_id, 1, 0, 'C'); // Product ID
+    
+        // **使用 MultiCell() 显示 Product Name**
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
         $pdf->MultiCell($col_widths[1], $cell_height, $product_name, 1, 'C');
-        $pdf->SetXY($x + $col_widths[1], $y); // Move to next cell
+        $pdf->SetXY($x + $col_widths[1], $y); // 移动到下一列
+    
+        // **后续列的数据**
         $pdf->Cell($col_widths[2], $cell_height * $line_count, $tags, 1, 0, 'C');
         $pdf->Cell($col_widths[3], $cell_height * $line_count, $color, 1, 0, 'C');
         $pdf->Cell($col_widths[4], $cell_height * $line_count, $category_name, 1, 0, 'C');
         $pdf->Cell($col_widths[5], $cell_height * $line_count, $status, 1, 1, 'C');
     }
+    
 } else {
     $pdf->SetX($left_margin);
     $pdf->Cell(0, 10, 'No products found.', 1, 1, 'C');
