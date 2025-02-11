@@ -1325,39 +1325,48 @@ function add_check() {
         }
 
  
-        function exportExcel() {
-    fetch('export_products.php')
-        .then(response => response.json())
-        .then(data => {
-            const wb = XLSX.utils.book_new();
-            wb.Props = {
-                Title: "Product List",
-                Author: "YLS Atelier",
-            };
+       function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Product List",
+        Author: "YLS Atelier",
+    };
 
-            // 设置 Excel 头部
-            const headers = ["Product Name", "Tags", "Colors", "Category", "Price (USD)", "Stock (QTY)", "Status"];
-            const rows = data.map(row => [
-                row.product_name, row.tags, row.color, row.category_name, 
-                row.product_price_usd, row.stock_quantity, row.product_status
-            ]);
+    // Select the table with product data
+    const table = document.querySelector(".table");
+    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
+        const cells = Array.from(row.querySelectorAll("td"));
+        // Exclude the first (Product Image) and last (Actions) columns
+        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim());
+    });
 
-            rows.unshift(headers); // 加入表头
+    // Extract headers from the table, excluding the first (Product Image) and last (Actions) columns
+    const headers = Array.from(table.querySelectorAll("thead th")).map((header, index) => {
+        // Exclude the first and last columns
+        return (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null;
+    }).filter(header => header !== null);
 
-            // 创建 Excel 工作表
-            const ws = XLSX.utils.aoa_to_sheet(rows);
+    rows.unshift(headers);
 
-            // 设置列宽
-            ws['!cols'] = [
-                { wch: 30 }, { wch: 25 }, { wch: 20 },
-                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
-            ];
+    // Create worksheet from the extracted data
+    const ws = XLSX.utils.aoa_to_sheet(rows);
 
-            // 添加到工作簿并保存
-            XLSX.utils.book_append_sheet(wb, ws, "Products");
-            XLSX.writeFile(wb, "Product_List.xlsx");
-        })
-        .catch(error => console.error('Error fetching data:', error));
+    // Set appropriate column widths for the product data, excluding the first and last columns
+    ws['!cols'] = [
+        { wch: 30 }, // Product Name
+        { wch: 25 }, // Tags
+        { wch: 20 }, // Colors
+        { wch: 20 }, // Category
+        { wch: 15 }, // Price
+        { wch: 20 }, // Stock (QTY)
+        { wch: 15 }  // Status
+    ];
+
+    // Append the sheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Products");
+
+    // Save the workbook as an Excel file
+    XLSX.writeFile(wb, "Product_List.xlsx");
 }
 
 
