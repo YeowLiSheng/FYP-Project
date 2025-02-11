@@ -784,122 +784,120 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 
 					
 	<!-- Main Container -->
-<div class="my-account-container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <!-- User Info -->
-        <div class="user-info">
-            <img src="<?= $current_user['user_image'] ?>" alt="User Image">
-            <h3><?= $current_user['user_name'] ?></h3>
+    <div class="my-account-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- User Info -->
+            <div class="user-info">
+                <img src="<?= $current_user['user_image'] ?>" alt="User Image">
+                <h3><?= $current_user['user_name'] ?></h3>
+            </div>
+            <ul>
+            <!-- My Account -->
+            <li><i class="fa fa-user"></i> My Account</li>
+                <!-- Profile items directly below My Account with indentation -->
+
+                <li class="profile-item">
+                    <a href="edit_profile.php">
+                        <i class="fa fa-edit"></i> Edit Profile
+                    </a>
+                </li>           
+
+                <!-- My Orders -->
+                <li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
+            </ul>
         </div>
-        <ul>
-           <!-- My Account -->
-		   <li><i class="fa fa-user"></i> My Account</li>
-            <!-- Profile items directly below My Account with indentation -->
 
-<li class="profile-item">
-    <a href="edit_profile.php">
-        <i class="fa fa-edit"></i> Edit Profile
-    </a>
-</li>           
+        <!-- Content Area -->
+        <div class="content">
+            <h1>My Orders</h1>
+            <!-- Tab Buttons -->
+            <div class="tabs">
+                <button id="All-tab" onclick="showTab('All')" class="active">All</button>
+                <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
+                <button id="Shipping-tab" onclick="showTab('Shipping')">Shipping</button>
+                <button id="Complete-tab" onclick="showTab('Complete')">Complete</button>
+            </div>
 
-            <!-- My Orders -->
-			<li><a href="Order.php"><i class="fa fa-box"></i> My Orders</a></li>
-			</ul>
+            <!-- Order Containers for Each Status -->
+            <?php
+            function renderOrders($orders, $showCompleteButton = false) {
+                if ($orders->num_rows > 0) {
+                    
+                    while ($order = $orders->fetch_assoc()) {
+                        echo '
+
+                            <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
+                            <img src="images/' . $order['product_image'] . '" alt="Product Image">
+                            <div>
+                                <h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
+                                <p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d H:i:s", strtotime($order['order_date'])) . '</p>
+                                <p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
+                                <p><i class="fa fa-dollar-sign"></i> Total Price: $ ' . $order['final_amount'] . '</p>';
+                                
+                        // if need "Complete" button
+                        if ($showCompleteButton) {
+                            echo '
+                                <button type="button" class="complete-btn" 
+                                    onclick="openPopup(event, ' . $order['order_id'] . ')">
+                                    Complete
+                                </button>';
+                        }
+            
+                        echo '
+                            </div>
+                        </div>';
+                    }
+                } else {
+                    echo '
+                    <div class="no-orders">
+                        <p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
+                        <button onclick="window.location.href=\'product.php\'">Continue Shopping</button>
+                    </div>';
+                }
+            }
+        
+            ?>
+
+            <!-- All Orders -->
+            <div class="order-container" id="All" style="display: block;">
+                <?php renderOrders($all_orders); ?>
+                <div class="pagination" id="pagination-All"></div>
+
+            </div>
+
+            <!-- Processing Orders -->
+            <div class="order-container" id="Processing" style="display: none;">
+                <?php renderOrders($processing_orders); ?>
+                <div class="pagination" id="pagination-Processing"></div>
+
+            </div>
+
+            <!-- Shipping Orders -->
+            <div class="order-container" id="Shipping" style="display: none;">
+                <?php renderOrders($shipping_orders, true); ?>
+                <div class="pagination" id="pagination-Shipping"></div>
+            </div>
+
+            <!-- Completed Orders -->
+            <div class="order-container" id="Complete" style="display: none;">
+                <?php renderOrders($complete_orders); ?>
+                <div class="pagination" id="pagination-Complete"></div>
+            </div>
+        </div>
+
+        <div id="popup-form" class="popup-form" style="display: none;">
+            <div class="popup-content">
+                <h2>Confirm Order Completion</h2>
+                <p>Are you sure you have received your order?</p>
+                <form method="post">
+                    <input type="hidden" id="popup-order-id" name="order_id">
+                    <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
+                    <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <!-- Content Area -->
-    <div class="content">
-        <h1>My Orders</h1>
-        <!-- Tab Buttons -->
-        <div class="tabs">
-            <button id="All-tab" onclick="showTab('All')" class="active">All</button>
-            <button id="Processing-tab" onclick="showTab('Processing')">Processing</button>
-            <button id="Shipping-tab" onclick="showTab('Shipping')">Shipping</button>
-            <button id="Complete-tab" onclick="showTab('Complete')">Complete</button>
-        </div>
-
-        <!-- Order Containers for Each Status -->
-        <?php
-       function renderOrders($orders, $showCompleteButton = false) {
-		if ($orders->num_rows > 0) {
-			
-			while ($order = $orders->fetch_assoc()) {
-				echo '
-
-                    <div class="order-summary" onclick="window.location.href=\'orderdetails.php?order_id=' . $order['order_id'] . '\'">
-					<img src="images/' . $order['product_image'] . '" alt="Product Image">
-					<div>
-						<h3><i class="fa fa-box"></i> Order #' . $order['order_id'] . '</h3>
-						<p><i class="fa fa-calendar-alt"></i> Date: ' . date("Y-m-d H:i:s", strtotime($order['order_date'])) . '</p>
-						<p><i class="fa fa-tag"></i> Products: ' . $order['products'] . '</p>
-						<p><i class="fa fa-dollar-sign"></i> Total Price: $ ' . $order['final_amount'] . '</p>';
-						
-				// if need "Complete" button
-				if ($showCompleteButton) {
-					echo '
-						<button type="button" class="complete-btn" 
- onclick="openPopup(event, ' . $order['order_id'] . ')">
- 							Complete
-						</button>';
-				}
-	
-				echo '
-					</div>
-				</div>';
-			}
-		} else {
-			echo '
-			<div class="no-orders">
-				<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-				<button onclick="window.location.href=\'product.php\'">Continue Shopping</button>
-			</div>';
-		}
-	}
-	
-        ?>
-
-        <!-- All Orders -->
-        <div class="order-container" id="All" style="display: block;">
-            <?php renderOrders($all_orders); ?>
-			<div class="pagination" id="pagination-All"></div>
-
-        </div>
-
-        <!-- Processing Orders -->
-        <div class="order-container" id="Processing" style="display: none;">
-            <?php renderOrders($processing_orders); ?>
-			<div class="pagination" id="pagination-Processing"></div>
-
-        </div>
-
-        <!-- Shipping Orders -->
-        <div class="order-container" id="Shipping" style="display: none;">
-    <?php renderOrders($shipping_orders, true); ?>
-	<div class="pagination" id="pagination-Shipping"></div>
-
-</div>
-
-        <!-- Completed Orders -->
-        <div class="order-container" id="Complete" style="display: none;">
-            <?php renderOrders($complete_orders); ?>
-			<div class="pagination" id="pagination-Complete"></div>
-
-        </div>
-    </div>
-
-	<div id="popup-form" class="popup-form" style="display: none;">
-    <div class="popup-content">
-        <h2>Confirm Order Completion</h2>
-        <p>Are you sure you have received your order?</p>
-        <form method="post">
-            <input type="hidden" id="popup-order-id" name="order_id">
-            <button type="submit" name="complete_order" class="popup-confirm-btn">Yes</button>
-            <button type="button" class="popup-cancel-btn" onclick="closePopup()">No</button>
-        </form>
-    </div>
-</div>
-</div>
 
 	<!-- Footer -->
 	<footer class="bg3 p-t-75 p-b-32">
