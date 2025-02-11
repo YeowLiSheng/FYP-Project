@@ -72,22 +72,25 @@ if ($result->num_rows > 0) {
         $col_widths = [30, 40, 30, 30, 25, 25];
         $cell_height = 8; // Default row height
 
-        // Calculate maximum height for this row based on Product Name
-        $x_start = $pdf->GetX(); // Store X position
-        $y_start = $pdf->GetY(); // Store Y position
+        // Store X and Y position
+        $x_start = $pdf->GetX();
+        $y_start = $pdf->GetY();
 
-        // Product Name MultiCell (auto-wrap)
+        // Product Name MultiCell
         $pdf->MultiCell($col_widths[1], $cell_height, $product_name, 1, 'C');
 
-        // Get the height of the MultiCell
-        $y_end = $pdf->GetY(); 
-        $row_height = $y_end - $y_start; // Calculate the height of this row
+        // Get the height of MultiCell
+        $y_end = $pdf->GetY();
+        $row_height = $y_end - $y_start;
 
-        // Set X back to start for alignment of other cells
-        $pdf->SetXY($x_start + $col_widths[1], $y_start);
+        // Reset X position for next cells
+        $pdf->SetXY($x_start, $y_start);
 
-        // Output other columns with the same height as Product Name
+        // Print the remaining columns with same row height
         $pdf->Cell($col_widths[0], $row_height, $product_id, 1, 0, 'C');
+        $pdf->SetXY($x_start + $col_widths[0], $y_start);
+        $pdf->Cell($col_widths[1], $row_height, '', 1, 0); // Empty cell for Product Name
+        $pdf->SetXY($x_start + $col_widths[0] + $col_widths[1], $y_start);
         $pdf->Cell($col_widths[2], $row_height, $tags, 1, 0, 'C');
         $pdf->Cell($col_widths[3], $row_height, $color, 1, 0, 'C');
         $pdf->Cell($col_widths[4], $row_height, $category_name, 1, 0, 'C');
