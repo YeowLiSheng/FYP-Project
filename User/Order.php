@@ -852,7 +852,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete_order'])) {
 			echo '
 			<div class="no-orders">
 				<p><i class="fa fa-ice-cream"></i> Nothing to show here.</p>
-				<button onclick="window.location.href=\'shop.php\'">Continue Shopping</button>
+				<button onclick="window.location.href=\'product.php\'">Continue Shopping</button>
 			</div>';
 		}
 	}
