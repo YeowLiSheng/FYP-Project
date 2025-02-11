@@ -553,9 +553,6 @@ if ($distinct_items_result) {
                         View Cart
                     </a>
 
-                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
                 </div>
             </div>
         </div>
@@ -649,26 +646,20 @@ if ($distinct_items_result) {
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Women
+							<a href="product.php?category_id=1" class="stext-107 cl7 hov-cl1 trans-04">
+								Women's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Men
+							<a href="product.php?category_id=2" class="stext-107 cl7 hov-cl1 trans-04">
+								Men's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Shoes
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Watches
+							<a href="product.php?category_id=3" class="stext-107 cl7 hov-cl1 trans-04">
+								Accessories
 							</a>
 						</li>
 					</ul>
@@ -681,7 +672,7 @@ if ($distinct_items_result) {
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="Order.php?user=<?php echo $user_id; ?>" class="stext-107 cl7 hov-cl1 trans-04">
 								Track Order
 							</a>
 						</li>
@@ -699,7 +690,7 @@ if ($distinct_items_result) {
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="faq.php" class="stext-107 cl7 hov-cl1 trans-04">
 								FAQs
 							</a>
 						</li>

@@ -219,7 +219,7 @@ if (isset($_POST['add_to_cart']) && isset($_POST['variant_id']) && isset($_POST[
     if ($new_total_qty > $available_stock) {
         echo json_encode([
             'success' => false,
-            'error' => "You already have $current_cart_qty in your cart. Only $available_stock items are available.",
+            'error' => "You already have $current_cart_qty of this product in your cart. Only $available_stock items are available.",
         ]);
         exit;
     }
@@ -268,7 +268,7 @@ if (isset($_POST['add_promo_to_cart']) && isset($_POST['promotion_variant_id']) 
     if ($new_total_qty > $available_stock) {
         echo json_encode([
             'success' => false,
-            'error' => "You already have $current_cart_qty in your cart. Only $available_stock items are available for this promotion.",
+            'error' => "You already have $current_cart_qty of this promotion product in your cart. Only $available_stock items are available for this promotion.",
         ]);
         exit;
     }
@@ -1335,10 +1335,6 @@ h5 a:hover {
                     <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
                         View Cart
                     </a>
-
-                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
                 </div>
             </div>
         </div>
@@ -1614,7 +1610,7 @@ h5 a:hover {
 
 
                     // Assign a class to each product based on its category_id
-                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -10px;">
+                    echo '<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item category-' . $product['category_id'] . '"style="margin-right: -30px;">
                             <div class="block2 ' . $productStyle . '">
                                 <div class="block2-pic hov-img0">
                                     <img src="images/' . $product['product_image'] . '" alt="IMG-PRODUCT" id="product-image-' . $product_id . '">
@@ -1709,26 +1705,20 @@ h5 a:hover {
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Women
+							<a href="product.php?category_id=1" class="stext-107 cl7 hov-cl1 trans-04">
+								Women's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Men
+							<a href="product.php?category_id=2" class="stext-107 cl7 hov-cl1 trans-04">
+								Men's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Shoes
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Watches
+							<a href="product.php?category_id=3" class="stext-107 cl7 hov-cl1 trans-04">
+								Accessories
 							</a>
 						</li>
 					</ul>
@@ -1741,7 +1731,7 @@ h5 a:hover {
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="Order.php?user=<?php echo $user_id; ?>" class="stext-107 cl7 hov-cl1 trans-04">
 								Track Order
 							</a>
 						</li>
@@ -1835,7 +1825,7 @@ h5 a:hover {
 
 				<p class="stext-107 cl6 txt-center">
 					<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved |Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> &amp; distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> &amp; distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
 
 				</p>
@@ -3018,6 +3008,53 @@ document.addEventListener("click", function (event) {
 
 
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let url = new URL(window.location.href);
+    let categoryId = url.searchParams.get("category_id");
+
+    function resetURL() {
+        if (categoryId) {
+            // Remove category_id from URL and update history
+            history.replaceState(null, "", "product.php");
+        }
+    }
+
+    function filterProducts(category) {
+        let items = document.querySelectorAll(".isotope-item");
+
+        items.forEach(item => {
+            if (category === "*" || item.classList.contains("category-" + category)) {
+                item.style.display = "block";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    }
+
+    document.querySelectorAll(".filter-tope-group button").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent page reload
+
+            let selectedCategory = this.getAttribute("data-filter").replace(".category-", "");
+
+            if (categoryId) {
+                resetURL(); // Reset the URL only once if it contains category_id
+            }
+
+            filterProducts(selectedCategory); // Apply filter dynamically
+        });
+    });
+
+    // Auto-filter products on page load if category_id exists
+    if (categoryId) {
+        filterProducts(categoryId);
+    }
+});
+</script>
+
+
+
 
 <script src="js/main.js"></script>
 

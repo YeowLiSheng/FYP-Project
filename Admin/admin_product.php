@@ -798,15 +798,15 @@ function add_check() {
             $filter2 = $_POST["filter2"];
             if (!empty($filter2)) {
                 if ($filter2 == 'in_stock') {
-                    $query .= " AND product.stock > 0";
+                    $query .= " AND product_variant.stock > 0";
                 } else if ($filter2 == 'out_stock') {
-                    $query .= " AND product.stock = 0";
+                    $query .= " AND product_variant.stock = 0";
                 } else {
                     $p2 = explode('_', $filter2);
                     $filter_type = $p2[0];
                     $filter_value = $p2[1]; // String for color or status
                     if ($filter_type == 'color') { // Color filter
-                        $query .= " AND (product.color1 = '$filter_value' OR product.color2 = '$filter_value')";
+                        $query .= " AND product_variant.color = '$filter_value'";
                     } else if ($filter_type == 'status') { // Product status filter
                         $status = intval($filter_value);
                         $query .= " AND product.product_status = $status";
@@ -825,10 +825,10 @@ function add_check() {
                     $query .= ", product.product_name DESC";
                 }
                 if ($sort_p == 'c') {
-                    $query .= ", product.price DESC";
+                    $query .= ", price DESC"; 
                 }
                 if ($sort_p == 'd') {
-                    $query .= ", product.price";
+                    $query .= ", price";
                 }
             }
         } else {

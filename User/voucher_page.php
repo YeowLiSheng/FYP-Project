@@ -55,6 +55,27 @@ $cart_items_query = "
     GROUP BY 
         sc.variant_id";
 $cart_items_result = $connect->query($cart_items_query);
+
+// Updated query to count distinct items based on product_id, package_id, and associated attributes
+$distinct_items_query = "
+    SELECT COUNT(*) AS distinct_count
+    FROM (
+        SELECT 
+            sc.variant_id
+        FROM shopping_cart sc
+        WHERE sc.user_id = $user_id
+        GROUP BY 
+            sc.variant_id
+    ) AS distinct_items";
+
+$distinct_items_result = $connect->query($distinct_items_query);
+$distinct_count = 0;
+
+if ($distinct_items_result) {
+    $row = $distinct_items_result->fetch_assoc();
+    $distinct_count = $row['distinct_count'] ?? 0;
+}
+
 $items_per_page = 5;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($current_page < 1) {
@@ -89,21 +110,6 @@ $total_row = $total_result->fetch_assoc();
 $total_vouchers = $total_row['total'];
 $total_pages = ceil($total_vouchers / $items_per_page);
 
-
-// Count distinct product IDs in the shopping cart for the logged-in user
-$distinct_items_query = "
-    SELECT COUNT(*) AS distinct_count
-    FROM (
-        SELECT 
-            sc.variant_id
-        FROM shopping_cart sc
-        WHERE sc.user_id = $user_id
-        GROUP BY 
-            sc.variant_id
-    ) AS distinct_items";
-
-$distinct_items_result = $connect->query($distinct_items_query);
-$distinct_count = 0;
 
 ?>
 <!DOCTYPE html>
@@ -400,10 +406,6 @@ $distinct_count = 0;
                     <a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
                         View Cart
                     </a>
-
-                    <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
                 </div>
             </div>
         </div>
@@ -483,26 +485,20 @@ $distinct_count = 0;
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Women
+							<a href="product.php?category_id=1" class="stext-107 cl7 hov-cl1 trans-04">
+								Women's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Men
+							<a href="product.php?category_id=2" class="stext-107 cl7 hov-cl1 trans-04">
+								Men's Bag
 							</a>
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Shoes
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Watches
+							<a href="product.php?category_id=3" class="stext-107 cl7 hov-cl1 trans-04">
+								Accessories
 							</a>
 						</li>
 					</ul>
@@ -515,7 +511,7 @@ $distinct_count = 0;
 
 					<ul>
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="Order.php?user=<?php echo $user_id; ?>" class="stext-107 cl7 hov-cl1 trans-04">
 								Track Order
 							</a>
 						</li>
@@ -533,7 +529,7 @@ $distinct_count = 0;
 						</li>
 
 						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
+							<a href="faq.php" class="stext-107 cl7 hov-cl1 trans-04">
 								FAQs
 							</a>
 						</li>
