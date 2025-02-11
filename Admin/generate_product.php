@@ -60,33 +60,35 @@ $result = $connect->query($query);
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
-        // Fetch data for each row
         $product_id = $row['product_id'];
         $product_name = $row['product_name'];
         $tags = $row['tags'];
         $color = $row['color'];
         $category_name = $row['category_name'];
         $status = $row['product_status'];
+    
+        $cell_width = 40; 
+        $cell_height = 8; 
+        $line_count = max(1, ceil($pdf->GetStringWidth($product_name) / ($cell_width - 2))); // 计算行数
+    
 
-        // Handle word wrapping for the 'Promotion Name' column
-        $cell_width = 40; // Width of 'Promotion Name'
-        $cell_height = 8; // Height of each wrapped line
-        $line_count = ceil($pdf->GetStringWidth($product_name) / $cell_width);
-
-        // Set left margin for row data
+        $row_height = $cell_height * $line_count;
+    
         $pdf->SetX($left_margin);
+        $pdf->Cell(30, $row_height, $product_id, 1, 0, 'C');
+    
 
-        // Output row data
-        $pdf->Cell(30, $cell_height * $line_count, $product_id, 1, 0, 'C');
-        $x = $pdf->GetX(); // Save x position
-        $y = $pdf->GetY(); // Save y position
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
         $pdf->MultiCell($cell_width, $cell_height, $product_name, 1, 'C');
-        $pdf->SetXY($x + $cell_width, $y); // Move to next cell
-        $pdf->Cell(30, $cell_height * $line_count, $tags, 1, 0, 'C');
-        $pdf->Cell(30, $cell_height * $line_count, $color, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $category_name, 1, 0, 'C');
-        $pdf->Cell(25, $cell_height * $line_count, $status, 1, 1, 'C');
+
+        $pdf->SetXY($x + $cell_width, $y);
+        $pdf->Cell(30, $row_height, $tags, 1, 0, 'C');
+        $pdf->Cell(30, $row_height, $color, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $category_name, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $status, 1, 1, 'C');
     }
+    
 } else {
     $pdf->SetX($left_margin);
     $pdf->Cell(0, 10, 'No products found.', 1, 1, 'C');
