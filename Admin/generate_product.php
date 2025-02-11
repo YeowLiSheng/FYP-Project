@@ -1,97 +1,105 @@
 <?php
 require('../User/fpdf/fpdf.php');
-include('../config.php');
 
-class PDF extends FPDF
-{
-    function Header()
-    {
-        $this->SetFont('Arial', 'B', 12);
-        $this->Cell(0, 10, 'Product List', 0, 1, 'C');
-        $this->Ln(5);
-    }
+// Database connection
+include 'dataconnection.php';
 
-    function Footer()
-    {
-        $this->SetY(-15);
-        $this->SetFont('Arial', 'I', 8);
-        $this->Cell(0, 10, 'Page ' . $this->PageNo(), 0, 0, 'C');
-    }
+// Check connection
+if ($connect->connect_error) {
+    die("Connection failed: " . $connect->connect_error);
 }
 
-$pdf = new PDF();
+// Create PDF instance
+$pdf = new FPDF();
 $pdf->AddPage();
-$pdf->SetFont('Arial', '', 10);
 
-$left_margin = 10;
-$pdf->SetLeftMargin($left_margin);
+// Logo at the top-left
+$pdf->Image('../User/images/YLS2.jpg', 10, 10, 30); // Adjusted position and size
+$pdf->SetFont('Arial', 'B', 16);
+$pdf->SetXY(50, 15); // Set position for title to the right of the logo
+$pdf->Cell(0, 10, 'YLS Atelier - Product List', 0, 1, 'L'); // Align title with logo
 
-// 定义表头
-$header = ['Product ID', 'Product Name', 'Tags', 'Color', 'Category', 'Status'];
-$col_widths = [30, 50, 30, 30, 25, 25];  // 调整列宽
-$cell_height = 6;
+$pdf->Ln(20); // Add spacing below title (adjusted to move table down)
 
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->SetFillColor(200, 200, 200);
-$pdf->SetX($left_margin);
+// Table Header
+$pdf->SetFont('Arial', 'B', 12);
+$pdf->SetFillColor(230, 230, 230); // Light gray background for the header
+$pdf->SetDrawColor(180, 180, 180); // Border color
 
-foreach ($header as $key => $col) {
-    $pdf->Cell($col_widths[$key], $cell_height, $col, 1, 0, 'C', true);
+$header = [
+    ['Product ID', 30],
+    ['Product Name', 40],
+    ['Tags', 30],
+    ['Color', 30],
+    ['Category', 25],
+    ['Status', 25] // Adjusted widths for table columns
+];
+
+// Adjust left margin
+$left_margin = 10; 
+$pdf->SetX($left_margin); // Set initial left margin
+foreach ($header as $col) {
+    $pdf->Cell($col[1], 10, $col[0], 1, 0, 'C', true);
 }
 $pdf->Ln();
 
+// Fetch Data
 $pdf->SetFont('Arial', '', 10);
+$query = "SELECT 
+         product.product_id, 
+         product.product_name,
+         product.tags,
+         product_variant.color,
+         category.category_name,
+         product_status.product_status
+         FROM product
+         JOIN category ON product.category_id = category.category_id
+         JOIN product_status ON product.product_status = product_status.p_status_id
+         JOIN product_variant ON product.product_id = product_variant.product_id";
+$result = $connect->query($query);
 
-$query = "SELECT product_id, product_name, tags, color, category_name, product_status FROM product";
-$result = $conn->query($query);
-
-while ($row = $result->fetch_assoc()) {
-    $product_id = $row['product_id'];
-    $product_name = $row['product_name'];
-    $tags = $row['tags'];
-    $color = $row['color'];
-    $category_name = $row['category_name'];
-    $status = $row['product_status'];
-
-    // 计算每一列的最大行数，保证行高对齐
-    $max_lines = max(
-        ceil($pdf->GetStringWidth($product_name) / $col_widths[1]),
-        ceil($pdf->GetStringWidth($tags) / $col_widths[2]),
-        ceil($pdf->GetStringWidth($color) / $col_widths[3]),
-        ceil($pdf->GetStringWidth($category_name) / $col_widths[4]),
-        ceil($pdf->GetStringWidth($status) / $col_widths[5]),
-        1
-    );
-
-    $row_height = $cell_height * $max_lines;
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $product_id = $row['product_id'];
+        $product_name = $row['product_name'];
+        $tags = $row['tags'];
+        $color = $row['color'];
+        $category_name = $row['category_name'];
+        $status = $row['product_status'];
     
+        $cell_width = 40; // 'Product Name' 列宽
+        $cell_height = 8; // 每行高度
+        $line_count = max(1, ceil($pdf->GetStringWidth($product_name) / ($cell_width - 2))); // 计算行数
+    
+        // 计算整行的高度，确保所有列对齐
+        $row_height = $cell_height * $line_count;
+    
+        $pdf->SetX($left_margin);
+        $pdf->Cell(30, $row_height, $product_id, 1, 0, 'C');
+    
+        // 处理 'Product Name' 列，允许多行
+        $x = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->MultiCell($cell_width, $cell_height, $product_name, 1, 'C');
+        
+        // 重新对齐剩余的列
+        $pdf->SetXY($x + $cell_width, $y);
+        $pdf->Cell(30, $row_height, $tags, 1, 0, 'C');
+        $pdf->Cell(30, $row_height, $color, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $category_name, 1, 0, 'C');
+        $pdf->Cell(25, $row_height, $status, 1, 1, 'C');
+    }
+    
+} else {
     $pdf->SetX($left_margin);
-    
-    // 输出表格数据（全部使用 MultiCell 以确保换行对齐）
-    $pdf->Cell($col_widths[0], $row_height, $product_id, 1, 0, 'C');
-
-    $x = $pdf->GetX();
-    $y = $pdf->GetY();
-    $pdf->MultiCell($col_widths[1], $cell_height, $product_name, 1, 'C'); 
-    $pdf->SetXY($x + $col_widths[1], $y);
-
-    $x = $pdf->GetX();
-    $y = $pdf->GetY();
-    $pdf->MultiCell($col_widths[2], $cell_height, $tags, 1, 'C');
-    $pdf->SetXY($x + $col_widths[2], $y);
-
-    $x = $pdf->GetX();
-    $y = $pdf->GetY();
-    $pdf->MultiCell($col_widths[3], $cell_height, $color, 1, 'C');
-    $pdf->SetXY($x + $col_widths[3], $y);
-
-    $x = $pdf->GetX();
-    $y = $pdf->GetY();
-    $pdf->MultiCell($col_widths[4], $cell_height, $category_name, 1, 'C');
-    $pdf->SetXY($x + $col_widths[4], $y);
-
-    $pdf->MultiCell($col_widths[5], $cell_height, $status, 1, 'C');
+    $pdf->Cell(0, 10, 'No products found.', 1, 1, 'C');
 }
 
-$pdf->Output();
+// Footer
+$pdf->SetFont('Arial', 'I', 8);
+$pdf->SetY(-15);
+$pdf->Cell(0, 10, 'Generated on ' . date('d/m/Y H:i:s'), 0, 0, 'C');
+
+// Output the PDF
+$pdf->Output('D', 'Product_List.pdf');
 ?>
