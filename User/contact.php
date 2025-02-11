@@ -322,7 +322,7 @@ if ($distinct_items_result) {
 								<a href="dashboard.php">Home</a>
 							</li>
 
-							<li class="active-menu">
+							<li>
 								<a href="product.php">Shop</a>
 							</li>
 
@@ -342,7 +342,7 @@ if ($distinct_items_result) {
 								<a href="about.php">About</a>
 							</li>
 
-							<li>
+							<li class="active-menu">
 								<a href="contact.php">Contact</a>
 							</li>
 						</ul>
