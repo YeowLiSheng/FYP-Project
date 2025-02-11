@@ -1326,47 +1326,38 @@ function add_check() {
 
  
         function exportExcel() {
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Product List",
-        Author: "YLS Atelier",
-    };
+    fetch('export_products.php')
+        .then(response => response.json())
+        .then(data => {
+            const wb = XLSX.utils.book_new();
+            wb.Props = {
+                Title: "Product List",
+                Author: "YLS Atelier",
+            };
 
-    // 选择整个表格
-    const table = document.querySelector(".table");
-    
-    // **改进点：获取所有行，包括分页隐藏的**
-    const rows = Array.from(table.querySelectorAll("tbody tr")).map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        return cells.slice(1, cells.length - 1).map(cell => cell.textContent.trim()); // 去掉图片和操作列
-    });
+            // 设置 Excel 头部
+            const headers = ["Product Name", "Tags", "Colors", "Category", "Price (USD)", "Stock (QTY)", "Status"];
+            const rows = data.map(row => [
+                row.product_name, row.tags, row.color, row.category_name, 
+                row.product_price_usd, row.stock_quantity, row.product_status
+            ]);
 
-    // 提取表头
-    const headers = Array.from(table.querySelectorAll("thead th"))
-        .map((header, index) => (index !== 0 && index !== table.querySelectorAll("thead th").length - 1) ? header.textContent.trim() : null)
-        .filter(header => header !== null);
+            rows.unshift(headers); // 加入表头
 
-    rows.unshift(headers);
+            // 创建 Excel 工作表
+            const ws = XLSX.utils.aoa_to_sheet(rows);
 
-    // 创建 Excel 工作表
-    const ws = XLSX.utils.aoa_to_sheet(rows);
+            // 设置列宽
+            ws['!cols'] = [
+                { wch: 30 }, { wch: 25 }, { wch: 20 },
+                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }
+            ];
 
-    // 设置列宽
-    ws['!cols'] = [
-        { wch: 30 }, // Product Name
-        { wch: 25 }, // Tags
-        { wch: 20 }, // Colors
-        { wch: 20 }, // Category
-        { wch: 15 }, // Price
-        { wch: 20 }, // Stock (QTY)
-        { wch: 15 }  // Status
-    ];
-
-    // 添加工作表到 Excel 文件
-    XLSX.utils.book_append_sheet(wb, ws, "Products");
-
-    // 生成 Excel 文件
-    XLSX.writeFile(wb, "Product_List.xlsx");
+            // 添加到工作簿并保存
+            XLSX.utils.book_append_sheet(wb, ws, "Products");
+            XLSX.writeFile(wb, "Product_List.xlsx");
+        })
+        .catch(error => console.error('Error fetching data:', error));
 }
 
 
